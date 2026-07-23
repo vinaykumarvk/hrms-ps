@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-32C oracle: G13 certified-copy + OCR-search routes — real kernel route(s) registered + dispatched in an API test.
+# PH-32C oracle: PS13 certified-copy + OCR-search routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g13.routes.ts"; T=apps/api/test
-echo "== PH-32C exit-criteria (G13 certified-copy + OCR-search routes) =="
+R="apps/api/src/routes/ps13.routes.ts"; T=apps/api/test
+echo "== PH-32C exit-criteria (PS13 certified-copy + OCR-search routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" 'certified-copies' "route path registered: certified-copies"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

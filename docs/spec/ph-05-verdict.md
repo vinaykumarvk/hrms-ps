@@ -12,31 +12,31 @@ wildcard grant and a fixture client. This packet reports what the re-baselined o
 state_coverage: 14/14
 
 The count above is copied verbatim from the oracle's own sweep: all 14 module surfaces under
-`apps/web/src/modules/g01..g14` implement the canonical loading/error/empty branches. During this
-sub-phase, 11 surfaces (G02–G11, G14) were converted from prop-drilled metric cards to the canonical
-pattern already used by G01/G12/G13: injected `HrmsClient`, per-view state union
+`apps/web/src/modules/ps01..ps14` implement the canonical loading/error/empty branches. During this
+sub-phase, 11 surfaces (PS02–PS11, PS14) were converted from prop-drilled metric cards to the canonical
+pattern already used by PS01/PS12/PS13: injected `HrmsClient`, per-view state union
 (loading/error/empty/ready via `modules/sliceViewState.ts`), and `OperationalState` rendering. Each
-conversion traces to an oracle RED line from the pre-change run (g02..g11, g14 all RED on
+conversion traces to an oracle RED line from the pre-change run (ps02..ps11, ps14 all RED on
 "missing state branch(es): loading error empty").
 
 ## Per-module surface status
 
 | Module | Surface | States implemented | API-backed | Guarded |
 |---|---|---|---|---|
-| G01 | EmployeeProfile.tsx | loading, error, empty, ready (masked-PII ready view) | GET /api/v1/employees + /employees/{id}/profile-360 | g01.employee.read |
-| G02 | PersonalDetailsWorkspace.tsx | loading, error, empty, ready | GET /api/v1/personal-details/change-requests (NOT_FOUND maps to empty) | g02.change.read |
-| G03 | LeaveWorkspace.tsx | loading, error, empty, ready | GET /api/v1/atl/leave-applications + leave-sr-outbox + payroll-signals | g03.leave.read |
-| G04 | LeaveSrRelayWorkspace.tsx | loading, error, empty (total=0), ready | GET /api/v1/leave-sr/reconciliation | g04.relay.read |
-| G05 | TransferWorkspace.tsx | loading, error, empty, ready | GET /api/v1/transfers/orders (NOT_FOUND maps to empty) | g05.transfer.read |
-| G06 | PromotionWorkspace.tsx | loading, error, empty (zero counters), ready | GET /api/v1/promotions/summary | g06.promotion.read |
-| G07 | TrainingWorkspace.tsx | loading, error, empty (sessions=0), ready | GET /api/v1/training/summary | g07.training.read |
-| G08 | AparWorkspace.tsx | loading, error, empty (forms=0), ready | GET /api/v1/apar/summary | g08.apar.read |
-| G09 | DisciplinaryWorkspace.tsx | loading, error, empty (cases=0), ready | GET /api/v1/disciplinary/summary | g09.case.read |
-| G10 | PayrollWorkspace.tsx | loading, error, empty (structures=runs=0), ready | GET /api/v1/payroll/summary | g10.payroll.read |
-| G11 | PensionWorkspace.tsx | loading, error, empty (cases=0), ready | GET /api/v1/pension/summary | g11.pension.read |
-| G12 | ServiceRegisterTimeline.tsx | loading, error, empty, ready (cursor-paged load-more) | GET /api/v1/sr/employees/{id}/timeline | g12.sr.read |
-| G13 | DocumentVaultView.tsx | loading, error, empty, ready | GET /api/v1/documents | g13.document.read |
-| G14 | AnalyticsWorkspace.tsx | loading, error, empty (dashboards=cards=0), ready | GET /api/v1/analytics/summary | g14.analytics.read |
+| PS01 | EmployeeProfile.tsx | loading, error, empty, ready (masked-PII ready view) | GET /api/v1/employees + /employees/{id}/profile-360 | ps01.employee.read |
+| PS02 | PersonalDetailsWorkspace.tsx | loading, error, empty, ready | GET /api/v1/personal-details/change-requests (NOT_FOUND maps to empty) | ps02.change.read |
+| PS03 | LeaveWorkspace.tsx | loading, error, empty, ready | GET /api/v1/atl/leave-applications + leave-sr-outbox + payroll-signals | ps03.leave.read |
+| PS04 | LeaveSrRelayWorkspace.tsx | loading, error, empty (total=0), ready | GET /api/v1/leave-sr/reconciliation | ps04.relay.read |
+| PS05 | TransferWorkspace.tsx | loading, error, empty, ready | GET /api/v1/transfers/orders (NOT_FOUND maps to empty) | ps05.transfer.read |
+| PS06 | PromotionWorkspace.tsx | loading, error, empty (zero counters), ready | GET /api/v1/promotions/summary | ps06.promotion.read |
+| PS07 | TrainingWorkspace.tsx | loading, error, empty (sessions=0), ready | GET /api/v1/training/summary | ps07.training.read |
+| PS08 | AparWorkspace.tsx | loading, error, empty (forms=0), ready | GET /api/v1/apar/summary | ps08.apar.read |
+| PS09 | DisciplinaryWorkspace.tsx | loading, error, empty (cases=0), ready | GET /api/v1/disciplinary/summary | ps09.case.read |
+| PS10 | PayrollWorkspace.tsx | loading, error, empty (structures=runs=0), ready | GET /api/v1/payroll/summary | ps10.payroll.read |
+| PS11 | PensionWorkspace.tsx | loading, error, empty (cases=0), ready | GET /api/v1/pension/summary | ps11.pension.read |
+| PS12 | ServiceRegisterTimeline.tsx | loading, error, empty, ready (cursor-paged load-more) | GET /api/v1/sr/employees/{id}/timeline | ps12.sr.read |
+| PS13 | DocumentVaultView.tsx | loading, error, empty, ready | GET /api/v1/documents | ps13.document.read |
+| PS14 | AnalyticsWorkspace.tsx | loading, error, empty (dashboards=cards=0), ready | GET /api/v1/analytics/summary | ps14.analytics.read |
 
 No-permission is handled one level up: `App.tsx` wraps every workspace in `RouteGuard` with a
 module-specific permission (15 injected-client surfaces, 14+ `requiredPermission` guards, no
@@ -72,11 +72,11 @@ Checked by source inspection and grep this run — not aspirational:
 
 This wave is UI conformance, not module depth — the following are deliberately NOT closed here:
 
-- G02–G11 and G14 remain read-only summary/proof panels. There are no create/edit forms (no leave
+- PS02–PS11 and PS14 remain read-only summary/proof panels. There are no create/edit forms (no leave
   application form, no transfer initiation, no APAR entry, no payroll run controls). Owning phases:
-  PH-06 (G03/G05 vertical slices), PH-07 (G02/G04 employee wave), PH-08 (G06–G09 statutory wave),
-  PH-09 (G10/G11 compensation wave), PH-10 (G14 analytics/release).
-- G06–G11 and G14 have only a summary endpoint today; their states-conformant summary view is the
+  PH-06 (PS03/PS05 vertical slices), PH-07 (PS02/PS04 employee wave), PH-08 (PS06–PS09 statutory wave),
+  PH-09 (PS10/PS11 compensation wave), PH-10 (PS14 analytics/release).
+- PS06–PS11 and PS14 have only a summary endpoint today; their states-conformant summary view is the
   accepted PH-05E shape. Per-record list/detail routes and their UIs are PH-08/PH-09/PH-10 scope.
 - Empty state for summary-only modules is inferred from zero counts (not a distinct API signal).
 - Single-page workspace layout: no per-module deep-linking/router yet; all surfaces render under
@@ -95,6 +95,6 @@ This wave is UI conformance, not module depth — the following are deliberately
 Approve the PH-05E UI freeze. Traceable basis: all 14 module surfaces implement real, API-backed
 loading/error/empty branches behind per-module permission guards (state_coverage 14/14, fail-closed
 negatives all green); the workflow inbox is operational end-to-end. The freeze should carry the
-explicit caveat that G02–G11/G14 are read-only conformant surfaces whose transactional depth
+explicit caveat that PS02–PS11/PS14 are read-only conformant surfaces whose transactional depth
 (forms, per-record views) is owned by PH-06..PH-10, and that contrast/focus polish is an open
 accessibility item for the module-depth waves.

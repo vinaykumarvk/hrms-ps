@@ -16,7 +16,7 @@ The biggest correction: **PH-00B must be human-gated unless the conformance proo
 
 1. **The product architecture is sound.** PH-00A supports the decision: PUDA has reusable workflow mechanics, but HRMS needs hierarchy/statutory authority resolution that PUDA lacks. Therefore facade-first reuse is the right move.
 2. **The phase model is the right unit of work.** A 14-module HRMS cannot be built safely in one long goal. Phase-by-phase work with independent checks is the right operating model.
-3. **PH-00 -> PH-06 is the true critical path.** The later module waves should not start until G03 leave and G05 transfer prove the workflow platform, hierarchy resolver, audit, documents, notifications, and SR integration together.
+3. **PH-00 -> PH-06 is the true critical path.** The later module waves should not start until PS03 leave and PS05 transfer prove the workflow platform, hierarchy resolver, audit, documents, notifications, and SR integration together.
 4. **The harness is useful, but only if checks are real.** `run.sh` has the right idea: fresh session, branch guard, exit command, gate, stop on red. The weak points are stale manifest coverage and checks that can pass on text claims.
 5. **PH-00B is the right next phase, but it should be treated as architecture hardening, not feature development.** Its output is a stable boundary and conformance proof, not HRMS business functionality.
 
@@ -74,9 +74,9 @@ Then run PH-00B as a single controlled goal, not as the first step of an unatten
 
 ### Proponent
 
-The proposed approach captures the most important architectural learning from PH-00A: the PUDA workflow engine is not a throwaway asset. It already has transition execution, task routing, waits, fork/join, version pinning, validation, publish governance, simulation, and officer UI concepts. Reusing it behind a P01 facade gives HRMS a platform spine and avoids spending months rebuilding a generic workflow engine before delivering any government HRMS value. The split between platform work and HRMS-specific computation is also clean: workflow orchestration goes through PUDA/P01; leave balance, attendance, payroll, pension, SR ledger, and hierarchy resolution remain HRMS-owned.
+The proposed approach captures the most important architectural learning from PH-00A: the PUDA workflow engine is not a throwaway asset. It already has transition execution, task routing, waits, fork/join, version pinning, validation, publish governance, simulation, and officer UI concepts. Reusing it behind a P01 facade gives HRMS a platform spine and avoids spending months rebuilding a generic workflow engine before delivering any PrimeSoft HRMS value. The split between platform work and HRMS-specific computation is also clean: workflow orchestration goes through PUDA/P01; leave balance, attendance, payroll, pension, SR ledger, and hierarchy resolution remain HRMS-owned.
 
-The phase structure is also healthy. PH-00 -> PH-06 concentrates risk before broad module build: first platform boundary, then contracts/schema, then hierarchy data, then systems of record, then resolver/API, then workflow console, then G03/G05 proof. That sequence is much safer than building fourteen modules in parallel and discovering at the end that approvals, audit, SR, documents, and hierarchy do not line up. The runner/check approach makes the process repeatable and auditable.
+The phase structure is also healthy. PH-00 -> PH-06 concentrates risk before broad module build: first platform boundary, then contracts/schema, then hierarchy data, then systems of record, then resolver/API, then workflow console, then PS03/PS05 proof. That sequence is much safer than building fourteen modules in parallel and discovering at the end that approvals, audit, SR, documents, and hierarchy do not line up. The runner/check approach makes the process repeatable and auditable.
 
 The biggest improvement is not to abandon the plan, but to make it stricter. PH-00B should be the next action because it directly tests the biggest architectural bet. If the facade cannot route simple, wait, fork/join, and reference workflows without changing PUDA behavior, the program learns that early. The proposed approach should proceed, with human review at PH-00B because the first facade boundary is too consequential for auto-advance.
 
@@ -90,7 +90,7 @@ There is also a provenance trap. PH-00A explicitly says PUDA license/provenance 
 
 ### First Principles Thinker
 
-The core problem is not "how do we build 14 modules?" The actual problem is "how do we build a government HRMS without losing control of workflow, audit, authority, and statutory evidence?" That framing validates the approach: workflow is the load-bearing platform capability, not one module among fourteen. Reusing PUDA is rational because it converts an unknown platform build into a boundary-and-adaptation problem.
+The core problem is not "how do we build 14 modules?" The actual problem is "how do we build a PrimeSoft HRMS without losing control of workflow, audit, authority, and statutory evidence?" That framing validates the approach: workflow is the load-bearing platform capability, not one module among fourteen. Reusing PUDA is rational because it converts an unknown platform build into a boundary-and-adaptation problem.
 
 However, the method currently mixes three different objects: a product roadmap, a platform extraction plan, and an agent orchestration harness. Each needs a different definition of done. The product roadmap ends at a working HRMS. The platform extraction plan ends when PUDA and HRMS can both consume the workflow platform through adapters. The harness ends when each phase has a prompt, an executable check, dependency metadata, and a gate. The confusion in the user's summary comes from saying the "method is built" while only the PH-00 harness appears built.
 

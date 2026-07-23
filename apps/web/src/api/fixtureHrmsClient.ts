@@ -78,7 +78,7 @@ const workflowTasks: WorkflowTaskSummary[] = [
 const employees: EmployeeSummary[] = [
   {
     id: "99999999-9999-9999-9999-999999999901",
-    serviceNo: "GOV-100245",
+    serviceNo: "PS-100245",
     displayName: "Ananya Rao",
     employmentStatus: "ACTIVE",
     designation: "Deputy Collector",
@@ -89,7 +89,7 @@ const documents: DocumentSummary[] = [
   {
     id: "d0c00000-0000-0000-0000-000000001001",
     docNo: "DOC/2026/0001001",
-    title: "Aadhaar Proof - GOV-100245",
+    title: "Aadhaar Proof - PS-100245",
     status: "ACTIVE",
     classification: "CONFIDENTIAL",
     currentVersionNo: 2,
@@ -100,7 +100,7 @@ const documents: DocumentSummary[] = [
 
 const employeeProfile: EmployeeProfileView = {
   id: "99999999-9999-9999-9999-999999999901",
-  serviceNo: "GOV-100245",
+  serviceNo: "PS-100245",
   displayName: "Ananya Rao",
   employmentStatus: "ACTIVE",
   orgUnitId: "org-unit-0001",
@@ -117,7 +117,7 @@ const srTimeline: SrTimelineEntry[] = [
     id: "sr-fixture-000001",
     sequenceNo: 1,
     employeeId: employeeProfile.id,
-    sourceModule: "G01",
+    sourceModule: "PS01",
     eventTypeCode: "IDENTITY_CHANGE",
     eventDate: "2026-07-02",
     entryHash: "aaaa1111bbbb2222",
@@ -132,18 +132,18 @@ const leaveSlice: LeaveSliceSummary = {
   resolver: "REPORTING_CHAIN",
   action: "APPROVE",
   balanceAvailable: 27,
-  g04OutboxStatus: "POSTED",
+  ps04OutboxStatus: "POSTED",
   srEventType: "LEAVE_APPROVED",
-  payrollSignalStatus: "READY_FOR_G10",
+  payrollSignalStatus: "READY_FOR_PS10",
   payrollSignalsReady: 3,
 };
 
 const personalDetailsSlice: PersonalDetailsSliceSummary = {
-  requestNo: "G02/00001",
+  requestNo: "PS02/00001",
   fieldCode: "displayName",
   status: "COMMITTED",
   sensitivity: "LOW",
-  ownerModule: "G01",
+  ownerModule: "PS01",
   documentCount: 1,
 };
 
@@ -152,7 +152,7 @@ const leaveSrRelaySlice: LeaveSrRelaySliceSummary = {
   posted: 2,
   deadLettered: 1,
   discarded: 0,
-  relayOwner: "G04",
+  relayOwner: "PS04",
 };
 
 const transferSlice: TransferSliceSummary = {
@@ -184,7 +184,7 @@ const trainingSlice: TrainingSliceSummary = {
   approved: 1,
   completed: 1,
   srPosted: 1,
-  workflowCode: "WF-G07-NOMINATION",
+  workflowCode: "WF-PS07-NOMINATION",
   srEventType: "TRAINING_CERTIFICATION_POSTED",
 };
 
@@ -192,10 +192,10 @@ const aparSlice: AparSliceSummary = {
   forms: 2,
   posted: 1,
   sealedCover: 1,
-  g06FeedSuppressed: 1,
+  ps06FeedSuppressed: 1,
   srEventType: "APAR_FINAL_GRADE",
   sealedMarker: "SEALED_COVER",
-  feedMarker: "G08_G06_FEED_SUPPRESSED",
+  feedMarker: "PS08_PS06_FEED_SUPPRESSED",
 };
 
 const disciplinarySlice: DisciplinarySliceSummary = {
@@ -203,7 +203,7 @@ const disciplinarySlice: DisciplinarySliceSummary = {
   penalties: 1,
   confidential: 1,
   impactSignals: 1,
-  competenceMarker: "G09_AUTHORITY_COMPETENCE",
+  competenceMarker: "PS09_AUTHORITY_COMPETENCE",
   penaltyEventType: "MAJOR_PENALTY",
   appealMarker: "APPEAL_DECIDED",
 };
@@ -231,7 +231,7 @@ const pensionSlice: PensionSliceSummary = {
   qualifyingServiceMarker: "QUALIFYING_SERVICE_LOCKED",
   calculationMarker: "PENSION_CALC_TRACE",
   ppoMarker: "PPO_ISSUED",
-  srMarker: "G11_SR_POSTED",
+  srMarker: "PS11_SR_POSTED",
 };
 
 const analyticsSlice: AnalyticsSliceSummary = {
@@ -239,7 +239,7 @@ const analyticsSlice: AnalyticsSliceSummary = {
   cards: 8,
   sourceModules: 7,
   martRefreshes: 1,
-  readOnlyMarker: "G14_READ_ONLY",
+  readOnlyMarker: "PS14_READ_ONLY",
   martMarker: "MART_REFRESH_IDEMPOTENT",
   scopeMarker: "P02_SCOPE_FILTER",
   drillMarker: "DRILL_THROUGH_AUTHZ",
@@ -249,7 +249,7 @@ const analyticsSlice: AnalyticsSliceSummary = {
   uatMarker: "UAT_ACCEPTANCE_PACK",
 };
 
-// ---- PH-10E: G14 analytics engine fixtures (KPIs, suppression-aware aggregates, refresh logs) ----
+// ---- PH-10E: PS14 analytics engine fixtures (KPIs, suppression-aware aggregates, refresh logs) ----
 
 const FIXTURE_MIN_CELL_SIZE_K = 5;
 
@@ -342,14 +342,14 @@ const martDimensionCounts: Record<string, Record<string, Record<string, number>>
 
 /**
  * Mirror of AnalyticsEngineService.queryAggregate (FR-17): cells below k are suppressed
- * (ERR-G14-SMALL-CELL, value null); a lone suppressed cell pulls the smallest visible cell
- * with it (ERR-G14-COMP-SUPPRESS); any suppression withholds the total.
+ * (ERR-PS14-SMALL-CELL, value null); a lone suppressed cell pulls the smallest visible cell
+ * with it (ERR-PS14-COMP-SUPPRESS); any suppression withholds the total.
  */
 function suppressFixtureCells(groups: Record<string, number>): { cells: AnalyticsAggregateCell[]; total: number | null; suppressedCells: number } {
   const entries = Object.entries(groups).sort((left, right) => left[0].localeCompare(right[0]));
   const cells: AnalyticsAggregateCell[] = entries.map(([key, count]) =>
     count < FIXTURE_MIN_CELL_SIZE_K
-      ? { key, value: null, suppressed: true, suppressionReason: "ERR-G14-SMALL-CELL" as const }
+      ? { key, value: null, suppressed: true, suppressionReason: "ERR-PS14-SMALL-CELL" as const }
       : { key, value: count, suppressed: false }
   );
   const primarySuppressed = cells.filter((cell) => cell.suppressed).length;
@@ -359,7 +359,7 @@ function suppressFixtureCells(groups: Record<string, number>): { cells: Analytic
       const smallest = visible.reduce((min, cell) => ((cell.value ?? 0) < (min.value ?? 0) ? cell : min));
       smallest.value = null;
       smallest.suppressed = true;
-      smallest.suppressionReason = "ERR-G14-COMP-SUPPRESS";
+      smallest.suppressionReason = "ERR-PS14-COMP-SUPPRESS";
     }
   }
   const suppressedCells = cells.filter((cell) => cell.suppressed).length;
@@ -407,7 +407,7 @@ function buildMartRefreshLogs(): MartRefreshLogView[] {
       rowsRead: 0,
       rowsWritten: 0,
       status: "FAILED",
-      errorDetail: "Source contract g08.v_apar_forms_v3 fetch failed",
+      errorDetail: "Source contract ps08.v_apar_forms_v3 fetch failed",
     },
     {
       id: "mrl-fixture-000004",
@@ -502,8 +502,8 @@ export function createFixtureHrmsClient(): HrmsClient {
   ];
   const changeRequests: PersonalDetailChangeRecord[] = [
     {
-      id: "g02-fixture-000001",
-      requestNo: "G02/00001",
+      id: "ps02-fixture-000001",
+      requestNo: "PS02/00001",
       employeeId: employees[0].id,
       fieldCode: "displayName",
       oldValue: "Ananya Rao",
@@ -569,7 +569,7 @@ export function createFixtureHrmsClient(): HrmsClient {
   }
   const salaryStructures: FixtureSalaryStructure[] = [];
   const payrollRuns: PayrollRunView[] = [];
-  /** Mirrors the g10 route state machine: each lifecycle verb is legal from exactly one status. */
+  /** Mirrors the ps10 route state machine: each lifecycle verb is legal from exactly one status. */
   const runVerbTransitions: Record<PayrollRunLifecycleVerb, { from: PayrollRunStatus; to: PayrollRunStatus }> = {
     "lock-inputs": { from: "OPEN", to: "INPUT_LOCKED" },
     compute: { from: "INPUT_LOCKED", to: "COMPUTED" },
@@ -688,7 +688,7 @@ export function createFixtureHrmsClient(): HrmsClient {
     listEmployeeDependents: () => Promise.resolve(page(employeeDependents.map((dependent) => ({ ...dependent })))),
     addEmployeeDependent: (employeeId: string, input: EmployeeDependentAddInput) => {
       if (input.relationship === "SPOUSE" && employeeDependents.some((dependent) => dependent.relationship === "SPOUSE")) {
-        return Promise.reject(fixtureError(409, "CONFLICT", "An active spouse is already recorded", "ERR-G01-STATE"));
+        return Promise.reject(fixtureError(409, "CONFLICT", "An active spouse is already recorded", "ERR-PS01-STATE"));
       }
       const dependent: EmployeeDependentRecord = {
         id: `dep-fixture-${String(fixtureSequence).padStart(6, "0")}`,
@@ -706,8 +706,8 @@ export function createFixtureHrmsClient(): HrmsClient {
     listPersonalDetailChangeRequests: () => Promise.resolve(page(changeRequests.map((request) => ({ ...request })))),
     createPersonalDetailChangeRequest: (input: PersonalDetailChangeCreateInput) => {
       const request: PersonalDetailChangeRecord = {
-        id: `g02-fixture-${String(fixtureSequence).padStart(6, "0")}`,
-        requestNo: `G02/${String(fixtureSequence + 1).padStart(5, "0")}`,
+        id: `ps02-fixture-${String(fixtureSequence).padStart(6, "0")}`,
+        requestNo: `PS02/${String(fixtureSequence + 1).padStart(5, "0")}`,
         employeeId: input.employeeId,
         fieldCode: input.fieldCode,
         oldValue: input.fieldCode === "displayName" ? employees[0].displayName : "[HIDDEN]",
@@ -795,7 +795,7 @@ export function createFixtureHrmsClient(): HrmsClient {
     getCounsellingSession: () => Promise.resolve({ ...counsellingSession, vacancies: counsellingSession.vacancies.map((v) => ({ ...v })) }),
     submitCounsellingChoice: (input) => {
       const v = counsellingSession.vacancies.find((x) => x.vacancyId === input.vacancyId);
-      if (!v || !v.open) return Promise.reject(new Error("ERR-G05-VACANCY-FULL"));
+      if (!v || !v.open) return Promise.reject(new Error("ERR-PS05-VACANCY-FULL"));
       v.open = false;
       counsellingSession.currentTurnEmployeeId = "emp-2";
       return Promise.resolve({ reservationId: "resv-1", nextTurnEmployeeId: counsellingSession.currentTurnEmployeeId });
@@ -1002,7 +1002,7 @@ export function createFixtureHrmsClient(): HrmsClient {
           fixtureError(409, "PRECONDITION_FAILED", "QUALIFYING_SERVICE_LOCKED verification is required before pension calculation")
         );
       }
-      // Scheme-BRANCHED fixture mirror of computeSchemeBenefit (FR-G11-05): distinct
+      // Scheme-BRANCHED fixture mirror of computeSchemeBenefit (FR-PS11-05): distinct
       // OPS / UPS / NPS outcomes, never a silent default.
       let benefitOutcome: string;
       let pensionCents: number;
@@ -1021,7 +1021,7 @@ export function createFixtureHrmsClient(): HrmsClient {
       } else if (pensionCase.scheme === "UPS") {
         if (!input.upsOptedIn) {
           return Promise.reject(
-            fixtureError(409, "ERR-G11-SCHEME-MISMATCH", "UPS assured payout requires ups_opted_in on the case")
+            fixtureError(409, "ERR-PS11-SCHEME-MISMATCH", "UPS assured payout requires ups_opted_in on the case")
           );
         }
         benefitOutcome = "UPS_ASSURED";
@@ -1076,8 +1076,8 @@ export function createFixtureHrmsClient(): HrmsClient {
     listMartRefreshLogs: () => Promise.resolve(page(buildMartRefreshLogs())),
     openDisciplinaryCase: (input: DisciplinaryCaseOpenInput) => {
       if (input.chargedEmployeeId === input.disciplinaryAuthorityId) {
-        // Mirrors the API's G09_AUTHORITY_COMPETENCE self-authority block.
-        return Promise.reject(fixtureError(409, "CONFLICT", "G09_AUTHORITY_COMPETENCE blocks self disciplinary authority"));
+        // Mirrors the API's PS09_AUTHORITY_COMPETENCE self-authority block.
+        return Promise.reject(fixtureError(409, "CONFLICT", "PS09_AUTHORITY_COMPETENCE blocks self disciplinary authority"));
       }
       const disciplinaryCase: DisciplinaryCaseView = {
         id: `disciplinary-case-fixture-${String(fixtureSequence).padStart(6, "0")}`,

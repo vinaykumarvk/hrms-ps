@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-16A oracle: G01 alias-based dedup/merge (dedup_candidates, employee_id_aliases, RECORDS_MERGED, windowed
+# PH-16A oracle: PS01 alias-based dedup/merge (dedup_candidates, employee_id_aliases, RECORDS_MERGED, windowed
 # undo), PROVISIONAL bulk import (staging -> validate -> commit -> remediation queue -> promote-active), and
 # profile lifecycle :separate/:reactivate/:archive with transition guards. Behavior + executed tests only.
 set -uo pipefail
@@ -7,10 +7,10 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S01="apps/api/src/modules/g01 apps/api/src/routes/g01.routes.ts"
+S01="apps/api/src/modules/ps01 apps/api/src/routes/ps01.routes.ts"
 T=apps/api/test
 
-echo "== PH-16A exit-criteria (G01 dedup/alias-merge + bulk import + lifecycle to BRD depth) =="
+echo "== PH-16A exit-criteria (PS01 dedup/alias-merge + bulk import + lifecycle to BRD depth) =="
 
 [ -d node_modules ] || red "node_modules absent — toolchain oracle cannot run; refusing GREEN without it"
 
@@ -37,7 +37,7 @@ for spec in \
 do must "$spec" $S01; done
 
 # 2) executed oracle tests. SOD_VIOLATION and LEGAL_HOLD_ACTIVE are shared platform codes already asserted
-# by G13 tests, so those two negatives must live in this phase's own executed test file (ph16a-*.test.cjs,
+# by PS13 tests, so those two negatives must live in this phase's own executed test file (ph16a-*.test.cjs,
 # run by npm test) — a repo-wide grep would rubber-stamp them.
 for spec in \
   "NEGATIVE: undo past window asserted (UNDO_EXPIRED)::UNDO_EXPIRED" \

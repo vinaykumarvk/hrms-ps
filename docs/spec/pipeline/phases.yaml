@@ -122,7 +122,7 @@ phases:
     depends_on: [PH-02D]
 
   - id: PH-03B
-    name: PH-03 · Systems of record (G01 master, G12 SR ingest, G13 vault)
+    name: PH-03 · Systems of record (PS01 master, PS12 SR ingest, PS13 vault)
     prompt: docs/spec/pipeline/prompts/PH-03B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-03b.sh
     gate: auto
@@ -145,14 +145,14 @@ phases:
     depends_on: [PH-03C]
 
   - id: PH-04B
-    name: PH-04 · P01 workflow and G01 employee routes
+    name: PH-04 · P01 workflow and PS01 employee routes
     prompt: docs/spec/pipeline/prompts/PH-04B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-04b.sh
     gate: auto
     depends_on: [PH-04A]
 
   - id: PH-04C
-    name: PH-04 · G12 Service Register and G13 document routes
+    name: PH-04 · PS12 Service Register and PS13 document routes
     prompt: docs/spec/pipeline/prompts/PH-04C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-04c.sh
     gate: auto
@@ -189,7 +189,7 @@ phases:
     depends_on: [PH-05B]
 
   - id: PH-05D
-    name: PH-05 · G01/G12/G13 foundation record views
+    name: PH-05 · PS01/PS12/PS13 foundation record views
     prompt: docs/spec/pipeline/prompts/PH-05D.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-05d.sh
     gate: auto
@@ -213,21 +213,21 @@ phases:
     depends_on: [PH-05E]
 
   - id: PH-06B
-    name: PH-06 · G03 leave backend vertical slice
+    name: PH-06 · PS03 leave backend vertical slice
     prompt: docs/spec/pipeline/prompts/PH-06B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-06b.sh
     gate: auto
     depends_on: [PH-06A]
 
   - id: PH-06C
-    name: PH-06 · G05 transfer backend vertical slice
+    name: PH-06 · PS05 transfer backend vertical slice
     prompt: docs/spec/pipeline/prompts/PH-06C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-06c.sh
     gate: auto
     depends_on: [PH-06B]
 
   - id: PH-06D
-    name: PH-06 · G03/G05 demo UI proof
+    name: PH-06 · PS03/PS05 demo UI proof
     prompt: docs/spec/pipeline/prompts/PH-06D.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-06d.sh
     gate: auto
@@ -250,21 +250,21 @@ phases:
     depends_on: [PH-06E]
 
   - id: PH-07B
-    name: PH-07 · G04 leave-to-SR relay
+    name: PH-07 · PS04 leave-to-SR relay
     prompt: docs/spec/pipeline/prompts/PH-07B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-07b.sh
     gate: auto
     depends_on: [PH-07A]
 
   - id: PH-07C
-    name: PH-07 · G02 personal details workflow
+    name: PH-07 · PS02 personal details workflow
     prompt: docs/spec/pipeline/prompts/PH-07C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-07c.sh
     gate: auto
     depends_on: [PH-07B]
 
   - id: PH-07D
-    name: PH-07 · G03 attendance, leave, and payroll signals
+    name: PH-07 · PS03 attendance, leave, and payroll signals
     prompt: docs/spec/pipeline/prompts/PH-07D.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-07d.sh
     gate: auto
@@ -278,7 +278,7 @@ phases:
     depends_on: [PH-07D]
 
   # PH-08 builds the statutory-administration module wave after PH-07 employee facts are stable.
-  # G06 and G09 stay on separate executable gates because DPC and disciplinary due process
+  # PS06 and PS09 stay on separate executable gates because DPC and disciplinary due process
   # carry the highest statutory complexity in this wave.
   - id: PH-08A
     name: PH-08 · Statutory wave plan and contract binding
@@ -288,28 +288,28 @@ phases:
     depends_on: [PH-07E]
 
   - id: PH-08B
-    name: PH-08 · G05 full transfer administration
+    name: PH-08 · PS05 full transfer administration
     prompt: docs/spec/pipeline/prompts/PH-08B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-08b.sh
     gate: auto
     depends_on: [PH-08A]
 
   - id: PH-08C
-    name: PH-08 · G06 promotion, seniority, DPC, and MACP
+    name: PH-08 · PS06 promotion, seniority, DPC, and MACP
     prompt: docs/spec/pipeline/prompts/PH-08C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-08c.sh
     gate: auto
     depends_on: [PH-08B]
 
   - id: PH-08D
-    name: PH-08 · G07 training and G08 APAR
+    name: PH-08 · PS07 training and PS08 APAR
     prompt: docs/spec/pipeline/prompts/PH-08D.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-08d.sh
     gate: auto
     depends_on: [PH-08C]
 
   - id: PH-08E
-    name: PH-08 · G09 disciplinary due process
+    name: PH-08 · PS09 disciplinary due process
     prompt: docs/spec/pipeline/prompts/PH-08E.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-08e.sh
     gate: auto
@@ -333,14 +333,14 @@ phases:
     depends_on: [PH-08F]
 
   - id: PH-09B
-    name: PH-09 · G10 deterministic payroll and benefits
+    name: PH-09 · PS10 deterministic payroll and benefits
     prompt: docs/spec/pipeline/prompts/PH-09B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-09b.sh
     gate: auto
     depends_on: [PH-09A]
 
   - id: PH-09C
-    name: PH-09 · G11 deterministic pension and PPO
+    name: PH-09 · PS11 deterministic pension and PPO
     prompt: docs/spec/pipeline/prompts/PH-09C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-09c.sh
     gate: auto
@@ -360,7 +360,7 @@ phases:
     gate: human   # re-baseline 2026-07-02: money wave (payroll/pension) — human gate per gate_policy
     depends_on: [PH-09D]
 
-  # PH-10 closes the current build with read-only G14 analytics and release-readiness evidence.
+  # PH-10 closes the current build with read-only PS14 analytics and release-readiness evidence.
   # The gates are executable and agentic for development evidence only. Real UAT, production
   # cutover, CAB approval, and rollback authorization remain outside this automation.
   - id: PH-10A
@@ -371,7 +371,7 @@ phases:
     depends_on: [PH-09E]
 
   - id: PH-10B
-    name: PH-10 · G14 read-only analytics and marts
+    name: PH-10 · PS14 read-only analytics and marts
     prompt: docs/spec/pipeline/prompts/PH-10B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-10b.sh
     gate: auto
@@ -556,42 +556,42 @@ phases:
   # rules: behavioral oracles run externally by the driver, no marker strings, at least one fail-closed
   # negative per check, and the wave closes at a human gate with an honest content-checked verdict.
   - id: PH-15A
-    name: PH-15 · G10 tax/TDS engine and statutory certificates
+    name: PH-15 · PS10 tax/TDS engine and statutory certificates
     prompt: docs/spec/pipeline/prompts/PH-15A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-15a.sh
     gate: auto
     depends_on: [PH-10E]
 
   - id: PH-15B
-    name: PH-15 · G11 pensioner lifecycle and revisions
+    name: PH-15 · PS11 pensioner lifecycle and revisions
     prompt: docs/spec/pipeline/prompts/PH-15B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-15b.sh
     gate: auto
     depends_on: [PH-15A]
 
   - id: PH-15C
-    name: PH-15 · G03 shifts, rosters, punch ingestion, comp-off
+    name: PH-15 · PS03 shifts, rosters, punch ingestion, comp-off
     prompt: docs/spec/pipeline/prompts/PH-15C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-15c.sh
     gate: auto
     depends_on: [PH-15B]
 
   - id: PH-15D
-    name: PH-15 · G12 §65B certificates, subscriptions, LTV
+    name: PH-15 · PS12 §65B certificates, subscriptions, LTV
     prompt: docs/spec/pipeline/prompts/PH-15D.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-15d.sh
     gate: auto
     depends_on: [PH-15C]
 
   - id: PH-15E
-    name: PH-15 · G13 KMS envelope encryption and DPDP DSR
+    name: PH-15 · PS13 KMS envelope encryption and DPDP DSR
     prompt: docs/spec/pipeline/prompts/PH-15E.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-15e.sh
     gate: auto
     depends_on: [PH-15D]
 
   - id: PH-15F
-    name: PH-15 · G09 POSH/ICC, personal hearings, SLA pause + G06 rota-quota
+    name: PH-15 · PS09 POSH/ICC, personal hearings, SLA pause + PS06 rota-quota
     prompt: docs/spec/pipeline/prompts/PH-15F.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-15f.sh
     gate: auto
@@ -609,42 +609,42 @@ phases:
   # re-baseline rules: behavioral oracles run externally by the driver, no marker strings, at least one
   # fail-closed negative per check, and the wave closes at a human gate with an honest content-checked verdict.
   - id: PH-16A
-    name: PH-16 · G01 dedup/alias-merge, bulk import, lifecycle
+    name: PH-16 · PS01 dedup/alias-merge, bulk import, lifecycle
     prompt: docs/spec/pipeline/prompts/PH-16A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-16a.sh
     gate: auto
     depends_on: [PH-15G]
 
   - id: PH-16B
-    name: PH-16 · G02 bulk corrections, fraud/velocity, status gates
+    name: PH-16 · PS02 bulk corrections, fraud/velocity, status gates
     prompt: docs/spec/pipeline/prompts/PH-16B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-16b.sh
     gate: auto
     depends_on: [PH-16A]
 
   - id: PH-16C
-    name: PH-16 · G04 mapping catalog, leases/reaper, pre-pension certificate
+    name: PH-16 · PS04 mapping catalog, leases/reaper, pre-pension certificate
     prompt: docs/spec/pipeline/prompts/PH-16C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-16c.sh
     gate: auto
     depends_on: [PH-16B]
 
   - id: PH-16D
-    name: PH-16 · G05 counselling, vacancy lifecycle, mutual transfer
+    name: PH-16 · PS05 counselling, vacancy lifecycle, mutual transfer
     prompt: docs/spec/pipeline/prompts/PH-16D.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-16d.sh
     gate: auto
     depends_on: [PH-16C]
 
   - id: PH-16E
-    name: PH-16 · G07 credentials/bonds + G08 calibration/PIP/probation
+    name: PH-16 · PS07 credentials/bonds + PS08 calibration/PIP/probation
     prompt: docs/spec/pipeline/prompts/PH-16E.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-16e.sh
     gate: auto
     depends_on: [PH-16D]
 
   - id: PH-16F
-    name: PH-16 · G10 loans/perquisites/GL/bank-file + G11 treasury/grievances/objections
+    name: PH-16 · PS10 loans/perquisites/GL/bank-file + PS11 treasury/grievances/objections
     prompt: docs/spec/pipeline/prompts/PH-16F.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-16f.sh
     gate: auto
@@ -658,24 +658,24 @@ phases:
     depends_on: [PH-16F]
 
   # PH-17 — remediation tranche 4 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets the next band of gaps named in docs/spec/ph-16-verdict.md: G03 leave year-close +
-  # encashment, G02 strong e-signature + step-up auth, G09 vigilance/sealed-cover register.
+  # Targets the next band of gaps named in docs/spec/ph-16-verdict.md: PS03 leave year-close +
+  # encashment, PS02 strong e-signature + step-up auth, PS09 vigilance/sealed-cover register.
   - id: PH-17A
-    name: PH-17 · G03 leave year-close and encashment
+    name: PH-17 · PS03 leave year-close and encashment
     prompt: docs/spec/pipeline/prompts/PH-17A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-17a.sh
     gate: auto
     depends_on: [PH-16G]
 
   - id: PH-17B
-    name: PH-17 · G02 strong e-signature and requester step-up
+    name: PH-17 · PS02 strong e-signature and requester step-up
     prompt: docs/spec/pipeline/prompts/PH-17B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-17b.sh
     gate: auto
     depends_on: [PH-17A]
 
   - id: PH-17C
-    name: PH-17 · G09 vigilance and sealed-cover register
+    name: PH-17 · PS09 vigilance and sealed-cover register
     prompt: docs/spec/pipeline/prompts/PH-17C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-17c.sh
     gate: auto
@@ -689,24 +689,24 @@ phases:
     depends_on: [PH-17C]
 
   # PH-18 — remediation tranche 5 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G01 Aadhaar vault tokenisation, G03 WFH/on-duty attendance exceptions,
-  # G05 joining-sequence + inter-se seniority.
+  # Targets: PS01 Aadhaar vault tokenisation, PS03 WFH/on-duty attendance exceptions,
+  # PS05 joining-sequence + inter-se seniority.
   - id: PH-18A
-    name: PH-18 · G01 Aadhaar vault tokenisation and 4-eyes reveal
+    name: PH-18 · PS01 Aadhaar vault tokenisation and 4-eyes reveal
     prompt: docs/spec/pipeline/prompts/PH-18A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-18a.sh
     gate: auto
     depends_on: [PH-17D]
 
   - id: PH-18B
-    name: PH-18 · G03 WFH / on-duty attendance exceptions
+    name: PH-18 · PS03 WFH / on-duty attendance exceptions
     prompt: docs/spec/pipeline/prompts/PH-18B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-18b.sh
     gate: auto
     depends_on: [PH-18A]
 
   - id: PH-18C
-    name: PH-18 · G05 joining-sequence and inter-se seniority
+    name: PH-18 · PS05 joining-sequence and inter-se seniority
     prompt: docs/spec/pipeline/prompts/PH-18C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-18c.sh
     gate: auto
@@ -720,21 +720,21 @@ phases:
     depends_on: [PH-18C]
 
   # PH-19 — remediation tranche 6 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G03 blackout/mass-leave, G08 continuous feedback/check-ins, G06 career-path/succession.
+  # Targets: PS03 blackout/mass-leave, PS08 continuous feedback/check-ins, PS06 career-path/succession.
   - id: PH-19A
-    name: PH-19 · G03 blackout periods and mass-leave
+    name: PH-19 · PS03 blackout periods and mass-leave
     prompt: docs/spec/pipeline/prompts/PH-19A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-19a.sh
     gate: auto
     depends_on: [PH-18D]
   - id: PH-19B
-    name: PH-19 · G08 continuous feedback and check-ins
+    name: PH-19 · PS08 continuous feedback and check-ins
     prompt: docs/spec/pipeline/prompts/PH-19B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-19b.sh
     gate: auto
     depends_on: [PH-19A]
   - id: PH-19C
-    name: PH-19 · G06 career-path and succession planning
+    name: PH-19 · PS06 career-path and succession planning
     prompt: docs/spec/pipeline/prompts/PH-19C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-19c.sh
     gate: auto
@@ -747,21 +747,21 @@ phases:
     depends_on: [PH-19C]
 
   # PH-20 — remediation tranche 7 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G07 vendor empanelment, G13 watermark/certified copies, G02 request templates.
+  # Targets: PS07 vendor empanelment, PS13 watermark/certified copies, PS02 request templates.
   - id: PH-20A
-    name: PH-20 · G07 vendor / external-trainer empanelment
+    name: PH-20 · PS07 vendor / external-trainer empanelment
     prompt: docs/spec/pipeline/prompts/PH-20A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-20a.sh
     gate: auto
     depends_on: [PH-19D]
   - id: PH-20B
-    name: PH-20 · G13 watermarking and certified true copies
+    name: PH-20 · PS13 watermarking and certified true copies
     prompt: docs/spec/pipeline/prompts/PH-20B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-20b.sh
     gate: auto
     depends_on: [PH-20A]
   - id: PH-20C
-    name: PH-20 · G02 change-request templates
+    name: PH-20 · PS02 change-request templates
     prompt: docs/spec/pipeline/prompts/PH-20C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-20c.sh
     gate: auto
@@ -774,21 +774,21 @@ phases:
     depends_on: [PH-20C]
 
   # PH-21 — remediation tranche 8 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G07 LMS/xAPI, G08 multi-source 360, G09 jurisdiction transfer + retiree Rule-9 bar.
+  # Targets: PS07 LMS/xAPI, PS08 multi-source 360, PS09 jurisdiction transfer + retiree Rule-9 bar.
   - id: PH-21A
-    name: PH-21 · G07 LMS / xAPI integration
+    name: PH-21 · PS07 LMS / xAPI integration
     prompt: docs/spec/pipeline/prompts/PH-21A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-21a.sh
     gate: auto
     depends_on: [PH-20D]
   - id: PH-21B
-    name: PH-21 · G08 multi-source 360 feedback
+    name: PH-21 · PS08 multi-source 360 feedback
     prompt: docs/spec/pipeline/prompts/PH-21B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-21b.sh
     gate: auto
     depends_on: [PH-21A]
   - id: PH-21C
-    name: PH-21 · G09 jurisdiction transfer and retiree Rule-9 bar
+    name: PH-21 · PS09 jurisdiction transfer and retiree Rule-9 bar
     prompt: docs/spec/pipeline/prompts/PH-21C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-21c.sh
     gate: auto
@@ -801,21 +801,21 @@ phases:
     depends_on: [PH-21C]
 
   # PH-22 — remediation tranche 9 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G08 DSC/non-repudiation signing, G13 OCR + permission-aware search, G14 NL query.
+  # Targets: PS08 DSC/non-repudiation signing, PS13 OCR + permission-aware search, PS14 NL query.
   - id: PH-22A
-    name: PH-22 · G08 DSC / non-repudiation signing
+    name: PH-22 · PS08 DSC / non-repudiation signing
     prompt: docs/spec/pipeline/prompts/PH-22A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-22a.sh
     gate: auto
     depends_on: [PH-21D]
   - id: PH-22B
-    name: PH-22 · G13 OCR and permission-aware search
+    name: PH-22 · PS13 OCR and permission-aware search
     prompt: docs/spec/pipeline/prompts/PH-22B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-22b.sh
     gate: auto
     depends_on: [PH-22A]
   - id: PH-22C
-    name: PH-22 · G14 natural-language query
+    name: PH-22 · PS14 natural-language query
     prompt: docs/spec/pipeline/prompts/PH-22C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-22c.sh
     gate: auto
@@ -828,21 +828,21 @@ phases:
     depends_on: [PH-22C]
 
   # PH-23 — remediation tranche 10 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G04 X.3 outbound framework, G11 DigiLocker/DBT delivery, G01 phonetic search.
+  # Targets: PS04 X.3 outbound framework, PS11 DigiLocker/DBT delivery, PS01 phonetic search.
   - id: PH-23A
-    name: PH-23 · G04 X.3 outbound integration framework
+    name: PH-23 · PS04 X.3 outbound integration framework
     prompt: docs/spec/pipeline/prompts/PH-23A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-23a.sh
     gate: auto
     depends_on: [PH-22D]
   - id: PH-23B
-    name: PH-23 · G11 DigiLocker / DBT delivery
+    name: PH-23 · PS11 DigiLocker / DBT delivery
     prompt: docs/spec/pipeline/prompts/PH-23B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-23b.sh
     gate: auto
     depends_on: [PH-23A]
   - id: PH-23C
-    name: PH-23 · G01 phonetic / transliteration search
+    name: PH-23 · PS01 phonetic / transliteration search
     prompt: docs/spec/pipeline/prompts/PH-23C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-23c.sh
     gate: auto
@@ -855,21 +855,21 @@ phases:
     depends_on: [PH-23C]
 
   # PH-24 — remediation tranche 11 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G11 death-detection/overpayment recovery, G06 correction cascade, G12 offline-QR verify.
+  # Targets: PS11 death-detection/overpayment recovery, PS06 correction cascade, PS12 offline-QR verify.
   - id: PH-24A
-    name: PH-24 · G11 death-detection and overpayment recovery
+    name: PH-24 · PS11 death-detection and overpayment recovery
     prompt: docs/spec/pipeline/prompts/PH-24A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-24a.sh
     gate: auto
     depends_on: [PH-23D]
   - id: PH-24B
-    name: PH-24 · G06 correction lineage and recompute cascade
+    name: PH-24 · PS06 correction lineage and recompute cascade
     prompt: docs/spec/pipeline/prompts/PH-24B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-24b.sh
     gate: auto
     depends_on: [PH-24A]
   - id: PH-24C
-    name: PH-24 · G12 offline-QR independent verification
+    name: PH-24 · PS12 offline-QR independent verification
     prompt: docs/spec/pipeline/prompts/PH-24C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-24c.sh
     gate: auto
@@ -882,21 +882,21 @@ phases:
     depends_on: [PH-24C]
 
   # PH-25 — remediation tranche 12 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G10 GL->ERP posting export, G02 retro-impact fan-out, G03 punch anomaly review.
+  # Targets: PS10 GL->ERP posting export, PS02 retro-impact fan-out, PS03 punch anomaly review.
   - id: PH-25A
-    name: PH-25 · G10 GL to ERP posting export
+    name: PH-25 · PS10 GL to ERP posting export
     prompt: docs/spec/pipeline/prompts/PH-25A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-25a.sh
     gate: auto
     depends_on: [PH-24D]
   - id: PH-25B
-    name: PH-25 · G02 retro-impact downstream fan-out
+    name: PH-25 · PS02 retro-impact downstream fan-out
     prompt: docs/spec/pipeline/prompts/PH-25B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-25b.sh
     gate: auto
     depends_on: [PH-25A]
   - id: PH-25C
-    name: PH-25 · G03 punch anomaly review
+    name: PH-25 · PS03 punch anomaly review
     prompt: docs/spec/pipeline/prompts/PH-25C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-25c.sh
     gate: auto
@@ -909,21 +909,21 @@ phases:
     depends_on: [PH-25C]
 
   # PH-26 — remediation tranche 13 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Targets: G13 OCR extraction engine, G12 RFC-3161 TSA binding, G14 predictive+fairness.
+  # Targets: PS13 OCR extraction engine, PS12 RFC-3161 TSA binding, PS14 predictive+fairness.
   - id: PH-26A
-    name: PH-26 · G13 OCR extraction engine binding
+    name: PH-26 · PS13 OCR extraction engine binding
     prompt: docs/spec/pipeline/prompts/PH-26A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-26a.sh
     gate: auto
     depends_on: [PH-25D]
   - id: PH-26B
-    name: PH-26 · G12 RFC-3161 timestamp authority binding
+    name: PH-26 · PS12 RFC-3161 timestamp authority binding
     prompt: docs/spec/pipeline/prompts/PH-26B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-26b.sh
     gate: auto
     depends_on: [PH-26A]
   - id: PH-26C
-    name: PH-26 · G14 predictive attrition with fairness
+    name: PH-26 · PS14 predictive attrition with fairness
     prompt: docs/spec/pipeline/prompts/PH-26C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-26c.sh
     gate: auto
@@ -936,22 +936,22 @@ phases:
     depends_on: [PH-26C]
 
   # PH-27 — remediation tranche 14 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Pivot to web UI surfaces wiring already-built engines: G13 DSR console, G05 counselling,
-  # G09 evidence-vault listing.
+  # Pivot to web UI surfaces wiring already-built engines: PS13 DSR console, PS05 counselling,
+  # PS09 evidence-vault listing.
   - id: PH-27A
-    name: PH-27 · G13 DPDP DSR console UI
+    name: PH-27 · PS13 DPDP DSR console UI
     prompt: docs/spec/pipeline/prompts/PH-27A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-27a.sh
     gate: auto
     depends_on: [PH-26D]
   - id: PH-27B
-    name: PH-27 · G05 interactive counselling UI
+    name: PH-27 · PS05 interactive counselling UI
     prompt: docs/spec/pipeline/prompts/PH-27B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-27b.sh
     gate: auto
     depends_on: [PH-27A]
   - id: PH-27C
-    name: PH-27 · G09 evidence-vault listing UI
+    name: PH-27 · PS09 evidence-vault listing UI
     prompt: docs/spec/pipeline/prompts/PH-27C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-27c.sh
     gate: auto
@@ -966,19 +966,19 @@ phases:
   # PH-28 — remediation tranche 15 (hand-built; subagent credits exhausted until 2026-07-08).
   # Route-exposure pass: wire the PH-27 UI surfaces onto real /api/v1 routes end-to-end.
   - id: PH-28A
-    name: PH-28 · G13 DSR list route
+    name: PH-28 · PS13 DSR list route
     prompt: docs/spec/pipeline/prompts/PH-28A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-28a.sh
     gate: auto
     depends_on: [PH-27D]
   - id: PH-28B
-    name: PH-28 · G09 case-evidence list route
+    name: PH-28 · PS09 case-evidence list route
     prompt: docs/spec/pipeline/prompts/PH-28B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-28b.sh
     gate: auto
     depends_on: [PH-28A]
   - id: PH-28C
-    name: PH-28 · G05 counselling session route
+    name: PH-28 · PS05 counselling session route
     prompt: docs/spec/pipeline/prompts/PH-28C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-28c.sh
     gate: auto
@@ -991,22 +991,22 @@ phases:
     depends_on: [PH-28C]
 
   # PH-29 — remediation tranche 16 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Route-exposure pass 2: wire service-complete engines onto /api/v1 (G10 loans/GL, G11 PDA/death,
-  # G14 NL-query/predictive).
+  # Route-exposure pass 2: wire service-complete engines onto /api/v1 (PS10 loans/GL, PS11 PDA/death,
+  # PS14 NL-query/predictive).
   - id: PH-29A
-    name: PH-29 · G10 loans and GL-export routes
+    name: PH-29 · PS10 loans and GL-export routes
     prompt: docs/spec/pipeline/prompts/PH-29A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-29a.sh
     gate: auto
     depends_on: [PH-28D]
   - id: PH-29B
-    name: PH-29 · G11 PDA and death-recovery routes
+    name: PH-29 · PS11 PDA and death-recovery routes
     prompt: docs/spec/pipeline/prompts/PH-29B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-29b.sh
     gate: auto
     depends_on: [PH-29A]
   - id: PH-29C
-    name: PH-29 · G14 NL-query and predictive routes
+    name: PH-29 · PS14 NL-query and predictive routes
     prompt: docs/spec/pipeline/prompts/PH-29C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-29c.sh
     gate: auto
@@ -1019,21 +1019,21 @@ phases:
     depends_on: [PH-29C]
 
   # PH-30 — remediation tranche 17 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Route-exposure pass 3: G01 (aadhaar/phonetic), G03 (year-close/exceptions/blackout), G08 (esign/feedback).
+  # Route-exposure pass 3: PS01 (aadhaar/phonetic), PS03 (year-close/exceptions/blackout), PS08 (esign/feedback).
   - id: PH-30A
-    name: PH-30 · G01 aadhaar-vault and phonetic-search routes
+    name: PH-30 · PS01 aadhaar-vault and phonetic-search routes
     prompt: docs/spec/pipeline/prompts/PH-30A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-30a.sh
     gate: auto
     depends_on: [PH-29D]
   - id: PH-30B
-    name: PH-30 · G03 year-close, exception and blackout routes
+    name: PH-30 · PS03 year-close, exception and blackout routes
     prompt: docs/spec/pipeline/prompts/PH-30B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-30b.sh
     gate: auto
     depends_on: [PH-30A]
   - id: PH-30C
-    name: PH-30 · G08 e-signature and feedback routes
+    name: PH-30 · PS08 e-signature and feedback routes
     prompt: docs/spec/pipeline/prompts/PH-30C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-30c.sh
     gate: auto
@@ -1046,21 +1046,21 @@ phases:
     depends_on: [PH-30C]
 
   # PH-31 — remediation tranche 18 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Route-exposure pass 4: G02 retro-impact, G05 joining-sequence, G07 vendor empanelment.
+  # Route-exposure pass 4: PS02 retro-impact, PS05 joining-sequence, PS07 vendor empanelment.
   - id: PH-31A
-    name: PH-31 · G02 retro-impact route
+    name: PH-31 · PS02 retro-impact route
     prompt: docs/spec/pipeline/prompts/PH-31A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-31a.sh
     gate: auto
     depends_on: [PH-30D]
   - id: PH-31B
-    name: PH-31 · G05 joining-sequence route
+    name: PH-31 · PS05 joining-sequence route
     prompt: docs/spec/pipeline/prompts/PH-31B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-31b.sh
     gate: auto
     depends_on: [PH-31A]
   - id: PH-31C
-    name: PH-31 · G07 vendor-empanelment route
+    name: PH-31 · PS07 vendor-empanelment route
     prompt: docs/spec/pipeline/prompts/PH-31C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-31c.sh
     gate: auto
@@ -1073,21 +1073,21 @@ phases:
     depends_on: [PH-31C]
 
   # PH-32 — remediation tranche 19 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Route-exposure pass 5: G06 career/correction, G12 tsa/offline, G13 certified/ocr.
+  # Route-exposure pass 5: PS06 career/correction, PS12 tsa/offline, PS13 certified/ocr.
   - id: PH-32A
-    name: PH-32 · G06 career-path and correction routes
+    name: PH-32 · PS06 career-path and correction routes
     prompt: docs/spec/pipeline/prompts/PH-32A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-32a.sh
     gate: auto
     depends_on: [PH-31D]
   - id: PH-32B
-    name: PH-32 · G12 timestamp and offline-verify routes
+    name: PH-32 · PS12 timestamp and offline-verify routes
     prompt: docs/spec/pipeline/prompts/PH-32B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-32b.sh
     gate: auto
     depends_on: [PH-32A]
   - id: PH-32C
-    name: PH-32 · G13 certified-copy and OCR-search routes
+    name: PH-32 · PS13 certified-copy and OCR-search routes
     prompt: docs/spec/pipeline/prompts/PH-32C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-32c.sh
     gate: auto
@@ -1100,22 +1100,22 @@ phases:
     depends_on: [PH-32C]
 
   # PH-33 — remediation tranche 20 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Route-exposure pass 6 (final backlog): G02 esign/templates + G03 punch-anomaly, G07 lms + G08 360,
-  # G11 grievances + G14 fairness.
+  # Route-exposure pass 6 (final backlog): PS02 esign/templates + PS03 punch-anomaly, PS07 lms + PS08 360,
+  # PS11 grievances + PS14 fairness.
   - id: PH-33A
-    name: PH-33 · G02 esign/template + G03 punch-anomaly routes
+    name: PH-33 · PS02 esign/template + PS03 punch-anomaly routes
     prompt: docs/spec/pipeline/prompts/PH-33A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-33a.sh
     gate: auto
     depends_on: [PH-32D]
   - id: PH-33B
-    name: PH-33 · G07 LMS + G08 360-feedback routes
+    name: PH-33 · PS07 LMS + PS08 360-feedback routes
     prompt: docs/spec/pipeline/prompts/PH-33B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-33b.sh
     gate: auto
     depends_on: [PH-33A]
   - id: PH-33C
-    name: PH-33 · G11 grievances + G14 fairness routes
+    name: PH-33 · PS11 grievances + PS14 fairness routes
     prompt: docs/spec/pipeline/prompts/PH-33C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-33c.sh
     gate: auto
@@ -1128,21 +1128,21 @@ phases:
     depends_on: [PH-33C]
 
   # PH-34 — remediation tranche 21 (hand-built; subagent credits exhausted until 2026-07-08).
-  # The three remaining UI surfaces: G14 embedded BI, G06 sealed-cover review, G01 privacy console.
+  # The three remaining UI surfaces: PS14 embedded BI, PS06 sealed-cover review, PS01 privacy console.
   - id: PH-34A
-    name: PH-34 · G14 embedded BI dashboard UI
+    name: PH-34 · PS14 embedded BI dashboard UI
     prompt: docs/spec/pipeline/prompts/PH-34A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-34a.sh
     gate: auto
     depends_on: [PH-33D]
   - id: PH-34B
-    name: PH-34 · G06 sealed-cover review UI
+    name: PH-34 · PS06 sealed-cover review UI
     prompt: docs/spec/pipeline/prompts/PH-34B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-34b.sh
     gate: auto
     depends_on: [PH-34A]
   - id: PH-34C
-    name: PH-34 · G01 privacy / DPDP console UI
+    name: PH-34 · PS01 privacy / DPDP console UI
     prompt: docs/spec/pipeline/prompts/PH-34C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-34c.sh
     gate: auto
@@ -1155,21 +1155,21 @@ phases:
     depends_on: [PH-34C]
 
   # PH-35 — remediation tranche 22 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Route-exposure for the 3 new UI surfaces: G14 bi-kpis, G01 self-service rights, G06 sealed-cover.
+  # Route-exposure for the 3 new UI surfaces: PS14 bi-kpis, PS01 self-service rights, PS06 sealed-cover.
   - id: PH-35A
-    name: PH-35 · G14 bi-kpis route
+    name: PH-35 · PS14 bi-kpis route
     prompt: docs/spec/pipeline/prompts/PH-35A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-35a.sh
     gate: auto
     depends_on: [PH-34D]
   - id: PH-35B
-    name: PH-35 · G01 self-service rights routes
+    name: PH-35 · PS01 self-service rights routes
     prompt: docs/spec/pipeline/prompts/PH-35B.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-35b.sh
     gate: auto
     depends_on: [PH-35A]
   - id: PH-35C
-    name: PH-35 · G06 sealed-cover engine and routes
+    name: PH-35 · PS06 sealed-cover engine and routes
     prompt: docs/spec/pipeline/prompts/PH-35C.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-35c.sh
     gate: auto
@@ -1182,10 +1182,10 @@ phases:
     depends_on: [PH-35C]
 
   # PH-36 — remediation tranche 23 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Deep-engine depth: G09 POSH conciliation (FR-G09-023 BR-2, POSH Act 2013 s.10) — the aggrieved
+  # Deep-engine depth: PS09 POSH conciliation (FR-PS09-023 BR-2, POSH Act 2013 s.10) — the aggrieved
   # may opt for conciliation before inquiry; a SETTLED conciliation blocks the inquiry; never monetary.
   - id: PH-36A
-    name: PH-36 · G09 POSH conciliation engine and route
+    name: PH-36 · PS09 POSH conciliation engine and route
     prompt: docs/spec/pipeline/prompts/PH-36A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-36a.sh
     gate: auto
@@ -1199,7 +1199,7 @@ phases:
 
   # PH-37 — remediation tranche 24 (hand-built; subagent credits exhausted until 2026-07-08).
   # Contract-conformance / coverage gate: turn the standing "1,306 OpenAPI ops" caveat into a tracked,
-  # executable per-module coverage metric with a ratchet floor (the named G04 CI-conformance item).
+  # executable per-module coverage metric with a ratchet floor (the named PS04 CI-conformance item).
   - id: PH-37A
     name: PH-37 · Contract-coverage gate (tools/contract-coverage.mjs + ratchet)
     prompt: docs/spec/pipeline/prompts/PH-37A.md
@@ -1215,7 +1215,7 @@ phases:
 
   # PH-38 — remediation tranche 25 (hand-built; subagent credits exhausted until 2026-07-08).
   # Raise measured contract coverage (user-directed): expose real, service-tested backing as kernel
-  # routes and ratchet the PH-37 coverage floor. PH-38A: APAR calibration lifecycle (G08 15.8% -> 19.5%).
+  # routes and ratchet the PH-37 coverage floor. PH-38A: APAR calibration lifecycle (PS08 15.8% -> 19.5%).
   - id: PH-38A
     name: PH-38 · APAR calibration route exposure (coverage ratchet 392->397 / 30%)
     prompt: docs/spec/pipeline/prompts/PH-38A.md
@@ -1231,7 +1231,7 @@ phases:
 
   # PH-39 — remediation tranche 26 (hand-built; subagent credits exhausted until 2026-07-08).
   # Raise measured contract coverage: expose APAR PIP lifecycle + probation-confirmation + report-period/
-  # goal-snapshot reads (real, service-tested backing). Ratchet 397/30% -> 404/30.5% (G08 19.5% -> 24.8%).
+  # goal-snapshot reads (real, service-tested backing). Ratchet 397/30% -> 404/30.5% (PS08 19.5% -> 24.8%).
   - id: PH-39A
     name: PH-39 · APAR PIP/probation route exposure (coverage ratchet 397->404 / 30.5%)
     prompt: docs/spec/pipeline/prompts/PH-39A.md
@@ -1246,10 +1246,10 @@ phases:
     depends_on: [PH-39A]
 
   # PH-40 — remediation tranche 27 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G08 continuous-feedback (check-in + reads), 360-feedback
+  # Raise measured contract coverage: expose PS08 continuous-feedback (check-in + reads), 360-feedback
   # (rate/release/read), signature reads — real, service-tested backing. Ratchet 404/30.5% -> 411/31.1%.
   - id: PH-40A
-    name: PH-40 · G08 feedback/signature route exposure (coverage ratchet 404->411 / 31.1%)
+    name: PH-40 · PS08 feedback/signature route exposure (coverage ratchet 404->411 / 31.1%)
     prompt: docs/spec/pipeline/prompts/PH-40A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-40a.sh
     gate: auto
@@ -1262,10 +1262,10 @@ phases:
     depends_on: [PH-40A]
 
   # PH-41 — remediation tranche 28 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose the FR-G07-020 training-sponsorship + service-bond lifecycle
-  # (real, service-tested backing). Ratchet 411/31.1% -> 421/31.8% (G07 16.2% -> 25.2%).
+  # Raise measured contract coverage: expose the FR-PS07-020 training-sponsorship + service-bond lifecycle
+  # (real, service-tested backing). Ratchet 411/31.1% -> 421/31.8% (PS07 16.2% -> 25.2%).
   - id: PH-41A
-    name: PH-41 · G07 sponsorship/bond route exposure (coverage ratchet 411->421 / 31.8%)
+    name: PH-41 · PS07 sponsorship/bond route exposure (coverage ratchet 411->421 / 31.8%)
     prompt: docs/spec/pipeline/prompts/PH-41A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-41a.sh
     gate: auto
@@ -1278,10 +1278,10 @@ phases:
     depends_on: [PH-41A]
 
   # PH-42 — remediation tranche 29 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose FR-G07-018 external-credential lifecycle + vendor-empanelment
-  # decisions (real, service-tested backing). Ratchet 421/31.8% -> 430/32.5% (G07 25.2% -> 33.3%).
+  # Raise measured contract coverage: expose FR-PS07-018 external-credential lifecycle + vendor-empanelment
+  # decisions (real, service-tested backing). Ratchet 421/31.8% -> 430/32.5% (PS07 25.2% -> 33.3%).
   - id: PH-42A
-    name: PH-42 · G07 credential/empanelment route exposure (coverage ratchet 421->430 / 32.5%)
+    name: PH-42 · PS07 credential/empanelment route exposure (coverage ratchet 421->430 / 32.5%)
     prompt: docs/spec/pipeline/prompts/PH-42A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-42a.sh
     gate: auto
@@ -1294,10 +1294,10 @@ phases:
     depends_on: [PH-42A]
 
   # PH-43 — remediation tranche 30 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G14 analytics-engine reads + KPI target-setting + predictive-
-  # score reads (real, service-tested backing). Ratchet 430/32.5% -> 436/33% (G14 22.2% -> 28.9%).
+  # Raise measured contract coverage: expose PS14 analytics-engine reads + KPI target-setting + predictive-
+  # score reads (real, service-tested backing). Ratchet 430/32.5% -> 436/33% (PS14 22.2% -> 28.9%).
   - id: PH-43A
-    name: PH-43 · G14 analytics-engine route exposure (coverage ratchet 430->436 / 33%)
+    name: PH-43 · PS14 analytics-engine route exposure (coverage ratchet 430->436 / 33%)
     prompt: docs/spec/pipeline/prompts/PH-43A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-43a.sh
     gate: auto
@@ -1310,10 +1310,10 @@ phases:
     depends_on: [PH-43A]
 
   # PH-44 — remediation tranche 31 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G13 checkout-lock lifecycle + rescan + access-audit/scan-result/
-  # module-ref reads (real, service-tested backing). Ratchet 436/33% -> 443/33.5% (G13 25.4% -> 31.6%).
+  # Raise measured contract coverage: expose PS13 checkout-lock lifecycle + rescan + access-audit/scan-result/
+  # module-ref reads (real, service-tested backing). Ratchet 436/33% -> 443/33.5% (PS13 25.4% -> 31.6%).
   - id: PH-44A
-    name: PH-44 · G13 checkout/read route exposure (coverage ratchet 436->443 / 33.5%)
+    name: PH-44 · PS13 checkout/read route exposure (coverage ratchet 436->443 / 33.5%)
     prompt: docs/spec/pipeline/prompts/PH-44A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-44a.sh
     gate: auto
@@ -1326,10 +1326,10 @@ phases:
     depends_on: [PH-44A]
 
   # PH-45 — remediation tranche 32 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G01 Aadhaar reveal (4-eyes) + employee legal-hold/blocking-
+  # Raise measured contract coverage: expose PS01 Aadhaar reveal (4-eyes) + employee legal-hold/blocking-
   # obligation lifecycle + service-no lookup (real, service-tested backing). Ratchet 443/33.5% -> 451/34.1%.
   - id: PH-45A
-    name: PH-45 · G01 aadhaar/legal-hold route exposure (coverage ratchet 443->451 / 34.1%)
+    name: PH-45 · PS01 aadhaar/legal-hold route exposure (coverage ratchet 443->451 / 34.1%)
     prompt: docs/spec/pipeline/prompts/PH-45A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-45a.sh
     gate: auto
@@ -1342,10 +1342,10 @@ phases:
     depends_on: [PH-45A]
 
   # PH-46 — remediation tranche 33 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose FR-G10-08 loan lifecycle (instalment recovery + foreclosure)
-  # + Rule-3 concessional perquisite valuation + reads. Ratchet 451/34.1% -> 456/34.5% (G10 28.7% -> 34.5%).
+  # Raise measured contract coverage: expose FR-PS10-08 loan lifecycle (instalment recovery + foreclosure)
+  # + Rule-3 concessional perquisite valuation + reads. Ratchet 451/34.1% -> 456/34.5% (PS10 28.7% -> 34.5%).
   - id: PH-46A
-    name: PH-46 · G10 loan/perquisite route exposure (coverage ratchet 451->456 / 34.5%)
+    name: PH-46 · PS10 loan/perquisite route exposure (coverage ratchet 451->456 / 34.5%)
     prompt: docs/spec/pipeline/prompts/PH-46A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-46a.sh
     gate: auto
@@ -1358,10 +1358,10 @@ phases:
     depends_on: [PH-46A]
 
   # PH-47 — remediation tranche 34 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G11 PDA go-live lifecycle + grievance close + pensioner bank-
-  # account verification (real, service-tested backing). Ratchet 456/34.5% -> 462/34.9% (G11 30% -> 36.7%).
+  # Raise measured contract coverage: expose PS11 PDA go-live lifecycle + grievance close + pensioner bank-
+  # account verification (real, service-tested backing). Ratchet 456/34.5% -> 462/34.9% (PS11 30% -> 36.7%).
   - id: PH-47A
-    name: PH-47 · G11 PDA/verification route exposure (coverage ratchet 456->462 / 34.9%)
+    name: PH-47 · PS11 PDA/verification route exposure (coverage ratchet 456->462 / 34.9%)
     prompt: docs/spec/pipeline/prompts/PH-47A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-47a.sh
     gate: auto
@@ -1374,10 +1374,10 @@ phases:
     depends_on: [PH-47A]
 
   # PH-48 — remediation tranche 35 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G12 SR-ledger chain reads + RFC-3161 timestamp/offline-bundle
-  # verification (real, service-tested backing). Ratchet 462/34.9% -> 469/35.4% (G12 43.1% -> 53.8%).
+  # Raise measured contract coverage: expose PS12 SR-ledger chain reads + RFC-3161 timestamp/offline-bundle
+  # verification (real, service-tested backing). Ratchet 462/34.9% -> 469/35.4% (PS12 43.1% -> 53.8%).
   - id: PH-48A
-    name: PH-48 · G12 chain/verify route exposure (coverage ratchet 462->469 / 35.4%)
+    name: PH-48 · PS12 chain/verify route exposure (coverage ratchet 462->469 / 35.4%)
     prompt: docs/spec/pipeline/prompts/PH-48A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-48a.sh
     gate: auto
@@ -1390,10 +1390,10 @@ phases:
     depends_on: [PH-48A]
 
   # PH-49 — remediation tranche 36 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G02 step-up MFA lifecycle + change-request template management
-  # (real, service-tested backing). Ratchet 469/35.4% -> 475/35.9% (G02 38.5% -> 47.7%).
+  # Raise measured contract coverage: expose PS02 step-up MFA lifecycle + change-request template management
+  # (real, service-tested backing). Ratchet 469/35.4% -> 475/35.9% (PS02 38.5% -> 47.7%).
   - id: PH-49A
-    name: PH-49 · G02 stepup/template route exposure (coverage ratchet 469->475 / 35.9%)
+    name: PH-49 · PS02 stepup/template route exposure (coverage ratchet 469->475 / 35.9%)
     prompt: docs/spec/pipeline/prompts/PH-49A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-49a.sh
     gate: auto
@@ -1406,10 +1406,10 @@ phases:
     depends_on: [PH-49A]
 
   # PH-50 — remediation tranche 37 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G03 leave year-close simulate + encashment + mass-leave +
-  # punch-review/exception reads (real, service-tested backing). Ratchet 475/35.9% -> 482/36.4% (G03 40.2% -> 47.8%).
+  # Raise measured contract coverage: expose PS03 leave year-close simulate + encashment + mass-leave +
+  # punch-review/exception reads (real, service-tested backing). Ratchet 475/35.9% -> 482/36.4% (PS03 40.2% -> 47.8%).
   - id: PH-50A
-    name: PH-50 · G03 leave/attendance route exposure (coverage ratchet 475->482 / 36.4%)
+    name: PH-50 · PS03 leave/attendance route exposure (coverage ratchet 475->482 / 36.4%)
     prompt: docs/spec/pipeline/prompts/PH-50A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-50a.sh
     gate: auto
@@ -1422,10 +1422,10 @@ phases:
     depends_on: [PH-50A]
 
   # PH-51 — remediation tranche 38 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G04 X.3 outbound-integration connector lifecycle + leave->SR
-  # relay enqueue/dead-letter reads (real, service-tested backing). Ratchet 482/36.4% -> 489/37% (G04 31.1% -> 46.7%).
+  # Raise measured contract coverage: expose PS04 X.3 outbound-integration connector lifecycle + leave->SR
+  # relay enqueue/dead-letter reads (real, service-tested backing). Ratchet 482/36.4% -> 489/37% (PS04 31.1% -> 46.7%).
   - id: PH-51A
-    name: PH-51 · G04 outbound/relay route exposure (coverage ratchet 482->489 / 37%)
+    name: PH-51 · PS04 outbound/relay route exposure (coverage ratchet 482->489 / 37%)
     prompt: docs/spec/pipeline/prompts/PH-51A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-51a.sh
     gate: auto
@@ -1438,10 +1438,10 @@ phases:
     depends_on: [PH-51A]
 
   # PH-52 — remediation tranche 39 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G06 FR-015 sanctioned-posts establishment lifecycle
-  # (register/revise/reconcile + reads + vacancy). Ratchet 489/37% -> 495/37.4% (G06 29.1% -> 36%).
+  # Raise measured contract coverage: expose PS06 FR-015 sanctioned-posts establishment lifecycle
+  # (register/revise/reconcile + reads + vacancy). Ratchet 489/37% -> 495/37.4% (PS06 29.1% -> 36%).
   - id: PH-52A
-    name: PH-52 · G06 sanctioned-post route exposure (coverage ratchet 489->495 / 37.4%)
+    name: PH-52 · PS06 sanctioned-post route exposure (coverage ratchet 489->495 / 37.4%)
     prompt: docs/spec/pipeline/prompts/PH-52A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-52a.sh
     gate: auto
@@ -1454,10 +1454,10 @@ phases:
     depends_on: [PH-52A]
 
   # PH-53 — remediation tranche 40 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G09 suspension review + show-cause response + consultation
-  # close/waive + hearing minutes + case reads. Ratchet 495/37.4% -> 504/38.1% (G09 28.1% -> 38.2%).
+  # Raise measured contract coverage: expose PS09 suspension review + show-cause response + consultation
+  # close/waive + hearing minutes + case reads. Ratchet 495/37.4% -> 504/38.1% (PS09 28.1% -> 38.2%).
   - id: PH-53A
-    name: PH-53 · G09 disciplinary route exposure (coverage ratchet 495->504 / 38.1%)
+    name: PH-53 · PS09 disciplinary route exposure (coverage ratchet 495->504 / 38.1%)
     prompt: docs/spec/pipeline/prompts/PH-53A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-53a.sh
     gate: auto
@@ -1470,10 +1470,10 @@ phases:
     depends_on: [PH-53A]
 
   # PH-54 — remediation tranche 41 (hand-built; subagent credits exhausted until 2026-07-08).
-  # Raise measured contract coverage: expose G05 transfer/counselling reads (vacancy positions, reservations,
-  # preferences, mutual orders, charge-handovers, relieving/joining reports). Ratchet 504/38.1% -> 513/38.8% (G05 64% -> 76%).
+  # Raise measured contract coverage: expose PS05 transfer/counselling reads (vacancy positions, reservations,
+  # preferences, mutual orders, charge-handovers, relieving/joining reports). Ratchet 504/38.1% -> 513/38.8% (PS05 64% -> 76%).
   - id: PH-54A
-    name: PH-54 · G05 transfer/counselling read route exposure (coverage ratchet 504->513 / 38.8%)
+    name: PH-54 · PS05 transfer/counselling read route exposure (coverage ratchet 504->513 / 38.8%)
     prompt: docs/spec/pipeline/prompts/PH-54A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-54a.sh
     gate: auto
@@ -1486,10 +1486,10 @@ phases:
     depends_on: [PH-54A]
 
   # PH-55 — remediation tranche 42 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G01 governed write-ports (identity change / transfer posting / probation confirmation)
-  # + live-record/count reads (real, service-tested backing). Ratchet 513/38.8% -> 519/39.2% (G01 26.7% -> 30.3%).
+  # deepening: expose PS01 governed write-ports (identity change / transfer posting / probation confirmation)
+  # + live-record/count reads (real, service-tested backing). Ratchet 513/38.8% -> 519/39.2% (PS01 26.7% -> 30.3%).
   - id: PH-55A
-    name: PH-55 · G01 governed write-port route exposure (coverage ratchet 513->519 / 39.2%)
+    name: PH-55 · PS01 governed write-port route exposure (coverage ratchet 513->519 / 39.2%)
     prompt: docs/spec/pipeline/prompts/PH-55A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-55a.sh
     gate: auto
@@ -1502,10 +1502,10 @@ phases:
     depends_on: [PH-55A]
 
   # PH-56 — remediation tranche 43 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G10 FR-16 payroll engine-run lifecycle (create -> snapshot -> compute -> approve (SoD)
-  # -> lock) + reads (real, service-tested backing). Ratchet 519/39.2% -> 526/39.8% (G10 34.5% -> 42.5%).
+  # deepening: expose PS10 FR-16 payroll engine-run lifecycle (create -> snapshot -> compute -> approve (SoD)
+  # -> lock) + reads (real, service-tested backing). Ratchet 519/39.2% -> 526/39.8% (PS10 34.5% -> 42.5%).
   - id: PH-56A
-    name: PH-56 · G10 engine-run route exposure (coverage ratchet 519->526 / 39.8%)
+    name: PH-56 · PS10 engine-run route exposure (coverage ratchet 519->526 / 39.8%)
     prompt: docs/spec/pipeline/prompts/PH-56A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-56a.sh
     gate: auto
@@ -1518,10 +1518,10 @@ phases:
     depends_on: [PH-56A]
 
   # PH-57 — remediation tranche 44 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G10 FR-20 full-and-final settlement (settle -> approve SoD) + recovery/loan/hold reads
-  # (real, service-tested backing). Ratchet 526/39.8% -> 532/40.2% (G10 42.5% -> 49.4%; total crosses 40%).
+  # deepening: expose PS10 FR-20 full-and-final settlement (settle -> approve SoD) + recovery/loan/hold reads
+  # (real, service-tested backing). Ratchet 526/39.8% -> 532/40.2% (PS10 42.5% -> 49.4%; total crosses 40%).
   - id: PH-57A
-    name: PH-57 · G10 FnF/recovery route exposure (coverage ratchet 526->532 / 40.2%)
+    name: PH-57 · PS10 FnF/recovery route exposure (coverage ratchet 526->532 / 40.2%)
     prompt: docs/spec/pipeline/prompts/PH-57A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-57a.sh
     gate: auto
@@ -1534,10 +1534,10 @@ phases:
     depends_on: [PH-57A]
 
   # PH-58 — remediation tranche 45 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G11 pension disbursement (transmit + list) + pensioner lifecycle reads (life
-  # certificates, pensioner-by-case). Ratchet 532/40.2% -> 536/40.5% (G11 36.7% -> 41.1%).
+  # deepening: expose PS11 pension disbursement (transmit + list) + pensioner lifecycle reads (life
+  # certificates, pensioner-by-case). Ratchet 532/40.2% -> 536/40.5% (PS11 36.7% -> 41.1%).
   - id: PH-58A
-    name: PH-58 · G11 disbursement route exposure (coverage ratchet 532->536 / 40.5%)
+    name: PH-58 · PS11 disbursement route exposure (coverage ratchet 532->536 / 40.5%)
     prompt: docs/spec/pipeline/prompts/PH-58A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-58a.sh
     gate: auto
@@ -1550,10 +1550,10 @@ phases:
     depends_on: [PH-58A]
 
   # PH-59 — remediation tranche 46 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G06 succession-planning + qualifying-service surface (real, service-tested backing).
-  # Ratchet 536/40.5% -> 543/41% (G06 36% -> 44.2%).
+  # deepening: expose PS06 succession-planning + qualifying-service surface (real, service-tested backing).
+  # Ratchet 536/40.5% -> 543/41% (PS06 36% -> 44.2%).
   - id: PH-59A
-    name: PH-59 · G06 succession/qualifying-service route exposure (coverage ratchet 536->543 / 41%)
+    name: PH-59 · PS06 succession/qualifying-service route exposure (coverage ratchet 536->543 / 41%)
     prompt: docs/spec/pipeline/prompts/PH-59A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-59a.sh
     gate: auto
@@ -1566,10 +1566,10 @@ phases:
     depends_on: [PH-59A]
 
   # PH-60 — remediation tranche 47 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G03 attendance-policy config + leave-ledger/attendance/comp-off-balance reads (real,
-  # service-tested backing). Ratchet 543/41% -> 547/41.3% (G03 47.8% -> 52.2%).
+  # deepening: expose PS03 attendance-policy config + leave-ledger/attendance/comp-off-balance reads (real,
+  # service-tested backing). Ratchet 543/41% -> 547/41.3% (PS03 47.8% -> 52.2%).
   - id: PH-60A
-    name: PH-60 · G03 attendance-policy route exposure (coverage ratchet 543->547 / 41.3%)
+    name: PH-60 · PS03 attendance-policy route exposure (coverage ratchet 543->547 / 41.3%)
     prompt: docs/spec/pipeline/prompts/PH-60A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-60a.sh
     gate: auto
@@ -1582,10 +1582,10 @@ phases:
     depends_on: [PH-60A]
 
   # PH-61 — remediation tranche 48 (hand-built; subagent credits exhausted until 2026-07-08). Second-pass
-  # deepening: expose G12 SR admissibility/integrity reads (subscriptions, attestations) + G13 OCR index
-  # management (index-from-payload, list). Ratchet 547/41.3% -> 552/41.7% (G12 53.8% -> 58.5%, G13 31.6% -> 33.3%).
+  # deepening: expose PS12 SR admissibility/integrity reads (subscriptions, attestations) + PS13 OCR index
+  # management (index-from-payload, list). Ratchet 547/41.3% -> 552/41.7% (PS12 53.8% -> 58.5%, PS13 31.6% -> 33.3%).
   - id: PH-61A
-    name: PH-61 · G12/G13 admissibility/OCR route exposure (coverage ratchet 547->552 / 41.7%)
+    name: PH-61 · PS12/PS13 admissibility/OCR route exposure (coverage ratchet 547->552 / 41.7%)
     prompt: docs/spec/pipeline/prompts/PH-61A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-61a.sh
     gate: auto
@@ -1601,7 +1601,7 @@ phases:
   # tranche (user-directed): implement the FR-EPM-004 nominee register end-to-end — new NomineeService +
   # VAL-NOMINEE share invariant + row_version optimistic lock + soft-delete. Ratchet 552/41.7% -> 556/42%.
   - id: PH-62A
-    name: PH-62 · G01 nominee register (net-new; coverage ratchet 552->556 / 42%)
+    name: PH-62 · PS01 nominee register (net-new; coverage ratchet 552->556 / 42%)
     prompt: docs/spec/pipeline/prompts/PH-62A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-62a.sh
     gate: auto
@@ -1617,7 +1617,7 @@ phases:
   # implement the FR-EPM-005 emergency-contact register end-to-end — new EmergencyContactService + unique
   # call-order priority invariant + row_version optimistic lock + soft-delete. Ratchet 556/42% -> 560/42.3%.
   - id: PH-63A
-    name: PH-63 · G01 emergency-contact register (net-new; coverage ratchet 556->560 / 42.3%)
+    name: PH-63 · PS01 emergency-contact register (net-new; coverage ratchet 556->560 / 42.3%)
     prompt: docs/spec/pipeline/prompts/PH-63A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-63a.sh
     gate: auto
@@ -1633,7 +1633,7 @@ phases:
   # implement the FR-EPM-006 education register end-to-end — new EducationService + single-highest invariant
   # (auto-demotion) + year-of-passing validation + row_version lock + soft-delete. Ratchet 560/42.3% -> 564/42.6%.
   - id: PH-64A
-    name: PH-64 · G01 education register (net-new; coverage ratchet 560->564 / 42.6%)
+    name: PH-64 · PS01 education register (net-new; coverage ratchet 560->564 / 42.6%)
     prompt: docs/spec/pipeline/prompts/PH-64A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-64a.sh
     gate: auto
@@ -1650,7 +1650,7 @@ phases:
   # primary-salary invariant + PENDING->APPROVED maker-checker + penny-drop tri-state + soft-delete. Ratchet
   # 564/42.6% -> 570/43.1%.
   - id: PH-65A
-    name: PH-65 · G01 bank-account register (net-new; coverage ratchet 564->570 / 43.1%)
+    name: PH-65 · PS01 bank-account register (net-new; coverage ratchet 564->570 / 43.1%)
     prompt: docs/spec/pipeline/prompts/PH-65A.md
     exit_criteria: bash docs/spec/pipeline/checks/ph-65a.sh
     gate: auto

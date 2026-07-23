@@ -1,12 +1,12 @@
-# PH-53A — Raise contract coverage: G09 disciplinary route exposure
+# PH-53A — Raise contract coverage: PS09 disciplinary route exposure
 
 ## Objective
-Continue the coverage workstream into G09 (28.1%): expose suspension review, show-cause response,
+Continue the coverage workstream into PS09 (28.1%): expose suspension review, show-cause response,
 consultation close/waive, personal-hearing minutes, and case reads as kernel routes over already-tested
 `disciplinary` backing.
 
 ## Context
-- Backing (`apps/api/src/modules/g09/disciplinaryService.ts`): `reviewSuspension`, `respondToShowCause`,
+- Backing (`apps/api/src/modules/ps09/disciplinaryService.ts`): `reviewSuspension`, `respondToShowCause`,
   `closeConsultation`, `waiveConsultation`, `recordPersonalHearingMinutes`, `listCaseTimeline`,
   `listIccAppointments`, `listPersonalHearings`, `getPenaltyOrder`.
 - Coverage gate: `tools/contract-coverage.mjs` + `docs/reviews/contract-coverage-20260703.md` + `ph-37a.sh`.
@@ -19,7 +19,7 @@ consultation close/waive, personal-hearing minutes, and case reads as kernel rou
 - Raise the ratchet floor (report + `ph37a` test + `ph-37a.sh`) 495/37.4% → 504/38.1%.
 
 ## Evidence required
-- 9 routes in `g09.routes.ts`; `apps/api/test/ph53a-*.test.cjs` covering the case reads and the mutation
+- 9 routes in `ps09.routes.ts`; `apps/api/test/ph53a-*.test.cjs` covering the case reads and the mutation
   routes' NOT_FOUND guards.
 - `bash docs/spec/pipeline/checks/ph-53a.sh` GREEN and `bash docs/spec/pipeline/checks/ph-37a.sh` GREEN at
   the raised floor; typecheck + full suite green.

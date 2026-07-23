@@ -18,7 +18,7 @@ done
 has 'acting[_ ]?charge|is_acting|acting_from|acting_holder' && grn "acting-charge represented" || red "acting-charge not represented (table/column)"
 has 'create table (if not exists )?[a-z0-9_]*(committee|panel)' && grn "committee/panel table present" || red "no committee/panel table"
 has 'reporting_manager_id|reports_to_position|reports_to|reporting_chain' && grn "reporting hierarchy present (table/column)" || red "no reporting hierarchy (reports_to / reporting_manager_id)"
-tbl authority_assignment && grn "statutory authority-assignment matrix table present" || red "missing statutory authority-assignment matrix table (e.g. g01_authority_assignments — referenced by the seed plan)"
+tbl authority_assignment && grn "statutory authority-assignment matrix table present" || red "missing statutory authority-assignment matrix table (e.g. ps01_authority_assignments — referenced by the seed plan)"
 
 python3 - <<'PY' || red "auth-matrix.yaml invalid or missing statutory roles"
 import yaml,sys

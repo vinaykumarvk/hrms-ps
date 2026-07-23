@@ -6,7 +6,7 @@ set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g08.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+R="apps/api/src/routes/ps08.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
 echo "== PH-39A exit-criteria (APAR PIP/probation route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in createPip updatePipMilestone closePip openProbationConfirmation decideProbation listReportPeriods listGoalSnapshots; do

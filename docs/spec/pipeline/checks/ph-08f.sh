@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PH-08F oracle (re-baselined 2026-07-02 after docs/reviews/brd-coverage-audit-20260702.md):
-# statutory wave UI + conformance — real forms (G09 workbench, G06 DPC per-member verdicts, G08 APAR
-# self/RO/RvO, G07 nomination), canonical loading/empty/error states, full API+web suites green, and an
+# statutory wave UI + conformance — real forms (PS09 workbench, PS06 DPC per-member verdicts, PS08 APAR
+# self/RO/RvO, PS07 nomination), canonical loading/empty/error states, full API+web suites green, and an
 # HONEST verdict doc that deltas against the audit. Gate is HUMAN — this script only verifies evidence;
 # it replaces the prior manifest/marker rubber stamp. No skeleton read-only cards accepted.
 set -uo pipefail
@@ -20,14 +20,14 @@ echo "== PH-08F exit-criteria (statutory wave UI + honest conformance) =="
 
 # 1) required interactive surfaces (audit: every module was a read-only metric card)
 SURFACES=(
-  'g09 case intake (complaint/case form)::intake|complaint'
-  'g09 charge form::charge'
-  'g06 DPC per-member verdict capture::verdict'
-  'g06 DPC member-level capture::member'
-  'g08 APAR self-appraisal form::self'
-  'g08 APAR RO tier::reporting'
-  'g08 APAR RvO tier::review'
-  'g07 training nomination::nominat'
+  'ps09 case intake (complaint/case form)::intake|complaint'
+  'ps09 charge form::charge'
+  'ps06 DPC per-member verdict capture::verdict'
+  'ps06 DPC member-level capture::member'
+  'ps08 APAR self-appraisal form::self'
+  'ps08 APAR RO tier::reporting'
+  'ps08 APAR RvO tier::review'
+  'ps07 training nomination::nominat'
 )
 for item in "${SURFACES[@]}"; do
   _spec="${item%%::*}"; _pat="${item##*::}"
@@ -36,7 +36,7 @@ for item in "${SURFACES[@]}"; do
 done
 
 # 2) fail-closed: each module must have a real form (submit path), not a read-only card
-for m in g06 g07 g08 g09; do
+for m in ps06 ps07 ps08 ps09; do
   if grep -rqiE '<form|onSubmit' "$WEB/$m" 2>/dev/null; then
     grn "$m has a real form/submit surface"
   else
@@ -45,7 +45,7 @@ for m in g06 g07 g08 g09; do
 done
 
 # 3) canonical states per module surface
-for m in g06 g07 g08 g09; do
+for m in ps06 ps07 ps08 ps09; do
   for s in loading empty error; do
     grep -rqiE "$s" "$WEB/$m" 2>/dev/null && grn "$m renders '$s' state" || red "$m missing '$s' state"
   done
@@ -61,7 +61,7 @@ if [ -s "$V" ]; then grn "verdict doc present: $V"; else red "missing verdict do
 grep -q 'brd-coverage-audit-20260702' "$V" 2>/dev/null && grn "verdict cites the coverage audit baseline" || red "verdict does not cite docs/reviews/brd-coverage-audit-20260702.md — not an honest delta"
 grep -qiE 'coverage.?delta|delta' "$V" 2>/dev/null && grn "verdict states a coverage delta" || red "verdict has no coverage-delta section"
 grep -q 'NOT_FOUND' "$V" 2>/dev/null && grn "verdict acknowledges remaining NOT_FOUND items" || red "verdict does not state remaining NOT_FOUND areas (self-certification)"
-for m in G05 G06 G07 G08 G09; do
+for m in PS05 PS06 PS07 PS08 PS09; do
   grep -q "$m" "$V" 2>/dev/null && grn "verdict covers $m" || red "verdict missing per-module delta for $m"
 done
 

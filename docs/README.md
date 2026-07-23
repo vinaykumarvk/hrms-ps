@@ -9,7 +9,7 @@ Source: **Functional Scope of Work — HRMS** (`~/Downloads/Functional Scope of 
 > (P01 Workflow, P02 RBAC/Authorization, P03 Chat, P04 Tenant/Org Admin, P05 Audit, P06 Migration,
 > X.1–X.3, W.1–W.3), `VAL-*` validation library, RBAC v1.7, multi-tenancy (`tenant_id`/`entity_id`),
 > and `/api/v1` conventions instead of an invented foundation. The **authoritative set is now `docs/brd/v3/`**
-> (government module codes `G01–G14`). See [`brd/PLATFORM_FOUNDATION.md`](brd/PLATFORM_FOUNDATION.md)
+> (enterprise module codes `PS01–PS14`). See [`brd/PLATFORM_FOUNDATION.md`](brd/PLATFORM_FOUNDATION.md)
 > and [`brd/MODULE_RECONCILIATION.md`](brd/MODULE_RECONCILIATION.md).
 
 This documentation set was produced in **three phases plus a platform re-grounding pass**, per the program goal:
@@ -26,7 +26,7 @@ This documentation set was produced in **three phases plus a platform re-groundi
 4. **Phase 4 — Platform re-grounding (v3, authoritative):** Each v2 BRD was re-anchored onto the existing
    PrimeSoft platform — adopting P01–P06 / X / W services, `VAL-*`, RBAC v1.7, multi-tenancy, and the
    platform API/error conventions; correcting invented error codes, roles, audit/workflow engines, and the
-   missing tenancy model; adopting `G01–G14` module codes; and adding an `## Alignment with PrimeSoft Platform`
+   missing tenancy model; adopting `PS01–PS14` module codes; and adding an `## Alignment with PrimeSoft Platform`
    FR→service map plus an `## Amendments (v2 → v3)` audit trail. Net-new statutory engines (Digital SR ledger,
    pension, disciplinary due-process, qualifying-service, transfer/seniority) are the only things authored
    from scratch — and even those run on P01/P05/P06.
@@ -72,7 +72,7 @@ docs/
 ├── platform-grounding/extracts/       ← extracted text of the governing PrimeSoft docs
 ├── brd/
 │   ├── PLATFORM_FOUNDATION.md          ← authoritative build contract (the REAL platform) — read first
-│   ├── MODULE_RECONCILIATION.md        ← government G01–G14 ↔ PrimeSoft map + convention overrides
+│   ├── MODULE_RECONCILIATION.md        ← enterprise PS01–PS14 ↔ PrimeSoft map + convention overrides
 │   ├── SHARED_FOUNDATION.md            ← original invented brief (conventions SUPERSEDED; module list still valid)
 │   ├── v1/  *.md + docx/*.docx         ← Phase 1: 14 draft BRDs
 │   ├── v2/  *.md + docx/*.docx         ← Phase 3: 14 council-revised BRDs
@@ -83,16 +83,16 @@ docs/
 
 ### Downstream build-pipeline artefacts (Phase 4)
 - `architecture.md` — system architecture + 11 ADRs (build-on-PrimeSoft, SR-on-P05, RLS-as-P02, …).
-- `contracts/` — machine-readable contracts: **OpenAPI 3.1** (`openapi/G01–G14.yaml`, 1,306 operations),
+- `contracts/` — machine-readable contracts: **OpenAPI 3.1** (`openapi/PS01–PS14.yaml`, 1,306 operations),
   `auth-matrix.yaml`, `error-taxonomy.yaml` (311 codes), `state-machines.yaml` (73 machines),
   `dependency-register.yaml`. See `contracts/README.md`.
 - `data-model/` — validated 447-table PostgreSQL schema (core + 14 modules). See `data-model/README.md`.
-- `phased-plan.md` — dependency-ordered build plan (Phase 0 core → G01/G12/G13 → G02/G03 → SR writers → G10/G11 → G14).
+- `phased-plan.md` — dependency-ordered build plan (Phase 0 core → PS01/PS12/PS13 → PS02/PS03 → SR writers → PS10/PS11 → PS14).
 - `tests/` — **1,597 acceptance & E2E test cases** across 14 modules (every FR covered, 0 gaps), asserted
   against the contracts. See `tests/README.md`.
 - `review/` — cross-module consistency review + remediation.
 
-**Authoritative set for build:** `docs/brd/v3/` (codes `G01–G14`), read together with
+**Authoritative set for build:** `docs/brd/v3/` (codes `PS01–PS14`), read together with
 `docs/brd/PLATFORM_FOUNDATION.md` and `docs/brd/MODULE_RECONCILIATION.md`. The full decision trail for any
 module = its v3 `Alignment with PrimeSoft Platform` + `Amendments (v2 → v3)` sections → its v2
 `Amendments (v1 → v2)` → its `docs/evaluation/` council report → its v1 draft.

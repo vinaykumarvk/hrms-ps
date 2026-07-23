@@ -4,22 +4,22 @@ Status: pipeline-ready plan, not executed.
 
 ## Objective
 
-Expose stable `/api/v1` API surfaces for P01 workflow, G01 employee master, G12 Service Register, and G13 document vault using the PH-03 service layer. PH-04 binds service internals to route handlers, enforces the shared API contract, and proves auth, idempotency, pagination, correlation IDs, and error-envelope behavior before PH-05 UI work begins.
+Expose stable `/api/v1` API surfaces for P01 workflow, PS01 employee master, PS12 Service Register, and PS13 document vault using the PH-03 service layer. PH-04 binds service internals to route handlers, enforces the shared API contract, and proves auth, idempotency, pagination, correlation IDs, and error-envelope behavior before PH-05 UI work begins.
 
 ## Entry Conditions
 
-- PH-03 foundation services are available: `createFoundationServices`, P01 workflow, authority resolver, P02 authorization, P05 audit, G01, G12, G13, jobs, notifications, and migration staging.
+- PH-03 foundation services are available: `createFoundationServices`, P01 workflow, authority resolver, P02 authorization, P05 audit, PS01, PS12, PS13, jobs, notifications, and migration staging.
 - Existing OpenAPI contracts parse:
   - `docs/contracts/openapi/P01-workflow.yaml`
-  - `docs/contracts/openapi/G01.yaml`
-  - `docs/contracts/openapi/G12.yaml`
-  - `docs/contracts/openapi/G13.yaml`
+  - `docs/contracts/openapi/PS01.yaml`
+  - `docs/contracts/openapi/PS12.yaml`
+  - `docs/contracts/openapi/PS13.yaml`
 - Existing error taxonomy remains the source of truth for the canonical 8 wire codes.
 
 ## Non-Goals
 
 - No PH-05 UI work.
-- No G03/G05 vertical-slice module logic.
+- No PS03/PS05 vertical-slice module logic.
 - No production object storage, KMS, AV scan, eSign, RFC 3161, or external integration implementation.
 - No new API/auth/error-code policy unless explicitly recorded and approved.
 - No direct database-backed route implementation unless it preserves PH-03 service boundaries.
@@ -29,8 +29,8 @@ Expose stable `/api/v1` API surfaces for P01 workflow, G01 employee master, G12 
 | Subphase | Gate | Purpose | Main Outputs |
 |---|---|---|---|
 | PH-04A | auto | API kernel and contract harness | request/response kernel, route registry, auth guard, correlation, error envelope, idempotency, pagination, OpenAPI registry |
-| PH-04B | auto | P01 and G01 routes | workflow routes and employee master/governed-change routes wired to PH-03 services |
-| PH-04C | auto | G12 and G13 routes | SR ingest/timeline/corrigendum/dispute and document create/attach/version/hold/retention routes |
+| PH-04B | auto | P01 and PS01 routes | workflow routes and employee master/governed-change routes wired to PH-03 services |
+| PH-04C | auto | PS12 and PS13 routes | SR ingest/timeline/corrigendum/dispute and document create/attach/version/hold/retention routes |
 | PH-04D | human after GREEN | API conformance and freeze | OpenAPI smoke, auth, idempotency, pagination, error-envelope tests, PH-04 verdict, manifest evidence |
 
 PH-04D is human-gated because it freezes the API surface that PH-05 and later module waves consume. The executable gate must be GREEN first; the human review is for API-surface freeze and any contract-delta acceptance.
@@ -49,7 +49,7 @@ P01:
 - `GET /api/v1/workflow/instances/{instance_id}`
 - `GET /api/v1/workflow/tasks`
 
-G01:
+PS01:
 - `GET /api/v1/employees`
 - `GET /api/v1/employees/{id}`
 - `GET /api/v1/employees/{id}/profile-360`
@@ -59,7 +59,7 @@ G01:
 - `POST /api/v1/governed-changes/{id}:approve`
 - `POST /api/v1/governed-changes/{id}:reject`
 
-G12:
+PS12:
 - `POST /api/v1/sr/ingest`
 - `POST /api/v1/sr/ingest/reversal`
 - `GET /api/v1/sr/ingest/{ingestion_request_id}`
@@ -69,7 +69,7 @@ G12:
 - `POST /api/v1/sr/events/{id}/dispute`
 - `POST /api/v1/sr/disputes/{id}/resolve`
 
-G13:
+PS13:
 - `POST /api/v1/documents`
 - `GET /api/v1/documents`
 - `GET /api/v1/documents/{id}`
@@ -93,7 +93,7 @@ G13:
 - No stack traces, local paths, secret IDs, tokens, or PII values in API responses.
 - List routes use cursor pagination with `limit` default 25 and max 100.
 - P02 non-leakage: forbidden/out-of-scope records must not reveal existence.
-- API handlers call PH-03 services; they must not bypass G01/G12/G13 ownership boundaries.
+- API handlers call PH-03 services; they must not bypass PS01/PS12/PS13 ownership boundaries.
 
 ## Testing Plan
 
@@ -103,12 +103,12 @@ G13:
   - unsafe POST without `Idempotency-Key` fails;
   - list `limit > 100` clamps or rejects per contract;
   - internal errors sanitize to `INTERNAL`.
-- P01/G01 route tests:
+- P01/PS01 route tests:
   - workflow start creates task and audit evidence;
   - approve/reject/send-back/delegate/cancel/query return canonical responses;
   - employee list/detail/profile read uses P02 masking;
-  - governed change posts through G01 and G12.
-- G12/G13 route tests:
+  - governed change posts through PS01 and PS12.
+- PS12/PS13 route tests:
   - duplicate SR ingest returns original result;
   - semantic duplicate is not appended;
   - source reversal appends a reversal event;
@@ -126,7 +126,7 @@ G13:
 
 - Rollback: disable route registration per module behind a route registry flag while preserving PH-03 services.
 - Retry: fix one route group at a time and rerun the matching PH-04 subphase oracle.
-- Quarantine: a failed G13 route group must not block P01/G01/G12 route implementation; a failed API kernel blocks all route groups.
+- Quarantine: a failed PS13 route group must not block P01/PS01/PS12 route implementation; a failed API kernel blocks all route groups.
 
 ## Human Gate
 

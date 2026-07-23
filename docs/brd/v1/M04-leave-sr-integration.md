@@ -1,7 +1,7 @@
 # Leave Management Integration with Digital Service Register — HRMS Module BRD
 
 **Module code:** M04-LSR
-**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (government / public-sector context, hosted at CGG Data Centre)
+**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (enterprise / public-sector context, hosted at CGG Data Centre)
 **Document version:** v1.0
 **Status:** Draft for review
 **Author persona:** Global HR/HCM domain expert (Workday / SAP SuccessFactors / Oracle HCM bar) honouring the public-sector statutory context
@@ -15,7 +15,7 @@
 
 ### 1.1 Purpose
 
-The Digital Service Register (Digital SR, owned by **M12**) is the **statutory system of record** for an employee's entire service lifecycle. In a government HR context, the Service Register is a legal document: pension, seniority, increments, qualifying-service computation, and audit by the Accountant General all depend on it being **complete, accurate, append-only, and tamper-evident**. Leave — especially **long leave, Leave Without Pay (LWP / EOL), study leave, and suspension-as-leave** — directly affects **qualifying service for pension**, **increment dates**, and **seniority**. Therefore every leave spell that is *approved* in M03 must become a **permanent, immutable SR entry** in M12, and every *cancellation or amendment* of that leave must produce a **correcting SR entry** (the SR is never hard-edited).
+The Digital Service Register (Digital SR, owned by **M12**) is the **statutory system of record** for an employee's entire service lifecycle. In a enterprise HR context, the Service Register is a legal document: pension, seniority, increments, qualifying-service computation, and audit by the Accountant General all depend on it being **complete, accurate, append-only, and tamper-evident**. Leave — especially **long leave, Leave Without Pay (LWP / EOL), study leave, and suspension-as-leave** — directly affects **qualifying service for pension**, **increment dates**, and **seniority**. Therefore every leave spell that is *approved* in M03 must become a **permanent, immutable SR entry** in M12, and every *cancellation or amendment* of that leave must produce a **correcting SR entry** (the SR is never hard-edited).
 
 **M04-LSR is the integration that guarantees this.** It is not a leave system and not the SR itself; it is the **reliable, idempotent, reconciled, monitorable bridge** that maps leave domain events to statutory SR entries with **exactly-once semantics**, full **replay**, automated **drift detection**, and explicit **failure handling** (retry / dead-letter / manual intervention).
 

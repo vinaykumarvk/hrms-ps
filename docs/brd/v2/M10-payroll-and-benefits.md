@@ -1,7 +1,7 @@
 # Payroll and Benefits Management — HRMS Module BRD (v2.0)
 
 **Module code:** M10-PAY
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government / Public-Sector context
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise / Public-Sector context
 **Authoring standard:** World-class global HCM (Workday / SAP SuccessFactors / Oracle HCM bar) honouring Indian public-sector statutory payroll rules
 **Source of truth:** `docs/brd/SHARED_FOUNDATION.md` (canonical shared entities, conventions, RBAC, technical defaults). This BRD references and extends — it does not redefine — those shared elements.
 **Document version:** v2.0
@@ -23,7 +23,7 @@ The boundary of M10 is, per the Council's chairman ruling, **"compute + disburse
 
 ### 1.2 Business Context and Problem Statement
 
-Government payroll combines high volume with extreme regulatory sensitivity: pay matrices and scales (e.g., 7th CPC-style pay levels), Dearness Allowance (DA) revisions issued retrospectively, House Rent Allowance (HRA) by city class, GPF/CPF/NPS contributions, income-tax (TDS) with employee declarations, proofs, perquisites, surcharge/cess/relief, professional tax slabs **that differ by state of posting**, recoveries ordered by disciplinary authorities, statutory remittances under tight deadlines **that must be deposited and matched, not merely scheduled**, and full-and-final settlements for every separation. Manual or spreadsheet-driven payroll produces reconciliation gaps, over/under-payments, **duplicate disbursements**, YTD drift, audit findings, and litigation. M10 eliminates these by making the rule set explicit and versioned, the run reproducible from a defined snapshot, the disbursement double-payment-proof, the YTD an immutable derived ledger, and the controls enforceable.
+Enterprise payroll combines high volume with extreme regulatory sensitivity: pay matrices and scales (e.g., 7th CPC-style pay levels), Dearness Allowance (DA) revisions issued retrospectively, House Rent Allowance (HRA) by city class, GPF/CPF/NPS contributions, income-tax (TDS) with employee declarations, proofs, perquisites, surcharge/cess/relief, professional tax slabs **that differ by state of posting**, recoveries ordered by disciplinary authorities, statutory remittances under tight deadlines **that must be deposited and matched, not merely scheduled**, and full-and-final settlements for every separation. Manual or spreadsheet-driven payroll produces reconciliation gaps, over/under-payments, **duplicate disbursements**, YTD drift, audit findings, and litigation. M10 eliminates these by making the rule set explicit and versioned, the run reproducible from a defined snapshot, the disbursement double-payment-proof, the YTD an immutable derived ledger, and the controls enforceable.
 
 ### 1.3 Goals and Objectives
 
@@ -140,7 +140,7 @@ All M10 features inherit: UUID PKs + human business keys; standard audit fields;
 
 ### 2.4 Assumptions and Constraints
 
-- Pay scales, DA rates, HRA city classes, **PT slabs keyed by state**, and tax slabs are **configurable master data**, sourced from government notifications and version-effective-dated.
+- Pay scales, DA rates, HRA city classes, **PT slabs keyed by state**, and tax slabs are **configurable master data**, sourced from enterprise notifications and version-effective-dated.
 - A single legal entity per deployment; multi-entity is a future extension but the data model is entity-aware (`legal_entity_id`). **Multi-state professional tax is supported within a single entity via a `state` dimension on PT slabs.**
 - One primary monthly cycle plus arrears/supplementary/off-cycle/**FnF** cycles per period.
 - The bank/treasury accepts **one defined, certified file format per deployment** (the treasury's format is shipped; ISO20022/CUSTOM are deferred behind a strategy seam). The bank file is **digitally signed (DSC/HSM)**, not merely checksummed.
@@ -622,7 +622,7 @@ payslips n───1 documents (M13);  pay events ──> service_register_event
 
 - **Module:** M10-F01
 - **Primary Role(s):** System Administrator, Payroll Manager
-- **User Story:** As an Administrator, I want to maintain pay-matrix levels and effective-dated statutory rate tables (DA%, HRA class %, **PT slabs keyed by state**, tax slabs, GPF/NPS rates) so that revisions issued by government notifications apply automatically from their effective date, including for multi-state employees.
+- **User Story:** As an Administrator, I want to maintain pay-matrix levels and effective-dated statutory rate tables (DA%, HRA class %, **PT slabs keyed by state**, tax slabs, GPF/NPS rates) so that revisions issued by enterprise notifications apply automatically from their effective date, including for multi-state employees.
 - **Description:** CRUD for `pay_matrix_levels` and `rate_tables`, all effective-dated. **PT slabs carry a `state` dimension; resolution uses the employee's state of posting (from the cross-module snapshot).** A DA revision is entered once and applies to every eligible employee from `effective_from` (including retrospectively, triggering arrears via FR-10).
 - **Acceptance Criteria:**
   - AC1: A new DA rate with a past `effective_from` is accepted and flagged "retrospective — will generate arrears".
@@ -1913,7 +1913,7 @@ Master data loaded & approved (incl. PT-by-state); structures reconciled; **YTD 
 
 | Term | Definition |
 |---|---|
-| Pay Matrix / Level | Government pay structure of levels and progression cells (e.g., 7th CPC) |
+| Pay Matrix / Level | Enterprise pay structure of levels and progression cells (e.g., 7th CPC) |
 | Basic Pay | Core pay at the assigned matrix cell |
 | DA | Dearness Allowance, % of basic, revised periodically |
 | HRA | House Rent Allowance, % by city class (X/Y/Z) |
@@ -1984,7 +1984,7 @@ A LOCKED run and its payslips are immutable. Corrections never edit the original
 
 - Single legal entity per deployment (data model entity-aware for future multi-entity); **PT supports multiple states within the entity.**
 - Bank/treasury supports **one documented, certified file format**; the format is shipped, others (ISO20022/CUSTOM) deferred behind a `FileFormatStrategy` seam.
-- Government notifications drive rate-table updates; entered by SysAdmin and approved by Payroll Manager.
+- Enterprise notifications drive rate-table updates; entered by SysAdmin and approved by Payroll Manager.
 - 30-day vs actual-days LWP basis is a configurable policy switch.
 - **DSC/HSM signing infrastructure and a treasury positive-pay channel are available (week-1 long-pole).**
 - **Finance ERP accepts a structured cost-journal export and returns a posting acknowledgement.**

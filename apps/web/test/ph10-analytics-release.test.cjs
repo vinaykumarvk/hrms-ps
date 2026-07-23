@@ -6,16 +6,16 @@ const ts = require("typescript");
 const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 
-// PH-10E: the G14 web surface is a real dashboard bound to the PH-10D KPI engine — live
+// PH-10E: the PS14 web surface is a real dashboard bound to the PH-10D KPI engine — live
 // KPI tiles through the client, drill-down that keeps k-anonymity suppression applied at
 // every level (the NEGATIVE test proves a suppressed cohort renders suppressed and the
 // raw small count is absent from the DOM), and a freshness panel from datamart_refresh_logs.
-// The audited static marker card (evidence-line / G14_READ_ONLY) is gone.
+// The audited static marker card (evidence-line / PS14_READ_ONLY) is gone.
 
 const clientSource = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixtureSource = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
 const appSource = fs.readFileSync("apps/web/src/App.tsx", "utf8");
-const g14Source = fs.readFileSync("apps/web/src/modules/g14/AnalyticsWorkspace.tsx", "utf8");
+const ps14Source = fs.readFileSync("apps/web/src/modules/ps14/AnalyticsWorkspace.tsx", "utf8");
 
 // --- Transpiling module loader so the real TS/TSX sources are exercised, not re-implemented ---
 
@@ -56,7 +56,7 @@ const {
   isMartStale,
   MART_DRILL_DIMENSIONS,
   MART_FRESHNESS_SLA_MINUTES,
-} = loadTsModule("apps/web/src/modules/g14/AnalyticsWorkspace.tsx");
+} = loadTsModule("apps/web/src/modules/ps14/AnalyticsWorkspace.tsx");
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -65,8 +65,8 @@ function jsonResponse(status, body) {
 // --- 1) The audited static marker card is gone; the workspace binds the engine routes ---
 
 test("PH-10E static marker card is gone and the workspace fetches live KPI/freshness data", () => {
-  assert.equal(g14Source.includes("evidence-line"), false, "AnalyticsWorkspace still carries the evidence-line marker card");
-  assert.equal(g14Source.includes("G14_READ_ONLY"), false, "AnalyticsWorkspace still renders the G14_READ_ONLY marker");
+  assert.equal(ps14Source.includes("evidence-line"), false, "AnalyticsWorkspace still carries the evidence-line marker card");
+  assert.equal(ps14Source.includes("PS14_READ_ONLY"), false, "AnalyticsWorkspace still renders the PS14_READ_ONLY marker");
   for (const marker of [
     "listAnalyticsKpis",
     "queryKpiAggregate",
@@ -82,7 +82,7 @@ test("PH-10E static marker card is gone and the workspace fetches live KPI/fresh
     "no-permission",
     'role="alert"',
   ]) {
-    assert.equal(g14Source.includes(marker), true, `AnalyticsWorkspace missing ${marker}`);
+    assert.equal(ps14Source.includes(marker), true, `AnalyticsWorkspace missing ${marker}`);
   }
   assert.equal(appSource.includes("<AnalyticsWorkspace client={client}"), true, "App no longer injects the client into AnalyticsWorkspace");
 });
@@ -112,7 +112,7 @@ test("PH-10E real client binds kpis, aggregate (paged cells flattened, nulls ver
         cells: {
           items: [
             { key: "CADRE_A", value: 12, suppressed: false },
-            { key: "CADRE_B", value: null, suppressed: true, suppressionReason: "ERR-G14-SMALL-CELL" },
+            { key: "CADRE_B", value: null, suppressed: true, suppressionReason: "ERR-PS14-SMALL-CELL" },
           ],
           limit: 25,
           next_cursor: null,
@@ -155,13 +155,13 @@ test("PH-10E fixture aggregate suppresses small cohorts, applies complementary s
   const reserved = suppressedAggregate.cells.find((cell) => cell.key === "CADRE_RESERVED");
   assert.equal(reserved.suppressed, true);
   assert.equal(reserved.value, null, "the raw small count must never leave the fixture");
-  assert.equal(reserved.suppressionReason, "ERR-G14-SMALL-CELL");
+  assert.equal(reserved.suppressionReason, "ERR-PS14-SMALL-CELL");
   // A lone suppressed cell would be recoverable by subtraction — the smallest visible
   // cohort is complementarily suppressed and the total withheld.
   const field = suppressedAggregate.cells.find((cell) => cell.key === "CADRE_FIELD");
   assert.equal(field.suppressed, true);
   assert.equal(field.value, null);
-  assert.equal(field.suppressionReason, "ERR-G14-COMP-SUPPRESS");
+  assert.equal(field.suppressionReason, "ERR-PS14-COMP-SUPPRESS");
   assert.equal(suppressedAggregate.total, null);
   assert.equal(suppressedAggregate.suppressedCells, 2);
 
@@ -221,7 +221,7 @@ test("PH-10E dashboard renders live KPI values and the freshness panel from refr
   assert.match(markup, /Leave applications/);
   assert.match(markup, /16 applications/);
   assert.match(markup, /28 days/);
-  assert.equal(markup.includes("G14_READ_ONLY"), false, "marker strings must not reach the DOM");
+  assert.equal(markup.includes("PS14_READ_ONLY"), false, "marker strings must not reach the DOM");
   // The suppressed establishment tile renders the suppression notice, never a number.
   assert.match(markup, /Sanctioned posts/);
   assert.match(markup, /data-suppressed="true"/);
@@ -233,7 +233,7 @@ test("PH-10E dashboard renders live KPI values and the freshness panel from refr
   const staleFlags = [...markup.matchAll(/data-stale="true"/g)];
   assert.equal(staleFlags.length, 2, "exactly MART_APPRAISAL and MART_ESTABLISHMENT must be flagged stale");
   assert.match(markup, /STALE/);
-  assert.match(markup, /FAILED — Source contract g08\.v_apar_forms_v3 fetch failed/);
+  assert.match(markup, /FAILED — Source contract ps08\.v_apar_forms_v3 fetch failed/);
 });
 
 test("PH-10E NEGATIVE: a suppressed cohort renders suppressed and the raw small count is absent", async () => {
@@ -274,7 +274,7 @@ test("PH-10E drill-down offers only cohort-grain dimensions the scope policy all
     assert.equal(dimensions.includes("employeeId"), false, "employeeId must not be a drill dimension");
     assert.equal(dimensions.includes("attendanceDate"), false, "attendanceDate must not be a drill dimension");
   }
-  assert.equal(g14Source.includes("MART_APPRAISAL:"), false, "the PII appraisal mart must not offer drill dimensions");
+  assert.equal(ps14Source.includes("MART_APPRAISAL:"), false, "the PII appraisal mart must not offer drill dimensions");
 });
 
 // --- 5) Canonical states ---
@@ -294,7 +294,7 @@ test("PH-10E workspace renders the canonical loading, error, empty, and no-permi
     React.createElement(AnalyticsWorkspace, { client: fixture, initialState: { kind: "no-permission", errorCode: "FORBIDDEN" } })
   );
   assert.match(noPermission, /data-state="no-permission"/);
-  assert.match(noPermission, /g14\.analytics\.read/);
+  assert.match(noPermission, /ps14\.analytics\.read/);
 });
 
 test("PH-10E dashboard load maps FORBIDDEN to no-permission and NOT_FOUND to empty", async () => {

@@ -22,7 +22,7 @@ fi
 must "verdict chains from tranche-49 verdict::ph-62-verdict" "$V"
 must "verdict cites the coverage delta::brd-coverage-delta-20260703" "$V"
 must "verdict names the net-new emergency-contact work::560|42.3%|emergency.contact|net.new" "$V"
-must "verdict carries a G01 row::G01" "$V"
+must "verdict carries a PS01 row::PS01" "$V"
 must "verdict names remaining gaps::NOT_FOUND|remaining|still open|open gap" "$V"
 must "verdict necessary-not-sufficient::necessary.{0,4}not sufficient" "$V"
 must "verdict contract-op caveat::1,?323|contract-op|OpenAPI" "$V"

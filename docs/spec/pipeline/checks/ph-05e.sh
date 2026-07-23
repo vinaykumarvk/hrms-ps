@@ -12,7 +12,7 @@ echo "== PH-05E exit-criteria (UI conformance + review packet) =="
 
 # --- 1. Canonical state branches in every shipped module surface -----------------------------------
 okc=0
-for m in g01 g02 g03 g04 g05 g06 g07 g08 g09 g10 g11 g12 g13 g14; do
+for m in ps01 ps02 ps03 ps04 ps05 ps06 ps07 ps08 ps09 ps10 ps11 ps12 ps13 ps14; do
   d="apps/web/src/modules/$m"
   missing=""
   for state in loading error empty; do
@@ -32,7 +32,7 @@ else red "missing/too-small verdict packet: $v"; fi
 if grep -q "state_coverage: ${okc}/14" "$v" 2>/dev/null; then
   grn "verdict states the oracle-computed state coverage (${okc}/14)"
 else red "verdict does not state 'state_coverage: ${okc}/14' — run this check and record its numbers"; fi
-for mod in G01 G02 G03 G04 G05 G06 G07 G08 G09 G10 G11 G12 G13 G14; do
+for mod in PS01 PS02 PS03 PS04 PS05 PS06 PS07 PS08 PS09 PS10 PS11 PS12 PS13 PS14; do
   grep -q "$mod" "$v" 2>/dev/null && grn "verdict covers $mod" || red "verdict missing module row: $mod"
 done
 grep -qiE 'gap|not implemented|missing|read-only' "$v" 2>/dev/null && grn "verdict names remaining gaps" || red "verdict does not name remaining gaps"

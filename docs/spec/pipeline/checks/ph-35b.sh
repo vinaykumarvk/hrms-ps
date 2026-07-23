@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-35B oracle: G01 self-service rights routes — real kernel route(s) registered + dispatched in an API test.
+# PH-35B oracle: PS01 self-service rights routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g13.routes.ts"; T=apps/api/test
-echo "== PH-35B exit-criteria (G01 self-service rights routes) =="
+R="apps/api/src/routes/ps13.routes.ts"; T=apps/api/test
+echo "== PH-35B exit-criteria (PS01 self-service rights routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" '/api/v1/me/rights-requests' "route path registered: /api/v1/me/rights-requests"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

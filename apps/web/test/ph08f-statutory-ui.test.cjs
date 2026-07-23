@@ -6,8 +6,8 @@ const ts = require("typescript");
 const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 
-// PH-08F: statutory-wave UI — G09 case workbench, G06 DPC per-member verdicts,
-// G08 APAR self/RO/RvO tier forms, G07 training nomination. Source-marker checks
+// PH-08F: statutory-wave UI — PS09 case workbench, PS06 DPC per-member verdicts,
+// PS08 APAR self/RO/RvO tier forms, PS07 training nomination. Source-marker checks
 // pin the submit handlers to the client methods; the transpiled real client and
 // fixture client are then exercised behaviourally, including error envelopes;
 // finally the components are rendered to markup for the canonical states.
@@ -15,10 +15,10 @@ const { renderToStaticMarkup } = require("react-dom/server");
 const clientSource = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixtureSource = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
 const appSource = fs.readFileSync("apps/web/src/App.tsx", "utf8");
-const g09WorkbenchSource = fs.readFileSync("apps/web/src/modules/g09/DisciplinaryCaseWorkbench.tsx", "utf8");
-const g06DpcSource = fs.readFileSync("apps/web/src/modules/g06/DpcConvenePanel.tsx", "utf8");
-const g08TierSource = fs.readFileSync("apps/web/src/modules/g08/AparTierForms.tsx", "utf8");
-const g07NominationSource = fs.readFileSync("apps/web/src/modules/g07/TrainingNominationForm.tsx", "utf8");
+const ps09WorkbenchSource = fs.readFileSync("apps/web/src/modules/ps09/DisciplinaryCaseWorkbench.tsx", "utf8");
+const ps06DpcSource = fs.readFileSync("apps/web/src/modules/ps06/DpcConvenePanel.tsx", "utf8");
+const ps08TierSource = fs.readFileSync("apps/web/src/modules/ps08/AparTierForms.tsx", "utf8");
+const ps07NominationSource = fs.readFileSync("apps/web/src/modules/ps07/TrainingNominationForm.tsx", "utf8");
 
 // --- Transpiling module loader so the real TS/TSX sources are exercised, not re-implemented ---
 
@@ -53,10 +53,10 @@ function loadTsModule(candidate) {
 
 const { createHrmsClient, HrmsApiError } = loadTsModule("apps/web/src/api/hrmsClient.ts");
 const { createFixtureHrmsClient } = loadTsModule("apps/web/src/api/fixtureHrmsClient.ts");
-const { DisciplinaryCaseWorkbench } = loadTsModule("apps/web/src/modules/g09/DisciplinaryCaseWorkbench.tsx");
-const { DpcConvenePanel } = loadTsModule("apps/web/src/modules/g06/DpcConvenePanel.tsx");
-const { AparTierForms } = loadTsModule("apps/web/src/modules/g08/AparTierForms.tsx");
-const { TrainingNominationForm } = loadTsModule("apps/web/src/modules/g07/TrainingNominationForm.tsx");
+const { DisciplinaryCaseWorkbench } = loadTsModule("apps/web/src/modules/ps09/DisciplinaryCaseWorkbench.tsx");
+const { DpcConvenePanel } = loadTsModule("apps/web/src/modules/ps06/DpcConvenePanel.tsx");
+const { AparTierForms } = loadTsModule("apps/web/src/modules/ps08/AparTierForms.tsx");
+const { TrainingNominationForm } = loadTsModule("apps/web/src/modules/ps07/TrainingNominationForm.tsx");
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -64,7 +64,7 @@ function jsonResponse(status, body) {
 
 // --- 1) The new surfaces are real controlled forms wired to the client submit methods ---
 
-test("PH-08F G09 workbench has intake + charge forms submitting through the client", () => {
+test("PH-08F PS09 workbench has intake + charge forms submitting through the client", () => {
   for (const marker of [
     "<form",
     "onSubmit={handleIntakeSubmit}",
@@ -76,14 +76,14 @@ test("PH-08F G09 workbench has intake + charge forms submitting through the clie
     "allegations",
     "articles",
     'role="alert"',
-    "G09_AUTHORITY_COMPETENCE",
-    "ERR-G09-AUTHORITY-NOT-COMPETENT",
+    "PS09_AUTHORITY_COMPETENCE",
+    "ERR-PS09-AUTHORITY-NOT-COMPETENT",
   ]) {
-    assert.equal(g09WorkbenchSource.includes(marker), true, `DisciplinaryCaseWorkbench missing ${marker}`);
+    assert.equal(ps09WorkbenchSource.includes(marker), true, `DisciplinaryCaseWorkbench missing ${marker}`);
   }
 });
 
-test("PH-08F G06 DPC panel captures each member's verdict individually with quorum visible", () => {
+test("PH-08F PS06 DPC panel captures each member's verdict individually with quorum visible", () => {
   for (const marker of [
     "<form",
     "onSubmit={handleSubmit}",
@@ -97,15 +97,15 @@ test("PH-08F G06 DPC panel captures each member's verdict individually with quor
     "Quorum position",
     'role="alert"',
   ]) {
-    assert.equal(g06DpcSource.includes(marker), true, `DpcConvenePanel missing ${marker}`);
+    assert.equal(ps06DpcSource.includes(marker), true, `DpcConvenePanel missing ${marker}`);
   }
 });
 
-test("PH-08F G08 tier forms are gated by the actor's tier permission (SoD)", () => {
+test("PH-08F PS08 tier forms are gated by the actor's tier permission (SoD)", () => {
   for (const marker of [
-    "g08.apar.self.submit",
-    "g08.apar.report",
-    "g08.apar.review",
+    "ps08.apar.self.submit",
+    "ps08.apar.report",
+    "ps08.apar.review",
     "submitAparSelf",
     "recordAparReporting",
     "recordAparReview",
@@ -114,13 +114,13 @@ test("PH-08F G08 tier forms are gated by the actor's tier permission (SoD)", () 
     "canReview",
     'role="alert"',
   ]) {
-    assert.equal(g08TierSource.includes(marker), true, `AparTierForms missing ${marker}`);
+    assert.equal(ps08TierSource.includes(marker), true, `AparTierForms missing ${marker}`);
   }
 });
 
-test("PH-08F G07 nomination form renders capacity/eligibility feedback from the server", () => {
+test("PH-08F PS07 nomination form renders capacity/eligibility feedback from the server", () => {
   for (const marker of ["<form", "onSubmit={handleSubmit}", "nominateForTraining", "WAITLISTED", "waitlistPosition", 'role="alert"']) {
-    assert.equal(g07NominationSource.includes(marker), true, `TrainingNominationForm missing ${marker}`);
+    assert.equal(ps07NominationSource.includes(marker), true, `TrainingNominationForm missing ${marker}`);
   }
 });
 
@@ -243,7 +243,7 @@ test("PH-08F nominateForTraining POSTs /api/v1/training/nominations", async () =
 
 // --- 3) The fixture client honours the same submit paths and failure semantics ---
 
-test("PH-08F fixture drives the G09 submit path intake -> charge and fails closed on re-charge", async () => {
+test("PH-08F fixture drives the PS09 submit path intake -> charge and fails closed on re-charge", async () => {
   const fixture = createFixtureHrmsClient();
   const opened = await fixture.openDisciplinaryCase(
     { chargedEmployeeId: "emp-1", disciplinaryAuthorityId: "emp-2", allegations: "Complaint", confidential: false },
@@ -320,7 +320,7 @@ test("PH-08F fixture waitlists nominations past session capacity (capacity feedb
 
 // --- 4) Rendered canonical states: empty list, quorum status, error envelopes as alerts ---
 
-test("PH-08F G09 workbench renders both forms and the empty case list", () => {
+test("PH-08F PS09 workbench renders both forms and the empty case list", () => {
   const markup = renderToStaticMarkup(React.createElement(DisciplinaryCaseWorkbench, { client: createFixtureHrmsClient() }));
   assert.match(markup, /Complaint and case intake form/);
   assert.match(markup, /Article of charge form/);
@@ -328,7 +328,7 @@ test("PH-08F G09 workbench renders both forms and the empty case list", () => {
   assert.match(markup, /No cases yet/);
 });
 
-test("PH-08F G06 DPC panel renders the quorum position and the QUORUM_NOT_MET error state as an alert", () => {
+test("PH-08F PS06 DPC panel renders the quorum position and the QUORUM_NOT_MET error state as an alert", () => {
   const client = createFixtureHrmsClient();
   const idleMarkup = renderToStaticMarkup(React.createElement(DpcConvenePanel, { client }));
   assert.match(idleMarkup, /Quorum position/);
@@ -343,13 +343,13 @@ test("PH-08F G06 DPC panel renders the quorum position and the QUORUM_NOT_MET er
   assert.match(errorMarkup, /QUORUM_NOT_MET/);
 });
 
-test("PH-08F G08 tier forms render only the tiers the actor holds (SoD in the UI)", () => {
+test("PH-08F PS08 tier forms render only the tiers the actor holds (SoD in the UI)", () => {
   const client = createFixtureHrmsClient();
-  const appraiseeMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: ["g08.apar.self.submit"] }));
+  const appraiseeMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: ["ps08.apar.self.submit"] }));
   assert.match(appraiseeMarkup, /Self-appraisal/);
   assert.doesNotMatch(appraiseeMarkup, /Reporting officer assessment/);
   assert.doesNotMatch(appraiseeMarkup, /Reviewing officer review/);
-  const roMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: ["g08.apar.report", "g08.apar.review"] }));
+  const roMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: ["ps08.apar.report", "ps08.apar.review"] }));
   assert.match(roMarkup, /Reporting officer assessment/);
   assert.match(roMarkup, /Reviewing officer review/);
   assert.doesNotMatch(roMarkup, /Self-appraisal \(appraisee tier\)/);
@@ -357,7 +357,7 @@ test("PH-08F G08 tier forms render only the tiers the actor holds (SoD in the UI
   assert.match(noTierMarkup, /data-state="empty"/);
 });
 
-test("PH-08F G07 nomination form renders eligibility errors and waitlist capacity feedback", () => {
+test("PH-08F PS07 nomination form renders eligibility errors and waitlist capacity feedback", () => {
   const client = createFixtureHrmsClient();
   const errorMarkup = renderToStaticMarkup(
     React.createElement(TrainingNominationForm, {

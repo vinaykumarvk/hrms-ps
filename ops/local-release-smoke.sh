@@ -24,7 +24,7 @@ esac
 
 for var_name in DATABASE_URL API_BASE_URL HRMS_BASE_URL VITE_API_BASE_URL; do
   value="${!var_name:-}"
-  if printf '%s' "$value" | grep -Eiq 'prod|production|live|\\.gov\\.in|\\.nic\\.in'; then
+  if printf '%s' "$value" | grep -Eiq 'prod|production|live|\\.enterprise\\.in|\\.nic\\.in'; then
     red "$var_name looks production-like"
   else
     grn "$var_name non-production or unset"

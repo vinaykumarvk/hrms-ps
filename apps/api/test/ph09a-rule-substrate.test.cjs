@@ -1,11 +1,11 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-// PH-09A oracle tests — persisted, effective-dated G10/G11 rule substrate:
-// pay_components + pay_rules (constrained DSL, ERR-G10-RULE-EXPR), rate_tables
-// (as-of resolution, ERR-G10-RATE-NOTFOUND / ERR-G10-PT-STATE, overlap rejection
-// ERR-G10-RATE-OVERLAP) and the G11 E30-E36 rule tables (pen_da_relief_rates ..
-// pen_rounding_rules; ERR-G11-RULE-NOT-EFFECTIVE / ERR-G11-FACTOR-NOT-FOUND).
+// PH-09A oracle tests — persisted, effective-dated PS10/PS11 rule substrate:
+// pay_components + pay_rules (constrained DSL, ERR-PS10-RULE-EXPR), rate_tables
+// (as-of resolution, ERR-PS10-RATE-NOTFOUND / ERR-PS10-PT-STATE, overlap rejection
+// ERR-PS10-RATE-OVERLAP) and the PS11 E30-E36 rule tables (pen_da_relief_rates ..
+// pen_rounding_rules; ERR-PS11-RULE-NOT-EFFECTIVE / ERR-PS11-FACTOR-NOT-FOUND).
 // All amounts are INTEGER cents; rates are integer basis points (test fixture values,
 // not statutory claims).
 
@@ -43,7 +43,7 @@ function codeOf(fn) {
   assert.fail("expected the call to throw");
 }
 
-test("PH-09A G10 pay_components + pay_rules: whitelist DSL accepted, bad token rejected (ERR-G10-RULE-EXPR)", () => {
+test("PH-09A PS10 pay_components + pay_rules: whitelist DSL accepted, bad token rejected (ERR-PS10-RULE-EXPR)", () => {
   const services = createFoundationServices();
   const maker = actor();
   services.payRules.createPayComponent(maker, { componentCode: "BASIC", name: "Basic Pay", category: "EARNING", calcMethod: "FLAT" });
@@ -57,9 +57,9 @@ test("PH-09A G10 pay_components + pay_rules: whitelist DSL accepted, bad token r
     effectiveFrom: "2026-01-01",
   });
   assert.equal(rule.version, 1);
-  assert.equal(rule.dslGrammarVersion, "G10-DSL-1.0");
+  assert.equal(rule.dslGrammarVersion, "PS10-DSL-1.0");
 
-  // NEGATIVE: disallowed token (VAL-G10-DSL-TOKEN) -> ERR-G10-RULE-EXPR, nothing persisted.
+  // NEGATIVE: disallowed token (VAL-PS10-DSL-TOKEN) -> ERR-PS10-RULE-EXPR, nothing persisted.
   assert.equal(
     codeOf(() =>
       services.payRules.createPayRule(maker, {
@@ -69,7 +69,7 @@ test("PH-09A G10 pay_components + pay_rules: whitelist DSL accepted, bad token r
         effectiveFrom: "2026-01-01",
       })
     ),
-    "ERR-G10-RULE-EXPR"
+    "ERR-PS10-RULE-EXPR"
   );
   // NEGATIVE: unknown reference is also rejected — no eval of arbitrary identifiers.
   assert.equal(
@@ -81,12 +81,12 @@ test("PH-09A G10 pay_components + pay_rules: whitelist DSL accepted, bad token r
         effectiveFrom: "2026-01-01",
       })
     ),
-    "ERR-G10-RULE-EXPR"
+    "ERR-PS10-RULE-EXPR"
   );
-  assert.ok(services.audit.listAudit(maker).some((entry) => entry.subjectRef.startsWith("g10_pay_rules:")));
+  assert.ok(services.audit.listAudit(maker).some((entry) => entry.subjectRef.startsWith("ps10_pay_rules:")));
 });
 
-test("PH-09A G10 rate_tables: effective-date resolution differs across the boundary and fails closed", () => {
+test("PH-09A PS10 rate_tables: effective-date resolution differs across the boundary and fails closed", () => {
   const services = createFoundationServices();
   const maker = actor();
   // Two adjacent, non-overlapping DA_RATE windows (integer basis points).
@@ -99,23 +99,23 @@ test("PH-09A G10 rate_tables: effective-date resolution differs across the bound
   assert.equal(after.ratePctBps, 5300);
   assert.notEqual(before.id, after.id);
 
-  // NEGATIVE: as-of miss fails closed — never silently "latest" (ERR-G10-RATE-NOTFOUND).
-  assert.equal(codeOf(() => services.payRules.resolveRate(maker, { tableType: "DA_RATE", asOf: "2025-12-31" })), "ERR-G10-RATE-NOTFOUND");
+  // NEGATIVE: as-of miss fails closed — never silently "latest" (ERR-PS10-RATE-NOTFOUND).
+  assert.equal(codeOf(() => services.payRules.resolveRate(maker, { tableType: "DA_RATE", asOf: "2025-12-31" })), "ERR-PS10-RATE-NOTFOUND");
 
-  // NEGATIVE: overlap on the same key rejected on write (VAL-G10-RATE-NONOVERLAP).
+  // NEGATIVE: overlap on the same key rejected on write (VAL-PS10-RATE-NONOVERLAP).
   assert.equal(
     codeOf(() => services.payRules.addRateRow(maker, { tableType: "DA_RATE", ratePctBps: 6000, effectiveFrom: "2026-05-01" })),
-    "ERR-G10-RATE-OVERLAP"
+    "ERR-PS10-RATE-OVERLAP"
   );
 });
 
-test("PH-09A G10 rate_tables: PT slabs are state-dimensioned (ERR-G10-PT-STATE)", () => {
+test("PH-09A PS10 rate_tables: PT slabs are state-dimensioned (ERR-PS10-PT-STATE)", () => {
   const services = createFoundationServices();
   const maker = actor();
   // NEGATIVE: PT_SLAB row without a state of posting is rejected at write.
   assert.equal(
     codeOf(() => services.payRules.addRateRow(maker, { tableType: "PT_SLAB", slabMinCents: 0, slabMaxCents: 1500000, flatAmountCents: 20000, effectiveFrom: "2026-01-01" })),
-    "ERR-G10-PT-STATE"
+    "ERR-PS10-PT-STATE"
   );
   services.payRules.addRateRow(maker, {
     tableType: "PT_SLAB",
@@ -135,11 +135,11 @@ test("PH-09A G10 rate_tables: PT slabs are state-dimensioned (ERR-G10-PT-STATE)"
   const slab = services.payRules.resolveRate(maker, { tableType: "PT_SLAB", state: "KA", asOf: "2026-03-01", amountCents: 2000000 });
   assert.equal(slab.flatAmountCents, 30000);
   // NEGATIVE: PT lookup without a state, and for an unmapped state, both fail closed.
-  assert.equal(codeOf(() => services.payRules.resolveRate(maker, { tableType: "PT_SLAB", asOf: "2026-03-01" })), "ERR-G10-PT-STATE");
-  assert.equal(codeOf(() => services.payRules.resolveRate(maker, { tableType: "PT_SLAB", state: "MH", asOf: "2026-03-01" })), "ERR-G10-PT-STATE");
+  assert.equal(codeOf(() => services.payRules.resolveRate(maker, { tableType: "PT_SLAB", asOf: "2026-03-01" })), "ERR-PS10-PT-STATE");
+  assert.equal(codeOf(() => services.payRules.resolveRate(maker, { tableType: "PT_SLAB", state: "MH", asOf: "2026-03-01" })), "ERR-PS10-PT-STATE");
 });
 
-test("PH-09A G11 pen_commutation_factors: as-of + age-next-birthday lookup fails closed", () => {
+test("PH-09A PS11 pen_commutation_factors: as-of + age-next-birthday lookup fails closed", () => {
   const services = createFoundationServices();
   const maker = actor();
   // Same age key, adjacent windows -> different factors either side of the boundary (x 10^4 fixtures).
@@ -158,10 +158,10 @@ test("PH-09A G11 pen_commutation_factors: as-of + age-next-birthday lookup fails
   });
   assert.equal(services.pensionRules.resolveCommutationFactor(maker, "2026-06-15", 59).factorTenThousandths, 81940);
   assert.equal(services.pensionRules.resolveCommutationFactor(maker, "2027-01-01", 59).factorTenThousandths, 81000);
-  // NEGATIVE: age key present but no window covers the date -> ERR-G11-RULE-NOT-EFFECTIVE.
-  assert.equal(codeOf(() => services.pensionRules.resolveCommutationFactor(maker, "2025-06-15", 59)), "ERR-G11-RULE-NOT-EFFECTIVE");
-  // NEGATIVE: missing age-next-birthday key -> ERR-G11-FACTOR-NOT-FOUND (no adjacent-age fallback).
-  assert.equal(codeOf(() => services.pensionRules.resolveCommutationFactor(maker, "2026-06-15", 42)), "ERR-G11-FACTOR-NOT-FOUND");
+  // NEGATIVE: age key present but no window covers the date -> ERR-PS11-RULE-NOT-EFFECTIVE.
+  assert.equal(codeOf(() => services.pensionRules.resolveCommutationFactor(maker, "2025-06-15", 59)), "ERR-PS11-RULE-NOT-EFFECTIVE");
+  // NEGATIVE: missing age-next-birthday key -> ERR-PS11-FACTOR-NOT-FOUND (no adjacent-age fallback).
+  assert.equal(codeOf(() => services.pensionRules.resolveCommutationFactor(maker, "2026-06-15", 42)), "ERR-PS11-FACTOR-NOT-FOUND");
   // NEGATIVE: overlapping window on the same (ruleCode, age) key is rejected (FR-19 AC1).
   assert.equal(
     codeOf(() =>
@@ -176,7 +176,7 @@ test("PH-09A G11 pen_commutation_factors: as-of + age-next-birthday lookup fails
   );
 });
 
-test("PH-09A G11 rule tables E30/E32-E36 persist and resolve effective-dated rows", () => {
+test("PH-09A PS11 rule tables E30/E32-E36 persist and resolve effective-dated rows", () => {
   const services = createFoundationServices();
   const maker = actor();
   services.pensionRules.addDaReliefRate(maker, { ruleCode: "DR-2026", daPercentBps: 5300, payCommissionBasis: "7CPC", effectiveFrom: "2026-01-01" });
@@ -193,8 +193,8 @@ test("PH-09A G11 rule tables E30/E32-E36 persist and resolve effective-dated row
   assert.equal(services.pensionRules.resolvePensionLimits(maker, "2026-05-01").maxPensionCents, 12500000);
   assert.equal(services.pensionRules.resolveRoundingRule(maker, "2026-05-01").qualifyingServiceCapHalfYears, 66);
   // NEGATIVE: off-window lookups fail closed across the E30-E36 set.
-  assert.equal(codeOf(() => services.pensionRules.resolveDaReliefRate(maker, "2025-12-31")), "ERR-G11-RULE-NOT-EFFECTIVE");
-  assert.equal(codeOf(() => services.pensionRules.resolveRoundingRule(maker, "2025-12-31")), "ERR-G11-RULE-NOT-EFFECTIVE");
+  assert.equal(codeOf(() => services.pensionRules.resolveDaReliefRate(maker, "2025-12-31")), "ERR-PS11-RULE-NOT-EFFECTIVE");
+  assert.equal(codeOf(() => services.pensionRules.resolveRoundingRule(maker, "2025-12-31")), "ERR-PS11-RULE-NOT-EFFECTIVE");
   // Every rule row lands in the P05 audit trail against its pen_* table.
   const auditRefs = services.audit.listAudit(maker).map((entry) => entry.subjectRef);
   for (const table of [
@@ -232,14 +232,14 @@ test("PH-09A routes: rate_tables write/resolve and pen rule tables over the prot
     body: { tableType: "DA_RATE", ratePctBps: 6000, effectiveFrom: "2026-03-01" },
   });
   assert.equal(overlap.status, 409);
-  assert.equal(overlap.body.error.code, "ERR-G10-RATE-OVERLAP");
+  assert.equal(overlap.body.error.code, "ERR-PS10-RATE-OVERLAP");
 
   const resolved = call(api, { method: "GET", path: "/api/v1/payroll/rate-tables/resolve", query: { tableType: "DA_RATE", asOf: "2026-02-01" } });
   assert.equal(resolved.status, 200);
   assert.equal(resolved.body.rateRow.ratePctBps, 4200);
   const miss = call(api, { method: "GET", path: "/api/v1/payroll/rate-tables/resolve", query: { tableType: "DA_RATE", asOf: "2026-08-01" } });
   assert.equal(miss.status, 422);
-  assert.equal(miss.body.error.code, "ERR-G10-RATE-NOTFOUND");
+  assert.equal(miss.body.error.code, "ERR-PS10-RATE-NOTFOUND");
 
   assert.equal(
     call(api, {
@@ -263,5 +263,5 @@ test("PH-09A routes: rate_tables write/resolve and pen rule tables over the prot
     query: { asOf: "2026-06-15", ageNextBirthday: "42" },
   });
   assert.equal(factorMiss.status, 422);
-  assert.equal(factorMiss.body.error.code, "ERR-G11-FACTOR-NOT-FOUND");
+  assert.equal(factorMiss.body.error.code, "ERR-PS11-FACTOR-NOT-FOUND");
 });

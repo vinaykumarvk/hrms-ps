@@ -5,14 +5,14 @@ const fs = require("node:fs");
 const clientSource = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixtureSource = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
 const appSource = fs.readFileSync("apps/web/src/App.tsx", "utf8");
-const contactsSource = fs.readFileSync("apps/web/src/modules/g01/EmployeeContactsPanel.tsx", "utf8");
-const dependentsSource = fs.readFileSync("apps/web/src/modules/g01/EmployeeDependentsPanel.tsx", "utf8");
-const editorSource = fs.readFileSync("apps/web/src/modules/g02/ChangeRequestEditor.tsx", "utf8");
-const queueSource = fs.readFileSync("apps/web/src/modules/g02/ChangeRequestApproverQueue.tsx", "utf8");
-const diffSource = fs.readFileSync("apps/web/src/modules/g02/ChangeRequestDiffView.tsx", "utf8");
-const selfServiceSource = fs.readFileSync("apps/web/src/modules/g03/SelfServiceSummary.tsx", "utf8");
+const contactsSource = fs.readFileSync("apps/web/src/modules/ps01/EmployeeContactsPanel.tsx", "utf8");
+const dependentsSource = fs.readFileSync("apps/web/src/modules/ps01/EmployeeDependentsPanel.tsx", "utf8");
+const editorSource = fs.readFileSync("apps/web/src/modules/ps02/ChangeRequestEditor.tsx", "utf8");
+const queueSource = fs.readFileSync("apps/web/src/modules/ps02/ChangeRequestApproverQueue.tsx", "utf8");
+const diffSource = fs.readFileSync("apps/web/src/modules/ps02/ChangeRequestDiffView.tsx", "utf8");
+const selfServiceSource = fs.readFileSync("apps/web/src/modules/ps03/SelfServiceSummary.tsx", "utf8");
 
-test("PH-07E G01 contact and dependent panels are real controlled forms with submit handlers", () => {
+test("PH-07E PS01 contact and dependent panels are real controlled forms with submit handlers", () => {
   for (const [name, source, method] of [
     ["EmployeeContactsPanel", contactsSource, "addEmployeeContact"],
     ["EmployeeDependentsPanel", dependentsSource, "addEmployeeDependent"],
@@ -26,7 +26,7 @@ test("PH-07E G01 contact and dependent panels are real controlled forms with sub
   }
 });
 
-test("PH-07E G02 change-request editor submits through the client and surfaces error envelopes", () => {
+test("PH-07E PS02 change-request editor submits through the client and surfaces error envelopes", () => {
   for (const marker of [
     "<form",
     "onSubmit={handleSubmit}",
@@ -42,7 +42,7 @@ test("PH-07E G02 change-request editor submits through the client and surfaces e
   }
 });
 
-test("PH-07E G02 approver queue wires approve/reject/send-back with a mandatory comment", () => {
+test("PH-07E PS02 approver queue wires approve/reject/send-back with a mandatory comment", () => {
   for (const marker of [
     "listPersonalDetailChangeRequests",
     "decidePersonalDetailChangeRequest",
@@ -50,7 +50,7 @@ test("PH-07E G02 approver queue wires approve/reject/send-back with a mandatory 
     '"reject"',
     '"send-back"',
     "ERR-REASON-REQ",
-    "ERR-G02-SOD",
+    "ERR-PS02-SOD",
     "<button",
     "onClick",
   ]) {
@@ -61,14 +61,14 @@ test("PH-07E G02 approver queue wires approve/reject/send-back with a mandatory 
   }
 });
 
-test("PH-07E G02 diff view renders the masked field-level diff exactly as the API returns it", () => {
+test("PH-07E PS02 diff view renders the masked field-level diff exactly as the API returns it", () => {
   for (const marker of ["getPersonalDetailChangeRequestDiff", "field.masked", "field.oldValue", "field.newValue", '"loading"', '"error"', '"empty"']) {
     assert.equal(diffSource.includes(marker), true, `ChangeRequestDiffView missing ${marker}`);
   }
   assert.equal(queueSource.includes("ChangeRequestDiffView"), true, "approver queue does not mount the diff view");
 });
 
-test("PH-07E G03 SelfServiceSummary fetches balances and applications via the client", () => {
+test("PH-07E PS03 SelfServiceSummary fetches balances and applications via the client", () => {
   for (const marker of ["SelfServiceSummary", "getLeaveBalance", "listLeaveApplications", '"loading"', '"error"', '"empty"', "OperationalState"]) {
     assert.equal(selfServiceSource.includes(marker), true, `SelfServiceSummary missing ${marker}`);
   }
@@ -159,14 +159,14 @@ test("PH-07E addEmployeeDependent POSTs the PH-07A dependents route", async () =
   assert.equal(calls[0].body.isLegalHeir, true);
 });
 
-test("PH-07E createPersonalDetailChangeRequest POSTs the G02 create route", async () => {
+test("PH-07E createPersonalDetailChangeRequest POSTs the PS02 create route", async () => {
   const { createHrmsClient } = loadHrmsClientModule();
   const calls = [];
   const client = createHrmsClient({
     tokenProvider: () => "session-token-123",
     fetcher: async (url, init) => {
       calls.push({ url: String(url), method: init.method, body: JSON.parse(init.body) });
-      return jsonResponse(201, { request: { id: "g02-1", requestNo: "G02/00002", status: "IN_REVIEW", sensitivity: "LOW" } });
+      return jsonResponse(201, { request: { id: "ps02-1", requestNo: "PS02/00002", status: "IN_REVIEW", sensitivity: "LOW" } });
     },
   });
 
@@ -174,7 +174,7 @@ test("PH-07E createPersonalDetailChangeRequest POSTs the G02 create route", asyn
     { employeeId: "emp-1", fieldCode: "displayName", newValue: "Ananya R. Rao", reason: "Gazette correction" },
     "idem-ph07e-003"
   );
-  assert.equal(result.request.requestNo, "G02/00002");
+  assert.equal(result.request.requestNo, "PS02/00002");
   assert.equal(calls[0].url, "/api/v1/personal-details/change-requests");
   assert.equal(calls[0].body.fieldCode, "displayName");
 });
@@ -186,13 +186,13 @@ test("PH-07E decidePersonalDetailChangeRequest POSTs :send-back with the mandato
     tokenProvider: () => "session-token-123",
     fetcher: async (url, init) => {
       calls.push({ url: String(url), method: init.method, body: JSON.parse(init.body) });
-      return jsonResponse(202, { request: { id: "g02-1", requestNo: "G02/00002", status: "RETURNED" } });
+      return jsonResponse(202, { request: { id: "ps02-1", requestNo: "PS02/00002", status: "RETURNED" } });
     },
   });
 
-  const result = await client.decidePersonalDetailChangeRequest("g02-1", "send-back", "Attach the gazette copy", "idem-ph07e-004");
+  const result = await client.decidePersonalDetailChangeRequest("ps02-1", "send-back", "Attach the gazette copy", "idem-ph07e-004");
   assert.equal(result.request.status, "RETURNED");
-  assert.equal(calls[0].url, "/api/v1/personal-details/change-requests/g02-1:send-back");
+  assert.equal(calls[0].url, "/api/v1/personal-details/change-requests/ps02-1:send-back");
   assert.equal(calls[0].body.comment, "Attach the gazette copy");
 });
 
@@ -207,7 +207,7 @@ test("PH-07E a missing decision comment surfaces the ERR-REASON-REQ envelope via
   });
 
   await assert.rejects(
-    () => client.decidePersonalDetailChangeRequest("g02-1", "reject", undefined, "idem-ph07e-005"),
+    () => client.decidePersonalDetailChangeRequest("ps02-1", "reject", undefined, "idem-ph07e-005"),
     (error) => {
       assert.equal(error instanceof HrmsApiError, true);
       assert.equal(error.code, "VALIDATION_FAILED");
@@ -226,8 +226,8 @@ test("PH-07E getPersonalDetailChangeRequestDiff GETs the diff route and keeps ma
     fetcher: async (url, init) => {
       calls.push({ url: String(url), method: init?.method });
       return jsonResponse(200, {
-        changeRequestId: "g02-1",
-        requestNo: "G02/00002",
+        changeRequestId: "ps02-1",
+        requestNo: "PS02/00002",
         status: "IN_REVIEW",
         revisionNo: 1,
         fields: [{ fieldCode: "pan", displayLabel: "PAN", sensitivity: "HIGH", oldValue: "[HIDDEN]", newValue: "[HIDDEN]", masked: true }],
@@ -235,8 +235,8 @@ test("PH-07E getPersonalDetailChangeRequestDiff GETs the diff route and keeps ma
     },
   });
 
-  const diff = await client.getPersonalDetailChangeRequestDiff("g02-1");
-  assert.equal(calls[0].url, "/api/v1/change-requests/g02-1/diff");
+  const diff = await client.getPersonalDetailChangeRequestDiff("ps02-1");
+  assert.equal(calls[0].url, "/api/v1/change-requests/ps02-1/diff");
   assert.equal(diff.fields[0].masked, true);
   assert.equal(diff.fields[0].oldValue, "[HIDDEN]");
   assert.equal(diff.fields[0].newValue, "[HIDDEN]");

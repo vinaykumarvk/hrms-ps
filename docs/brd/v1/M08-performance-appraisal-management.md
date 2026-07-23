@@ -13,7 +13,7 @@
 
 ### 1.1 Purpose
 
-Performance Appraisal Management (M08-PAM) is the system of engagement and adjudication for measuring, recording, moderating and certifying employee performance across an annual (and continuous) cycle. It unifies two worlds that government HR has historically kept apart:
+Performance Appraisal Management (M08-PAM) is the system of engagement and adjudication for measuring, recording, moderating and certifying employee performance across an annual (and continuous) cycle. It unifies two worlds that enterprise HR has historically kept apart:
 
 1. **Modern continuous performance management (CPM)** — OKR/KRA-based goal-setting, cascading objectives, real-time feedback, check-ins, 360-degree feedback, competency assessment, and calibration — the practices best-in-class enterprises expect.
 2. **The statutory APAR process** — a confidential, multi-tier adjudicated record authored by a **Reporting Officer**, scrutinised by a **Reviewing Officer**, and certified by an **Accepting Authority**, including numeric grading, the integrity/attribute columns, the pen-picture, mandatory **disclosure** of the full APAR to the officer reported upon, the right of **representation/appeal** against adverse or below-benchmark remarks, and the eventual **custody and posting** of the final grade to the Digital Service Register.
@@ -1976,7 +1976,7 @@ Shared contracts (error catalog, state machines, grade engine, tier-projection) 
 ### Appendix D — Assumptions & open items
 - Exact statutory representation window (days) and condonation authority are configuration, set per jurisdiction at deployment.
 - Competency catalog and role-required levels are owned by M07; M08 consumes snapshots.
-- Adjudicating authority seniority rules are configurable to the deploying government's service rules.
+- Adjudicating authority seniority rules are configurable to the deploying enterprise's service rules.
 
 ### Appendix E — Reuse confirmation
 This BRD reuses, without redefining, the Shared Foundation canonical entities (`employees`, `users`, `org_units`, `designations`, `cadres`, `roles`, `permissions`, `audit_log`, `documents`, `notifications`, `workflow_instances`, `workflow_tasks`, `service_register_events`) and conventions (IDs, audit fields, statuses, time/locale, pagination, maker-checker, RBAC baseline, technical defaults, error envelope). Module-specific entities E1–E18 extend, and do not conflict with, the shared model.

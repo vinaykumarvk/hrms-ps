@@ -1,5 +1,5 @@
 /goal
-  objective: Produce the HRMS SEED-DATA PLAN & authority FIXTURES that let G03 (leave) and G05 (transfer)
+  objective: Produce the HRMS SEED-DATA PLAN & authority FIXTURES that let PS03 (leave) and PS05 (transfer)
     resolve authority end-to-end without test-only bypasses — a sample tenant/entity/org/position hierarchy
     plus the hard resolver cases: vacant manager, delegated manager, acting-charge, conflict-of-interest,
     cross-entity authority, and historical-correction (past result must not be rewritten).
@@ -14,7 +14,7 @@
     - name: Seed plan + hierarchy
       max_iterations: 4
       repeat_until: hrms-seed-data-plan.yaml enumerates a coherent tenant/entity/org/position/reporting hierarchy
-        sufficient for G03 and G05, with fixtures.statutory_authority.table = g01_authority_assignments.
+        sufficient for PS03 and PS05, with fixtures.statutory_authority.table = ps01_authority_assignments.
       steps: [define the seed hierarchy, map to the PH-02B tables, state load order]
     - name: Hard-case fixtures
       max_iterations: 4

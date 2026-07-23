@@ -6,9 +6,9 @@ const ts = require("typescript");
 const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 
-// PH-09E: compensation-wave UI — G10 payslip view with masked PAN/account, payroll run
+// PH-09E: compensation-wave UI — PS10 payslip view with masked PAN/account, payroll run
 // console driving the full lifecycle (create -> lock-inputs -> compute -> reconcile ->
-// approve -> lock -> disburse), G11 pension case console + scheme-branched benefit
+// approve -> lock -> disburse), PS11 pension case console + scheme-branched benefit
 // estimator. Source markers pin the wiring; the transpiled real client and fixture
 // client are exercised behaviourally; the components render the canonical states; and
 // the masked-PAN negative assertion proves no raw PAN reaches the DOM.
@@ -16,11 +16,11 @@ const { renderToStaticMarkup } = require("react-dom/server");
 const clientSource = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixtureSource = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
 const appSource = fs.readFileSync("apps/web/src/App.tsx", "utf8");
-const g10ConsoleSource = fs.readFileSync("apps/web/src/modules/g10/PayrollRunConsole.tsx", "utf8");
-const g10PayslipSource = fs.readFileSync("apps/web/src/modules/g10/PayslipView.tsx", "utf8");
-const g11ConsoleSource = fs.readFileSync("apps/web/src/modules/g11/PensionCaseConsole.tsx", "utf8");
-const g10WorkspaceSource = fs.readFileSync("apps/web/src/modules/g10/PayrollWorkspace.tsx", "utf8");
-const g11WorkspaceSource = fs.readFileSync("apps/web/src/modules/g11/PensionWorkspace.tsx", "utf8");
+const ps10ConsoleSource = fs.readFileSync("apps/web/src/modules/ps10/PayrollRunConsole.tsx", "utf8");
+const ps10PayslipSource = fs.readFileSync("apps/web/src/modules/ps10/PayslipView.tsx", "utf8");
+const ps11ConsoleSource = fs.readFileSync("apps/web/src/modules/ps11/PensionCaseConsole.tsx", "utf8");
+const ps10WorkspaceSource = fs.readFileSync("apps/web/src/modules/ps10/PayrollWorkspace.tsx", "utf8");
+const ps11WorkspaceSource = fs.readFileSync("apps/web/src/modules/ps11/PensionWorkspace.tsx", "utf8");
 
 // --- Transpiling module loader so the real TS/TSX sources are exercised, not re-implemented ---
 
@@ -55,24 +55,24 @@ function loadTsModule(candidate) {
 
 const { createHrmsClient, HrmsApiError } = loadTsModule("apps/web/src/api/hrmsClient.ts");
 const { createFixtureHrmsClient } = loadTsModule("apps/web/src/api/fixtureHrmsClient.ts");
-const { PayrollRunConsole } = loadTsModule("apps/web/src/modules/g10/PayrollRunConsole.tsx");
-const { PayslipView, maskFailClosed, formatMoneyCents } = loadTsModule("apps/web/src/modules/g10/PayslipView.tsx");
-const { PensionCaseConsole } = loadTsModule("apps/web/src/modules/g11/PensionCaseConsole.tsx");
+const { PayrollRunConsole } = loadTsModule("apps/web/src/modules/ps10/PayrollRunConsole.tsx");
+const { PayslipView, maskFailClosed, formatMoneyCents } = loadTsModule("apps/web/src/modules/ps10/PayslipView.tsx");
+const { PensionCaseConsole } = loadTsModule("apps/web/src/modules/ps11/PensionCaseConsole.tsx");
 
 const ALL_PERMISSIONS = [
-  "g10.payroll.read",
-  "g10.salary.write",
-  "g10.payroll.run.create",
-  "g10.payroll.input.lock",
-  "g10.payroll.compute",
-  "g10.payroll.reconcile",
-  "g10.payroll.approve",
-  "g10.payroll.lock",
-  "g10.payroll.disburse",
-  "g11.pension.read",
-  "g11.case.create",
-  "g11.service.verify",
-  "g11.pension.compute",
+  "ps10.payroll.read",
+  "ps10.salary.write",
+  "ps10.payroll.run.create",
+  "ps10.payroll.input.lock",
+  "ps10.payroll.compute",
+  "ps10.payroll.reconcile",
+  "ps10.payroll.approve",
+  "ps10.payroll.lock",
+  "ps10.payroll.disburse",
+  "ps11.pension.read",
+  "ps11.case.create",
+  "ps11.service.verify",
+  "ps11.pension.compute",
 ];
 
 function jsonResponse(status, body) {
@@ -81,12 +81,12 @@ function jsonResponse(status, body) {
 
 // --- 1) The new surfaces are real controlled forms/actions wired to the client methods ---
 
-test("PH-09E stub marker cards are gone from the G10/G11 workspaces", () => {
-  assert.equal(g10WorkspaceSource.includes("evidence-line"), false, "PayrollWorkspace still carries the evidence-line stub card");
-  assert.equal(g11WorkspaceSource.includes("evidence-line"), false, "PensionWorkspace still carries the evidence-line stub card");
+test("PH-09E stub marker cards are gone from the PS10/PS11 workspaces", () => {
+  assert.equal(ps10WorkspaceSource.includes("evidence-line"), false, "PayrollWorkspace still carries the evidence-line stub card");
+  assert.equal(ps11WorkspaceSource.includes("evidence-line"), false, "PensionWorkspace still carries the evidence-line stub card");
 });
 
-test("PH-09E G10 run console wires the full lifecycle with per-state action gating", () => {
+test("PH-09E PS10 run console wires the full lifecycle with per-state action gating", () => {
   for (const marker of [
     "<form",
     "onSubmit={handleStructureSubmit}",
@@ -105,11 +105,11 @@ test("PH-09E G10 run console wires the full lifecycle with per-state action gati
     "No payroll runs yet",
     "no-permission",
   ]) {
-    assert.equal(g10ConsoleSource.includes(marker), true, `PayrollRunConsole missing ${marker}`);
+    assert.equal(ps10ConsoleSource.includes(marker), true, `PayrollRunConsole missing ${marker}`);
   }
 });
 
-test("PH-09E G10 payslip view renders component lines with fail-closed PAN/account masking", () => {
+test("PH-09E PS10 payslip view renders component lines with fail-closed PAN/account masking", () => {
   for (const marker of [
     "Payslip",
     "PAN (masked)",
@@ -122,11 +122,11 @@ test("PH-09E G10 payslip view renders component lines with fail-closed PAN/accou
     'data-state="loading"',
     'role="alert"',
   ]) {
-    assert.equal(g10PayslipSource.includes(marker), true, `PayslipView missing ${marker}`);
+    assert.equal(ps10PayslipSource.includes(marker), true, `PayslipView missing ${marker}`);
   }
 });
 
-test("PH-09E G11 console wires case intake, SR verification gate, and the estimator form", () => {
+test("PH-09E PS11 console wires case intake, SR verification gate, and the estimator form", () => {
   for (const marker of [
     "onSubmit={handleCaseSubmit}",
     "onSubmit={handleVerifySubmit}",
@@ -135,17 +135,17 @@ test("PH-09E G11 console wires case intake, SR verification gate, and the estima
     "verifyPensionService",
     "estimatePensionBenefits",
     "SR_VERIFICATION_GATE",
-    "ERR-G11-SCHEME-MISMATCH",
+    "ERR-PS11-SCHEME-MISMATCH",
     "upsOptedIn",
     "npsEvent",
     'role="alert"',
     "no-permission",
   ]) {
-    assert.equal(g11ConsoleSource.includes(marker), true, `PensionCaseConsole missing ${marker}`);
+    assert.equal(ps11ConsoleSource.includes(marker), true, `PensionCaseConsole missing ${marker}`);
   }
 });
 
-test("PH-09E App mounts the compensation consoles behind the G10/G11 route guards", () => {
+test("PH-09E App mounts the compensation consoles behind the PS10/PS11 route guards", () => {
   for (const marker of ["PayrollRunConsole", "PensionCaseConsole"]) {
     assert.equal(appSource.includes(marker), true, `App missing ${marker}`);
   }
@@ -288,7 +288,7 @@ test("PH-09E fixture estimator is scheme-branched and gated by service verificat
   await fixture.verifyPensionService(upsCase.pensionCase.id, { totalServiceMonths: 360, srCertified: true }, "idem-25");
   await assert.rejects(
     () => fixture.estimatePensionBenefits(upsCase.pensionCase.id, {}, "idem-26"),
-    (error) => error instanceof HrmsApiError && error.code === "ERR-G11-SCHEME-MISMATCH"
+    (error) => error instanceof HrmsApiError && error.code === "ERR-PS11-SCHEME-MISMATCH"
   );
   const ups = await fixture.estimatePensionBenefits(upsCase.pensionCase.id, { upsOptedIn: true }, "idem-27");
   assert.equal(ups.pensionCase.calculation.benefitOutcome, "UPS_ASSURED");

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-60A oracle: raise measured contract coverage by exposing G03 attendance-policy config + leave-ledger/
+# PH-60A oracle: raise measured contract coverage by exposing PS03 attendance-policy config + leave-ledger/
 # attendance/comp-off-balance reads (real, service-tested backing) as kernel routes. Checks routes
 # registered + dispatched, and the ratchet advanced to >= 547 / 41.3%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g03.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-60A exit-criteria (G03 attendance-policy route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps03.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-60A exit-criteria (PS03 attendance-policy route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in configureAttendancePolicy listLedger listAttendance getCompOffBalance; do
   have "$R" "$m" "route wires backing method: $m"

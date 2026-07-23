@@ -1,16 +1,16 @@
 /goal
   objective: Build the PH-08 statutory wave's SHARED KERNELS as real, persisted, service-consumed engines:
-    (1) the sanctioned_posts / establishment-strength register (G06 PPP-EST, the FR-015 backbone for vacancy,
+    (1) the sanctioned_posts / establishment-strength register (PS06 PPP-EST, the FR-015 backbone for vacancy,
     promotion and later recruitment maths) and (2) the qualifying_service_ledger + service_exclusion_rules
-    (G06 PPP-QSL / FR-PPP-016, consumed by G06 eligibility now and G11 pension later), with a compute engine
+    (PS06 PPP-QSL / FR-PPP-016, consumed by PS06 eligibility now and PS11 pension later), with a compute engine
     and snapshot lineage. The 2026-07-02 coverage audit found BOTH entirely absent: module services are
     in-memory happy-path slices and the docs/data-model SQL is unconsumed by runtime.
   context:
     - docs/reviews/brd-coverage-audit-20260702.md        # why this re-baseline exists; prior oracle was a rubber stamp
-    - docs/brd/v3/G06-promotion-posting-progression.md   # PPP-EST + PPP-QSL: field lists, VAL-G06-VACANCY-RECON,
-                                                         # VAL-G06-QUOTA-SPLIT, VAL-G06-QUALSVC, domain error codes
-    - docs/data-model/06-G06-promotion-posting-progression.sql   # authoritative DDL shapes for both kernels
-    - apps/api/src/modules/g06/promotionService.ts       # current slice; must become a kernel CONSUMER
+    - docs/brd/v3/PS06-promotion-posting-progression.md   # PPP-EST + PPP-QSL: field lists, VAL-PS06-VACANCY-RECON,
+                                                         # VAL-PS06-QUOTA-SPLIT, VAL-PS06-QUALSVC, domain error codes
+    - docs/data-model/06-PS06-promotion-posting-progression.sql   # authoritative DDL shapes for both kernels
+    - apps/api/src/modules/ps06/promotionService.ts       # current slice; must become a kernel CONSUMER
     - apps/api/src/platform/foundationServices.ts , apps/api/src/platform/types.ts   # DI wiring + FoundationError
   constraints:
     - PERSISTED, not in-memory: introduce a repository/persistence layer over a durable medium (file-backed
@@ -34,16 +34,16 @@
   work_loops:
     - name: persistence layer + establishment register
       max_iterations: 6
-      repeat_until: durable repositories expose sanctioned_posts CRUD + reconcile; g06 vacancy maths read
+      repeat_until: durable repositories expose sanctioned_posts CRUD + reconcile; ps06 vacancy maths read
         current_vacancies from the register (not a local array); STRENGTH_INCONSISTENT, QUOTA_SPLIT_INVALID and
         VACANCY_NOT_RECONCILED are thrown as error codes on bad register state.
-      steps: [storage adapter, sanctioned_posts repository, reconcile + quota-split validation, wire g06 consumer]
+      steps: [storage adapter, sanctioned_posts repository, reconcile + quota-split validation, wire ps06 consumer]
     - name: QSL compute + exclusion rules
       max_iterations: 6
       repeat_until: qualifying_service_ledger compute produces net_qualifying_years from gross service minus
         rule-driven exclusions with a populated exclusion_breakdown_json; snapshots carry supersede lineage;
-        g06 eligibility reads the current snapshot; a QSL read contract is exposed for later G11 consumption.
-      steps: [service_exclusion_rules repository, compute engine, snapshot supersede lineage, g06 eligibility read]
+        ps06 eligibility reads the current snapshot; a QSL read contract is exposed for later PS11 consumption.
+      steps: [service_exclusion_rules repository, compute engine, snapshot supersede lineage, ps06 eligibility read]
     - name: verify
       max_iterations: 4
       repeat_until: apps/api/test/ph08a-establishment-qsl.test.cjs covers QSL compute (gross − exclusions = net),
@@ -54,7 +54,7 @@
       steps: [write tests, npm run typecheck, npm test, run ph-08a.sh, fix]
   evidence_required:
     - persistence layer + repositories referencing sanctioned_posts / qualifying_service_ledger /
-      service_exclusion_rules under apps/api/src, consumed by apps/api/src/modules/g06
+      service_exclusion_rules under apps/api/src, consumed by apps/api/src/modules/ps06
     - apps/api/test/ph08a-establishment-qsl.test.cjs with the named positive, durability and negative tests
     - `npm run typecheck` + `npm test` green; `bash docs/spec/pipeline/checks/ph-08a.sh` GREEN
   escalate_when:

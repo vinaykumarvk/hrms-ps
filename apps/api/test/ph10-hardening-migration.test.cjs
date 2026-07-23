@@ -23,12 +23,12 @@ function scope(extra = {}) {
 test("PH-10 migration dry run certifies reconciliation without production mutation", () => {
   const services = createFoundationServices();
   services.migrationStaging.stageEmployeeIdentity(scope(), {
-    serviceNo: "GOV-100245",
+    serviceNo: "PS-100245",
     displayName: "Ananya Rao",
     sourceSystem: "legacy-hrms",
   });
   services.migrationStaging.stageEmployeeIdentity(scope(), {
-    serviceNo: "GOV-100246",
+    serviceNo: "PS-100246",
     displayName: "Kiran Patel",
     sourceSystem: "legacy-hrms",
   });

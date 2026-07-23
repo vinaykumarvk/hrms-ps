@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-26A oracle: G13 FR-008 OCR extraction engine — an OcrProvider interface + a concrete extractor
+# PH-26A oracle: PS13 FR-008 OCR extraction engine — an OcrProvider interface + a concrete extractor
 # that produces text from a document payload (not caller-supplied); unsupported format rejected.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g13"; T=apps/api/test
-echo "== PH-26A exit-criteria (G13 OCR extraction engine) =="
+S="apps/api/src/modules/ps13"; T=apps/api/test
+echo "== PH-26A exit-criteria (PS13 OCR extraction engine) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "OCR provider interface::OcrProvider|ocrProvider|OcrEngine" \

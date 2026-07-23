@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-19B oracle: G08 FR-10 continuous feedback + check-ins — continuous_feedback / check_ins entries
+# PH-19B oracle: PS08 FR-10 continuous feedback + check-ins — continuous_feedback / check_ins entries
 # tied to a cycle, with a mandatory note guard.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g08 apps/api/src/routes/g08.routes.ts"; T=apps/api/test
-echo "== PH-19B exit-criteria (G08 continuous feedback + check-ins) =="
+S="apps/api/src/modules/ps08 apps/api/src/routes/ps08.routes.ts"; T=apps/api/test
+echo "== PH-19B exit-criteria (PS08 continuous feedback + check-ins) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "continuous feedback consumed (continuous_feedback)::continuous_feedback|continuousFeedback" \

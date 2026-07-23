@@ -1,7 +1,7 @@
 # Promotion, Posting & Progression Monitoring — HRMS Module BRD
 
 **Module code:** M06-PPP
-**Program:** Enterprise HRMS Suite ("PeopleGov / HRMS Suite") — government/public-sector HCM
+**Program:** Enterprise HRMS Suite ("PeopleGov / HRMS Suite") — enterprise/public-sector HCM
 **Document version:** v1.0
 **Status:** Approved for build (parallel-agent ready)
 **Authoring standard:** Conforms to the program Shared Foundation Brief (`/docs/brd/SHARED_FOUNDATION.md`). Canonical entities (`employees`, `users`, `org_units`, `designations`, `cadres`, `pay_scales`, `roles`, `audit_log`, `documents`, `notifications`, `service_register_events`, `workflow_instances`/`workflow_tasks`) are **referenced, not redefined**.
@@ -14,7 +14,7 @@
 
 The Promotion, Posting & Progression Monitoring module (M06-PPP) is the statutory and managerial engine that governs how a public-sector employee **moves upward** through the organisation: how seniority is established, how promotions are adjudicated by Departmental Promotion Committees (DPCs) and promotion panels, how the resulting orders and probation are managed, how financial up-gradation schemes (ACP/MACP) are sanctioned even in the absence of a functional promotion, how the employee is **posted** into the new role, and how the organisation **monitors** every employee's progression — due-for-promotion alerts, stagnation, increment timeliness, and career-path modelling.
 
-Promotion in a government context is a quasi-judicial, rule-bound, reservation-aware, audit-heavy process. A wrongly computed seniority position, an overlooked vigilance case, a mis-applied reservation roster point, or an un-recorded probation declaration can each trigger litigation, tribunal proceedings, and the unwinding of an entire promotion batch. M06-PPP therefore treats **eligibility computation, panel adjudication, roster compliance, and immutable service-register posting** as first-class, fully-audited capabilities.
+Promotion in a enterprise context is a quasi-judicial, rule-bound, reservation-aware, audit-heavy process. A wrongly computed seniority position, an overlooked vigilance case, a mis-applied reservation roster point, or an un-recorded probation declaration can each trigger litigation, tribunal proceedings, and the unwinding of an entire promotion batch. M06-PPP therefore treats **eligibility computation, panel adjudication, roster compliance, and immutable service-register posting** as first-class, fully-audited capabilities.
 
 ### 1.2 Business context & statutory drivers
 

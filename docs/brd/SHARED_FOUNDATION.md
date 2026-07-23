@@ -1,16 +1,16 @@
 > ⚠️ **SUPERSEDED FOR CONVENTIONS (2026-07-01).** This brief was authored before the existing
-> **PrimeSoft HRMS** platform deliverables were taken into account. Its *module list* (the 14 government
+> **PrimeSoft HRMS** platform deliverables were taken into account. Its *module list* (the 14 enterprise
 > line items, §1) and *persona/authoring standard* (§6) remain valid, but its invented technical
 > conventions — canonical entities (§2), global conventions (§3), roles (§4), and technical defaults
 > (§5) — are **overridden by** [`PLATFORM_FOUNDATION.md`](PLATFORM_FOUNDATION.md) (the real platform:
 > P01–P06, VAL-*, RBAC v1.7, multi-tenancy, API conventions) and [`MODULE_RECONCILIATION.md`](MODULE_RECONCILIATION.md)
-> (gov↔PrimeSoft map, `G01–G14` codes, convention-override table). **v3 BRDs must consume the platform,
+> (enterprise↔PrimeSoft map, `PS01–PS14` codes, convention-override table). **v3 BRDs must consume the platform,
 > not the conventions below.** Treat §§2–5 here as historical.
 
 # HRMS Program — Shared Foundation Brief (Build Contract for all Module BRDs)
 
 **Program:** Enterprise Human Resource Management System (HRMS) — "PeopleGov / HRMS Suite"
-**Context:** Originating Functional Scope of Work targets a government/public-sector HR system
+**Context:** Originating Functional Scope of Work targets a enterprise/public-sector HR system
 (hosted at CGG Data Centre) covering 14 modules including a statutory **Digital Service Register
 (Digital SR)**, **Pension**, and **Disciplinary & Punishment** management. Every module BRD must be
 authored to **world-class, global-enterprise HR standards** (the bar set by leading global
@@ -109,7 +109,7 @@ Enforce **segregation of duties** (no self-approval; maker ≠ checker) everywhe
 
 - **Architecture:** React + TypeScript (Tailwind + shadcn/ui) frontend; REST API (Node/TypeScript or
   Java Spring acceptable) with `/api/v1` versioning; PostgreSQL primary datastore; object storage for
-  documents (encrypted at rest); deployed at CGG Data Centre (on-prem/government cloud).
+  documents (encrypted at rest); deployed at CGG Data Centre (on-prem/enterprise cloud).
 - **Auth:** OIDC/SSO + MFA; JWT access tokens; RBAC + row-level scoping by org_unit.
 - **API error envelope (canonical):**
   `{ "error": { "code": "VALIDATION_ERROR", "message": "...", "field": "..." }, "requestId": "..." }`

@@ -1,6 +1,6 @@
 /goal
-  objective: Replace the G10/G11 read-only summary cards with the real compensation-wave UI and produce an honest
-    conformance verdict. The audit classed every G10/G11 user-facing FR as UI-MISSING (metric cards only, the
+  objective: Replace the PS10/PS11 read-only summary cards with the real compensation-wave UI and produce an honest
+    conformance verdict. The audit classed every PS10/PS11 user-facing FR as UI-MISSING (metric cards only, the
     "no skeleton UI" rule inverted). Build: a payslip view rendering component lines with masked PAN and masked bank
     account; a payroll run console with the lifecycle actions (create -> lock snapshot -> compute -> reconcile ->
     approve -> lock -> disburse) wired to the real API; a pension case UI plus a benefit-estimator form posting to
@@ -8,11 +8,11 @@
     docs/spec/ph-09-verdict.md — an honest coverage-delta against docs/reviews/brd-coverage-audit-20260702.md
     (what moved from NOT_FOUND, what remains open; no 100% claims).
   context:
-    - docs/reviews/brd-coverage-audit-20260702.md      # UI-MISSING findings for G10/G11; the baseline the verdict must delta against
-    - docs/brd/v3/G10-payroll-and-benefits.md , docs/brd/v3/G11-retirement-and-pension.md   # screens, states, masking rules (P02)
-    - apps/web/src/modules/g10/PayrollWorkspace.tsx , apps/web/src/modules/g11/PensionWorkspace.tsx   # stubs to REPLACE (drop the evidence-line marker cards)
+    - docs/reviews/brd-coverage-audit-20260702.md      # UI-MISSING findings for PS10/PS11; the baseline the verdict must delta against
+    - docs/brd/v3/PS10-payroll-and-benefits.md , docs/brd/v3/PS11-retirement-and-pension.md   # screens, states, masking rules (P02)
+    - apps/web/src/modules/ps10/PayrollWorkspace.tsx , apps/web/src/modules/ps11/PensionWorkspace.tsx   # stubs to REPLACE (drop the evidence-line marker cards)
     - apps/web/src/api/hrmsClient.ts , apps/web/src/api/fixtureHrmsClient.ts   # client to extend with run-lifecycle + payslip + estimator routes
-    - apps/api/src/routes/g10.routes.ts , apps/api/src/routes/g11.routes.ts    # PH-09B/C/D endpoints the UI must consume
+    - apps/api/src/routes/ps10.routes.ts , apps/api/src/routes/ps11.routes.ts    # PH-09B/C/D endpoints the UI must consume
     - apps/web/test/ph09-compensation-wave.test.cjs , apps/api/test/           # suites to extend
   constraints:
     - No skeleton UI: real fields, real API calls through hrmsClient, real rendered data, and all four canonical
@@ -23,20 +23,20 @@
       or absent, and API rejections surface as user-visible error states (no swallowed errors, no console.log).
     - The estimator form validates inputs client-side and round-trips the server estimate; it never computes
       statutory figures in the browser.
-    - docs/spec/ph-09-verdict.md must reference brd-coverage-audit-20260702, tabulate per-module (G10, G11) items
+    - docs/spec/ph-09-verdict.md must reference brd-coverage-audit-20260702, tabulate per-module (PS10, PS11) items
       moved vs still-open, and list remaining NOT_FOUND areas explicitly. Honesty over polish.
     - Keyboard/focus behaviour and WCAG AA contrast per project guidelines; use the existing design tokens.
     - Do NOT weaken any oracle under docs/spec/pipeline/checks/**; do NOT touch phases.yaml, .state/, or approvals/.
     - This gate is HUMAN: the check going GREEN is necessary, not sufficient; a human reviews the UI evidence.
   work_loops:
-    - name: Payslip view + run console (G10)
+    - name: Payslip view + run console (PS10)
       max_iterations: 8
-      repeat_until: apps/web/src/modules/g10/** renders payslip component lines with masked PAN/account and a run
+      repeat_until: apps/web/src/modules/ps10/** renders payslip component lines with masked PAN/account and a run
         console driving the full lifecycle against the API, with empty/loading/error/permission states.
       steps: [extend hrmsClient + fixture client, payslip view with masking, run console actions, states]
-    - name: Pension case UI + estimator (G11)
+    - name: Pension case UI + estimator (PS11)
       max_iterations: 6
-      repeat_until: apps/web/src/modules/g11/** renders the pension case surface and a working estimator form that
+      repeat_until: apps/web/src/modules/ps11/** renders the pension case surface and a working estimator form that
         posts to the estimation endpoint and renders the returned scheme-correct figures, with canonical states.
       steps: [pension case surface, estimator form + validation, states]
     - name: Suites + verdict + oracle
@@ -46,7 +46,7 @@
         `npm test`, `npm run web:typecheck`, `npm run web:test` all pass; `bash docs/spec/pipeline/checks/ph-09e.sh` GREEN.
       steps: [web tests, api regression, write verdict, run oracle, fix]
   evidence_required:
-    - apps/web/src/modules/g10/**, apps/web/src/modules/g11/**, apps/web/src/api/** (real UI, no marker cards)
+    - apps/web/src/modules/ps10/**, apps/web/src/modules/ps11/**, apps/web/src/api/** (real UI, no marker cards)
     - apps/web/test/*.test.cjs masking + lifecycle + estimator assertions; green api + web suites
     - docs/spec/ph-09-verdict.md coverage-delta vs the audit
     - `bash docs/spec/pipeline/checks/ph-09e.sh` GREEN, then HUMAN gate review

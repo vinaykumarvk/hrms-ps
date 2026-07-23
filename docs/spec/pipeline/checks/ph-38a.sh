@@ -6,7 +6,7 @@ set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g08.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+R="apps/api/src/routes/ps08.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
 echo "== PH-38A exit-criteria (APAR calibration route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" '/api/v1/appraisals/calibration-sessions' "calibration routes registered"
@@ -15,7 +15,7 @@ for m in createCalibrationSession proposeCalibrationRecommendation ratifyCalibra
 done
 have "$T"/ph38a-*.test.cjs 'api.dispatch|createFoundationApi' "API test dispatches through the kernel"
 have "$T"/ph38a-*.test.cjs 'calibration-sessions' "API test exercises the calibration routes"
-have "$T"/ph38a-*.test.cjs 'ERR-G08-RATIFY' "API test asserts the fail-closed apply guard"
+have "$T"/ph38a-*.test.cjs 'ERR-PS08-RATIFY' "API test asserts the fail-closed apply guard"
 if [ -d node_modules ]; then
   npm run -s build >/dev/null 2>&1 || red "build failed"
   impl="$(node "$TOOL" --json 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{console.log(JSON.parse(s).implementedTotal)})")"

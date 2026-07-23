@@ -13,13 +13,13 @@
 
 ### 1.1 Purpose
 
-The Employee Disciplinary Cases and Punishment Management module (**M09-DCP**) digitises the **end-to-end disciplinary lifecycle** of a public-sector / government employer, from the first receipt of a complaint or detection of misconduct through preliminary inquiry, optional suspension, framing of articles of charge, departmental inquiry, penalty imposition, and statutory appeal / revision / review — concluding with an immutable posting of the outcome (punishment **or** exoneration) into the Digital Service Register (M12).
+The Employee Disciplinary Cases and Punishment Management module (**M09-DCP**) digitises the **end-to-end disciplinary lifecycle** of a public-sector / enterprise employer, from the first receipt of a complaint or detection of misconduct through preliminary inquiry, optional suspension, framing of articles of charge, departmental inquiry, penalty imposition, and statutory appeal / revision / review — concluding with an immutable posting of the outcome (punishment **or** exoneration) into the Digital Service Register (M12).
 
 The module exists to guarantee that **every** disciplinary proceeding satisfies the **principles of natural justice** (audi alteram partem — the right to be heard; nemo judex in causa sua — no one a judge in their own cause), respects **statutory timelines**, preserves a **tamper-evident audit trail**, and produces legally defensible orders that withstand departmental appeal and judicial review.
 
 ### 1.2 Business context
 
-Disciplinary action against a government servant is a **quasi-judicial** process. A procedural defect — a denied opportunity to defend, an inquiry officer who is also a witness, a charge-sheet served after a barred period, a penalty exceeding what was proposed in the show-cause — routinely results in penalty orders being set aside on appeal or by tribunals/courts, with consequential financial liability (back-wages, restoration of seniority, pension re-computation). Today these cases are run on paper files that are slow, opaque, prone to loss, and impossible to audit at scale.
+Disciplinary action against a employee is a **quasi-judicial** process. A procedural defect — a denied opportunity to defend, an inquiry officer who is also a witness, a charge-sheet served after a barred period, a penalty exceeding what was proposed in the show-cause — routinely results in penalty orders being set aside on appeal or by tribunals/courts, with consequential financial liability (back-wages, restoration of seniority, pension re-computation). Today these cases are run on paper files that are slow, opaque, prone to loss, and impossible to audit at scale.
 
 M09-DCP converts this risk-laden manual process into a **controlled, time-bound, fully audited workflow** with built-in natural-justice safeguards, a sealed evidence vault, and real-time SLA monitoring.
 
@@ -42,7 +42,7 @@ Out of scope (owned elsewhere, integrated here): the SR ledger itself (M12), pay
 
 ### 1.5 Key outcomes
 
-A complete, confidential, time-bound, audit-grade disciplinary case system that an enterprise/government HR organisation can rely on for **defensible** penalty orders, **transparent** ageing, and **accurate** downstream propagation of consequences.
+A complete, confidential, time-bound, audit-grade disciplinary case system that an enterprise/enterprise HR organisation can rely on for **defensible** penalty orders, **transparent** ageing, and **accurate** downstream propagation of consequences.
 
 ---
 
@@ -107,7 +107,7 @@ A complete, confidential, time-bound, audit-grade disciplinary case system that 
 
 | Role | Description | Source |
 |------|-------------|--------|
-| Employee (Charged Officer) | The government servant facing proceedings; restricted self-service view of own case | Shared |
+| Employee (Charged Officer) | The employee facing proceedings; restricted self-service view of own case | Shared |
 | Complainant / Reporting Source | Raises a complaint; limited view of own complaint status | Shared (Employee/Manager) |
 | Vigilance Officer | Screens complaints, maintains integrity register & vigilance clearance | M09 |
 | Disciplinary Authority (DA) | Competent authority who initiates charges, considers inquiry report, imposes penalty | Shared (Appointing/Disciplinary Authority) |
@@ -653,7 +653,7 @@ employees 1──* vigilance_records 0..1──1 disciplinary_cases
 | Reduction to lower stage/rank | MAJOR | M06 seniority, M10 pay |
 | Compulsory retirement | MAJOR | M11 pension (reduced) |
 | Removal from service | MAJOR | M11 (no future-employment bar context) |
-| Dismissal from service | MAJOR | M11 (disqualifies future govt employment) |
+| Dismissal from service | MAJOR | M11 (disqualifies future enterprise employment) |
 
 ### 5.6 Data integrity rules
 

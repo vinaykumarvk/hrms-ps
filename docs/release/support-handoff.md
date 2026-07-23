@@ -9,9 +9,9 @@ This handoff prepares steady-state support for HRMS after the release board auth
 | Area | Support owner | Engineering owner | Evidence | Date |
 |---|---|---|---|---|
 | P01 workflow facade and hierarchy routing | support-lead | workflow-lead | PH-00 through PH-06 checks and resolver evidence | 2026-07-19 |
-| Employee master, SR, documents | support-lead | core-records-lead | G01/G12/G13 tests and PH-06 slices | 2026-07-19 |
+| Employee master, SR, documents | support-lead | core-records-lead | PS01/PS12/PS13 tests and PH-06 slices | 2026-07-19 |
 | Payroll and pension | support-lead | compensation-lead | PH-09 deterministic evidence and trace docs | 2026-07-19 |
-| Analytics dashboards | support-lead | analytics-lead | PH-10 G14 read-only and PII suppression tests | 2026-07-19 |
+| Analytics dashboards | support-lead | analytics-lead | PH-10 PS14 read-only and PII suppression tests | 2026-07-19 |
 | Release and rollback | ops-lead | release-lead | PH-10 runbooks and PH-11 cutover rehearsal | 2026-07-19 |
 
 ## Ticket Intake

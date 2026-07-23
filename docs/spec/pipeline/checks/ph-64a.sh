@@ -6,7 +6,7 @@ set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-S=apps/api/src/modules/g01/educationService.ts; R=apps/api/src/routes/g01.routes.ts; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+S=apps/api/src/modules/ps01/educationService.ts; R=apps/api/src/routes/ps01.routes.ts; T=apps/api/test; TOOL=tools/contract-coverage.mjs
 echo "== PH-64A exit-criteria (NET-NEW FR-EPM-006 education register) =="
 [ -d node_modules ] || red "node_modules absent"
 [ -f "$S" ] && grn "net-new EducationService module present" || red "EducationService module missing"

@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# PH-49A oracle: raise measured contract coverage by exposing the G02 step-up MFA lifecycle (challenge ->
+# PH-49A oracle: raise measured contract coverage by exposing the PS02 step-up MFA lifecycle (challenge ->
 # verify with expiry guard; esignature read) + change-request template management (real, service-tested
 # backing) as kernel routes. Checks routes registered + dispatched, and the ratchet advanced to >= 475 / 35.9%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g02.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-49A exit-criteria (G02 stepup/template route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps02.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-49A exit-criteria (PS02 stepup/template route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in challengeStepUp verifyStepUp listEsignatures listTemplates deactivateTemplate startFromTemplate; do
   have "$R" "$m" "route wires backing method: $m"
 done
 have "$T"/ph49a-*.test.cjs 'api.dispatch|createFoundationApi' "API test dispatches through the kernel"
 have "$T"/ph49a-*.test.cjs 'challenge-stepup|stepups' "API test exercises the step-up routes"
-have "$T"/ph49a-*.test.cjs 'ERR-G02-STEPUP' "API test asserts the expiry fail-closed guard"
+have "$T"/ph49a-*.test.cjs 'ERR-PS02-STEPUP' "API test asserts the expiry fail-closed guard"
 have "$T"/ph49a-*.test.cjs 'change-request-templates' "API test exercises the template routes"
 if [ -d node_modules ]; then
   npm run -s build >/dev/null 2>&1 || red "build failed"

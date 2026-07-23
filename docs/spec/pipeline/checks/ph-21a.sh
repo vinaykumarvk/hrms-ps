@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-21A oracle: G07 FR-015 LMS/xAPI — learning_record_stores + lms_enrollments, xAPI statement
+# PH-21A oracle: PS07 FR-015 LMS/xAPI — learning_record_stores + lms_enrollments, xAPI statement
 # ingestion with idempotency (duplicate statement_id is a no-op), sync cursor.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g07 apps/api/src/routes/g07.routes.ts"; T=apps/api/test
-echo "== PH-21A exit-criteria (G07 LMS / xAPI) =="
+S="apps/api/src/modules/ps07 apps/api/src/routes/ps07.routes.ts"; T=apps/api/test
+echo "== PH-21A exit-criteria (PS07 LMS / xAPI) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "LRS consumed (learning_record_stores)::learning_record_stores|learningRecordStore" \

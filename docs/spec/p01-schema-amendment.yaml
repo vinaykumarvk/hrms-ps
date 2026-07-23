@@ -17,7 +17,7 @@ decision:
   supersedes:
     - docs/brd/MODULE_RECONCILIATION.md old wording that said to use workflow_actions and not workflow_tasks.
   module_rule: >
-    G01-G14 may reference P01 workflow_instances/workflow_tasks/workflow_actions by id, but may not define
+    PS01-PS14 may reference P01 workflow_instances/workflow_tasks/workflow_actions by id, but may not define
     duplicate approval-task engines or mutate P01 runtime tables directly.
 
 runtime_tables:
@@ -67,7 +67,7 @@ integrity_rules:
     workflow_tasks: current/past assignment work item
     invariant: Completing, returning, delegating, or cancelling a task must also emit a workflow_actions row and P05 audit evidence.
   analytics:
-    rule: G14 may read pending workflow/SLA facts from P01 tables through P02/RLS-scoped read models; it must not invent a parallel workflow task model.
+    rule: PS14 may read pending workflow/SLA facts from P01 tables through P02/RLS-scoped read models; it must not invent a parallel workflow task model.
 
 openapi_binding:
   contract: docs/contracts/openapi/P01-workflow.yaml

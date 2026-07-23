@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-43A oracle: raise measured contract coverage by exposing G14 analytics-engine reads + KPI target-
+# PH-43A oracle: raise measured contract coverage by exposing PS14 analytics-engine reads + KPI target-
 # setting + predictive-score reads (real, service-tested backing) as kernel routes. Checks routes
 # registered + dispatched, and the ratchet advanced to >= 436 / 33%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g14.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-43A exit-criteria (G14 analytics-engine route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps14.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-43A exit-criteria (PS14 analytics-engine route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in kpiSeries listDatamarts setKpiTarget drillCohort listScopePolicies listScores; do
   have "$R" "$m" "route wires backing method: $m"

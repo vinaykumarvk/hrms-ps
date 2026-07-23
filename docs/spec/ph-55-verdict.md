@@ -13,7 +13,7 @@
 
 The PH-55A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
 GREEN. This opens the **second pass** of the coverage workstream — going deeper into the modules starting
-from the lowest (G01). Built by hand — subagents credit-exhausted until 2026-07-08.
+from the lowest (PS01). Built by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
@@ -21,17 +21,17 @@ from the lowest (G01). Built by hand — subagents credit-exhausted until 2026-0
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G01** | governed write-ports (`POST /employees/{id}:governed-identity-change`, `:apply-transfer-posting`, `:apply-probation-confirmation`) + live-record/count reads (`GET /employees/{id}/live-record`, `GET /employees:list-live-records`, `GET /employees:count`) | existing `employeeMasterService` (atomic SR-ledger multi-step identity change + attribute history; write-ports other modules call; NOT_FOUND fail-closed), service-tested | `ph55a-g01-governed-writeport-route.test.cjs` |
+| **PS01** | governed write-ports (`POST /employees/{id}:governed-identity-change`, `:apply-transfer-posting`, `:apply-probation-confirmation`) + live-record/count reads (`GET /employees/{id}/live-record`, `GET /employees:list-live-records`, `GET /employees:count`) | existing `employeeMasterService` (atomic SR-ledger multi-step identity change + attribute history; write-ports other modules call; NOT_FOUND fail-closed), service-tested | `ph55a-ps01-governed-writeport-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**513 / 38.8% → 519 / 39.2%** (G01 **26.7% → 30.3%**), and the PH-37 gate floor was raised in lockstep so the
+**513 / 38.8% → 519 / 39.2%** (PS01 **26.7% → 30.3%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 39.2%** — ~804 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. The second pass continues into the
-  next-lowest modules **G14 (28.9%)**, G13 (31.6%), G07 (33.3%), G10 (34.5%).
+  next-lowest modules **PS14 (28.9%)**, PS13 (31.6%), PS07 (33.3%), PS10 (34.5%).
 - **Persistence workstream:** the hand-built services (PH-16F..PH-55 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

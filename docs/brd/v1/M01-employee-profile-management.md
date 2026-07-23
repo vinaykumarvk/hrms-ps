@@ -2,7 +2,7 @@
 
 **Module code:** `M01-EPM`
 **Module name:** Employee Profile Management — the Canonical Employee Master
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — government/public-sector, CGG Data Centre
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — enterprise/public-sector, CGG Data Centre
 **Document version:** v1.0
 **Status:** Issued for build (parallel-agent ready)
 **Authoring standard:** World-class HCM (Workday / SAP SuccessFactors / Oracle HCM class) layered on a public-sector statutory context
@@ -448,7 +448,7 @@ brevity unless semantically relevant). PKs are `UUID` unless noted.
 | `employment_type` | VARCHAR(20) | enum (`EMPLOYMENT_TYPE`) | |
 | `from_date` | DATE | NOT NULL | |
 | `to_date` | DATE | NULL | null = current external |
-| `is_government_service` | BOOLEAN | default false | counts toward pensionable service |
+| `is_enterprise_service` | BOOLEAN | default false | counts toward pensionable service |
 | `reason_for_leaving` | VARCHAR(200) | NULL | |
 | `last_drawn_pay` | NUMERIC(12,2) | NULL | PII |
 | `proof_document_id` | UUID | FK→documents(M13), NULL | relieving/experience letter |
@@ -706,16 +706,16 @@ brevity unless semantically relevant). PKs are `UUID` unless noted.
 
 | employee_id | service_no | first_name | last_name | dob | gender | pan | date_of_joining | cadre | designation_id | org_unit_id | employment_type | employment_status | reporting_manager_id | profile_completeness_pct | data_quality_flag |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 11111111-...-0001 | GOV-0001 | Anita | Sharma | 1985-03-12 | FEMALE | ABCPS1234K | 2010-06-01 | CADRE_A | desig-201 | org-10 | PERMANENT | ACTIVE | 11111111-...-0009 | 96.00 | CLEAN |
-| 11111111-...-0002 | GOV-0002 | Rajesh | Kumar | 1978-11-25 | MALE | XYZPK9876L | 2003-02-15 | CADRE_B | desig-150 | org-12 | PERMANENT | ON_LEAVE | 11111111-...-0009 | 88.50 | REVIEW |
-| 11111111-...-0009 | GOV-0009 | Meera | Iyer | 1972-07-08 | FEMALE | LMNPI4567M | 1996-09-01 | CADRE_A | desig-301 | org-10 | PERMANENT | ACTIVE | NULL | 99.00 | CLEAN |
+| 11111111-...-0001 | PS-0001 | Anita | Sharma | 1985-03-12 | FEMALE | ABCPS1234K | 2010-06-01 | CADRE_A | desig-201 | org-10 | PERMANENT | ACTIVE | 11111111-...-0009 | 96.00 | CLEAN |
+| 11111111-...-0002 | PS-0002 | Rajesh | Kumar | 1978-11-25 | MALE | XYZPK9876L | 2003-02-15 | CADRE_B | desig-150 | org-12 | PERMANENT | ON_LEAVE | 11111111-...-0009 | 88.50 | REVIEW |
+| 11111111-...-0009 | PS-0009 | Meera | Iyer | 1972-07-08 | FEMALE | LMNPI4567M | 1996-09-01 | CADRE_A | desig-301 | org-10 | PERMANENT | ACTIVE | NULL | 99.00 | CLEAN |
 
 #### `employee_contacts`
 
 | contact_id | employee_id | contact_type | contact_value | is_primary | is_verified | visibility |
 |---|---|---|---|---|---|---|
 | c-0001 | 11111111-...-0001 | MOBILE | +91 98xxxxxx21 | true | true | INTERNAL |
-| c-0002 | 11111111-...-0001 | OFFICIAL_EMAIL | anita.sharma@gov.in | true | true | PUBLIC |
+| c-0002 | 11111111-...-0001 | OFFICIAL_EMAIL | anita.sharma@enterprise.in | true | true | PUBLIC |
 | c-0003 | 11111111-...-0002 | MOBILE | +91 99xxxxxx34 | true | false | RESTRICTED |
 
 #### `employee_addresses`
@@ -760,7 +760,7 @@ brevity unless semantically relevant). PKs are `UUID` unless noted.
 
 #### `employee_experience`
 
-| experience_id | employee_id | employer_name | designation | from_date | to_date | is_government_service |
+| experience_id | employee_id | employer_name | designation | from_date | to_date | is_enterprise_service |
 |---|---|---|---|---|---|---|
 | ex-0001 | 11111111-...-0001 | State Planning Board | Research Assoc. | 2008-07-01 | 2010-05-31 | true |
 | ex-0002 | 11111111-...-0002 | ABC Infra Pvt Ltd | Site Engineer | 2000-08-01 | 2003-01-31 | false |
@@ -819,7 +819,7 @@ brevity unless semantically relevant). PKs are `UUID` unless noted.
 | field_def_id | section_id | field_key | label | data_type | is_required | is_pii |
 |---|---|---|---|---|---|---|
 | cf-0001 | sec-09 | uniform_size | Uniform Size | ENUM | false | false |
-| cf-0002 | sec-09 | govt_quarters_no | Govt Quarters No. | TEXT | false | false |
+| cf-0002 | sec-09 | govt_quarters_no | Enterprise Quarters No. | TEXT | false | false |
 | cf-0003 | sec-09 | sports_quota | Sports Quota Entrant | BOOLEAN | false | false |
 
 #### `employee_custom_field_values`
@@ -1210,13 +1210,13 @@ inline row.
   so that eligibility, seniority, and pensionable-service computations are accurate.*
 
 **Description:** CRUD for `employee_education` and `employee_experience` with highest-qualification
-designation, credential verification, government-service flagging (feeds pension), and certificate
+designation, credential verification, enterprise-service flagging (feeds pension), and certificate
 linkage to M13.
 
 **Acceptance Criteria:**
 1. Exactly one education row may be `is_highest=true`; setting a new one demotes the prior.
 2. `year_of_passing` bounded (1950..current); experience `from_date ≤ to_date`.
-3. `is_government_service=true` experience contributes to pensionable-service summary (read by M11).
+3. `is_enterprise_service=true` experience contributes to pensionable-service summary (read by M11).
 4. Verification toggles `is_verified` with source captured; verified rows are immutable except by Admin.
 5. Certificates/relieving letters linked via `document_id`.
 
@@ -1229,7 +1229,7 @@ linkage to M13.
 | Entity | Operation | Key fields |
 |---|---|---|
 | `employee_education` | CRUD | level, is_highest, is_verified |
-| `employee_experience` | CRUD | from/to, is_government_service |
+| `employee_experience` | CRUD | from/to, is_enterprise_service |
 | `documents` (M13) | reference | certificates |
 
 **API References:**
@@ -1241,7 +1241,7 @@ linkage to M13.
 | POST | `/api/v1/education/{id}:verify` | mark verified |
 
 **UI Behavior Notes:** Timeline view for experience; highest-qualification badge; verify action with
-source dropdown; gov-service toggle highlighted; pensionable-service summary footer.
+source dropdown; enterprise-service toggle highlighted; pensionable-service summary footer.
 
 **Edge Cases:** two rows claiming highest; overlapping experience; verified row edit attempt; future
 passing year.
@@ -1250,15 +1250,15 @@ passing year.
 
 | Aspect | Detail |
 |---|---|
-| Components & Screen Behavior | `EducationList`, `ExperienceTimeline`, highest badge, verify modal, gov-service toggle, pensionable summary. |
-| Backend-Service Flow | Services CRUD; highest-demotion in tx; verification locks row; gov-service aggregates into pensionable summary projection. |
+| Components & Screen Behavior | `EducationList`, `ExperienceTimeline`, highest badge, verify modal, enterprise-service toggle, pensionable summary. |
+| Backend-Service Flow | Services CRUD; highest-demotion in tx; verification locks row; enterprise-service aggregates into pensionable summary projection. |
 | Data Operations | CRUD; M13 doc refs; audit; completeness recompute. |
 | Validation Logic | One-highest invariant; date bounds; overlap warning; min-qualification DQ check. |
 | Authorization Logic | HR write in scope; verified-row edit only Admin; self-service→M02. |
 | State Changes & Side Effects | Highest reassignment; DQ flag on under-qualification; pensionable summary changes. |
 | Failure Handling | Two-highest→409; verified edit→403 IMMUTABLE_VERIFIED; bad dates→400. |
 | Dependencies & Reuse | M13, M11 (pension read), DQ engine (FR-014), audit. |
-| Test Guidance | Unit: highest invariant, gov-service aggregation. Integration: pensionable summary. E2E: verify-then-lock. |
+| Test Guidance | Unit: highest invariant, enterprise-service aggregation. Integration: pensionable summary. E2E: verify-then-lock. |
 
 ---
 
@@ -2180,7 +2180,7 @@ Response `201`:
 ```json
 {
   "employee_id": "11111111-1111-1111-1111-111111110001",
-  "service_no": "GOV-0001",
+  "service_no": "PS-0001",
   "employment_status": "ACTIVE",
   "current_assignment_id": "ja-0001",
   "profile_completeness_pct": 62.00,
@@ -2202,14 +2202,14 @@ Response `200` (caller = Reporting Manager; PAN masked, religion hidden):
 ```json
 {
   "employee": {
-    "employee_id": "11111111-...-0001", "service_no": "GOV-0001",
+    "employee_id": "11111111-...-0001", "service_no": "PS-0001",
     "first_name": "Anita", "last_name": "Sharma",
     "pan": "ABCPSXXXXK", "religion": null,
     "designation": "Deputy Officer (Finance)", "org_unit": "Finance Wing",
     "employment_status": "ACTIVE", "profile_completeness_pct": 96.0
   },
   "sections": {
-    "contacts": [ { "type": "OFFICIAL_EMAIL", "value": "anita.sharma@gov.in", "is_primary": true } ],
+    "contacts": [ { "type": "OFFICIAL_EMAIL", "value": "anita.sharma@enterprise.in", "is_primary": true } ],
     "bank_accounts": [ { "bank_name": "SBI", "account_number_masked": "XXXXXX4567", "is_primary_salary": true } ]
   },
   "_meta": { "masked_fields": ["pan"], "hidden_fields": ["religion"], "etag": "W/\"c-0001-96\"" },
@@ -2515,7 +2515,7 @@ parallel tracks begin to avoid drift.
 ## 16. Appendices
 
 ### Appendix A — `service_no` generation pattern
-Configurable pattern, default `GOV-{seq:04}` (zero-padded sequence), with optional org/cadre prefix;
+Configurable pattern, default `PS-{seq:04}` (zero-padded sequence), with optional org/cadre prefix;
 uniqueness enforced; collisions retried server-side.
 
 ### Appendix B — Default field-access policy seed (illustrative)

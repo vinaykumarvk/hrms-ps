@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-34C oracle: G01 privacy/DPDP console UI — a real controlled web surface using the injected client + canonical states.
+# PH-34C oracle: PS01 privacy/DPDP console UI — a real controlled web surface using the injected client + canonical states.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-COMP="apps/web/src/modules/g01/PrivacyConsole.tsx"; CLIENT="apps/web/src/api/hrmsClient.ts"; FIX="apps/web/src/api/fixtureHrmsClient.ts"; APP="apps/web/src/App.tsx"
-echo "== PH-34C exit-criteria (G01 privacy/DPDP console UI) =="
+COMP="apps/web/src/modules/ps01/PrivacyConsole.tsx"; CLIENT="apps/web/src/api/hrmsClient.ts"; FIX="apps/web/src/api/fixtureHrmsClient.ts"; APP="apps/web/src/App.tsx"
+echo "== PH-34C exit-criteria (PS01 privacy/DPDP console UI) =="
 [ -d node_modules ] || red "node_modules absent"
 [ -f "$COMP" ] && grn "component present: $COMP" || red "missing component: $COMP"
 have "$COMP" 'onSubmit=|onClick=' "component has a submit/click handler"

@@ -1,0 +1,15 @@
+.git
+node_modules
+dist
+docs
+doc
+ops
+**/*.log
+**/.DS_Store
+apps/web/test
+apps/api/test
+**/*.test.ts
+**/*.test.cjs
+playwright-report
+test-results
+scratchpad

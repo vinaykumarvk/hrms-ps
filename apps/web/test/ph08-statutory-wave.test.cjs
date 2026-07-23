@@ -5,10 +5,10 @@ const fs = require("node:fs");
 const clientSource = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixtureSource = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
 const appSource = fs.readFileSync("apps/web/src/App.tsx", "utf8");
-const g06Source = fs.readFileSync("apps/web/src/modules/g06/PromotionWorkspace.tsx", "utf8");
-const g07Source = fs.readFileSync("apps/web/src/modules/g07/TrainingWorkspace.tsx", "utf8");
-const g08Source = fs.readFileSync("apps/web/src/modules/g08/AparWorkspace.tsx", "utf8");
-const g09Source = fs.readFileSync("apps/web/src/modules/g09/DisciplinaryWorkspace.tsx", "utf8");
+const ps06Source = fs.readFileSync("apps/web/src/modules/ps06/PromotionWorkspace.tsx", "utf8");
+const ps07Source = fs.readFileSync("apps/web/src/modules/ps07/TrainingWorkspace.tsx", "utf8");
+const ps08Source = fs.readFileSync("apps/web/src/modules/ps08/AparWorkspace.tsx", "utf8");
+const ps09Source = fs.readFileSync("apps/web/src/modules/ps09/DisciplinaryWorkspace.tsx", "utf8");
 
 test("PH-08 client exposes statutory summary routes", () => {
   for (const marker of [
@@ -28,8 +28,8 @@ test("PH-08 fixture evidence covers DPC, sealed cover, penalty, and SR markers",
     "TRAINING_CERTIFICATION_POSTED",
     "APAR_FINAL_GRADE",
     "SEALED_COVER",
-    "G08_G06_FEED_SUPPRESSED",
-    "G09_AUTHORITY_COMPETENCE",
+    "PS08_PS06_FEED_SUPPRESSED",
+    "PS09_AUTHORITY_COMPETENCE",
     "MAJOR_PENALTY",
     "APPEAL_DECIDED",
   ]) {
@@ -37,18 +37,18 @@ test("PH-08 fixture evidence covers DPC, sealed cover, penalty, and SR markers",
   }
 });
 
-test("PH-08 workspace renders G06, G07, G08, and G09 statutory panels", () => {
-  for (const marker of ["G06", "DPC_QUORUM", "G06_PAY_IMPACT_SIGNAL"]) {
-    assert.equal(g06Source.includes(marker), true, marker);
+test("PH-08 workspace renders PS06, PS07, PS08, and PS09 statutory panels", () => {
+  for (const marker of ["PS06", "DPC_QUORUM", "PS06_PAY_IMPACT_SIGNAL"]) {
+    assert.equal(ps06Source.includes(marker), true, marker);
   }
-  for (const marker of ["G07", "WF-G07-NOMINATION", "TRAINING_CERTIFICATION_POSTED"]) {
-    assert.equal(g07Source.includes(marker), true, marker);
+  for (const marker of ["PS07", "WF-PS07-NOMINATION", "TRAINING_CERTIFICATION_POSTED"]) {
+    assert.equal(ps07Source.includes(marker), true, marker);
   }
-  for (const marker of ["G08", "APAR_FINAL_GRADE", "SEALED_COVER", "G08_G06_FEED_SUPPRESSED"]) {
-    assert.equal(g08Source.includes(marker), true, marker);
+  for (const marker of ["PS08", "APAR_FINAL_GRADE", "SEALED_COVER", "PS08_PS06_FEED_SUPPRESSED"]) {
+    assert.equal(ps08Source.includes(marker), true, marker);
   }
-  for (const marker of ["G09", "G09_AUTHORITY_COMPETENCE", "CHARGE_MEMO_SERVED", "INQUIRY_REPORT", "MAJOR_PENALTY", "APPEAL_DECIDED"]) {
-    assert.equal(g09Source.includes(marker), true, marker);
+  for (const marker of ["PS09", "PS09_AUTHORITY_COMPETENCE", "CHARGE_MEMO_SERVED", "INQUIRY_REPORT", "MAJOR_PENALTY", "APPEAL_DECIDED"]) {
+    assert.equal(ps09Source.includes(marker), true, marker);
   }
   for (const marker of ["PromotionWorkspace", "TrainingWorkspace", "AparWorkspace", "DisciplinaryWorkspace"]) {
     assert.equal(appSource.includes(marker), true, marker);

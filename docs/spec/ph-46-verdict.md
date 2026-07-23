@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-46A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Ninth tranche of the user-directed "raise contract coverage" workstream, moving into G10. Built by
+GREEN. Ninth tranche of the user-directed "raise contract coverage" workstream, moving into PS10. Built by
 hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
@@ -21,18 +21,18 @@ hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G10** | FR-G10-08 loan lifecycle (`POST /payroll/loans/{id}:instalment`, `:foreclose`, `GET /payroll/loans/{id}/repayments`, `GET /payroll/employees/{employeeId}/carryforwards`) + Rule-3 concessional perquisite valuation (`POST /payroll/perquisites:value`) | existing `loanPerquisiteGlService` (net-floor cap + ERR-G10-RECOVERY-NET carryforward; ACTIVE-only foreclose; ERR-G10-PERQ-REFRATE on missing reference rate; integer paise throughout), service-tested | `ph46a-g10-loan-perquisite-route.test.cjs` |
+| **PS10** | FR-PS10-08 loan lifecycle (`POST /payroll/loans/{id}:instalment`, `:foreclose`, `GET /payroll/loans/{id}/repayments`, `GET /payroll/employees/{employeeId}/carryforwards`) + Rule-3 concessional perquisite valuation (`POST /payroll/perquisites:value`) | existing `loanPerquisiteGlService` (net-floor cap + ERR-PS10-RECOVERY-NET carryforward; ACTIVE-only foreclose; ERR-PS10-PERQ-REFRATE on missing reference rate; integer paise throughout), service-tested | `ph46a-ps10-loan-perquisite-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**451 / 34.1% → 456 / 34.5%** (G10 **28.7% → 34.5%**), and the PH-37 gate floor was raised in lockstep so the
+**451 / 34.1% → 456 / 34.5%** (PS10 **28.7% → 34.5%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 34.5%** — ~867 of the **1,323** contracted operations remain unimplemented. The
-  coverage tool is still **count-based**, not per-operation path matching. G10 has more unexposed backing
+  coverage tool is still **count-based**, not per-operation path matching. PS10 has more unexposed backing
   (recovery-demand scheduling, FnF settlement, engine-run lifecycle, arrears); the workstream continues there
-  and into **G11 (30%)**.
+  and into **PS11 (30%)**.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-46 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 
@@ -43,6 +43,6 @@ implemented as behavioral kernel routes (**34.5%**).
 
 Approve PH-46B, OR direct a further tranche (PH-47). The active workstream (per your steer) is raising
 measured coverage by exposing real, tested backing, with the ratchet gate proving each gain and forbidding
-regression; next candidates move to more G10 (recovery/FnF/arrears) and G11. The standing **persistence
+regression; next candidates move to more PS10 (recovery/FnF/arrears) and PS11. The standing **persistence
 migration workstream** remains the alternative. Carried debt is unchanged: in-memory repositories for the
 newest services.

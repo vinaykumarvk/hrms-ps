@@ -1,7 +1,7 @@
-import { EmployeeRecord } from "../modules/g01/employeeMasterService";
-import { LeaveTypeConfig } from "../modules/g03/leaveService";
+import { EmployeeRecord } from "../modules/ps01/employeeMasterService";
+import { LeaveTypeConfig } from "../modules/ps03/leaveService";
 import { AuthorityAssignment, AuthorityDelegation, Committee, EmployeeAssignment, OrgUnit, Position } from "../platform/authority-resolution/authorityResolutionService";
-import { DocumentRecord } from "../modules/g13/documentVaultService";
+import { DocumentRecord } from "../modules/ps13/documentVaultService";
 
 export const ph03Ids = {
   tenant: "11111111-1111-1111-1111-111111111111",
@@ -22,7 +22,7 @@ export function ph03Employees(): EmployeeRecord[] {
       id: ph03Ids.manager,
       tenantId: ph03Ids.tenant,
       entityId: ph03Ids.entity,
-      serviceNo: "GOV-100245",
+      serviceNo: "PS-100245",
       displayName: "Ananya Rao",
       firstName: "Ananya",
       lastName: "Rao",
@@ -38,7 +38,7 @@ export function ph03Employees(): EmployeeRecord[] {
       id: ph03Ids.employee,
       tenantId: ph03Ids.tenant,
       entityId: ph03Ids.entity,
-      serviceNo: "GOV-100246",
+      serviceNo: "PS-100246",
       displayName: "Kiran Patel",
       firstName: "Kiran",
       lastName: "Patel",
@@ -103,7 +103,7 @@ export function ph03AuthorityFacts(): {
         tenantId: ph03Ids.tenant,
         entityId: ph03Ids.entity,
         authorityType: "TRANSFER_AUTHORITY",
-        authorityCode: "G05_TRANSFER_REVENUE",
+        authorityCode: "PS05_TRANSFER_REVENUE",
         scopeType: "ORG_UNIT",
         scopeOrgUnitId: ph03Ids.orgRevenue,
         authorityEmployeeId: ph03Ids.manager,
@@ -116,7 +116,7 @@ export function ph03AuthorityFacts(): {
         tenantId: ph03Ids.tenant,
         entityId: ph03Ids.entity,
         authorityType: "ORG_UNIT_HEAD",
-        authorityCode: "G03_LEAVE_HEAD_ASSESSMENT",
+        authorityCode: "PS03_LEAVE_HEAD_ASSESSMENT",
         scopeType: "ORG_UNIT",
         scopeOrgUnitId: ph03Ids.orgAssessment,
         authorityEmployeeId: ph03Ids.manager,
@@ -158,8 +158,8 @@ export function ph03AuthorityFacts(): {
 
 /**
  * FR-10 seed catalog: leave_types + leave_accrual_policies projections consumed by
- * LeaveService (BRD G03 §5.2 E12/E13). Tenant-wide (entityId omitted), grounded on the
- * public-sector leave catalog in docs/brd/v3/G03-attendance-and-leave-management.md.
+ * LeaveService (BRD PS03 §5.2 E12/E13). Tenant-wide (entityId omitted), grounded on the
+ * public-sector leave catalog in docs/brd/v3/PS03-attendance-and-leave-management.md.
  */
 export function ph03LeaveTypes(): LeaveTypeConfig[] {
   return [
@@ -220,7 +220,7 @@ export function ph03Documents(): DocumentRecord[] {
       tenantId: ph03Ids.tenant,
       entityId: ph03Ids.entity,
       docNo: "DOC/2026/0001001",
-      title: "Aadhaar Proof - GOV-100245",
+      title: "Aadhaar Proof - PS-100245",
       ownerEmployeeId: ph03Ids.manager,
       status: "ACTIVE",
       classification: "CONFIDENTIAL",

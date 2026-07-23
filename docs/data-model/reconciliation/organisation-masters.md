@@ -3,7 +3,7 @@
 **Scope:** Organisation-structure masters only.
 **Schema file reconciled:** `docs/data-model/00-platform-core.sql` (Section 2 — Tenancy & Organisation Masters).
 **Source CSVs:** `docs/HRMS Deliverables to Development Phase/DwnB Form Fields/Organisation/` (Darwinbox exports).
-**Excluded (owned elsewhere):** `National_ID-Export_1_.csv` → G01 agent (identity docs). `Profile_View_settings.csv` → pure UI field-visibility config (P02 masking / G01), not an org master.
+**Excluded (owned elsewhere):** `National_ID-Export_1_.csv` → PS01 agent (identity docs). `Profile_View_settings.csv` → pure UI field-visibility config (P02 masking / PS01), not an org master.
 
 **Status legend:** PRESENT = column already exists · PARTIAL = concept exists but needs a column/shape change · MISSING = no home in the schema.
 **Decision legend:** add-column · already-present · note-as-config (pure UI/policy toggle, not a data column) · migration-value (value list; CSV is the seed source, not inlined).
@@ -34,7 +34,7 @@ Status/Active/Archived/Inactive text everywhere maps to the convention `is_activ
 | Status | grades.is_active | PARTIAL | already-present |
 | *(Airtel Payment Bank, Job Level, …)* | grades rows | — | migration-value |
 
-Note: existing `grades.pay_band` (text, e.g. 'PB-3') is the government pay-band label and is retained; `band_id`/`band_code` model the tenant's configurable **Band** master, which is a distinct concept.
+Note: existing `grades.pay_band` (text, e.g. 'PB-3') is the enterprise pay-band label and is retained; `band_id`/`band_code` model the tenant's configurable **Band** master, which is a distinct concept.
 
 ## 3. Band-Export.csv → `bands`  (header only, 0 data rows)
 
@@ -67,7 +67,7 @@ Master is empty in this export but the header defines the tenant-configurable Ba
 | Capability | — | MISSING | note-as-config |
 | Status | org_units.is_active | PARTIAL | already-present |
 
-Note: HOD cells can hold multiple names (`"[REDACTED],[REDACTED]"`); the canonical head is `head_employee_id`. Multi-HOD, if required, is a G01/positions concern — not modelled here.
+Note: HOD cells can hold multiple names (`"[REDACTED],[REDACTED]"`); the canonical head is `head_employee_id`. Multi-HOD, if required, is a PS01/positions concern — not modelled here.
 
 ## 5. Location-Export.csv → new table `locations`  (14 rows)
 

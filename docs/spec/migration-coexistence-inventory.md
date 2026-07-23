@@ -48,4 +48,4 @@ The agentic gate can advance internal HRMS development only under these restrict
 
 ## PH-00 To PH-01 Handoff
 
-PH-01 may proceed with platform hardening and P01 contract freeze. It must keep hierarchy/statutory authority routing behind the `ApproverResolver` SPI and must not start broad HRMS module coding before the later G03/G05 vertical-slice gate.
+PH-01 may proceed with platform hardening and P01 contract freeze. It must keep hierarchy/statutory authority routing behind the `ApproverResolver` SPI and must not start broad HRMS module coding before the later PS03/PS05 vertical-slice gate.

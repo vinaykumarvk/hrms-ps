@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-26C oracle: G14 FR-18 probabilistic predictive + fairness — an attrition model that scores risk
+# PH-26C oracle: PS14 FR-18 probabilistic predictive + fairness — an attrition model that scores risk
 # EXCLUDING protected features (rejects protected input) and reports a fairness disparity metric.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g14 apps/api/src/routes/g14.routes.ts"; T=apps/api/test
-echo "== PH-26C exit-criteria (G14 predictive + fairness) =="
+S="apps/api/src/modules/ps14 apps/api/src/routes/ps14.routes.ts"; T=apps/api/test
+echo "== PH-26C exit-criteria (PS14 predictive + fairness) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "attrition prediction::attrition|predict|risk_score|riskScore" \

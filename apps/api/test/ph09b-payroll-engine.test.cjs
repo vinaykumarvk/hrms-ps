@@ -1,14 +1,14 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-// PH-09B oracle tests — G10 deterministic payroll run engine at BRD depth:
-// DSL-ordered computation over a frozen snapshot, LWP proration from the G03
+// PH-09B oracle tests — PS10 deterministic payroll run engine at BRD depth:
+// DSL-ordered computation over a frozen snapshot, LWP proration from the PS03
 // payroll_attendance_feed, statutory caps + state-wise PT via rate tables, an
 // arrears engine persisting the month-wise breakup (Σ months new − old), the
-// payslip_lines-derived YTD ledger (VAL-G10-YTD-DERIVE), post-lock immutability
-// (ERR-G10-RUN-IMMUTABLE), the single-in-flight FINAL guard (ERR-G10-RUN-INFLIGHT),
+// payslip_lines-derived YTD ledger (VAL-PS10-YTD-DERIVE), post-lock immutability
+// (ERR-PS10-RUN-IMMUTABLE), the single-in-flight FINAL guard (ERR-PS10-RUN-INFLIGHT),
 // reopen supersede (originals REVERSED), and the net-pay floor booking excess
-// recovery into deduction_carryforwards (ERR-G10-RECOVERY-NET).
+// recovery into deduction_carryforwards (ERR-PS10-RECOVERY-NET).
 // All amounts are INTEGER cents; rates are integer basis points (test fixture
 // values, not statutory claims).
 
@@ -72,7 +72,7 @@ function seedRules(services) {
   // DA 42.00% (integer bps), NPS 10.00% with a statutory cap on the rate row (slab max).
   services.payRules.addRateRow(maker, { tableType: "DA_RATE", ratePctBps: 4200, effectiveFrom: "2026-01-01" });
   services.payRules.addRateRow(maker, { tableType: "NPS_RATE", ratePctBps: 1000, slabMaxCents: 250000, effectiveFrom: "2026-01-01" });
-  // State-wise PT slabs for KA (ERR-G10-PT-STATE fails closed elsewhere).
+  // State-wise PT slabs for KA (ERR-PS10-PT-STATE fails closed elsewhere).
   services.payRules.addRateRow(maker, { tableType: "PT_SLAB", state: "KA", slabMinCents: 0, slabMaxCents: 1500000, flatAmountCents: 20000, effectiveFrom: "2026-01-01" });
   services.payRules.addRateRow(maker, { tableType: "PT_SLAB", state: "KA", slabMinCents: 1500001, flatAmountCents: 30000, effectiveFrom: "2026-01-01" });
   services.payrollEngine.enrolEmployee(maker, {
@@ -94,12 +94,12 @@ function runPeriodToLock(services, period) {
   return run.id;
 }
 
-test("PH-09B G10 engine: DSL-ordered compute with G03-fed LWP proration, statutory cap, and state-wise PT", () => {
+test("PH-09B PS10 engine: DSL-ordered compute with PS03-fed LWP proration, statutory cap, and state-wise PT", () => {
   const services = createFoundationServices();
   seedRules(services);
   const maker = actor();
-  // FR-05: LWP facts come from the G03 payroll_attendance_feed (approved leave debit),
-  // consumed at snapshot time — never hand-keyed into G10.
+  // FR-05: LWP facts come from the PS03 payroll_attendance_feed (approved leave debit),
+  // consumed at snapshot time — never hand-keyed into PS10.
   const submitted = services.leave.submit(maker, {
     employeeId: ph03Ids.employee,
     leaveTypeId: "EL",
@@ -124,7 +124,7 @@ test("PH-09B G10 engine: DSL-ordered compute with G03-fed LWP proration, statuto
   assert.equal(basic.amountCents, 2900000);
   assert.equal(basic.calcTrace.proration.lwpDays, 2);
   assert.equal(basic.calcTrace.proration.payableDays, 29);
-  // The LWP reduction is visible as its own LWP_RECOVERY line (G03 feed provenance).
+  // The LWP reduction is visible as its own LWP_RECOVERY line (PS03 feed provenance).
   const lwpLine = lines.find((line) => line.lineType === "LWP_RECOVERY");
   assert.equal(lwpLine.amountCents, 200000);
   assert.equal(lwpLine.calcTrace.source, "payroll_attendance_feed");
@@ -145,7 +145,7 @@ test("PH-09B G10 engine: DSL-ordered compute with G03-fed LWP proration, statuto
   assert.equal(payslip.lwpDaysHundredths, 200);
 });
 
-test("PH-09B G10 determinism: recompute of the same frozen snapshot yields deep-equal payslips and payslip_lines", () => {
+test("PH-09B PS10 determinism: recompute of the same frozen snapshot yields deep-equal payslips and payslip_lines", () => {
   const services = createFoundationServices();
   seedRules(services);
   const maker = actor();
@@ -171,25 +171,25 @@ test("PH-09B G10 determinism: recompute of the same frozen snapshot yields deep-
   );
 });
 
-test("PH-09B NEGATIVE: every mutation path after lock throws ERR-G10-RUN-IMMUTABLE", () => {
+test("PH-09B NEGATIVE: every mutation path after lock throws ERR-PS10-RUN-IMMUTABLE", () => {
   const services = createFoundationServices();
   seedRules(services);
   const maker = actor();
   const runId = runPeriodToLock(services, "2026-08");
   assert.equal(services.payrollEngine.getEngineRun(maker, runId).status, "LOCKED");
   // Locked runs and their payslips are immutable: snapshot, recompute, and approve all reject.
-  assert.equal(codeOf(() => services.payrollEngine.computeEngineRun(maker, runId)), "ERR-G10-RUN-IMMUTABLE");
-  assert.equal(codeOf(() => services.payrollEngine.snapshotRunInputs(maker, runId)), "ERR-G10-RUN-IMMUTABLE");
-  assert.equal(codeOf(() => services.payrollEngine.approveEngineRun(approver(), runId)), "ERR-G10-RUN-IMMUTABLE");
+  assert.equal(codeOf(() => services.payrollEngine.computeEngineRun(maker, runId)), "ERR-PS10-RUN-IMMUTABLE");
+  assert.equal(codeOf(() => services.payrollEngine.snapshotRunInputs(maker, runId)), "ERR-PS10-RUN-IMMUTABLE");
+  assert.equal(codeOf(() => services.payrollEngine.approveEngineRun(approver(), runId)), "ERR-PS10-RUN-IMMUTABLE");
 });
 
-test("PH-09B NEGATIVE: a second concurrent FINAL run for the period throws ERR-G10-RUN-INFLIGHT", () => {
+test("PH-09B NEGATIVE: a second concurrent FINAL run for the period throws ERR-PS10-RUN-INFLIGHT", () => {
   const services = createFoundationServices();
   seedRules(services);
   const maker = actor();
   const first = services.payrollEngine.createEngineRun(maker, { period: "2026-08", runMode: "FINAL" });
   // Concurrent FINAL run for the same period rejects while the first is in flight.
-  assert.equal(codeOf(() => services.payrollEngine.createEngineRun(maker, { period: "2026-08", runMode: "FINAL" })), "ERR-G10-RUN-INFLIGHT");
+  assert.equal(codeOf(() => services.payrollEngine.createEngineRun(maker, { period: "2026-08", runMode: "FINAL" })), "ERR-PS10-RUN-INFLIGHT");
   // A DRAFT (what-if) run does not take the in-flight slot.
   const draft = services.payrollEngine.createEngineRun(maker, { period: "2026-08", runMode: "DRAFT" });
   assert.equal(draft.runMode, "DRAFT");
@@ -213,7 +213,7 @@ test("PH-09B arrears engine: month-wise breakup persists old/new/delta rows and 
   const arrear = services.payrollEngine.computeArrear(maker, {
     employeeId: ph03Ids.employee,
     arrearType: "PAY_FIXATION",
-    sourceReference: "G06:pay-fixation-order:0001",
+    sourceReference: "PS06:pay-fixation-order:0001",
     periodFrom: "2026-08",
     periodTo: "2026-09",
     revisedComponentAmountsCents: { BASIC: 3300000 },
@@ -249,7 +249,7 @@ test("PH-09B arrears engine: month-wise breakup persists old/new/delta rows and 
   assert.equal(paid.paidInRunId, october.id);
 });
 
-test("PH-09B net-pay floor: excess recovery is held (ERR-G10-RECOVERY-NET) and booked into deduction_carryforwards", () => {
+test("PH-09B net-pay floor: excess recovery is held (ERR-PS10-RECOVERY-NET) and booked into deduction_carryforwards", () => {
   const services = createFoundationServices();
   seedRules(services);
   const maker = actor();
@@ -259,7 +259,7 @@ test("PH-09B net-pay floor: excess recovery is held (ERR-G10-RECOVERY-NET) and b
     period: "2026-08",
     amountCents: 2000000,
     sourceType: "RECOVERY",
-    sourceRef: "G09:penalty-order:0001",
+    sourceRef: "PS09:penalty-order:0001",
   });
   const run = services.payrollEngine.createEngineRun(maker, { period: "2026-08", runMode: "FINAL" });
   services.payrollEngine.snapshotRunInputs(maker, run.id);
@@ -270,8 +270,8 @@ test("PH-09B net-pay floor: excess recovery is held (ERR-G10-RECOVERY-NET) and b
   const recoveryLine = lines.find((line) => line.componentCode === "RECOVERY");
   assert.equal(recoveryLine.amountCents, 1921000);
   assert.equal(payslip.netPayCents, 2201000); // exactly the protected floor
-  // The excess beyond the floor is HELD with ERR-G10-RECOVERY-NET, not silently dropped.
-  assert.equal(payslip.recoveryHold.code, "ERR-G10-RECOVERY-NET");
+  // The excess beyond the floor is HELD with ERR-PS10-RECOVERY-NET, not silently dropped.
+  assert.equal(payslip.recoveryHold.code, "ERR-PS10-RECOVERY-NET");
   assert.equal(payslip.recoveryHold.heldCents, 79000);
   // Lock books the held excess into an E35 deduction_carryforwards row for the next cycle.
   services.payrollEngine.approveEngineRun(approver(), run.id);
@@ -285,16 +285,16 @@ test("PH-09B net-pay floor: excess recovery is held (ERR-G10-RECOVERY-NET) and b
   assert.equal(carryforward.recoveredToDateCents, 0);
   assert.equal(carryforward.status, "OPEN");
   assert.equal(carryforward.bookedFromRunId, run.id);
-  assert.ok(services.audit.listAudit(maker).some((entry) => entry.subjectRef.startsWith("g10_deduction_carryforwards:")));
+  assert.ok(services.audit.listAudit(maker).some((entry) => entry.subjectRef.startsWith("ps10_deduction_carryforwards:")));
 });
 
-test("PH-09B reopen supersedes: originals REVERSED, successor recomputes v2, and YTD (VAL-G10-YTD-DERIVE) self-heals", () => {
+test("PH-09B reopen supersedes: originals REVERSED, successor recomputes v2, and YTD (VAL-PS10-YTD-DERIVE) self-heals", () => {
   const services = createFoundationServices();
   seedRules(services);
   const maker = actor();
   const runId = runPeriodToLock(services, "2026-08");
   const ytdBefore = services.payrollEngine.getYtdStatement(maker, ph03Ids.employee);
-  assert.equal(ytdBefore.validation, "VAL-G10-YTD-DERIVE");
+  assert.equal(ytdBefore.validation, "VAL-PS10-YTD-DERIVE");
   assert.equal(ytdBefore.grossCents, 4402000);
 
   const { supersededRun, successorRun } = services.payrollEngine.reopenEngineRun(maker, runId, { reason: "Bank detail correction before transmission" });
@@ -319,7 +319,7 @@ test("PH-09B reopen supersedes: originals REVERSED, successor recomputes v2, and
   assert.equal(ytdAfter.grossCents, 4402000);
   assert.equal(ytdAfter.byComponent.BASIC, 3100000);
 
-  // NEGATIVE: reopen after bank transmission is blocked (ERR-G10-REOPEN-BLOCKED).
+  // NEGATIVE: reopen after bank transmission is blocked (ERR-PS10-REOPEN-BLOCKED).
   services.payrollEngine.markRunTransmitted(maker, successorRun.id);
-  assert.equal(codeOf(() => services.payrollEngine.reopenEngineRun(maker, successorRun.id, { reason: "Too late" })), "ERR-G10-REOPEN-BLOCKED");
+  assert.equal(codeOf(() => services.payrollEngine.reopenEngineRun(maker, successorRun.id, { reason: "Too late" })), "ERR-PS10-REOPEN-BLOCKED");
 });

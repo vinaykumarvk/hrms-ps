@@ -17,21 +17,21 @@ credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
-## What tranche 23 closed — G09 POSH conciliation (FR-G09-023 BR-2)
+## What tranche 23 closed — PS09 POSH conciliation (FR-PS09-023 BR-2)
 
 | Module | Deep-engine gap closed | Evidence |
 |---|---|---|
-| **G09** | POSH conciliation (POSH Act 2013 s.10 / FR-G09-023 BR-2): the aggrieved complainant may opt for conciliation **before** the inquiry; a SETTLED conciliation **blocks** the inquiry report; a conciliation may **not** rest on a monetary settlement (`ERR-G09-CONCILIATION-MONETARY`, 422). Routes `POST /api/v1/disciplinary/cases/{id}:conciliation` + `GET .../conciliations`. | `ph36a-g09-posh-conciliation-route.test.cjs` |
+| **PS09** | POSH conciliation (POSH Act 2013 s.10 / FR-PS09-023 BR-2): the aggrieved complainant may opt for conciliation **before** the inquiry; a SETTLED conciliation **blocks** the inquiry report; a conciliation may **not** rest on a monetary settlement (`ERR-PS09-CONCILIATION-MONETARY`, 422). Routes `POST /api/v1/disciplinary/cases/{id}:conciliation` + `GET .../conciliations`. | `ph36a-ps09-posh-conciliation-route.test.cjs` |
 
 `recordConciliation` is guarded (POSH-only, opted-by-complainant, before-inquiry, non-monetary), audited,
 and P02-scoped; the SETTLED-blocks-inquiry rule is enforced in `recordInquiryReport`. This closes one of the
-three named deep-engine items; **G10 TDS/Form-16 depth and G04 CI conformance remain open** (below).
+three named deep-engine items; **PS10 TDS/Form-16 depth and PS04 CI conformance remain open** (below).
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
-- **Deep engine depth (remaining):** G10 remaining TDS edge cases + Form-16 Part-A remittance-matching
-  depth; G04 CI port-conformance gate in the build pipeline. (G09 POSH conciliation is now closed; the
-  broader G09 POSH inquiry-conduct depth beyond conciliation is not separately claimed.)
+- **Deep engine depth (remaining):** PS10 remaining TDS edge cases + Form-16 Part-A remittance-matching
+  depth; PS04 CI port-conformance gate in the build pipeline. (PS09 POSH conciliation is now closed; the
+  broader PS09 POSH inquiry-conduct depth beyond conciliation is not separately claimed.)
 - **Persistence workstream:** the hand-built services (PH-16F..PH-36 engines, now including the POSH
   conciliation register) use in-memory repositories; Postgres-backed repos + migrations remain deferred,
   and the `ph06-persistence` migration-list assertion froze at 0008.
@@ -42,8 +42,8 @@ than the core behavioral routes shipped.
 
 ## Recommendation for the human reviewer
 
-Approve PH-36B, OR direct a further tranche (PH-37). With G09 POSH conciliation closed, the open
-deep-engine items narrow to **G10 TDS/Form-16 depth** and the **G04 CI conformance gate**, alongside the
+Approve PH-36B, OR direct a further tranche (PH-37). With PS09 POSH conciliation closed, the open
+deep-engine items narrow to **PS10 TDS/Form-16 depth** and the **PS04 CI conformance gate**, alongside the
 standing **persistence migration workstream** (Postgres repos + migrations for the PH-16F..PH-36 in-memory
 engines; refresh the frozen `ph06-persistence` migration list at 0008). Carried debt is unchanged:
 in-memory repositories for the newest services, including this tranche's conciliation register.

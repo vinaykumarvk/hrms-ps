@@ -42,7 +42,7 @@ function assertThrows(fn: () => void, pattern: RegExp, message: string): void {
 
 const scope: TenantScope = { tenantId: ph03Ids.tenant, entityId: ph03Ids.entity };
 
-// PH-02C-aligned named-individual facts (e.g. a G09 named inquiry officer). userId space is deliberately
+// PH-02C-aligned named-individual facts (e.g. a PS09 named inquiry officer). userId space is deliberately
 // distinct from the subject employee ids so the self-approval branch is exercised explicitly.
 const namedOfficerActive = "u-named-inquiry-officer-01";
 const namedOfficerRetired = "u-named-inquiry-officer-retired";
@@ -110,7 +110,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
         tenantId: ph03Ids.tenant,
         entityId: ph03Ids.entity,
         authorityType: "TRANSFER_AUTHORITY",
-        authorityCode: "G05_TRANSFER_REVENUE",
+        authorityCode: "PS05_TRANSFER_REVENUE",
         scopeType: "ORG_UNIT",
         scopeOrgUnitId: ph03Ids.orgRevenue,
         authorityEmployeeId: ph03Ids.employee,
@@ -120,7 +120,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
       };
       const resolution = service({ authorities: [...facts.authorities, higherPriority] }).resolve(
         scope,
-        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue },
+        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue },
         asOf
       );
       // candidates records the base authority selection (before delegation is layered on top).
@@ -132,7 +132,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
     run: () => {
       const resolution = service().resolve(
         scope,
-        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.manager },
+        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.manager },
         asOf
       );
       assertEqual(resolution.selectedAssignees[0]?.employeeId, ph03Ids.employee, "delegate selected");
@@ -144,7 +144,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
     run: () => {
       const resolution = service().resolve(
         scope,
-        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.employee },
+        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.employee },
         asOf
       );
       assertEqual(resolution.selectedAssignees[0]?.employeeId, ph03Ids.manager, "base holder retained");
@@ -160,7 +160,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
         tenantId: ph03Ids.tenant,
         entityId: ph03Ids.entity,
         authorityType: "TRANSFER_AUTHORITY",
-        authorityCode: "G05_TRANSFER_REVENUE",
+        authorityCode: "PS05_TRANSFER_REVENUE",
         scopeType: "ORG_UNIT",
         scopeOrgUnitId: ph03Ids.orgRevenue,
         authorityEmployeeId: ph03Ids.employee,
@@ -170,7 +170,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
       };
       const svc = service({ authorities: [...facts.authorities, ambiguous] });
       assertThrows(
-        () => svc.resolve(scope, { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue }, asOf),
+        () => svc.resolve(scope, { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue }, asOf),
         /Ambiguous statutory authority/,
         "ambiguous authority blocked"
       );
@@ -186,12 +186,12 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
     },
   },
   {
-    name: "ORG_UNIT_HEAD falls back to g01_authority_assignments when the head is unset",
+    name: "ORG_UNIT_HEAD falls back to ps01_authority_assignments when the head is unset",
     run: () => {
       const resolution = service().resolve(scope, { mechanism: "ORG_UNIT_HEAD", orgUnitId: ph03Ids.orgAssessment }, asOf);
       assertEqual(resolution.selectedAssignees[0]?.employeeId, ph03Ids.manager, "head via authority assignment");
       assertEqual(resolution.fallbackApplied, true, "fallback applied");
-      assertEqual(resolution.evidence.source, "g01_authority_assignments", "fallback source");
+      assertEqual(resolution.evidence.source, "ps01_authority_assignments", "fallback source");
     },
   },
   {
@@ -279,7 +279,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
         tenantId: ph03Ids.tenant,
         entityId: ph03Ids.entity,
         authorityType: "TRANSFER_AUTHORITY",
-        authorityCode: "G05_TRANSFER_REVENUE",
+        authorityCode: "PS05_TRANSFER_REVENUE",
         scopeType: "ORG_UNIT",
         scopeOrgUnitId: ph03Ids.orgRevenue,
         authorityEmployeeId: ph03Ids.employee,
@@ -288,7 +288,7 @@ export const authorityResolverPrecedenceCases: PrecedenceCase[] = [
         status: "ACTIVE",
       };
       const svc = service({ authorities: [...facts.authorities, futureHigherPriority] });
-      const rule = { mechanism: "STATUTORY_AUTHORITY" as const, authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue };
+      const rule = { mechanism: "STATUTORY_AUTHORITY" as const, authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue };
 
       // candidates records the base authority selection (delegation is layered separately), so it
       // isolates the as-of / priority gating we are asserting here.

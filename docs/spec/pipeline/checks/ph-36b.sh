@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PH-36B oracle (human gate): honest tranche-23 verdict — cites the tranche-22 verdict + coverage delta,
-# the G09 POSH-conciliation row, remaining-gaps, necessary-not-sufficient, contract-op caveat, and the
+# the PS09 POSH-conciliation row, remaining-gaps, necessary-not-sufficient, contract-op caveat, and the
 # EXACT suite pass counts (recomputed here). Suites green underneath; GREEN still requires HUMAN approval.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
@@ -21,7 +21,7 @@ if [ -d node_modules ]; then
 fi
 must "verdict chains from tranche-22 verdict::ph-35-verdict" "$V"
 must "verdict cites the coverage delta::brd-coverage-delta-20260703" "$V"
-must "verdict carries a G09 row::G09" "$V"
+must "verdict carries a PS09 row::PS09" "$V"
 must "verdict names POSH conciliation::conciliation|CONCILIATION" "$V"
 must "verdict names remaining gaps::NOT_FOUND|remaining|still open|open gap" "$V"
 must "verdict necessary-not-sufficient::necessary.{0,4}not sufficient" "$V"

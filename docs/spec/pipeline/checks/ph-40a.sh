@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # PH-40A oracle: raise measured contract coverage by exposing continuous-feedback (check-in + reads),
-# 360-feedback (rate/release/read), and signature reads — all real, service-tested G08 backing — as
+# 360-feedback (rate/release/read), and signature reads — all real, service-tested PS08 backing — as
 # kernel routes. Checks routes registered + dispatched, and the ratchet advanced to >= 411 / 31.1%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g08.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+R="apps/api/src/routes/ps08.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
 echo "== PH-40A exit-criteria (feedback/signature route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in recordCheckIn listFeedback listCheckIns submitRating release360 get360 listSignatures; do

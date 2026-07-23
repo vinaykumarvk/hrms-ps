@@ -4,9 +4,9 @@ Status: pipeline-ready plan, not executed.
 
 ## Objective
 
-Build the first usable HRMS frontend over the PH-04 `/api/v1` contract: an authenticated operational shell, Me/My Team/Admin workspaces, P01 inbox and task action surfaces, a minimum YAML-backed workflow configuration review/publish/simulate surface, and read-only G01/G12/G13 foundation views.
+Build the first usable HRMS frontend over the PH-04 `/api/v1` contract: an authenticated operational shell, Me/My Team/Admin workspaces, P01 inbox and task action surfaces, a minimum YAML-backed workflow configuration review/publish/simulate surface, and read-only PS01/PS12/PS13 foundation views.
 
-PH-05 must not mass-build HRMS modules. It exists to make the platform usable before PH-06 proves G03 and G05 vertical slices.
+PH-05 must not mass-build HRMS modules. It exists to make the platform usable before PH-06 proves PS03 and PS05 vertical slices.
 
 ## Entry Conditions
 
@@ -20,7 +20,7 @@ PH-05 must not mass-build HRMS modules. It exists to make the platform usable be
 
 ## Non-Goals
 
-- No G03 or G05 feature implementation.
+- No PS03 or PS05 feature implementation.
 - No advanced visual workflow graph editor unless the minimum YAML-backed surface is already stable.
 - No production SSO/session implementation beyond the local authenticated-shell fixture needed for PH-05 tests.
 - No direct database access from UI code.
@@ -33,7 +33,7 @@ PH-05 must not mass-build HRMS modules. It exists to make the platform usable be
 | PH-05A | auto | Web app scaffold and API client | `apps/web`, React/TypeScript/Vite foundation, API client, fixture adapter, build/test scripts |
 | PH-05B | auto | HRMS shell and workspaces | layout, navigation, route guard, workspace switcher, loading/empty/error/no-permission states |
 | PH-05C | auto | P01 workflow operations UI | inbox, task detail, action panel, comments, send-back/delegate/cancel/query, YAML-backed config validate/review/publish/simulate |
-| PH-05D | auto | G01/G12/G13 foundation views | employee profile, masked PII display, SR timeline, document attachments/legal-hold/retention views |
+| PH-05D | auto | PS01/PS12/PS13 foundation views | employee profile, masked PII display, SR timeline, document attachments/legal-hold/retention views |
 | PH-05E | human after GREEN | UI conformance and review packet | end-to-end UI conformance tests, accessibility/static checks, PH-05 verdict and demo-freeze evidence |
 
 PH-05E remains human-gated because UI acceptance and workspace information architecture are judgment-bearing before PH-06 builds module-specific flows on top of them.
@@ -43,7 +43,7 @@ PH-05E remains human-gated because UI acceptance and workspace information archi
 - Use React + TypeScript. Tailwind/shadcn conventions may be implemented through local utility components if dependencies are not yet installed, but the component model must remain compatible with shadcn-style primitives.
 - Build the actual application surface as the first screen. Do not create a landing page.
 - Use real PH-04 route names and response shapes through a typed API client. Fixture mode is allowed only when explicitly labelled and backed by the PH-04 contract snapshot.
-- Keep UI dense, operational, and government-HRMS appropriate: no marketing hero, no decorative card stacks, no oversized editorial layout.
+- Keep UI dense, operational, and primesoft-hrms appropriate: no marketing hero, no decorative card stacks, no oversized editorial layout.
 - Include mobile and desktop responsive states for shell, inbox, task detail, records, and configuration review.
 - No skeleton UI components. Every primary screen must have loading, empty, error, no-permission, and partial-data behavior.
 
@@ -69,9 +69,9 @@ Workflow configuration:
 - Advanced PUDA visual config UI remains deferred unless safely ported without PUDA domain leakage.
 
 Foundation records:
-- G01 employee list/detail/profile-360 with P02 masked PII states.
-- G12 SR timeline with append-only/hash-chain visual cues.
-- G13 document list/detail/attachment, versions, legal hold, and retention fail-closed views.
+- PS01 employee list/detail/profile-360 with P02 masked PII states.
+- PS12 SR timeline with append-only/hash-chain visual cues.
+- PS13 document list/detail/attachment, versions, legal hold, and retention fail-closed views.
 
 ## Test Plan
 
@@ -85,7 +85,7 @@ Foundation records:
 
 - Rollback: disable route entries per feature area while keeping the shell and API client intact.
 - Retry: keep P01 inbox/task UI as the minimal path; defer workflow config visual editing if unstable.
-- Quarantine: G01/G12/G13 read views can be completed independently; failure in workflow config UI must not block inbox/task operations.
+- Quarantine: PS01/PS12/PS13 read views can be completed independently; failure in workflow config UI must not block inbox/task operations.
 
 ## Human Gate
 

@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-57A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Second-pass deepening tranche, into G10. Built by hand — subagents credit-exhausted until 2026-07-08.
+GREEN. Second-pass deepening tranche, into PS10. Built by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
@@ -20,17 +20,17 @@ GREEN. Second-pass deepening tranche, into G10. Built by hand — subagents cred
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G10** | FR-20 full-and-final settlement (`POST /payroll/fnf-settlements`, `:approve`) + recovery/loan/hold reads (`GET /payroll/fnf-settlements`, `/payroll/employees/{employeeId}/recovery-schedules`, `/loans`, `/payroll/runs/{runId}/holds`) | existing `compensationIntegrationService` (integer-paise validation; single consolidated record → CONFLICT; approval SoD; COMPUTED-only), service-tested | `ph57a-g10-fnf-recovery-route.test.cjs` |
+| **PS10** | FR-20 full-and-final settlement (`POST /payroll/fnf-settlements`, `:approve`) + recovery/loan/hold reads (`GET /payroll/fnf-settlements`, `/payroll/employees/{employeeId}/recovery-schedules`, `/loans`, `/payroll/runs/{runId}/holds`) | existing `compensationIntegrationService` (integer-paise validation; single consolidated record → CONFLICT; approval SoD; COMPUTED-only), service-tested | `ph57a-ps10-fnf-recovery-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**526 / 39.8% → 532 / 40.2%** (G10 **42.5% → 49.4%**) — **total coverage has crossed the 40% mark** — and the
+**526 / 39.8% → 532 / 40.2%** (PS10 **42.5% → 49.4%**) — **total coverage has crossed the 40% mark** — and the
 PH-37 gate floor was raised in lockstep so the gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 40.2%** — ~791 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. The second pass continues into the
-  next-lowest modules **G14 (28.9%)**, G08 (30.1%), G13 (31.6%), G07 (33.3%) — most now have only repository-
+  next-lowest modules **PS14 (28.9%)**, PS08 (30.1%), PS13 (31.6%), PS07 (33.3%) — most now have only repository-
   level or setup methods left, so future tranches will spread across several modules per pass.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-57 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.

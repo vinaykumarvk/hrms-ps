@@ -1,14 +1,14 @@
-# PH-55A — Raise contract coverage: G01 governed write-port route exposure
+# PH-55A — Raise contract coverage: PS01 governed write-port route exposure
 
 ## Objective
-Deepen G01 coverage (26.7% → higher, second pass): expose the governed employee write-ports (identity
+Deepen PS01 coverage (26.7% → higher, second pass): expose the governed employee write-ports (identity
 change, transfer posting, probation confirmation) and the live-record/count reads as kernel routes over
 already-tested `employeeMaster` backing.
 
 ## Context
-- Backing (`apps/api/src/modules/g01/employeeMasterService.ts`): `governedIdentityChange` (atomic SR-ledger
+- Backing (`apps/api/src/modules/ps01/employeeMasterService.ts`): `governedIdentityChange` (atomic SR-ledger
   multi-step write + attribute history), `applyTransferPosting`, `applyProbationConfirmation` (write-ports
-  that other modules call — G01 owns the master mutation), `getLiveRecordForIdentityOps`,
+  that other modules call — PS01 owns the master mutation), `getLiveRecordForIdentityOps`,
   `listLiveRecordsForIdentityOps`, `count`.
 - Coverage gate: `tools/contract-coverage.mjs` + `docs/reviews/contract-coverage-20260703.md` + `ph-37a.sh`.
 
@@ -20,7 +20,7 @@ already-tested `employeeMaster` backing.
 - Raise the ratchet floor (report + `ph37a` test + `ph-37a.sh`) 513/38.8% → 519/39.2%.
 
 ## Evidence required
-- 6 routes in `g01.routes.ts`; `apps/api/test/ph55a-*.test.cjs` covering the three write-ports, the
+- 6 routes in `ps01.routes.ts`; `apps/api/test/ph55a-*.test.cjs` covering the three write-ports, the
   live-record/count reads, and the NOT_FOUND guard.
 - `bash docs/spec/pipeline/checks/ph-55a.sh` GREEN and `bash docs/spec/pipeline/checks/ph-37a.sh` GREEN at
   the raised floor; typecheck + full suite green.

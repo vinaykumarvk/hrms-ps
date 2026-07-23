@@ -31,7 +31,7 @@ fi
 
 # 2) honest verdict content (content-checked, not existence-checked)
 must "verdict cites the tranche baseline delta::brd-coverage-delta-20260703" "$V"
-for m in G03 G06 G09 G10 G11 G12 G13; do
+for m in PS03 PS06 PS09 PS10 PS11 PS12 PS13; do
   must "verdict carries a $m row::$m" "$V"
 done
 must "verdict names remaining gaps (no 100% claim)::NOT_FOUND|remaining|still open|open gap" "$V"

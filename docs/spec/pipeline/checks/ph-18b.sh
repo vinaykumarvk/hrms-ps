@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-18B oracle: G03 FR-07/FR-08 attendance exceptions — attendance_exceptions (WFH, ON_DUTY/TOUR),
+# PH-18B oracle: PS03 FR-07/FR-08 attendance exceptions — attendance_exceptions (WFH, ON_DUTY/TOUR),
 # EXCEPTION_OVERLAP, WFH_CAP_EXCEEDED, DOCUMENT_REQUIRED (order-doc for tour).
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g03 apps/api/src/routes/g03.routes.ts"; T=apps/api/test
-echo "== PH-18B exit-criteria (G03 WFH / on-duty attendance exceptions) =="
+S="apps/api/src/modules/ps03 apps/api/src/routes/ps03.routes.ts"; T=apps/api/test
+echo "== PH-18B exit-criteria (PS03 WFH / on-duty attendance exceptions) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "exceptions entity consumed (attendance_exceptions)::attendance_exceptions" \

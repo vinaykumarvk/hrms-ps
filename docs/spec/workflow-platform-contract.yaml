@@ -245,7 +245,7 @@ spis:
 
   documentAdapter:
     purpose: Generate orders, letters, references, and statutory documents after workflow stages.
-    phase_status: required_before_G05_G08_G09_G10_G11
+    phase_status: required_before_PS05_PS08_PS09_PS10_PS11
     interface: generate(template_code, subject_ref, payload) -> document_ref
 
 persistence:

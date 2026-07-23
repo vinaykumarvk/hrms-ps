@@ -9,7 +9,7 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 echo "== PH-05B exit-criteria (shell, workspaces, route guards) =="
 
-# --- 1. Navigation reaches all 14 module workspaces (BRD G01-G14 surfaces) -------------------------
+# --- 1. Navigation reaches all 14 module workspaces (BRD PS01-PS14 surfaces) -------------------------
 nav=apps/web/src/app/navigation.ts
 [ -s "$nav" ] || red "missing navigation model: $nav"
 while IFS= read -r spec; do
@@ -17,20 +17,20 @@ while IFS= read -r spec; do
   label="${spec%%::*}"; pat="${spec#*::}"
   grep -qiE "$pat" "$nav" 2>/dev/null && grn "workspace nav: $label" || red "navigation missing workspace: $label"
 done <<'EOF'
-G01 employees::employee
-G02 personal details::personal-details|personal_details
-G03 attendance/leave::attendance|leave
-G04 leave-SR relay::leave-sr|relay
-G05 transfers::transfer
-G06 promotions::promotion
-G07 training::training
-G08 APAR/performance::apar|appraisal|performance
-G09 disciplinary::disciplinary
-G10 payroll::payroll
-G11 pension/retirement::pension|retirement
-G12 service register::service-register|service_register
-G13 documents::document
-G14 analytics::analytics|dashboard
+PS01 employees::employee
+PS02 personal details::personal-details|personal_details
+PS03 attendance/leave::attendance|leave
+PS04 leave-SR relay::leave-sr|relay
+PS05 transfers::transfer
+PS06 promotions::promotion
+PS07 training::training
+PS08 APAR/performance::apar|appraisal|performance
+PS09 disciplinary::disciplinary
+PS10 payroll::payroll
+PS11 pension/retirement::pension|retirement
+PS12 service register::service-register|service_register
+PS13 documents::document
+PS14 analytics::analytics|dashboard
 EOF
 
 # --- 2. Route guard actually gates render on entitlements ------------------------------------------

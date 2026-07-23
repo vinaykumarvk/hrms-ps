@@ -22,9 +22,9 @@ Built by hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | Route exposed | Backing | Evidence |
 |---|---|---|---|
-| **G14** | `GET /api/v1/analytics/bi-kpis` — embedded-BI KPI tiles | `analytics.listBiKpis(scope)` maps real analytics cards → tiles | `ph35a-*.test.cjs` |
-| **G01** | `GET`/`POST /api/v1/me/rights-requests` — DPDP self-service | DSR-backed via `documentVault.listDataSubjectRequests`/`registerDataSubjectRequest`, subject-filtered to the signed-in actor | `ph35b-*.test.cjs` |
-| **G06** | `GET`/`POST /api/v1/promotions/sealed-covers` + `POST .../{id}:release` | new `SealedCoverService` (place / list / release-with-mandatory-reason), P02-scoped, audited | `ph35c-g06-sealed-cover-route.test.cjs` |
+| **PS14** | `GET /api/v1/analytics/bi-kpis` — embedded-BI KPI tiles | `analytics.listBiKpis(scope)` maps real analytics cards → tiles | `ph35a-*.test.cjs` |
+| **PS01** | `GET`/`POST /api/v1/me/rights-requests` — DPDP self-service | DSR-backed via `documentVault.listDataSubjectRequests`/`registerDataSubjectRequest`, subject-filtered to the signed-in actor | `ph35b-*.test.cjs` |
+| **PS06** | `GET`/`POST /api/v1/promotions/sealed-covers` + `POST .../{id}:release` | new `SealedCoverService` (place / list / release-with-mandatory-reason), P02-scoped, audited | `ph35c-ps06-sealed-cover-route.test.cjs` |
 
 With this tranche the three tranche-21 UI surfaces are no longer pointing at unbacked routes — each has a
 real kernel route registered, permission-guarded, and exercised by an API test that dispatches through
@@ -34,8 +34,8 @@ real kernel route registered, permission-guarded, and exercised by an API test t
 
 The residual is unchanged in shape from tranche 21 minus the route-exposure item now closed:
 
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A remittance-matching depth;
-  G09 POSH conciliation depth; G04 CI port-conformance gate in the build pipeline.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A remittance-matching depth;
+  PS09 POSH conciliation depth; PS04 CI port-conformance gate in the build pipeline.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-35 engines, now including
   `SealedCoverService`) use in-memory repositories; Postgres-backed repos + migrations for these remain
   deferred, and the `ph06-persistence` migration-list assertion froze at 0008.
@@ -47,8 +47,8 @@ than the core behavioral routes shipped.
 ## Recommendation for the human reviewer
 
 Approve PH-35D, OR direct a further tranche (PH-36). With the UI-surface backlog and its route exposure
-both cleared, the two open workstreams are now the **deep-engine depth items** (G10 TDS/Form-16, G09 POSH,
-G04 CI conformance) and the **persistence migration workstream** (Postgres repos + migrations for the
+both cleared, the two open workstreams are now the **deep-engine depth items** (PS10 TDS/Form-16, PS09 POSH,
+PS04 CI conformance) and the **persistence migration workstream** (Postgres repos + migrations for the
 PH-16F..PH-35 in-memory engines; refresh the frozen `ph06-persistence` migration list at 0008). Carried
 debt is unchanged: in-memory repositories for the newest services, including this tranche's sealed-cover
 register.

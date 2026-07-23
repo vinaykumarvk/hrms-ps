@@ -33,21 +33,21 @@ RBAC-T-0031,Deny,Org Admin,Bank account details,default,attempt view Bank accoun
 RBAC-T-0032,Ceiling-invariant,Org Admin,Bank account details,PII ceiling (RBAC §1/§6),attempt view Bank account details as top-tier admin,DENY — ceiling not overridable upward,RBAC §6 / §3.4,P1
 RBAC-T-0033,Deny,Platform Super Admin,Bank account details,default,attempt view Bank account details,DENY — not authorised,RBAC §6 / §3.4,P1
 RBAC-T-0034,Ceiling-invariant,Platform Super Admin,Bank account details,PII ceiling (RBAC §1/§6),attempt view Bank account details as top-tier admin,DENY — ceiling not overridable upward,RBAC §6 / §3.4,P1
-RBAC-T-0035,Masking,Employee (own),Government IDs / National ID,default,view Government IDs / National ID,PERMIT — MASKED (e.g. last-4),RBAC §6 / §3.4,P1
-RBAC-T-0036,Deny,Manager L1,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0037,Deny,Skip-level,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0038,Deny,HOD,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0039,Deny,UAG Head,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0040,Deny,HRBP,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0041,Allow,HR Admin,Government IDs / National ID,default,view Government IDs / National ID,PERMIT,RBAC §6 / §3.4,P2
-RBAC-T-0042,Allow,Office Admin,Government IDs / National ID,own,view & upload Government IDs / National ID,PERMIT,RBAC §6 / §3.4,P2
-RBAC-T-0043,Deny,Finance Admin,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0044,Deny,Recruiter,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0045,Deny,Recruitment Admin,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0046,Deny,Org Admin,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0047,Ceiling-invariant,Org Admin,Government IDs / National ID,PII ceiling (RBAC §1/§6),attempt view Government IDs / National ID as top-tier admin,DENY — ceiling not overridable upward,RBAC §6 / §3.4,P1
-RBAC-T-0048,Deny,Platform Super Admin,Government IDs / National ID,default,attempt view Government IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
-RBAC-T-0049,Ceiling-invariant,Platform Super Admin,Government IDs / National ID,PII ceiling (RBAC §1/§6),attempt view Government IDs / National ID as top-tier admin,DENY — ceiling not overridable upward,RBAC §6 / §3.4,P1
+RBAC-T-0035,Masking,Employee (own),Enterprise IDs / National ID,default,view Enterprise IDs / National ID,PERMIT — MASKED (e.g. last-4),RBAC §6 / §3.4,P1
+RBAC-T-0036,Deny,Manager L1,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0037,Deny,Skip-level,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0038,Deny,HOD,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0039,Deny,UAG Head,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0040,Deny,HRBP,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0041,Allow,HR Admin,Enterprise IDs / National ID,default,view Enterprise IDs / National ID,PERMIT,RBAC §6 / §3.4,P2
+RBAC-T-0042,Allow,Office Admin,Enterprise IDs / National ID,own,view & upload Enterprise IDs / National ID,PERMIT,RBAC §6 / §3.4,P2
+RBAC-T-0043,Deny,Finance Admin,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0044,Deny,Recruiter,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0045,Deny,Recruitment Admin,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0046,Deny,Org Admin,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0047,Ceiling-invariant,Org Admin,Enterprise IDs / National ID,PII ceiling (RBAC §1/§6),attempt view Enterprise IDs / National ID as top-tier admin,DENY — ceiling not overridable upward,RBAC §6 / §3.4,P1
+RBAC-T-0048,Deny,Platform Super Admin,Enterprise IDs / National ID,default,attempt view Enterprise IDs / National ID,DENY — not authorised,RBAC §6 / §3.4,P1
+RBAC-T-0049,Ceiling-invariant,Platform Super Admin,Enterprise IDs / National ID,PII ceiling (RBAC §1/§6),attempt view Enterprise IDs / National ID as top-tier admin,DENY — ceiling not overridable upward,RBAC §6 / §3.4,P1
 RBAC-T-0050,Scope-allow,Employee (own),Date of Birth,record in own,view Date of Birth,PERMIT (within scope),RBAC §6 / §3.4,P2
 RBAC-T-0051,Scope-deny,Employee (own),Date of Birth,record OUTSIDE own,view Date of Birth,DENY — out of scope,RBAC §6 / §3.4,P1
 RBAC-T-0052,Deny,Manager L1,Date of Birth,default,attempt view Date of Birth,DENY — not authorised,RBAC §6 / §3.4,P1

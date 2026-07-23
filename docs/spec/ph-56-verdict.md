@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-56A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Second-pass deepening tranche, into G10. Built by hand — subagents credit-exhausted until 2026-07-08.
+GREEN. Second-pass deepening tranche, into PS10. Built by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
@@ -20,10 +20,10 @@ GREEN. Second-pass deepening tranche, into G10. Built by hand — subagents cred
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G10** | FR-16 payroll engine-run lifecycle (`POST /payroll/engine-runs`, `:snapshot`, `:compute`, `:approve`, `:lock`, `GET /payroll/engine-runs/{id}`, `/payroll/engine-runs/{id}/payslips`) | existing `payrollEngineService` (period YYYY-MM guard; snapshot→compute→approve(SoD)→lock state machine; ERR-G10-RUN-INFLIGHT / PAYROLL_SOD / ERR-G10-RUN-IMMUTABLE guards), service-tested | `ph56a-g10-engine-run-route.test.cjs` |
+| **PS10** | FR-16 payroll engine-run lifecycle (`POST /payroll/engine-runs`, `:snapshot`, `:compute`, `:approve`, `:lock`, `GET /payroll/engine-runs/{id}`, `/payroll/engine-runs/{id}/payslips`) | existing `payrollEngineService` (period YYYY-MM guard; snapshot→compute→approve(SoD)→lock state machine; ERR-PS10-RUN-INFLIGHT / PAYROLL_SOD / ERR-PS10-RUN-IMMUTABLE guards), service-tested | `ph56a-ps10-engine-run-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**519 / 39.2% → 526 / 39.8%** (G10 **34.5% → 42.5%**), and the PH-37 gate floor was raised in lockstep so the
+**519 / 39.2% → 526 / 39.8%** (PS10 **34.5% → 42.5%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked. The route test drives create + reads for real and exercises the mutation routes via their
 NOT_FOUND guards; the full snapshot→lock happy path (which requires a configured payroll rule set) is
 covered by the engine's own service-level tests — an honest split, not a skipped assertion.
@@ -32,7 +32,7 @@ covered by the engine's own service-level tests — an honest split, not a skipp
 
 - **Contract coverage is 39.8%** — ~797 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. The second pass continues into the
-  next-lowest modules **G14 (28.9%)**, G13 (31.6%), G07 (33.3%), and the FnF/recovery cluster still open in G10.
+  next-lowest modules **PS14 (28.9%)**, PS13 (31.6%), PS07 (33.3%), and the FnF/recovery cluster still open in PS10.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-56 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

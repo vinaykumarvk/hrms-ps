@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-20C oracle: G02 FR-014 change-request templates — change_request_templates CRUD, start-from-
+# PH-20C oracle: PS02 FR-014 change-request templates — change_request_templates CRUD, start-from-
 # template pre-fill (P02 field filter), deactivation.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g02 apps/api/src/routes/g02.routes.ts"; T=apps/api/test
-echo "== PH-20C exit-criteria (G02 change-request templates) =="
+S="apps/api/src/modules/ps02 apps/api/src/routes/ps02.routes.ts"; T=apps/api/test
+echo "== PH-20C exit-criteria (PS02 change-request templates) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "templates entity consumed (change_request_templates)::change_request_templates|changeRequestTemplate" \

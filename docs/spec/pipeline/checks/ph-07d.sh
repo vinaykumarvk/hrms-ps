@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-07D oracle: G03 attendance/leave/payroll feed — payroll_attendance_feed entity with period lock
+# PH-07D oracle: PS03 attendance/leave/payroll feed — payroll_attendance_feed entity with period lock
 # (PERIOD_ALREADY_LOCKED), locked-period adjustment emission, attendance day statuses beyond the stub
 # (ON_LEAVE/HOLIDAY/HALF_DAY), regularisation window/cap (WINDOW_EXPIRED). REAL-outcome oracle with a
 # fail-closed negative: the old narrow PRESENT|ANOMALY|REGULARISED status union must be gone, and a
@@ -7,10 +7,10 @@
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
-echo "== PH-07D exit-criteria (G03 attendance/payroll feed) =="
+echo "== PH-07D exit-criteria (PS03 attendance/payroll feed) =="
 
 [ -d node_modules ] || red "node_modules absent — typecheck/test oracle cannot run (npm install required)"
-G03=apps/api/src/modules/g03
+PS03=apps/api/src/modules/ps03
 
 # 1) feed entity, lock code, adjustments, day statuses, window code ("label::pattern" list)
 for spec in \
@@ -23,11 +23,11 @@ for spec in \
   "regularisation window code WINDOW_EXPIRED::WINDOW_EXPIRED" \
 ; do
   label="${spec%%::*}"; pat="${spec#*::}"
-  grep -rqiE "$pat" "$G03" 2>/dev/null && grn "$label in g03 src" || red "missing in g03 src: $label"
+  grep -rqiE "$pat" "$PS03" 2>/dev/null && grn "$label in ps03 src" || red "missing in ps03 src: $label"
 done
 
 # 2) fail-closed negative: the audit's narrow attendance status union must be gone
-if grep -rqF '"PRESENT" | "ANOMALY" | "REGULARISED";' "$G03" 2>/dev/null; then
+if grep -rqF '"PRESENT" | "ANOMALY" | "REGULARISED";' "$PS03" 2>/dev/null; then
   red "NEGATIVE: attendance day status still limited to PRESENT|ANOMALY|REGULARISED (audit finding)"
 else grn "negative ok: attendance status union extended beyond the stub"; fi
 

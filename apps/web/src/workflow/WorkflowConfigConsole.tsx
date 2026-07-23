@@ -9,7 +9,7 @@ import {
   validateWorkflowYaml,
 } from "./workflowConfigModel";
 
-const initialYaml = `workflowCode: WF-G03-LEAVE
+const initialYaml = `workflowCode: WF-PS03-LEAVE
 stages:
   - PENDING_MANAGER
 resolver: REPORTING_CHAIN

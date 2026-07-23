@@ -12,8 +12,8 @@ Scope: non-production drill plan and evidence checklist. This document does not 
 4. Run smoke checks:
    - Employee count matches source.
    - Service Register hash chain count matches source.
-   - G13 document metadata count matches source.
-   - G14 mart refresh returns `MART_REFRESH_IDEMPOTENT`.
+   - PS13 document metadata count matches source.
+   - PS14 mart refresh returns `MART_REFRESH_IDEMPOTENT`.
 5. Record reconciliation as `RECONCILIATION_CERTIFIED`.
 6. Destroy the sandbox restore after evidence capture.
 
@@ -32,6 +32,6 @@ Owners and dates:
 | Restore validation | dba-lead | 2026-07-15 |
 | Security observation | security-lead | 2026-07-15 |
 
-Exit evidence must include source backup identifier, restore target identifier, row-count reconciliation, SR hash-chain count, document count, and the G14 mart refresh hash. Any mismatch becomes a release exception with owner and date.
+Exit evidence must include source backup identifier, restore target identifier, row-count reconciliation, SR hash-chain count, document count, and the PS14 mart refresh hash. Any mismatch becomes a release exception with owner and date.
 
 Markers: `BACKUP_RESTORE_DRILL`, `MIGRATION_DRY_RUN`, `RECONCILIATION_CERTIFIED`.

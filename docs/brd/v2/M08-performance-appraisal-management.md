@@ -15,7 +15,7 @@
 
 ### 1.1 Purpose
 
-Performance Appraisal Management (M08-PAM) is the system of engagement and adjudication for measuring, recording, moderating and certifying employee performance across an annual (and continuous) cycle. It unifies two worlds that government HR has historically kept apart:
+Performance Appraisal Management (M08-PAM) is the system of engagement and adjudication for measuring, recording, moderating and certifying employee performance across an annual (and continuous) cycle. It unifies two worlds that enterprise HR has historically kept apart:
 
 1. **Modern continuous performance management (CPM)** — OKR/KRA-based goal-setting, cascading objectives, real-time feedback, check-ins, 360-degree feedback, competency assessment, and calibration — the practices best-in-class enterprises expect.
 2. **The statutory APAR process** — a confidential, multi-tier adjudicated record authored by one or more **Reporting Officers** (over part-periods), scrutinised by a **Reviewing Officer**, and certified by an **Accepting Authority**, including numeric grading, the integrity/attribute columns, the pen-picture, **mandatory full disclosure** of the entire APAR to the officer reported upon, the right of **representation/appeal** against adverse or below-benchmark remarks, the **Sealed Cover Procedure** for officers under charge, **digitally-signed (DSC/eSign) non-repudiable** certification, and the eventual **custody and posting** of the final grade to the Digital Service Register.
@@ -1806,7 +1806,7 @@ appraisal_forms (E4) ──sealed by──> M09 charge status; ──probation o
 
 - **Module:** M08-PAM
 - **Primary Role(s):** HR/APAR Cell, Dept Head/AA, Auditor (read), feeds M14
-- **User Story:** As HR leadership, I want analytics on rating distribution, skew, completion, skill gaps **and equity (bias-disparity)** so I can detect bias, monitor progress and meet the government's equity obligation.
+- **User Story:** As HR leadership, I want analytics on rating distribution, skew, completion, skill gaps **and equity (bias-disparity)** so I can detect bias, monitor progress and meet the enterprise's equity obligation.
 
 **Description.** Provides aggregated, role-scoped analytics: rating distribution vs target (pre/post calibration), grading skew by RO/org unit, cycle completion funnel, adverse/representation rates, competency-gap heatmaps, 360 participation, and — new in v2 — **DPDP-safe bias-disparity analytics**: adverse-rate, below-benchmark-rate and grade-mean by **gender / cadre / region / RO over time**, plus a **rater-leniency / central-tendency model across cycles** (R13). All analytics are de-identified aggregates with minimum-N suppression.
 
@@ -2738,7 +2738,7 @@ Shared contracts (error catalog, state machines, grade engine, tier-projection, 
 - Exact statutory representation window, disposal deadline and condonation authority are configuration, set per jurisdiction at deployment (`representation_window_days`, `disposal_deadline_at`, Condonation Authority role).
 - `representation_clock_start` (dispatch vs acknowledgement) is a per-jurisdiction config choice (R8); deemed-disclosure still opens the window.
 - Competency catalog and role-required levels are owned by M07; M08 consumes snapshots.
-- Adjudicating-authority seniority and apex chain-truncation rules are configurable to the deploying government's service rules (R12).
+- Adjudicating-authority seniority and apex chain-truncation rules are configurable to the deploying enterprise's service rules (R12).
 - Minimum supervision threshold for a No-Report Certificate defaults to 3 months and is configurable (R4).
 - The eSign/DSC provider (DSC token / Aadhaar-eSign / HSM) and external anchoring service are environment-specific (R10, R11).
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-45A oracle: raise measured contract coverage by exposing the G01 Aadhaar reveal (4-eyes) lifecycle +
+# PH-45A oracle: raise measured contract coverage by exposing the PS01 Aadhaar reveal (4-eyes) lifecycle +
 # employee legal-hold/blocking-obligation lifecycle + service-no lookup (real, service-tested backing) as
 # kernel routes. Checks routes registered + dispatched, and the ratchet advanced to >= 451 / 34.1%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g01.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-45A exit-criteria (G01 aadhaar/legal-hold route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps01.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-45A exit-criteria (PS01 aadhaar/legal-hold route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in requestReveal approveReveal getVaultByEmployee placeLegalHold releaseLegalHold registerBlockingObligation clearBlockingObligation getByServiceNo; do
   have "$R" "$m" "route wires backing method: $m"

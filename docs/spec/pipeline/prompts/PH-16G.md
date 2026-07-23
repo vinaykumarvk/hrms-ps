@@ -1,14 +1,14 @@
 /goal
   objective: Close remediation tranche 3 with an honest, oracle-checkable verdict. Write docs/spec/ph-16-verdict.md
     updating the coverage position against docs/reviews/brd-coverage-delta-20260703.md and docs/spec/ph-15-verdict.md
-    for the eight modules this tranche touched (G01, G02, G04, G05, G07, G08, G10, G11): per-module rows stating
+    for the eight modules this tranche touched (PS01, PS02, PS04, PS05, PS07, PS08, PS10, PS11): per-module rows stating
     what PH-16A..PH-16F closed (dedup/alias-merge + bulk import + lifecycle; bulk corrections + fraud/velocity +
     status gates; mapping catalog + leases/reaper + pre-pension certificate; counselling + vacancy lifecycle +
     mutual transfer; credentials/bonds + calibration/PIP/probation; loans/perquisites/GL/bank-file +
-    PDA/grievances/objections) and what remains NOT_FOUND in each module from the delta's backlog (e.g. G01
-    Aadhaar vault, privacy/DPDP console; G02 e-sign, grievance, retro-impact fan-out, step-up auth; G04
-    conformance gate; G05 drives depth; G07 LMS/xAPI, DPDP retention; G08 360, DSC signing; G10 bank-file DSC
-    depth remaining; G11 DigiLocker). The verdict must state the exact API and web test pass counts as reported
+    PDA/grievances/objections) and what remains NOT_FOUND in each module from the delta's backlog (e.g. PS01
+    Aadhaar vault, privacy/DPDP console; PS02 e-sign, grievance, retro-impact fan-out, step-up auth; PS04
+    conformance gate; PS05 drives depth; PS07 LMS/xAPI, DPDP retention; PS08 360, DSC signing; PS10 bank-file DSC
+    depth remaining; PS11 DigiLocker). The verdict must state the exact API and web test pass counts as reported
     by the suites at verdict time (the oracle recomputes both counts itself and fails if the verdict's numbers
     differ), and must carry the standing necessary-not-sufficient statement: a GREEN oracle at this human gate
     is necessary, not sufficient — the human reviews this verdict before any approval token is created.
@@ -26,7 +26,7 @@
       `npm test` and `npm run web:test` pass counts and greps the verdict for the same numbers — stale or
       rounded numbers make the oracle RED).
     - The verdict must cite docs/reviews/brd-coverage-delta-20260703.md by name, contain a per-module row for
-      each of G01, G02, G04, G05, G07, G08, G10, G11, name remaining gaps (no "100% complete" claims), and
+      each of PS01, PS02, PS04, PS05, PS07, PS08, PS10, PS11, name remaining gaps (no "100% complete" claims), and
       contain the necessary-not-sufficient statement for the human gate.
     - Also restate the still-open cross-cutting item: contract-op coverage remains a small fraction of the
       1,306 OpenAPI operations — do not imply route-surface completeness.

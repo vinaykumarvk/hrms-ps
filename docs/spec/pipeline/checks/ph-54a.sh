@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-54A oracle: raise measured contract coverage by exposing G05 transfer/counselling reads (vacancy
+# PH-54A oracle: raise measured contract coverage by exposing PS05 transfer/counselling reads (vacancy
 # positions, reservations, preferences, mutual orders, charge-handovers, relieving/joining reports) as
 # kernel routes over tested backing. Checks routes registered + dispatched, ratchet >= 513 / 38.8%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g05.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-54A exit-criteria (G05 transfer/counselling read route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps05.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-54A exit-criteria (PS05 transfer/counselling read route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in getVacancyPosition getReservation listReservations listPreferences getMutualOrder listMutualOrders listChargeHandovers listRelievingOrders listJoiningReports; do
   have "$R" "$m" "route wires backing method: $m"

@@ -30,7 +30,7 @@ Discrepancy
 Document
 Education
 FR-M02-004
-Govt ID match
+Enterprise ID match
 Identity (Aadhaar / PAN)
 In progress
 Initiated

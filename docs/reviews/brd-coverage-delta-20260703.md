@@ -22,48 +22,48 @@ hard tree metrics; it is a capability-level delta, not a fresh line-item recount
 
 ## What each wave closed (oracle-verified)
 
-- **PH-04 API**: kernel idempotency replay, G01 create/changes-feed/governed decisions, workflow
-  task routes, G12 real cursor paging + reversal envelope, G13 fetch-intent + DI-14. Honest
+- **PH-04 API**: kernel idempotency replay, PS01 create/changes-feed/governed decisions, workflow
+  task routes, PS12 real cursor paging + reversal envelope, PS13 fetch-intent + DI-14. Honest
   contract coverage disclosed: 3.6% of the 1,306 OpenAPI ops (drift 0).
 - **PH-05 UI**: real fetch client + session/guards (no wildcard grants), workflow action forms
   with mandatory comments, API-wired record views with masked PII, 14/14 state coverage.
-- **PH-06**: Postgres substrate (G03/G05); G03 domain codes/config/withdraw/partial-cancel/
-  holidays; G05 gapless numbering, frozen SR catalog codes, reversal-cancel, posting update,
-  configurable clearances; real G03/G05 forms.
-- **PH-07**: G01 satellites + attribute-history + transactional outbox feed; G04 statutory relay
-  (lineage+sequence UNIQUE, HMAC signatures, backoff, DLQ, ledger-vs-SR reconciliation); G02
-  sensitivity catalog + SoD + RETURNED/resubmit/withdraw + masked diff; G03 attendance derivation
+- **PH-06**: Postgres substrate (PS03/PS05); PS03 domain codes/config/withdraw/partial-cancel/
+  holidays; PS05 gapless numbering, frozen SR catalog codes, reversal-cancel, posting update,
+  configurable clearances; real PS03/PS05 forms.
+- **PH-07**: PS01 satellites + attribute-history + transactional outbox feed; PS04 statutory relay
+  (lineage+sequence UNIQUE, HMAC signatures, backoff, DLQ, ledger-vs-SR reconciliation); PS02
+  sensitivity catalog + SoD + RETURNED/resubmit/withdraw + masked diff; PS03 attendance derivation
   + locked payroll feed; employee-wave UI.
-- **PH-08**: sanctioned-posts + QSL kernels; G05 administration (handover/deputation/served-on/
-  quarters); G06 eligibility/rosters/refusal-debarment/probation/sub-judice + real domain codes;
-  G07 taxonomy→Gap Contract + lapsed_mandatory; G08 cycles/weightage/representation/multi-RO;
-  G09 full natural-justice chain incl. Art. 311 guard + hash-chained timeline; statutory UI.
+- **PH-08**: sanctioned-posts + QSL kernels; PS05 administration (handover/deputation/served-on/
+  quarters); PS06 eligibility/rosters/refusal-debarment/probation/sub-judice + real domain codes;
+  PS07 taxonomy→Gap Contract + lapsed_mandatory; PS08 cycles/weightage/representation/multi-RO;
+  PS09 full natural-justice chain incl. Art. 311 guard + hash-chained timeline; statutory UI.
 - **PH-09**: deterministic payroll engine (DSL order, feed-driven proration, arrears breakup,
   YTD derivation, lock immutability, in-flight guard, carryforwards — integer paise, float ban);
   pension scheme branching OPS/NPS/UPS/service-gratuity + commutation factors + family pension +
   gratuity ceilings + Rule 9; disbursement tie-out + SoD + CPC s.60 recovery caps + FnF + SR
-  provenance via G12 ingest only + pre-credit verify; money-wave UI with masked payslips.
+  provenance via PS12 ingest only + pre-credit verify; money-wave UI with masked payslips.
 - **PH-10**: real SHA-256 (known-vector probed) + status sub-ledger + append-only versions +
-  checkout locks; G12 verify/tamper-detect + Merkle anchors + gap register + attestations +
-  redacted certified extracts; G13 byte-hash verify + scan gate + clearances deny-by-default +
-  access audit + disposition SoD; G14 KPI versioning + DDL-backed marts + k-anonymity suppression
+  checkout locks; PS12 verify/tamper-detect + Merkle anchors + gap register + attestations +
+  redacted certified extracts; PS13 byte-hash verify + scan gate + clearances deny-by-default +
+  access audit + disposition SoD; PS14 KPI versioning + DDL-backed marts + k-anonymity suppression
   + scope-policy maker-checker + bitemporal as-of-knowledge; live suppression-respecting dashboard.
 
 ## Remaining NOT_FOUND (named in the wave verdicts; owners recorded there)
 
-Statutory/feature depth still open, by module: G01 (Aadhaar vault, dedup/merge, privacy/DPDP
-console, bulk import, lifecycle separate/reactivate); G02 (bulk corrections, e-sign, fraud/
-velocity, grievance, retro-impact fan-out, step-up auth); G03 (shifts/rosters, punch ingestion,
-comp-off, year-close, encashment); G04 (mapping catalog, partition leases/reaper, conformance
-gate, pre-pension certificate); G05 (counselling, drives, vacancy lifecycle, mutual transfer);
-G06 (rota-quota multi-stream, sealed cover full, correction cascade, career paths); G07 (LMS/xAPI,
-credentials, sponsorship/bonds, DPDP retention); G08 (calibration, 360, PIP, DSC signing, probation
-confirmation); G09 (POSH/ICC, personal hearings, SLA pause, vigilance register, evidence vault
-listing); G10 (TDS/tax engine, Form-16/24Q, bank file DSC/positive-pay, loans, perquisites, GL);
-G11 (pensioner master/life certificates, revisions/DA relief runs, treasury/PDA, grievances,
-DigiLocker); G12 (§65B certificates, LTV renewal, subscriptions/feed, offline QR, real TSA);
-G13 (KMS envelope encryption, OCR/search, e-sign PAdES-LTV, watermark/certified copies, DPDP DSR,
-sharing, real AV engine); G14 (NLQ, embedded BI, predictive+fairness, mobile briefing, report
+Statutory/feature depth still open, by module: PS01 (Aadhaar vault, dedup/merge, privacy/DPDP
+console, bulk import, lifecycle separate/reactivate); PS02 (bulk corrections, e-sign, fraud/
+velocity, grievance, retro-impact fan-out, step-up auth); PS03 (shifts/rosters, punch ingestion,
+comp-off, year-close, encashment); PS04 (mapping catalog, partition leases/reaper, conformance
+gate, pre-pension certificate); PS05 (counselling, drives, vacancy lifecycle, mutual transfer);
+PS06 (rota-quota multi-stream, sealed cover full, correction cascade, career paths); PS07 (LMS/xAPI,
+credentials, sponsorship/bonds, DPDP retention); PS08 (calibration, 360, PIP, DSC signing, probation
+confirmation); PS09 (POSH/ICC, personal hearings, SLA pause, vigilance register, evidence vault
+listing); PS10 (TDS/tax engine, Form-16/24Q, bank file DSC/positive-pay, loans, perquisites, GL);
+PS11 (pensioner master/life certificates, revisions/DA relief runs, treasury/PDA, grievances,
+DigiLocker); PS12 (§65B certificates, LTV renewal, subscriptions/feed, offline QR, real TSA);
+PS13 (KMS envelope encryption, OCR/search, e-sign PAdES-LTV, watermark/certified copies, DPDP DSR,
+sharing, real AV engine); PS14 (NLQ, embedded BI, predictive+fairness, mobile briefing, report
 builder). Plus: contract-op coverage is 3.6% — most of the 1,306 OpenAPI operations remain
 unimplemented route surface.
 

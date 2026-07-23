@@ -24,20 +24,20 @@ Service-complete engines from the earlier tranches are now reachable over `/api/
 
 | Module | Route(s) added | Backing service |
 |---|---|---|
-| **G10** | `POST /api/v1/payroll/loans:sanction`, `POST /api/v1/payroll/gl-export` | `loanPerquisiteGl` (PH-16F), `glErpPosting` (PH-25A) |
-| **G11** | `POST /api/v1/pension/pdas`, `POST /api/v1/pension/death-reconcile` | `pensionTreasury` (PH-16F), `deathRecovery` (PH-24A) |
-| **G14** | `POST /api/v1/analytics/nl-query`, `POST /api/v1/analytics/attrition-score` | `nlQuery` (PH-22C), `predictiveAnalytics` (PH-26C) |
+| **PS10** | `POST /api/v1/payroll/loans:sanction`, `POST /api/v1/payroll/gl-export` | `loanPerquisiteGl` (PH-16F), `glErpPosting` (PH-25A) |
+| **PS11** | `POST /api/v1/pension/pdas`, `POST /api/v1/pension/death-reconcile` | `pensionTreasury` (PH-16F), `deathRecovery` (PH-24A) |
+| **PS14** | `POST /api/v1/analytics/nl-query`, `POST /api/v1/analytics/attrition-score` | `nlQuery` (PH-22C), `predictiveAnalytics` (PH-26C) |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
-- **Route exposure for the remaining in-memory services** still to wire: G01 aadhaarVault/phoneticSearch/
-  identityOps, G02 retroImpact/changeEsignStepUp/changeRequestTemplate, G03 leaveYearClose/attendanceException/
-  leaveBlackoutMass/punchAnomaly, G05 joiningSequence, G06 careerSuccession/correctionCascade, G07
-  vendorEmpanelment/lmsIntegration, G08 digitalSignature/feedback360/continuousFeedback, G12 timestampAuthority/
-  offlineVerification, G13 certifiedCopy/ocrSearch.
-- **Remaining UI surfaces:** G01 privacy/DPDP console, G06 sealed-cover UI, G14 embedded BI/mobile.
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A matching depth; G09 POSH conciliation
-  depth; G04 CI port-conformance gate.
+- **Route exposure for the remaining in-memory services** still to wire: PS01 aadhaarVault/phoneticSearch/
+  identityOps, PS02 retroImpact/changeEsignStepUp/changeRequestTemplate, PS03 leaveYearClose/attendanceException/
+  leaveBlackoutMass/punchAnomaly, PS05 joiningSequence, PS06 careerSuccession/correctionCascade, PS07
+  vendorEmpanelment/lmsIntegration, PS08 digitalSignature/feedback360/continuousFeedback, PS12 timestampAuthority/
+  offlineVerification, PS13 certifiedCopy/ocrSearch.
+- **Remaining UI surfaces:** PS01 privacy/DPDP console, PS06 sealed-cover UI, PS14 embedded BI/mobile.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A matching depth; PS09 POSH conciliation
+  depth; PS04 CI port-conformance gate.
 
 **Contract-op coverage caveat:** implemented routes still cover only a fraction of the **1,306** OpenAPI
 operations; this route-exposure workstream is what moves that number tranche by tranche.

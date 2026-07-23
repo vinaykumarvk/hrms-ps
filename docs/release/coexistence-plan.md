@@ -8,7 +8,7 @@ The coexistence plan handles legacy approvals, external cases, and migration exc
 
 | Exception | Disposition | Owner | Date |
 |---|---|---|---|
-| Pending legacy leave approvals | Keep in legacy workflow until completion; import final SR fact through G04/G12 only after certified | workflow-lead | 2026-07-15 |
+| Pending legacy leave approvals | Keep in legacy workflow until completion; import final SR fact through PS04/PS12 only after certified | workflow-lead | 2026-07-15 |
 | External disciplinary cases | Track as coexistence references; do not auto-import confidential case material without legal approval | legal-lead | 2026-07-15 |
 | Payroll bank return files | Keep X.3 sandbox until bank certification completes | compensation-lead | 2026-07-15 |
 | Pension PDA authorization | Keep as external case reference until PDA integration certification | pension-lead | 2026-07-15 |
@@ -16,7 +16,7 @@ The coexistence plan handles legacy approvals, external cases, and migration exc
 
 ## Controls
 
-- No exception can silently bypass P02 or G12.
+- No exception can silently bypass P02 or PS12.
 - Every exception has an owner and date.
 - Legal/business acceptance is required for unresolved exceptions.
 - Analytics excludes unresolved exceptions unless a certified source fact exists.

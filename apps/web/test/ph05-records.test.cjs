@@ -7,9 +7,9 @@ const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 
 const files = [
-  "apps/web/src/modules/g01/EmployeeProfile.tsx",
-  "apps/web/src/modules/g12/ServiceRegisterTimeline.tsx",
-  "apps/web/src/modules/g13/DocumentVaultView.tsx",
+  "apps/web/src/modules/ps01/EmployeeProfile.tsx",
+  "apps/web/src/modules/ps12/ServiceRegisterTimeline.tsx",
+  "apps/web/src/modules/ps13/DocumentVaultView.tsx",
 ];
 
 const recordsSource = files.map((file) => fs.readFileSync(file, "utf8")).join("\n");
@@ -49,7 +49,7 @@ const { HrmsApiError } = loadTsModule("apps/web/src/api/hrmsClient.ts");
 
 const fixtureProfile = {
   id: "emp-000001",
-  serviceNo: "GOV-100245",
+  serviceNo: "PS-100245",
   displayName: "Ananya Rao",
   employmentStatus: "ACTIVE",
   orgUnitId: "org-unit-0001",
@@ -82,7 +82,7 @@ function timelineEntry(sequenceNo, eventTypeCode, entryHash, previousHash) {
     id: `sr-00000${sequenceNo}`,
     sequenceNo,
     employeeId: "emp-000001",
-    sourceModule: "G01",
+    sourceModule: "PS01",
     eventTypeCode,
     eventDate: "2026-07-02",
     entryHash,
@@ -95,7 +95,7 @@ const fixtureDocuments = [
   {
     id: "doc-000001",
     docNo: "DOC/2026/0001001",
-    title: "Aadhaar Proof - GOV-100245",
+    title: "Aadhaar Proof - PS-100245",
     status: "ACTIVE",
     classification: "CONFIDENTIAL",
     currentVersionNo: 4,
@@ -105,7 +105,7 @@ const fixtureDocuments = [
   {
     id: "doc-000002",
     docNo: "DOC/2026/0001002",
-    title: "Joining Report - GOV-100245",
+    title: "Joining Report - PS-100245",
     status: "ACTIVE",
     classification: "INTERNAL",
     currentVersionNo: 1,
@@ -121,7 +121,7 @@ function recordingClient(overrides = {}) {
     client: {
       listEmployees: () => {
         calls.push({ method: "listEmployees" });
-        return Promise.resolve({ items: [{ id: "emp-000001", serviceNo: "GOV-100245", displayName: "Ananya Rao", employmentStatus: "ACTIVE" }], limit: 25, next_cursor: null });
+        return Promise.resolve({ items: [{ id: "emp-000001", serviceNo: "PS-100245", displayName: "Ananya Rao", employmentStatus: "ACTIVE" }], limit: 25, next_cursor: null });
       },
       getEmployeeProfile: (employeeId) => {
         calls.push({ method: "getEmployeeProfile", employeeId });
@@ -160,10 +160,10 @@ test("PH-05D document view exposes retention and hold states", () => {
   }
 });
 
-// --- Behavioural: G01 profile is API-backed and renders masked PII ---
+// --- Behavioural: PS01 profile is API-backed and renders masked PII ---
 
 test("PH-05D profile view loads through the API client and renders the BRD field list with masked Aadhaar", async () => {
-  const { loadEmployeeProfile, EmployeeProfile } = loadTsModule("apps/web/src/modules/g01/EmployeeProfile.tsx");
+  const { loadEmployeeProfile, EmployeeProfile } = loadTsModule("apps/web/src/modules/ps01/EmployeeProfile.tsx");
   const { calls, client } = recordingClient();
 
   const state = await loadEmployeeProfile(client);
@@ -176,7 +176,7 @@ test("PH-05D profile view loads through the API client and renders the BRD field
   assert.equal(calls[1].employeeId, "emp-000001");
 
   const markup = renderToStaticMarkup(React.createElement(EmployeeProfile, { client, initialState: state }));
-  for (const field of ["GOV-100245", "Ananya Rao", "Deputy Collector", "org-unit-0001", "ACTIVE", "2014-06-16"]) {
+  for (const field of ["PS-100245", "Ananya Rao", "Deputy Collector", "org-unit-0001", "ACTIVE", "2014-06-16"]) {
     assert.equal(markup.includes(field), true, `profile renders ${field}`);
   }
   assert.equal(markup.includes("XXXX-XXXX-1234"), true, "Aadhaar renders in the masked XXXX-XXXX-1234 display form");
@@ -185,7 +185,7 @@ test("PH-05D profile view loads through the API client and renders the BRD field
 });
 
 test("PH-05D profile view renders loading first and the sanitized envelope code on failure", async () => {
-  const { loadEmployeeProfile, EmployeeProfile } = loadTsModule("apps/web/src/modules/g01/EmployeeProfile.tsx");
+  const { loadEmployeeProfile, EmployeeProfile } = loadTsModule("apps/web/src/modules/ps01/EmployeeProfile.tsx");
   const { client } = recordingClient();
 
   const loadingMarkup = renderToStaticMarkup(React.createElement(EmployeeProfile, { client }));
@@ -201,11 +201,11 @@ test("PH-05D profile view renders loading first and the sanitized envelope code 
   assert.equal(errorMarkup.includes("FORBIDDEN"), true, "error state shows the envelope code, never a stack");
 });
 
-// --- Behavioural: G12 timeline pages by cursor with a load-more affordance ---
+// --- Behavioural: PS12 timeline pages by cursor with a load-more affordance ---
 
 test("PH-05D timeline fetches cursor pages via the client and load-more appends the next window", async () => {
   const { loadTimelineFirstPage, loadTimelineNextPage, ServiceRegisterTimeline } = loadTsModule(
-    "apps/web/src/modules/g12/ServiceRegisterTimeline.tsx"
+    "apps/web/src/modules/ps12/ServiceRegisterTimeline.tsx"
   );
   const { calls, client } = recordingClient();
 
@@ -237,7 +237,7 @@ test("PH-05D timeline fetches cursor pages via the client and load-more appends 
 });
 
 test("PH-05D timeline renders loading and error branches", async () => {
-  const { loadTimelineFirstPage, ServiceRegisterTimeline } = loadTsModule("apps/web/src/modules/g12/ServiceRegisterTimeline.tsx");
+  const { loadTimelineFirstPage, ServiceRegisterTimeline } = loadTsModule("apps/web/src/modules/ps12/ServiceRegisterTimeline.tsx");
   const { client } = recordingClient();
   const loadingMarkup = renderToStaticMarkup(React.createElement(ServiceRegisterTimeline, { client }));
   assert.equal(loadingMarkup.includes('data-state="loading"'), true);
@@ -252,10 +252,10 @@ test("PH-05D timeline renders loading and error branches", async () => {
   assert.equal(errorMarkup.includes("INTERNAL_ERROR"), true);
 });
 
-// --- Behavioural: G13 vault lists documents from the API with hold/retention/version state ---
+// --- Behavioural: PS13 vault lists documents from the API with hold/retention/version state ---
 
 test("PH-05D vault lists GET /api/v1/documents results with legal-hold, retention, and versions", async () => {
-  const { loadDocumentVault, DocumentVaultView } = loadTsModule("apps/web/src/modules/g13/DocumentVaultView.tsx");
+  const { loadDocumentVault, DocumentVaultView } = loadTsModule("apps/web/src/modules/ps13/DocumentVaultView.tsx");
   const { calls, client } = recordingClient();
 
   const state = await loadDocumentVault(client);
@@ -270,7 +270,7 @@ test("PH-05D vault lists GET /api/v1/documents results with legal-hold, retentio
 });
 
 test("PH-05D vault renders loading, error, and empty branches", async () => {
-  const { loadDocumentVault, DocumentVaultView } = loadTsModule("apps/web/src/modules/g13/DocumentVaultView.tsx");
+  const { loadDocumentVault, DocumentVaultView } = loadTsModule("apps/web/src/modules/ps13/DocumentVaultView.tsx");
   const { client } = recordingClient();
   const loadingMarkup = renderToStaticMarkup(React.createElement(DocumentVaultView, { client }));
   assert.equal(loadingMarkup.includes('data-state="loading"'), true);

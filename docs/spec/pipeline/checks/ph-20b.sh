@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-20B oracle: G13 FR-011 watermarking + certified true copies — certified_copies with a watermark
+# PH-20B oracle: PS13 FR-011 watermarking + certified true copies — certified_copies with a watermark
 # stamp + issuing authority; only an ACTIVE source document may be certified.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g13 apps/api/src/routes/g13.routes.ts"; T=apps/api/test
-echo "== PH-20B exit-criteria (G13 watermark + certified copies) =="
+S="apps/api/src/modules/ps13 apps/api/src/routes/ps13.routes.ts"; T=apps/api/test
+echo "== PH-20B exit-criteria (PS13 watermark + certified copies) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "certified copies consumed (certified_copies)::certified_copies|certifiedCop" \

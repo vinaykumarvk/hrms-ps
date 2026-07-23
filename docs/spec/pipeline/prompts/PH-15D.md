@@ -1,5 +1,5 @@
 /goal
-  objective: Build the G12 admissibility and distribution layer at BRD depth. The coverage delta
+  objective: Build the PS12 admissibility and distribution layer at BRD depth. The coverage delta
     (docs/reviews/brd-coverage-delta-20260703.md) names "sect. 65B certificates, LTV renewal, subscriptions/feed"
     as still NOT_FOUND after PH-10B built verify/tamper-detect, Merkle anchors, and certified extracts. Implement
     per FR-18: sr_authenticity_certificates (E24) — a sect. 65B / Bharatiya Sakshya Adhiniyam certificate for a
@@ -13,14 +13,14 @@
     re-anchor/renewal events over existing anchors (RE_ANCHOR / ALGORITHM_MIGRATION) such that no historical
     entry_hash is recomputed or overwritten and renewed artefacts still verify.
   context:
-    - docs/reviews/brd-coverage-delta-20260703.md      # G12 remaining: 65B certificates, LTV renewal, subscriptions/feed
-    - docs/brd/v3/G12-digital-service-register.md      # FR-18 (E24 sr_authenticity_certificates, GENERATE_65B,
+    - docs/reviews/brd-coverage-delta-20260703.md      # PS12 remaining: 65B certificates, LTV renewal, subscriptions/feed
+    - docs/brd/v3/PS12-digital-service-register.md      # FR-18 (E24 sr_authenticity_certificates, GENERATE_65B,
                                                        #   BR-18.1 statutory extracts only), FR-13 (sr_subscriptions,
                                                        #   since_seq/last_delivered_seq, SR_DELIVERY_MODE_DEFERRED,
                                                        #   payload minimisation), FR-19 (E25 sr_ltv_renewals,
                                                        #   no historical hash rewrite)
-    - docs/data-model/12-G12-digital-service-register.sql   # authoritative table/column names
-    - apps/api/src/modules/g12/** , apps/api/src/routes/g12.routes.ts   # PH-10B chain/anchor/extract substrate to build on
+    - docs/data-model/12-PS12-digital-service-register.sql   # authoritative table/column names
+    - apps/api/src/modules/ps12/** , apps/api/src/routes/ps12.routes.ts   # PH-10B chain/anchor/extract substrate to build on
     - apps/api/test/ph10b-integrity-pillars.test.cjs   # existing chain/anchor/tamper test conventions
   constraints:
     - A 65B certificate is only issued for a qualified-signed statutory extract (BR-18.1), and only after the
@@ -41,7 +41,7 @@
   work_loops:
     - name: 65B certificates over the verified chain
       max_iterations: 8
-      repeat_until: apps/api/src/modules/g12/** issues sr_authenticity_certificates for statutory extracts binding
+      repeat_until: apps/api/src/modules/ps12/** issues sr_authenticity_certificates for statutory extracts binding
         content_digest + anchor_id + statute_reference + generated chain-of-custody, logs GENERATE_65B, and
         refuses issuance on digest mismatch or failed chain verification.
       steps: [certificate record + digest/anchor binding, custody assembly from stored data, tamper-refusal gate, access log]
@@ -61,7 +61,7 @@
         `npm run typecheck` + `npm test` pass; `bash docs/spec/pipeline/checks/ph-15d.sh` RED items all closed.
       steps: [write executed tests, run typecheck/test, run oracle, fix]
   evidence_required:
-    - apps/api/src/modules/g12/** naming sr_authenticity_certificates, sr_subscriptions, sr_ltv_renewals,
+    - apps/api/src/modules/ps12/** naming sr_authenticity_certificates, sr_subscriptions, sr_ltv_renewals,
       GENERATE_65B, since_seq/last_delivered_seq, SR_DELIVERY_MODE_DEFERRED
     - apps/api/test/*.test.cjs: certificate + feed-scoping + cursor + renewal tests + the tamper negative
     - `bash docs/spec/pipeline/checks/ph-15d.sh` GREEN (external oracle; not self-certified)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PH-16G oracle (human gate): honest tranche-3 verdict — cites the 2026-07-03 coverage delta, carries a
-# per-module row for every touched module (G01, G02, G04, G05, G07, G08, G10, G11), names remaining gaps,
+# per-module row for every touched module (PS01, PS02, PS04, PS05, PS07, PS08, PS10, PS11), names remaining gaps,
 # states the necessary-not-sufficient rule, and quotes the EXACT suite pass counts (the oracle recomputes both
 # counts itself and compares). All four suites must be green underneath. GREEN here still requires HUMAN
 # review before any approval token.
@@ -33,7 +33,7 @@ fi
 # 2) honest verdict content (content-checked, not existence-checked)
 must "verdict cites the tranche baseline delta::brd-coverage-delta-20260703" "$V"
 must "verdict chains from the tranche-2 verdict::ph-15-verdict" "$V"
-for m in G01 G02 G04 G05 G07 G08 G10 G11; do
+for m in PS01 PS02 PS04 PS05 PS07 PS08 PS10 PS11; do
   must "verdict carries a $m row::$m" "$V"
 done
 must "verdict names remaining gaps (no 100% claim)::NOT_FOUND|remaining|still open|open gap" "$V"

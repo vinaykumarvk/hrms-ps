@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-10D oracle: G14 analytics engine — versioned/activated KPI definitions, mart refresh that
+# PH-10D oracle: PS14 analytics engine — versioned/activated KPI definitions, mart refresh that
 # consumes the 24-table SQL DDL (counted, not asserted by marker), k-anonymity suppression with a
 # 4-member-cohort negative test, scope-policy maker-checker, bitemporal as-of-knowledge snapshots.
 set -uo pipefail
@@ -7,12 +7,12 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S14="apps/api/src/modules/g14 apps/api/src/routes/g14.routes.ts apps/api/src/jobs"
-G14SRC=apps/api/src/modules/g14
-DDL=docs/data-model/14-G14-dashboard-analytics.sql
+S14="apps/api/src/modules/ps14 apps/api/src/routes/ps14.routes.ts apps/api/src/jobs"
+PS14SRC=apps/api/src/modules/ps14
+DDL=docs/data-model/14-PS14-dashboard-analytics.sql
 T=apps/api/test
 
-echo "== PH-10D exit-criteria (G14 analytics engine) =="
+echo "== PH-10D exit-criteria (PS14 analytics engine) =="
 
 [ -d node_modules ] || red "node_modules absent — toolchain oracle cannot run; refusing GREEN without it"
 
@@ -21,7 +21,7 @@ if [ -f "$DDL" ]; then
   total=0; consumed=0; missing=""
   for t in $(grep -E '^CREATE TABLE' "$DDL" | sed -E 's/^CREATE TABLE ([a-z0-9_]+).*/\1/'); do
     total=$((total+1))
-    if grep -rq "$t" "$G14SRC" 2>/dev/null; then consumed=$((consumed+1)); else missing="$missing $t"; fi
+    if grep -rq "$t" "$PS14SRC" 2>/dev/null; then consumed=$((consumed+1)); else missing="$missing $t"; fi
   done
   if [ "$consumed" -ge 8 ]; then grn "runtime consumes $consumed/$total DDL tables (>=8 required)"
   else red "runtime consumes only $consumed/$total DDL tables (>=8 required); unreferenced:$missing"; fi
@@ -32,15 +32,15 @@ for spec in \
   "governed KPI definitions (kpi_definitions)::kpi_definitions" \
   "KPI versioning (kpi_version)::kpi_version|kpiVersion" \
   "explicit activation step::activat" \
-  "cross-version aggregation blocked (ERR-G14-XVER-AGG)::ERR-G14-XVER-AGG" \
+  "cross-version aggregation blocked (ERR-PS14-XVER-AGG)::ERR-PS14-XVER-AGG" \
   "mart refresh logs (datamart_refresh_logs)::datamart_refresh_logs" \
-  "mart refresh job registered (JOB-G14-MART)::JOB-G14-MART" \
+  "mart refresh job registered (JOB-PS14-MART)::JOB-PS14-MART" \
   "suppression policy entity (suppression_policies)::suppression_policies" \
   "k threshold (min_cell_size)::min_cell_size|minCellSize" \
-  "small cells suppressed (ERR-G14-SMALL-CELL)::ERR-G14-SMALL-CELL" \
-  "complementary suppression::complementary|ERR-G14-COMP-SUPPRESS" \
+  "small cells suppressed (ERR-PS14-SMALL-CELL)::ERR-PS14-SMALL-CELL" \
+  "complementary suppression::complementary|ERR-PS14-COMP-SUPPRESS" \
   "scope policy entity (analytics_scope_policies)::analytics_scope_policies" \
-  "scope maker-checker (ERR-G14-SCOPE-CHECKER)::ERR-G14-SCOPE-CHECKER" \
+  "scope maker-checker (ERR-PS14-SCOPE-CHECKER)::ERR-PS14-SCOPE-CHECKER" \
   "bitemporal valid_time::valid_time|validTime" \
   "bitemporal knowledge_time::knowledge_time|knowledgeTime" \
   "restatement supersedes (is_superseded)::is_superseded|isSuperseded"
@@ -48,10 +48,10 @@ do must "$spec" $S14; done
 
 # 3) executed oracle tests
 for spec in \
-  "NEGATIVE: 4-member cohort suppressed (ERR-G14-SMALL-CELL)::ERR-G14-SMALL-CELL" \
+  "NEGATIVE: 4-member cohort suppressed (ERR-PS14-SMALL-CELL)::ERR-PS14-SMALL-CELL" \
   "bitemporal as-of-knowledge query asserted::knowledge_time|knowledgeTime" \
   "as-of comparison exercised (asOf)::asOf|as_of" \
-  "NEGATIVE: maker==checker scope activation rejected (ERR-G14-SCOPE-CHECKER)::ERR-G14-SCOPE-CHECKER" \
+  "NEGATIVE: maker==checker scope activation rejected (ERR-PS14-SCOPE-CHECKER)::ERR-PS14-SCOPE-CHECKER" \
   "mart refresh logged (datamart_refresh_logs)::datamart_refresh_logs"
 do must "$spec" "$T"; done
 

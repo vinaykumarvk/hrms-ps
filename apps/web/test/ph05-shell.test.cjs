@@ -43,20 +43,20 @@ test("PH-05B workspace switcher is operable by buttons", () => {
 test("PH-05B navigation reaches all 14 module workspaces with distinct permissions", () => {
   const navSource = fs.readFileSync("apps/web/src/app/navigation.ts", "utf8");
   const modulePermissions = [
-    "g01.employee.read",
-    "g02.change.read",
-    "g03.leave.read",
-    "g04.relay.read",
-    "g05.transfer.read",
-    "g06.promotion.read",
-    "g07.training.read",
-    "g08.apar.read",
-    "g09.case.read",
-    "g10.payroll.read",
-    "g11.pension.read",
-    "g12.sr.read",
-    "g13.document.read",
-    "g14.analytics.read",
+    "ps01.employee.read",
+    "ps02.change.read",
+    "ps03.leave.read",
+    "ps04.relay.read",
+    "ps05.transfer.read",
+    "ps06.promotion.read",
+    "ps07.training.read",
+    "ps08.apar.read",
+    "ps09.case.read",
+    "ps10.payroll.read",
+    "ps11.pension.read",
+    "ps12.sr.read",
+    "ps13.document.read",
+    "ps14.analytics.read",
   ];
   for (const permission of modulePermissions) {
     assert.equal(navSource.includes(permission), true, `navigation missing ${permission}`);

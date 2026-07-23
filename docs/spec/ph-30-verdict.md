@@ -20,19 +20,19 @@ route-exposure pass. Built by hand — subagents credit-exhausted until 2026-07-
 
 | Module | Routes added | Backing service |
 |---|---|---|
-| **G01** | `POST /api/v1/employees/{id}/aadhaar-vault`, `GET /api/v1/employees:phonetic-search` | `aadhaarVault` (PH-18A), `phoneticSearch` (PH-23C) |
-| **G03** | `POST /api/v1/atl/leave-year-close:commit`, `POST /api/v1/atl/attendance-exceptions`, `POST /api/v1/atl/blackout-periods` | `leaveYearClose` (PH-17A), `attendanceException` (PH-18B), `leaveBlackoutMass` (PH-19A) |
-| **G08** | `POST /api/v1/apar/forms/{id}/e-signature`, `POST /api/v1/apar/continuous-feedback` | `digitalSignature` (PH-22A), `continuousFeedback` (PH-19B) |
+| **PS01** | `POST /api/v1/employees/{id}/aadhaar-vault`, `GET /api/v1/employees:phonetic-search` | `aadhaarVault` (PH-18A), `phoneticSearch` (PH-23C) |
+| **PS03** | `POST /api/v1/atl/leave-year-close:commit`, `POST /api/v1/atl/attendance-exceptions`, `POST /api/v1/atl/blackout-periods` | `leaveYearClose` (PH-17A), `attendanceException` (PH-18B), `leaveBlackoutMass` (PH-19A) |
+| **PS08** | `POST /api/v1/apar/forms/{id}/e-signature`, `POST /api/v1/apar/continuous-feedback` | `digitalSignature` (PH-22A), `continuousFeedback` (PH-19B) |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
-- **Route exposure still to wire:** G02 retroImpact/changeEsignStepUp/changeRequestTemplate, G03 punchAnomaly,
-  G05 joiningSequence, G06 careerSuccession/correctionCascade, G07 vendorEmpanelment/lmsIntegration, G08
-  feedback360, G12 timestampAuthority/offlineVerification, G13 certifiedCopy/ocrSearch, G14 predictive fairness
-  report, G11 pensionTreasury grievances/objections.
-- **Remaining UI surfaces:** G01 privacy/DPDP console, G06 sealed-cover UI, G14 embedded BI/mobile.
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A matching depth; G09 POSH conciliation
-  depth; G04 CI port-conformance gate.
+- **Route exposure still to wire:** PS02 retroImpact/changeEsignStepUp/changeRequestTemplate, PS03 punchAnomaly,
+  PS05 joiningSequence, PS06 careerSuccession/correctionCascade, PS07 vendorEmpanelment/lmsIntegration, PS08
+  feedback360, PS12 timestampAuthority/offlineVerification, PS13 certifiedCopy/ocrSearch, PS14 predictive fairness
+  report, PS11 pensionTreasury grievances/objections.
+- **Remaining UI surfaces:** PS01 privacy/DPDP console, PS06 sealed-cover UI, PS14 embedded BI/mobile.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A matching depth; PS09 POSH conciliation
+  depth; PS04 CI port-conformance gate.
 
 **Contract-op coverage caveat:** implemented routes still cover only a fraction of the **1,306** OpenAPI
 operations; the route-exposure workstream moves this number tranche by tranche.

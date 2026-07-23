@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-32B oracle: G12 timestamp + offline-verify routes — real kernel route(s) registered + dispatched in an API test.
+# PH-32B oracle: PS12 timestamp + offline-verify routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g12.routes.ts"; T=apps/api/test
-echo "== PH-32B exit-criteria (G12 timestamp + offline-verify routes) =="
+R="apps/api/src/routes/ps12.routes.ts"; T=apps/api/test
+echo "== PH-32B exit-criteria (PS12 timestamp + offline-verify routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" 'timestamp' "route path registered: timestamp"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

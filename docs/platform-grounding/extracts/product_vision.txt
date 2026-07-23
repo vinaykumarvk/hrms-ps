@@ -148,7 +148,7 @@ Row-level security is enforced at the database query layer, not the application 
 ## 2.4 Data Encryption
 | Layer | Approach |
 | Data in transit | TLS — minimum version enforced across all connections |
-| PII fields at rest | AES-256-GCM encryption for government identifiers, financial data, biometric identifiers, health data. Keys stored in environment secrets management — never in application code or database |
+| PII fields at rest | AES-256-GCM encryption for enterprise identifiers, financial data, biometric identifiers, health data. Keys stored in environment secrets management — never in application code or database |
 | File storage | Server-side encryption with key management service for all documents, payslips, and uploaded files |
 | Database at rest | Storage-layer encryption for the entire database, separate from field-level PII encryption |
 | Key rotation | Envelope encryption pattern — keys rotatable without re-encryption of existing data. All rotation events logged |
@@ -156,7 +156,7 @@ Row-level security is enforced at the database query layer, not the application 
 
 ## 2.5 PII Classification & Handling
 | PII Category | Fields | Handling Rule |
-| Government identifiers | PAN, Aadhaar, Passport, Driving Licence | Encrypted at rest · Masked in all display contexts · Never written to logs · Change requires HR Admin approval via workflow |
+| Enterprise identifiers | PAN, Aadhaar, Passport, Driving Licence | Encrypted at rest · Masked in all display contexts · Never written to logs · Change requires HR Admin approval via workflow |
 | Financial | Bank account number, IFSC code | Encrypted · Display restricted to last 4 digits · Decrypted at runtime only for payroll disbursement |
 | Biometric | Device punch ID, facial recognition data | Highest protection ceiling · Never transmitted outside biometric integration boundary · No UI display |
 | Health / Medical | Blood group, disability status, insurance claim data | Visible only to HR Admin and the employee · Not transmitted externally without explicit consent |
@@ -370,7 +370,7 @@ The following restrictions are system-enforced and cannot be overridden by any O
 | Data Category | Permitted Viewers | Restricted From | Notes |
 | Salary / CTC | Employee (own) · HR Admin · Finance Admin (view only for budgeting) | All manager tiers · HOD · UAG Head · HRBP · Recruiter · Recruitment Admin · Office Admin | HOD and UAG Head compensation visibility configurable per user by Org Admin — off by default |
 | Bank account details | Employee (own, masked) · HR Admin · Office Admin (entry only, masked after entry) · Payroll processing (runtime) | All other roles | Masked to last 4 digits in all display contexts |
-| Government IDs | Employee (own, masked) · HR Admin · Office Admin (view and upload) | All other roles | Platform-level grant for Office Admin — not configurable by Org Admin. Changes require HR Admin approval |
+| Enterprise IDs | Employee (own, masked) · HR Admin · Office Admin (view and upload) | All other roles | Platform-level grant for Office Admin — not configurable by Org Admin. Changes require HR Admin approval |
 | Date of Birth | Employee (own) · HR Admin · Office Admin (view only) | All other roles | Platform-level grant for Office Admin |
 | Performance ratings — draft | Reviewer only | All other roles including HR Admin | No entitlement grant can expose draft ratings prior to publish event |
 | Performance ratings — published | Employee (own) · Manager (own team) · HR Admin · Skip-level (full subtree, retained post-calibration) · HOD / UAG Head (own dept/group, off by default) | Peers · Finance Admin · HRBP | HOD and UAG Head published rating visibility configurable per user by Org Admin |
@@ -563,9 +563,9 @@ Sub-modules: Salary structure and CTC breakdown · Monthly payroll run · Variab
 Key design decisions: Payroll is Phase 2 because it depends on Attendance (LOP feed) and Leave (encashment feed) being stable and audited through at least one full cycle first. Payroll runs are versioned — a run cannot be overwritten, only superseded by a revision run. The payroll run approval workflow requires Finance Admin sign-off before the bank disbursement file is generated. Bank disbursement files are never auto-transmitted — Payroll Admin initiates generation and Finance Admin approval is required before release.
 
 ### M07 — Statutory Compliance (Phase 2)
-Manages all Indian statutory deduction calculations and government filing outputs.
+Manages all Indian statutory deduction calculations and enterprise filing outputs.
 Sub-modules: EPF / PF calculation and ECR challan · ESI calculation and ESIC challan · TDS calculation and Form 24Q / Form 16 · Professional tax (state-wise) · Labour Welfare Fund (state-wise) · Gratuity provision tracking and FnF payout
-Key design decisions: All statutory rates, slabs, thresholds, and ceiling amounts are stored as platform-level master data rows — government revisions are applied through data updates, not code releases. Statutory compliance outputs are files for portal upload — direct API filing with government portals is a future capability dependent on portal availability. M07 is jointly administered by HR Admin and Compliance Admin — neither role alone constitutes full module admin coverage.
+Key design decisions: All statutory rates, slabs, thresholds, and ceiling amounts are stored as platform-level master data rows — enterprise revisions are applied through data updates, not code releases. Statutory compliance outputs are files for portal upload — direct API filing with enterprise portals is a future capability dependent on portal availability. M07 is jointly administered by HR Admin and Compliance Admin — neither role alone constitutes full module admin coverage.
 
 ### M10 — Hikes & Compensation (Phase 2)
 Manages salary revision cycles and individual compensation changes.
@@ -630,7 +630,7 @@ India’s statutory compliance obligations are a Phase 2 deliverable, with the e
 | POSH Act 2013 | Mandatory policy · complaint intake · ICC reporting · training completion tracking | 1 |
 | DPDPA 2023 | Consent capture · right of access, correction, erasure · data fiduciary obligations | 1 |
 
-All statutory rates, slabs, and thresholds are stored as platform master data rows. Government revisions are applied through data updates, not code releases. Statutory compliance outputs are generated only after the payroll run has received Finance Admin approval — compliance files are never produced from an unapproved payroll run.
+All statutory rates, slabs, and thresholds are stored as platform master data rows. Enterprise revisions are applied through data updates, not code releases. Statutory compliance outputs are generated only after the payroll run has received Finance Admin approval — compliance files are never produced from an unapproved payroll run.
 
 ## 3.10 Integration Architecture
 Diagram 5 — Integration context · See Diagrams Addendum
@@ -647,7 +647,7 @@ All integrations are configuration-driven — credentials, field mappings, sync 
 |  | Additional BGC vendors | Outbound + Inbound | 1 | Generic BGC adapter — configurable per vendor |
 | Attendance | Biometric devices | Inbound | 1 | Device pushes punch records · biometric user ID mapped to employee ID · multi-device, multi-location · device health heartbeat |
 | Payroll | Payroll bank — NEFT / RTGS | Outbound | 2 | Bank-format disbursement file generated post payroll approval · never auto-transmitted |
-| Government Portals | EPFO (PF) | Outbound | 2 | ECR challan file generation for portal upload |
+| Enterprise Portals | EPFO (PF) | Outbound | 2 | ECR challan file generation for portal upload |
 |  | ESIC | Outbound | 2 | ESIC challan file generation for portal upload |
 |  | Income Tax (TDS) | Outbound | 2 | Form 24Q XML and Form 16 PDF generation |
 | Productivity | Calendar integration | Outbound | 1 | Interview invites to interviewer calendars · holiday calendar sync via iCal |
@@ -676,6 +676,6 @@ The Chat Agent answers only from the two defined grounding sources — organisat
 All AI API calls are made from the backend — never from the browser. The API key is never exposed to the client
 Voice interactions are transcribed and processed server-side; captured audio is not retained beyond the transaction, and transcripts follow the same no-content-logging and PII-stripping rules as text
 AI-generated outputs that inform HR decisions are informational only — they do not trigger automated actions or workflow approvals without human confirmation
-PII is never sent to the AI model — all context is stripped of personal identifiers server-side before the API call is made. This stripping mechanism is governed by the same PII protection ceilings defined in sections 2.5 and 3.2 — fields classified as government identifiers, financial, biometric, or health data are excluded from AI context regardless of the querying role’s access level
+PII is never sent to the AI model — all context is stripped of personal identifiers server-side before the API call is made. This stripping mechanism is governed by the same PII protection ceilings defined in sections 2.5 and 3.2 — fields classified as enterprise identifiers, financial, biometric, or health data are excluded from AI context regardless of the querying role’s access level
 Every AI call is logged: model, user role, query type, token usage, response latency. Query content and response content are not logged (privacy)
 PrimeSoft Solutions, Inc. · PrimeSoft HRMS · Product Vision, Platform Architecture & Solution Architecture · v2.5 · Confidential

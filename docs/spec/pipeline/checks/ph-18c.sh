@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-18C oracle: G05 FR-021 joining-sequence + inter-se seniority — deterministic sequence assignment
-# on joining with a stable tie-break, feeding a seniority order consumable by G06.
+# PH-18C oracle: PS05 FR-021 joining-sequence + inter-se seniority — deterministic sequence assignment
+# on joining with a stable tie-break, feeding a seniority order consumable by PS06.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g05 apps/api/src/routes/g05.routes.ts"; T=apps/api/test
-echo "== PH-18C exit-criteria (G05 joining-sequence + inter-se seniority) =="
+S="apps/api/src/modules/ps05 apps/api/src/routes/ps05.routes.ts"; T=apps/api/test
+echo "== PH-18C exit-criteria (PS05 joining-sequence + inter-se seniority) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "joining sequence consumed (joining_sequence)::joining_sequence|joiningSequence" \

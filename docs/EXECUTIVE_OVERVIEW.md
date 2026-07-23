@@ -4,30 +4,30 @@
 
 ## 1. What this is
 
-A complete, build-ready specification program for a **government/public-sector Human Resource Management
+A complete, build-ready specification program for a **enterprise/public-sector Human Resource Management
 System (HRMS)** covering the 14 functional areas in the *Functional Scope of Work — HRMS* (hosted at CGG
 Data Centre). The specifications are authored to the standard leading global organisations expect
 (Workday / SAP SuccessFactors / Oracle HCM class) and grounded on the organisation's **existing PrimeSoft
 HRMS platform** so they are buildable on what already exists rather than greenfield.
 
-## 2. The 14 modules (government codes G01–G14)
+## 2. The 14 modules (enterprise codes PS01–PS14)
 
 | Code | Module | Platform relationship |
 |---|---|---|
-| G01 | Employee Profile Management | Extends PrimeSoft Employee Master |
-| G02 | Personal Details Modification Workflow | Extends master sensitive-field change (P01 workflow) |
-| G03 | Attendance & Leave Management | Extends PrimeSoft Leave + Attendance |
-| G04 | Leave → Digital Service Register Integration | **Net-new** (statutory) |
-| G05 | Transfer, Relieving & Joining Workflow | **Net-new** (statutory) |
-| G06 | Promotion, Posting & Progression | **Net-new** (seniority/DPC/MACP) |
-| G07 | Training & Skill Development | Net-new / platform-native L&D |
-| G08 | Performance Appraisal (APAR) | Extends PrimeSoft Performance |
-| G09 | Disciplinary Cases & Punishment | **Net-new** (CCA-style due process) |
-| G10 | Payroll & Benefits | Phase-2 extension |
-| G11 | Retirement & Pension | **Net-new** (statutory) |
-| G12 | Digital Employee Service Register (Digital SR) | **Net-new** statutory system-of-record |
-| G13 | Document Management & Secure Storage | Extends PrimeSoft Documents |
-| G14 | Dashboard & Analytics | Extends PrimeSoft Reports & Analytics |
+| PS01 | Employee Profile Management | Extends PrimeSoft Employee Master |
+| PS02 | Personal Details Modification Workflow | Extends master sensitive-field change (P01 workflow) |
+| PS03 | Attendance & Leave Management | Extends PrimeSoft Leave + Attendance |
+| PS04 | Leave → Digital Service Register Integration | **Net-new** (statutory) |
+| PS05 | Transfer, Relieving & Joining Workflow | **Net-new** (statutory) |
+| PS06 | Promotion, Posting & Progression | **Net-new** (seniority/DPC/MACP) |
+| PS07 | Training & Skill Development | Net-new / platform-native L&D |
+| PS08 | Performance Appraisal (APAR) | Extends PrimeSoft Performance |
+| PS09 | Disciplinary Cases & Punishment | **Net-new** (CCA-style due process) |
+| PS10 | Payroll & Benefits | Phase-2 extension |
+| PS11 | Retirement & Pension | **Net-new** (statutory) |
+| PS12 | Digital Employee Service Register (Digital SR) | **Net-new** statutory system-of-record |
+| PS13 | Document Management & Secure Storage | Extends PrimeSoft Documents |
+| PS14 | Dashboard & Analytics | Extends PrimeSoft Reports & Analytics |
 
 The net-new statutory modules (Digital SR, pension, disciplinary, transfer/seniority, leave-SR) are the
 ones a commercial HCM lacks — and even those run on the existing platform services (workflow, audit, migration).
@@ -42,7 +42,7 @@ ones a commercial HCM lacks — and even those run on the existing platform serv
    converted to concrete controls; overstated claims (e.g. "blockchain SR", false "0 gaps") corrected.
 4. **Platform re-grounding (v3):** re-anchored onto the real PrimeSoft platform — P01 Workflow, P02
    RBAC/Authorization, P05 Audit, P06 Migration, X/W services, the VAL-* validation library, RBAC v1.7,
-   multi-tenancy, and the platform API/error conventions — with `G01–G14` codes.
+   multi-tenancy, and the platform API/error conventions — with `PS01–PS14` codes.
 5. **Cross-module integration review + remediation (v3.1):** five integration audits found and fixed the
    seams independent authoring introduced (a single SR ingestion contract, id-namespace hygiene, no entity forks).
 6. **Consolidated data model:** a 447-table PostgreSQL schema, **validated end-to-end** against a live
@@ -62,7 +62,7 @@ ones a commercial HCM lacks — and even those run on the existing platform serv
 | Location | Contents |
 |---|---|
 | `docs/brd/v3/` | **Authoritative** 14 platform-grounded BRDs (md + docx) |
-| `docs/brd/PLATFORM_FOUNDATION.md`, `MODULE_RECONCILIATION.md` | Platform build contract + gov↔PrimeSoft map |
+| `docs/brd/PLATFORM_FOUNDATION.md`, `MODULE_RECONCILIATION.md` | Platform build contract + enterprise↔PrimeSoft map |
 | `docs/brd/v1/`, `docs/brd/v2/` | Draft and council-revised lineage |
 | `docs/evaluation/` | 14 adversarial council reports |
 | `docs/review/` | 5 integration reviews + remediation spec |
@@ -86,5 +86,5 @@ All downstream artefacts have now been produced and are in the repo:
 
 ## 7. Recommended build sequence
 
-From the schema dependencies: platform core → G01/G12/G13 (foundational systems of record) → G02/G03 →
-G04/G05/G06/G08/G09 → G10/G11 → G14.
+From the schema dependencies: platform core → PS01/PS12/PS13 (foundational systems of record) → PS02/PS03 →
+PS04/PS05/PS06/PS08/PS09 → PS10/PS11 → PS14.

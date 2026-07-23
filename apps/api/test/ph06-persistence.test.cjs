@@ -64,7 +64,7 @@ async function seedCore(pool) {
   };
 }
 
-test("PH-06A persistence substrate: migrations + pg-backed G03/G05 repositories on a real Postgres", { skip }, async (t) => {
+test("PH-06A persistence substrate: migrations + pg-backed PS03/PS05 repositories on a real Postgres", { skip }, async (t) => {
   const pool = createDatabasePool(DATABASE_URL);
   try {
     const firstRun = await runMigrations(pool, MIGRATIONS_DIR);
@@ -73,13 +73,13 @@ test("PH-06A persistence substrate: migrations + pg-backed G03/G05 repositories 
     if (firstRun.length > 0) {
       assert.deepEqual(firstRun, [
         "0001_platform_core.sql",
-        "0002_g03_leave.sql",
-        "0003_g05_transfer.sql",
-        "0004_g01_employee_satellites.sql",
-        "0005_g04_leave_sr_relay.sql",
-        "0006_g02_workflow_config.sql",
-        "0007_g03_payroll_feed.sql",
-        "0008_g06_establishment_qsl.sql",
+        "0002_ps03_leave.sql",
+        "0003_ps05_transfer.sql",
+        "0004_ps01_employee_satellites.sql",
+        "0005_ps04_leave_sr_relay.sql",
+        "0006_ps02_workflow_config.sql",
+        "0007_ps03_payroll_feed.sql",
+        "0008_ps06_establishment_qsl.sql",
       ]);
     }
 
@@ -309,7 +309,7 @@ test("PH-06A persistence substrate: migrations + pg-backed G03/G05 repositories 
       shared.checklistId = created.checklist.id;
     });
 
-    await t.test("PH-07A g01 satellites + transactional outbox round-trip on a real Postgres", async () => {
+    await t.test("PH-07A ps01 satellites + transactional outbox round-trip on a real Postgres", async () => {
       const profileRepo = new PgEmployeeProfileRepository(pool);
 
       const contact = await profileRepo.insertContactWithOutbox({
@@ -390,7 +390,7 @@ test("PH-06A persistence substrate: migrations + pg-backed G03/G05 repositories 
         valueText: "Asha Menon",
         effectiveFrom: "2026-06-15",
         changeReason: "CORRECTION",
-        source: "G01",
+        source: "PS01",
         recordedBy: core.employeeId,
       });
       assert.equal(governed.historyEntry.attribute_path, "display_name");

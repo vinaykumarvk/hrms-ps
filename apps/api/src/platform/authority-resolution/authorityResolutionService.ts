@@ -249,7 +249,7 @@ export class AuthorityResolutionService {
       candidates: [baseAssignee],
       fallbackApplied: delegated.sodBlocked,
       evidence: {
-        source: "g01_authority_assignments",
+        source: "ps01_authority_assignments",
         authorityAssignmentId: selected.id,
         delegatedBy: delegated.delegationId,
         sodBlockedDelegation: delegated.sodBlocked,
@@ -282,7 +282,7 @@ export class AuthorityResolutionService {
       selectedAssignees: [assignee],
       candidates: [assignee],
       fallbackApplied: true,
-      evidence: { source: "g01_authority_assignments", authorityAssignmentId: authority.id },
+      evidence: { source: "ps01_authority_assignments", authorityAssignmentId: authority.id },
     };
   }
 
@@ -326,7 +326,7 @@ export class AuthorityResolutionService {
       selectedAssignees: [assignee],
       candidates: [assignee],
       fallbackApplied: false,
-      evidence: { source: "g01_authority_assignments/workflow_stage_config", configuredNamedUserId: configuredUserId, asOf },
+      evidence: { source: "ps01_authority_assignments/workflow_stage_config", configuredNamedUserId: configuredUserId, asOf },
     };
   }
 
@@ -380,7 +380,7 @@ export class AuthorityResolutionService {
       selectedAssignees: candidates,
       candidates,
       fallbackApplied: false,
-      evidence: { source: "g01_committees/g01_committee_members", committeeId: committee.id, quorumCount },
+      evidence: { source: "ps01_committees/ps01_committee_members", committeeId: committee.id, quorumCount },
     };
   }
 
@@ -397,7 +397,7 @@ export class AuthorityResolutionService {
       selectedAssignees: [delegated.assignee],
       candidates: [assignee],
       fallbackApplied: delegated.sodBlocked,
-      evidence: { source: "g01_authority_delegations", delegationId: delegated.delegationId, sodBlockedDelegation: delegated.sodBlocked },
+      evidence: { source: "ps01_authority_delegations", delegationId: delegated.delegationId, sodBlockedDelegation: delegated.sodBlocked },
     };
   }
 

@@ -1,7 +1,7 @@
 # Attendance and Leave Management — HRMS Module BRD
 
 **Module code:** M03-ATL
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — government/public-sector context, hosted at CGG Data Centre.
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — enterprise/public-sector context, hosted at CGG Data Centre.
 **Authoring standard:** World-class global HCM (Workday / SAP SuccessFactors / Oracle HCM bar) layered on public-sector statutory rules.
 **Source of truth for shared elements:** `docs/brd/SHARED_FOUNDATION.md` (referenced, never redefined).
 **Document version:** v1.0 — 2026-06-30.
@@ -558,8 +558,8 @@ all state changes ──> audit_log ; all events ──> notifications
 **rosters**
 | employee (service_no) | shift_code | effective_from | effective_to | weekly_off_pattern | status |
 |---|---|---|---|---|---|
-| GOV-1001 | GEN | 2026-01-01 | (open) | ["SUN","SAT2","SAT4"] | PUBLISHED |
-| GOV-2087 | NIGHT-A | 2026-04-01 | 2026-06-30 | ["SUN"] | PUBLISHED |
+| PS-1001 | GEN | 2026-01-01 | (open) | ["SUN","SAT2","SAT4"] | PUBLISHED |
+| PS-2087 | NIGHT-A | 2026-04-01 | 2026-06-30 | ["SUN"] | PUBLISHED |
 
 **holiday_calendars / holidays**
 | calendar_code | year | location_scope | holiday_date | name | holiday_type |
@@ -577,38 +577,38 @@ all state changes ──> audit_log ; all events ──> notifications
 **attendance_punches**
 | employee | device_code | punch_time (UTC) | direction | capture_method | ingestion_status |
 |---|---|---|---|---|---|
-| GOV-1001 | BIO-HQ-01 | 2026-06-29T04:02:11Z | IN | BIOMETRIC | ACCEPTED |
-| GOV-1001 | BIO-HQ-01 | 2026-06-29T12:35:40Z | OUT | BIOMETRIC | ACCEPTED |
+| PS-1001 | BIO-HQ-01 | 2026-06-29T04:02:11Z | IN | BIOMETRIC | ACCEPTED |
+| PS-1001 | BIO-HQ-01 | 2026-06-29T12:35:40Z | OUT | BIOMETRIC | ACCEPTED |
 
 **attendance_daily**
 | employee | attendance_date | first_in | last_out | worked_minutes | status | late_minutes |
 |---|---|---|---|---|---|---|
-| GOV-1001 | 2026-06-29 | 09:32 | 18:05 | 478 | PRESENT | 0 |
-| GOV-2087 | 2026-06-29 | (null) | (null) | 0 | ON_LEAVE | 0 |
+| PS-1001 | 2026-06-29 | 09:32 | 18:05 | 478 | PRESENT | 0 |
+| PS-2087 | 2026-06-29 | (null) | (null) | 0 | ON_LEAVE | 0 |
 
 **regularisation_requests**
 | employee | requested_status | proposed_first_in | reason | status |
 |---|---|---|---|---|
-| GOV-1001 | PRESENT | 2026-06-25 09:35 | Biometric failed at gate | APPROVED |
-| GOV-2087 | PRESENT | 2026-06-20 22:10 | Forgot to punch in | SUBMITTED |
+| PS-1001 | PRESENT | 2026-06-25 09:35 | Biometric failed at gate | APPROVED |
+| PS-2087 | PRESENT | 2026-06-20 22:10 | Forgot to punch in | SUBMITTED |
 
 **overtime_records**
 | employee | attendance_date | ot_minutes | ot_treatment | status |
 |---|---|---|---|---|
-| GOV-2087 | 2026-06-15 | 180 | PAID | APPROVED |
-| GOV-1001 | 2026-06-18 | 240 | COMP_OFF | CONVERTED_TO_COMPOFF |
+| PS-2087 | 2026-06-15 | 180 | PAID | APPROVED |
+| PS-1001 | 2026-06-18 | 240 | COMP_OFF | CONVERTED_TO_COMPOFF |
 
 **attendance_exceptions**
 | employee | exception_type | start_date | end_date | reason | status |
 |---|---|---|---|---|---|
-| GOV-1001 | WFH | 2026-06-22 | 2026-06-22 | Network maintenance at office | APPROVED |
-| GOV-2087 | TOUR | 2026-06-10 | 2026-06-12 | Field inspection — District B | APPROVED |
+| PS-1001 | WFH | 2026-06-22 | 2026-06-22 | Network maintenance at office | APPROVED |
+| PS-2087 | TOUR | 2026-06-10 | 2026-06-12 | Field inspection — District B | APPROVED |
 
 **comp_off_ledger**
 | employee | entry_type | days | source_ref_type | earned_on | expires_on | balance_after |
 |---|---|---|---|---|---|---|
-| GOV-1001 | EARN | +1.0 | OVERTIME | 2026-06-18 | 2026-09-18 | 1.0 |
-| GOV-1001 | REDEEM | -1.0 | LEAVE_APPLICATION | 2026-06-26 | (n/a) | 0.0 |
+| PS-1001 | EARN | +1.0 | OVERTIME | 2026-06-18 | 2026-09-18 | 1.0 |
+| PS-1001 | REDEEM | -1.0 | LEAVE_APPLICATION | 2026-06-26 | (n/a) | 0.0 |
 
 **leave_types**
 | leave_code | name | category | is_accruable | is_encashable | affects_pay | gender | max_continuous_days |
@@ -627,26 +627,26 @@ all state changes ──> audit_log ; all events ──> notifications
 **leave_balances**
 | employee | leave_type | leave_year | opening | accrued | availed | current_balance |
 |---|---|---|---|---|---|---|
-| GOV-1001 | EL | 2026 | 120 | 15 | 5 | 130 |
-| GOV-2087 | CL | 2026 | 0 | 12 | 3 | 9 |
+| PS-1001 | EL | 2026 | 120 | 15 | 5 | 130 |
+| PS-2087 | CL | 2026 | 0 | 12 | 3 | 9 |
 
 **leave_balance_ledger**
 | employee | leave_type | entry_type | amount | balance_after | source_ref_type | effective_date |
 |---|---|---|---|---|---|---|
-| GOV-1001 | EL | ACCRUAL | +15 | 135 | ACCRUAL_RUN | 2026-01-01 |
-| GOV-1001 | EL | AVAIL | -5 | 130 | LEAVE_APPLICATION | 2026-06-29 |
+| PS-1001 | EL | ACCRUAL | +15 | 135 | ACCRUAL_RUN | 2026-01-01 |
+| PS-1001 | EL | AVAIL | -5 | 130 | LEAVE_APPLICATION | 2026-06-29 |
 
 **leave_applications / leave_application_days**
 | application_no | employee | leave_type | start_date | end_date | total_days | status | sr_posting_status |
 |---|---|---|---|---|---|---|---|
-| LV-2026-000451 | GOV-1001 | EL | 2026-06-29 | 2026-07-03 | 5 | APPROVED | POSTED |
-| LV-2026-000452 | GOV-2087 | CL | 2026-06-20 | 2026-06-20 | 0.5 | SUBMITTED | NOT_REQUIRED |
+| LV-2026-000451 | PS-1001 | EL | 2026-06-29 | 2026-07-03 | 5 | APPROVED | POSTED |
+| LV-2026-000452 | PS-2087 | CL | 2026-06-20 | 2026-06-20 | 0.5 | SUBMITTED | NOT_REQUIRED |
 
 **leave_encashment_requests**
 | employee | leave_type | encashment_type | days_requested | status |
 |---|---|---|---|---|
-| GOV-1001 | EL | IN_SERVICE | 15 | APPROVED |
-| GOV-5500 | EL | RETIREMENT | 300 | SETTLED |
+| PS-1001 | EL | IN_SERVICE | 15 | APPROVED |
+| PS-5500 | EL | RETIREMENT | 300 | SETTLED |
 
 **leave_year_close_runs**
 | leave_year | scope | run_status | employees_processed | total_carried | total_lapsed |
@@ -657,8 +657,8 @@ all state changes ──> audit_log ; all events ──> notifications
 **payroll_attendance_feed**
 | pay_period | employee | lwp_days | half_pay_days | paid_ot_minutes | encashment_amount | export_status |
 |---|---|---|---|---|---|---|
-| 2026-06 | GOV-2087 | 2 | 1 | 180 | 0 | EXPORTED |
-| 2026-06 | GOV-1001 | 0 | 0 | 0 | 45000 | PENDING |
+| 2026-06 | PS-2087 | 2 | 1 | 180 | 0 | EXPORTED |
+| 2026-06 | PS-1001 | 0 | 0 | 0 | 45000 | PENDING |
 
 ---
 

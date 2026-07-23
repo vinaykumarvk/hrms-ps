@@ -21,17 +21,17 @@ credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G07** | FR-G07-018 external-credential lifecycle (`POST /training/external-credentials`, `:review-evidence`, `:verify`, `:reject`, `GET /{id}`, `.../verifications`) + vendor-empanelment (`POST /training/vendor-empanelments/{id}:review`, `:decide`, `GET /{id}`) | existing `trainingService` credential methods (SoD; VAL-G07-CREDREF duplicate ref; VERIFIED significant credential posts to G12) + `vendorEmpanelmentService` (4-eyes decide), service-tested | `ph42a-g07-credential-empanelment-route.test.cjs` |
+| **PS07** | FR-PS07-018 external-credential lifecycle (`POST /training/external-credentials`, `:review-evidence`, `:verify`, `:reject`, `GET /{id}`, `.../verifications`) + vendor-empanelment (`POST /training/vendor-empanelments/{id}:review`, `:decide`, `GET /{id}`) | existing `trainingService` credential methods (SoD; VAL-PS07-CREDREF duplicate ref; VERIFIED significant credential posts to PS12) + `vendorEmpanelmentService` (4-eyes decide), service-tested | `ph42a-ps07-credential-empanelment-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**421 / 31.8% → 430 / 32.5%** (G07 **25.2% → 33.3%**), and the PH-37 gate floor was raised in lockstep so the
+**421 / 31.8% → 430 / 32.5%** (PS07 **25.2% → 33.3%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 32.5%** — ~893 of the **1,323** contracted operations remain unimplemented. The
-  coverage tool is still **count-based**, not per-operation path matching. G07's readily-exposable backing is
-  now largely wired (LMS statement ingest remains); the workstream continues into G14 (22.2%), G01, G13.
+  coverage tool is still **count-based**, not per-operation path matching. PS07's readily-exposable backing is
+  now largely wired (LMS statement ingest remains); the workstream continues into PS14 (22.2%), PS01, PS13.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-42 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 
@@ -42,6 +42,6 @@ implemented as behavioral kernel routes (**32.5%**).
 
 Approve PH-42B, OR direct a further tranche (PH-43). The active workstream (per your steer) is raising
 measured coverage by exposing real, tested backing, with the ratchet gate proving each gain and forbidding
-regression; next candidates move to G14 and the other low-coverage modules. The standing **persistence
+regression; next candidates move to PS14 and the other low-coverage modules. The standing **persistence
 migration workstream** remains the alternative. Carried debt is unchanged: in-memory repositories for the
 newest services.

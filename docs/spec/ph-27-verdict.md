@@ -24,9 +24,9 @@ credit-exhausted until 2026-07-08.
 
 | Module | Closed in PH-27 | Evidence |
 |---|---|---|
-| **G13** | DPDP data-subject-request console UI — lists data_subject_requests + adjudicate form (FULFILLED/EXEMPTED/REJECTED, mandatory reason), wired to the PH-15E DSR engine | `ph27a-g13-dsr-console.test.cjs` |
-| **G05** | interactive counselling console UI — session turn view + choose-vacancy form, wired to the PH-16D counselling engine | `ph27b-g05-counselling.test.cjs` |
-| **G09** | evidence-vault listing UI — case evidence list with WORM / legal-hold / served flags | `ph27c-g09-evidence-vault.test.cjs` |
+| **PS13** | DPDP data-subject-request console UI — lists data_subject_requests + adjudicate form (FULFILLED/EXEMPTED/REJECTED, mandatory reason), wired to the PH-15E DSR engine | `ph27a-ps13-dsr-console.test.cjs` |
+| **PS05** | interactive counselling console UI — session turn view + choose-vacancy form, wired to the PH-16D counselling engine | `ph27b-ps05-counselling.test.cjs` |
+| **PS09** | evidence-vault listing UI — case evidence list with WORM / legal-hold / served flags | `ph27c-ps09-evidence-vault.test.cjs` |
 
 ## Honest UI caveat
 
@@ -34,21 +34,21 @@ These surfaces are wired to the injected `HrmsClient`; the web suite exercises t
 in-memory `fixtureHrmsClient` (the established PH-05x pattern). The real `createHrmsClient` methods
 point at the intended API routes (`/api/v1/dsr`, `/api/v1/transfers/counselling`,
 `/api/v1/disciplinary/cases/{id}/evidence`); **exposing those API routes over the existing PH-15E/
-PH-16D/G09 services is the paired backend task** and is recorded as an open item below.
+PH-16D/PS09 services is the paired backend task** and is recorded as an open item below.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Route exposure** for the three PH-27 UI surfaces (DSR / counselling / case-evidence endpoints).
-- **G01**: privacy/DPDP console UI.
-- **G02**: additional fraud/velocity detectors.
-- **G03**: backdated-leave team-calendar conflict threshold.
-- **G04**: CI port-conformance gate in the build pipeline.
-- **G06**: sealed-cover full workflow UI.
-- **G07**: content/assessment-item bank.
-- **G08**: calibration analytics depth.
-- **G09**: POSH conciliation depth.
-- **G10**: remaining TDS edge cases, Form-16 Part-A remittance matching depth.
-- **G14**: embedded BI dashboards, mobile briefing.
+- **PS01**: privacy/DPDP console UI.
+- **PS02**: additional fraud/velocity detectors.
+- **PS03**: backdated-leave team-calendar conflict threshold.
+- **PS04**: CI port-conformance gate in the build pipeline.
+- **PS06**: sealed-cover full workflow UI.
+- **PS07**: content/assessment-item bank.
+- **PS08**: calibration analytics depth.
+- **PS09**: POSH conciliation depth.
+- **PS10**: remaining TDS edge cases, Form-16 Part-A remittance matching depth.
+- **PS14**: embedded BI dashboards, mobile briefing.
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**
 OpenAPI operations frozen in `docs/contracts/openapi/*.yaml`.
@@ -56,7 +56,7 @@ OpenAPI operations frozen in `docs/contracts/openapi/*.yaml`.
 ## Recommendation for the human reviewer
 
 Approve PH-27D, OR direct a further tranche (PH-28). The natural next step is a **route-exposure
-tranche** that wires the PH-15E/PH-16D/G09 (and other in-memory) services onto real `/api/v1` route
+tranche** that wires the PH-15E/PH-16D/PS09 (and other in-memory) services onto real `/api/v1` route
 handlers so the UI surfaces run end-to-end, followed by the remaining UI surfaces. Carried debts
 (unchanged): the newest hand-built services (PH-16F..PH-26) use in-memory repositories only; the
 `ph06-persistence` migration-list assertion froze at 0008.

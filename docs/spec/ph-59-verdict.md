@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-59A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Second-pass deepening tranche, into G06. Built by hand — subagents credit-exhausted until 2026-07-08.
+GREEN. Second-pass deepening tranche, into PS06. Built by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
@@ -20,18 +20,18 @@ GREEN. Second-pass deepening tranche, into G06. Built by hand — subagents cred
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G06** | succession-planning (`POST /promotions/succession-plans`, `:add-candidate`, `GET /promotions/succession-plans/{id}`, `GET /promotions/career-paths/{id}`) + qualifying-service (`GET /promotions/orders`, `POST /promotions/qualifying-service:compute`, `GET /promotions/qualifying-service/{snapshotId}`) | existing `careerSuccessionService` + `promotionService` (duplicate-candidate + exclusion-rule/snapshot NOT_FOUND guards), service-tested | `ph59a-g06-succession-qsl-route.test.cjs` |
+| **PS06** | succession-planning (`POST /promotions/succession-plans`, `:add-candidate`, `GET /promotions/succession-plans/{id}`, `GET /promotions/career-paths/{id}`) + qualifying-service (`GET /promotions/orders`, `POST /promotions/qualifying-service:compute`, `GET /promotions/qualifying-service/{snapshotId}`) | existing `careerSuccessionService` + `promotionService` (duplicate-candidate + exclusion-rule/snapshot NOT_FOUND guards), service-tested | `ph59a-ps06-succession-qsl-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**536 / 40.5% → 543 / 41%** (G06 **36% → 44.2%**), and the PH-37 gate floor was raised in lockstep so the gain
+**536 / 40.5% → 543 / 41%** (PS06 **36% → 44.2%**), and the PH-37 gate floor was raised in lockstep so the gain
 is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 41%** — ~780 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. The route-exposure vein continues
-  to thin (only a handful of exposable service methods remain per module: G12 admissibility reads, G03
-  attendance-ops, G02 governance); the bulk of the residual requires **net-new implementation** (new backing
+  to thin (only a handful of exposable service methods remain per module: PS12 admissibility reads, PS03
+  attendance-ops, PS02 governance); the bulk of the residual requires **net-new implementation** (new backing
   + schema + tests).
 - **Persistence workstream:** the hand-built services (PH-16F..PH-59 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.

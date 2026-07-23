@@ -37,7 +37,7 @@ test("authority resolver covers hierarchy, delegation precedence, SoD block, com
 
   const delegated = services.authorityResolution.resolve(
     scope,
-    { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.manager },
+    { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.manager },
     "2026-07-01"
   );
   assert.equal(delegated.selectedAssignees[0].employeeId, ph03Ids.employee);
@@ -45,7 +45,7 @@ test("authority resolver covers hierarchy, delegation precedence, SoD block, com
 
   const sodBlocked = services.authorityResolution.resolve(
     scope,
-    { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.employee },
+    { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue, subjectEmployeeId: ph03Ids.employee },
     "2026-07-01"
   );
   assert.equal(sodBlocked.selectedAssignees[0].employeeId, ph03Ids.manager);
@@ -60,7 +60,7 @@ test("authority resolver covers hierarchy, delegation precedence, SoD block, com
     tenantId: ph03Ids.tenant,
     entityId: ph03Ids.entity,
     authorityType: "TRANSFER_AUTHORITY",
-    authorityCode: "G05_TRANSFER_REVENUE",
+    authorityCode: "PS05_TRANSFER_REVENUE",
     scopeType: "ORG_UNIT",
     scopeOrgUnitId: ph03Ids.orgRevenue,
     authorityEmployeeId: ph03Ids.manager,
@@ -72,18 +72,18 @@ test("authority resolver covers hierarchy, delegation precedence, SoD block, com
     () =>
       services.authorityResolution.resolve(
         scope,
-        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "G05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue },
+        { mechanism: "STATUTORY_AUTHORITY", authorityCode: "PS05_TRANSFER_REVENUE", orgUnitId: ph03Ids.orgRevenue },
         "2026-07-01"
       ),
     /Ambiguous statutory authority/
   );
 });
 
-test("G12 SR ingest is idempotent, semantically deduplicated, source-reversible, and append-only by API shape", () => {
+test("PS12 SR ingest is idempotent, semantically deduplicated, source-reversible, and append-only by API shape", () => {
   const services = createFoundationServices();
   const scope = actor();
   const request = {
-    sourceModule: "G01",
+    sourceModule: "PS01",
     sourceReferenceId: "employees:identity:1",
     sourceEventVersion: 1,
     employeeId: ph03Ids.employee,
@@ -117,7 +117,7 @@ test("G12 SR ingest is idempotent, semantically deduplicated, source-reversible,
   assert.equal(typeof services.serviceRegister.updateEvent, "undefined");
 });
 
-test("G13 document vault supports module attachment and legal hold blocks disposal", () => {
+test("PS13 document vault supports module attachment and legal hold blocks disposal", () => {
   const services = createFoundationServices();
   const scope = actor();
   const document = services.documentVault.createDocument(scope, {
@@ -127,19 +127,19 @@ test("G13 document vault supports module attachment and legal hold blocks dispos
     contentHash: "abcd".repeat(16),
   });
   const attached = services.documentVault.attach(scope, document.id, {
-    moduleCode: "G05",
+    moduleCode: "PS05",
     entityName: "transfer_orders",
     entityRefId: "TRF-001",
     linkRole: "ORDER",
   });
   assert.equal(attached.links.length, 1);
-  assert.equal(services.documentVault.listByModuleRef(scope, "G05", "TRF-001").length, 1);
+  assert.equal(services.documentVault.listByModuleRef(scope, "PS05", "TRF-001").length, 1);
 
   services.documentVault.placeLegalHold(scope, document.id, "Pending inquiry");
   assert.throws(() => services.documentVault.dispose(scope, document.id), /Legal hold or WORM retention blocks disposal/);
 });
 
-test("G01 read masking and governed identity change post an SR event with audit evidence", () => {
+test("PS01 read masking and governed identity change post an SR event with audit evidence", () => {
   const services = createFoundationServices();
   const masked = services.employeeMaster.readProfile(actor({ fieldGrants: [] }), ph03Ids.manager);
   assert.equal(masked.pan, "[HIDDEN]");
@@ -153,12 +153,12 @@ test("G01 read masking and governed identity change post an SR event with audit 
     employeeId: ph03Ids.employee,
     newDisplayName: "Kiran Patel Updated",
     reason: "Gazette correction",
-    idempotencyKey: "idem-g01-change-1",
+    idempotencyKey: "idem-ps01-change-1",
     effectiveDate: "2026-07-01",
   });
   assert.match(changed.srEventId, /^sr-/);
   assert.equal(services.serviceRegister.getTimeline(actor(), ph03Ids.employee).length, 1);
-  assert.ok(services.audit.listAudit(actor()).some((entry) => entry.action === "G01_GOVERNED_IDENTITY_CHANGE"));
+  assert.ok(services.audit.listAudit(actor()).some((entry) => entry.action === "PS01_GOVERNED_IDENTITY_CHANGE"));
 });
 
 test("synthetic P01 HRMS workflow writes task, action, resolution evidence, audit, and notification", () => {
@@ -183,14 +183,14 @@ test("foundation services enforce tenant isolation", () => {
 test("migration staging reconciliation does not mutate production employee records", () => {
   const services = createFoundationServices();
   const scope = actor();
-  services.migrationStaging.stageEmployeeIdentity(scope, { serviceNo: "GOV-100245", displayName: "Ananya Rao", sourceSystem: "legacy" });
-  services.migrationStaging.stageEmployeeIdentity(scope, { serviceNo: "GOV-404", displayName: "Missing Employee", sourceSystem: "legacy" });
-  services.migrationStaging.stageEmployeeIdentity(scope, { serviceNo: "GOV-404", displayName: "Missing Employee Duplicate", sourceSystem: "legacy" });
+  services.migrationStaging.stageEmployeeIdentity(scope, { serviceNo: "PS-100245", displayName: "Ananya Rao", sourceSystem: "legacy" });
+  services.migrationStaging.stageEmployeeIdentity(scope, { serviceNo: "PS-404", displayName: "Missing Employee", sourceSystem: "legacy" });
+  services.migrationStaging.stageEmployeeIdentity(scope, { serviceNo: "PS-404", displayName: "Missing Employee Duplicate", sourceSystem: "legacy" });
   const report = services.migrationStaging.reconcileEmployeeIdentity(scope);
   assert.equal(report.totalStaged, 3);
   assert.equal(report.matchedEmployees, 1);
   assert.equal(report.missingEmployees, 2);
-  assert.deepEqual(report.duplicateServiceNos, ["GOV-404"]);
+  assert.deepEqual(report.duplicateServiceNos, ["PS-404"]);
   assert.equal(report.productionEmployeeCountBefore, report.productionEmployeeCountAfter);
 });
 

@@ -10,8 +10,8 @@ The rehearsal covers the four PH-10 UAT scripts: Executive Analytics, Compensati
 
 | Script | Rehearsal result | Evidence | Owner | Target date | Sign-off state |
 |---|---|---|---|---|---|
-| Executive Analytics | PASS for rehearsal evidence | G14 dashboard markers `G14_READ_ONLY`, `MART_REFRESH_IDEMPOTENT`, `P02_SCOPE_FILTER`, `DRILL_THROUGH_AUTHZ` verified by PH-10 checks | analytics-owner | 2026-07-17 | `BUSINESS_OWNER_PENDING` |
-| Compensation Readiness | PASS for rehearsal evidence | G10/G11 readiness markers `RULE_VERSION_SNAPSHOT`, `PAYROLL_TRACE`, `SR_VERIFICATION_GATE`, `PENSION_CALC_TRACE` retained in release pack | compensation-lead | 2026-07-17 | `BUSINESS_OWNER_PENDING` |
+| Executive Analytics | PASS for rehearsal evidence | PS14 dashboard markers `PS14_READ_ONLY`, `MART_REFRESH_IDEMPOTENT`, `P02_SCOPE_FILTER`, `DRILL_THROUGH_AUTHZ` verified by PH-10 checks | analytics-owner | 2026-07-17 | `BUSINESS_OWNER_PENDING` |
+| Compensation Readiness | PASS for rehearsal evidence | PS10/PS11 readiness markers `RULE_VERSION_SNAPSHOT`, `PAYROLL_TRACE`, `SR_VERIFICATION_GATE`, `PENSION_CALC_TRACE` retained in release pack | compensation-lead | 2026-07-17 | `BUSINESS_OWNER_PENDING` |
 | Migration and Coexistence | PASS for rehearsal evidence | `MIGRATION_DRY_RUN`, `RECONCILIATION_CERTIFIED`, and `MIGRATION_EXCEPTION_OWNERS` are present; unresolved exceptions stay pending | migration-lead | 2026-07-17 | `BUSINESS_OWNER_PENDING` |
 | Release Controls | PASS for rehearsal evidence | Deployment, rollback, coexistence, and release evidence include `RISK_OWNER_DATE` and human approval markers | release-lead | 2026-07-17 | `BUSINESS_OWNER_PENDING` |
 

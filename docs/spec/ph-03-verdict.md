@@ -21,18 +21,18 @@ routing brain that every module wave will consume through the P01 workflow. PH-0
 inactive/absent configured id fail closed) and wired it into resolver precedence. A typed precedence suite
 (16 cases) covers all resolver families, the ambiguity→BLOCKED path, and as-of snapshot determinism.
 
-### PH-03B — Systems of record (G01 / G12 / G13)
+### PH-03B — Systems of record (PS01 / PS12 / PS13)
 Black-box suites were added over the already-implemented systems of record, exercising the public
 foundation contracts against the `ph03` seed:
-- **G12 Service Register** — idempotent replay, semantic dedup (dedup tuple + `fact_key` collapse to one
+- **PS12 Service Register** — idempotent replay, semantic dedup (dedup tuple + `fact_key` collapse to one
   append-only ledger row), reused-idempotency-key-with-divergent-payload rejection, and
   supersede-not-delete reversal. No update/delete mutator is exposed (append-only by API shape).
-- **G13 Document Vault** — legal hold / WORM retention block disposal and retention-delete, fail-closed,
+- **PS13 Document Vault** — legal hold / WORM retention block disposal and retention-delete, fail-closed,
   document retained intact.
-- **G01 Employee Master** — P02 PII field-masking on serialization (masked for under-privileged viewers,
-  unmasked with field grants, least-privilege partial grants), and a G01→G12 integration proving a
+- **PS01 Employee Master** — P02 PII field-masking on serialization (masked for under-privileged viewers,
+  unmasked with field grants, least-privilege partial grants), and a PS01→PS12 integration proving a
   governed identity change drives exactly one SR row with correct provenance.
-- **Repair (implementation-only):** the G01→G12 test revealed a non-atomic multi-step write in
+- **Repair (implementation-only):** the PS01→PS12 test revealed a non-atomic multi-step write in
   `EmployeeMasterService.governedIdentityChange` (master mutated before SR ingest, leaving a partial write
   when the ledger deduped/rejected). Fixed by appending the SR fact first and committing the master
   mutation + audit only on a genuinely new ledger row.
@@ -69,7 +69,7 @@ determinism is asserted: a later-effective authority change does not alter a his
 - **Idempotency / dedup:** replay of the same idempotency key returns the original event; semantic dedup
   (`fact_key`) collapses differing source references to one ledger row; a reused key with a divergent
   payload is rejected rather than silently overwriting.
-- **Legal hold:** G13 disposal and retention-delete fail closed under legal hold / WORM; the document is
+- **Legal hold:** PS13 disposal and retention-delete fail closed under legal hold / WORM; the document is
   retained intact.
 
 ## 4. Test inventory
@@ -80,12 +80,12 @@ subtests, all passing.**
 
 | Suite (cjs wrapper) | Typed source | Focus |
 |---|---|---|
-| `ph03-foundation.test.cjs` | inline | 8 foundation cases (resolver, G01/G12/G13, workflow, tenant isolation, migration, security hygiene) |
+| `ph03-foundation.test.cjs` | inline | 8 foundation cases (resolver, PS01/PS12/PS13, workflow, tenant isolation, migration, security hygiene) |
 | `authorityResolver.precedence.test.cjs` | `.../authority-resolution/authorityResolver.precedence.test.ts` | 16 resolver-precedence cases |
-| `srSemanticDedup.test.cjs` | `.../g12/srSemanticDedup.test.ts` | SR idempotency, dedup, append-only |
-| `legalHoldDisposal.test.cjs` | `.../g13/legalHoldDisposal.test.ts` | legal-hold blocks disposal |
-| `p02FieldMasking.test.cjs` | `.../g01/p02FieldMasking.test.ts` | PII masking / field grants |
-| `g01ToG12SrIngest.test.cjs` | `.../g01/g01ToG12SrIngest.test.ts` | governed change → one SR row |
+| `srSemanticDedup.test.cjs` | `.../ps12/srSemanticDedup.test.ts` | SR idempotency, dedup, append-only |
+| `legalHoldDisposal.test.cjs` | `.../ps13/legalHoldDisposal.test.ts` | legal-hold blocks disposal |
+| `p02FieldMasking.test.cjs` | `.../ps01/p02FieldMasking.test.ts` | PII masking / field grants |
+| `ps01ToPS12SrIngest.test.cjs` | `.../ps01/ps01ToPS12SrIngest.test.ts` | governed change → one SR row |
 | `rlsTenantIsolation.test.cjs` (**PH-03C**) | `.../security/rlsTenantIsolation.test.ts` | RLS cross-entity + cross-tenant isolation (6 cases) |
 | `migrationStagingReconciliation.test.cjs` (**PH-03C**) | `.../migration/staging/migrationStagingReconciliation.test.ts` | read-only staging, reconciliation, gated promotion (6 cases) |
 
@@ -124,7 +124,7 @@ no stack-trace leak in error responses, endpoint protection markers present.
 3. **No HTTP surface yet.** These are service internals. "Endpoint protection markers present" is satisfied
    by the service registry, not by live route guards. PH-04 owns route handlers, request/response
    validation, idempotency headers, and per-route auth — public/protected enforcement must be re-verified there.
-4. **Adapter seams open.** Object storage, KMS, AV scan, and RFC-3161 timestamp integrations for G13, and
+4. **Adapter seams open.** Object storage, KMS, AV scan, and RFC-3161 timestamp integrations for PS13, and
    the live SQL-backed `workflow-postgres` adapter, remain stubs/seams for later phases.
 5. **PUDA provenance.** External distribution/productization of PUDA-derived workflow code remains on the
    human/legal hold recorded since PH-00; internal HRMS build is cleared to proceed.

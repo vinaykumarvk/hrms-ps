@@ -15,7 +15,7 @@ echo "execution=NO_PRODUCTION_EXECUTION"
 
 for var_name in TARGET_ENV_URL TARGET_DATABASE_URL TARGET_API_TOKEN PROD_DATABASE_URL PRODUCTION_DATABASE_URL; do
   value="${!var_name:-}"
-  if printf '%s' "$value" | grep -Eiq 'prod|production|live|\\.gov\\.in|\\.nic\\.in'; then
+  if printf '%s' "$value" | grep -Eiq 'prod|production|live|\\.enterprise\\.in|\\.nic\\.in'; then
     red "$var_name looks production-like"
   else
     grn "$var_name non-production or unset"

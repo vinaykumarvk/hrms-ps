@@ -1,7 +1,7 @@
 # Dashboard and Analytics — HRMS Module BRD
 
 **Module code:** M14-DAS
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government / Public-Sector context
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise / Public-Sector context
 **Authoring standard:** World-class global HCM analytics (Workday Prism / SAP SuccessFactors People Analytics / Oracle HCM OTBI bar) honouring Indian public-sector statutory reporting (reservation roster, SR verification, cadre/seniority, retirement profiling)
 **Source of truth:** `docs/brd/SHARED_FOUNDATION.md` (canonical shared entities, conventions, RBAC, technical defaults). This BRD references and extends — it does not redefine — those shared elements.
 **Document version:** v1.0
@@ -1522,7 +1522,7 @@ marts READ FROM: employees(M01), leave/attendance(M03/M04), transfers(M05), prom
 | Mobile | Stacked cards, swipeable trends, bottom-nav, alert badge; same RLS; offline stale badge. |
 | Accessibility | WCAG 2.1 AA: keyboard operable charts, focus order, contrast, data-table fallback for every chart, screen-reader summaries, no colour-only meaning. |
 | i18n/locale | Dates `DD-MMM-YYYY`, INR money formatting, user timezone for as-of, translatable labels. |
-| Theming | Light/dark mode; government-portal visual compliance. |
+| Theming | Light/dark mode; enterprise-portal visual compliance. |
 
 ---
 

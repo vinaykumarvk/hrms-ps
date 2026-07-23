@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-06A oracle: persistence substrate — Postgres-backed repositories for G03 + G05 owned entities.
+# PH-06A oracle: persistence substrate — Postgres-backed repositories for PS03 + PS05 owned entities.
 # REAL-outcome oracle: pg client wired and consumed, repository layer imported by the services,
 # migration DDL for the owned tables under apps/api, the in-memory arrays for those entities GONE,
 # green typecheck + full API suite, and a repo/schema integration test that genuinely executes
@@ -7,7 +7,7 @@
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
-echo "== PH-06A exit-criteria (G03/G05 Postgres persistence substrate) =="
+echo "== PH-06A exit-criteria (PS03/PS05 Postgres persistence substrate) =="
 
 [ -d node_modules ] || red "node_modules absent — typecheck/test oracle cannot run (npm install required)"
 
@@ -16,10 +16,10 @@ grep -qE '"pg"[[:space:]]*:' package.json && grn "pg declared in package.json" |
 grep -rqE 'from "pg"|require\("pg"\)' apps/api/src 2>/dev/null && grn "pg client imported in apps/api/src" || red "pg client not imported anywhere in apps/api/src"
 
 # 2) repository layer exists and is consumed by the services
-find apps/api/src -not -path '*node_modules*' -iname '*repositor*.ts' 2>/dev/null | grep -qi 'leave' && grn "G03 leave repository file present" || red "no G03 leave repository file under apps/api/src"
-find apps/api/src -not -path '*node_modules*' -iname '*repositor*.ts' 2>/dev/null | grep -qi 'transfer' && grn "G05 transfer repository file present" || red "no G05 transfer repository file under apps/api/src"
-grep -qiE 'repositor' apps/api/src/modules/g03/leaveService.ts 2>/dev/null && grn "leaveService consumes a repository" || red "leaveService.ts does not reference a repository"
-grep -qiE 'repositor' apps/api/src/modules/g05/transferService.ts 2>/dev/null && grn "transferService consumes a repository" || red "transferService.ts does not reference a repository"
+find apps/api/src -not -path '*node_modules*' -iname '*repositor*.ts' 2>/dev/null | grep -qi 'leave' && grn "PS03 leave repository file present" || red "no PS03 leave repository file under apps/api/src"
+find apps/api/src -not -path '*node_modules*' -iname '*repositor*.ts' 2>/dev/null | grep -qi 'transfer' && grn "PS05 transfer repository file present" || red "no PS05 transfer repository file under apps/api/src"
+grep -qiE 'repositor' apps/api/src/modules/ps03/leaveService.ts 2>/dev/null && grn "leaveService consumes a repository" || red "leaveService.ts does not reference a repository"
+grep -qiE 'repositor' apps/api/src/modules/ps05/transferService.ts 2>/dev/null && grn "transferService consumes a repository" || red "transferService.ts does not reference a repository"
 
 # 3) migration DDL under apps/api covers every owned table (frozen data-model names)
 sqlhit(){ find apps/api -path '*node_modules*' -prune -o -iname '*.sql' -print0 2>/dev/null | xargs -0 grep -liE "create table (if not exists )?[a-z0-9_]*$1" 2>/dev/null | grep -q .; }
@@ -28,14 +28,14 @@ for t in leave_types leave_accrual_policies leave_ledger leave_reservations tran
 done
 
 # 4) fail-closed negatives: owned entities may no longer live in bare in-memory service arrays
-grep -qF 'private readonly applications: LeaveApplication[] = []' apps/api/src/modules/g03/leaveService.ts 2>/dev/null \
-  && red "NEGATIVE: g03 leave applications still a bare in-memory array" || grn "negative ok: g03 applications array removed"
-grep -qF 'private readonly ledger: LeaveLedgerEntry[] = []' apps/api/src/modules/g03/leaveService.ts 2>/dev/null \
-  && red "NEGATIVE: g03 leave ledger still a bare in-memory array" || grn "negative ok: g03 ledger array removed"
-grep -qF 'private readonly balances: LeaveBalance[] = []' apps/api/src/modules/g03/leaveService.ts 2>/dev/null \
-  && red "NEGATIVE: g03 leave balances still a bare in-memory array" || grn "negative ok: g03 balances array removed"
-grep -qF 'private readonly orders: TransferOrder[] = []' apps/api/src/modules/g05/transferService.ts 2>/dev/null \
-  && red "NEGATIVE: g05 transfer orders still a bare in-memory array" || grn "negative ok: g05 orders array removed"
+grep -qF 'private readonly applications: LeaveApplication[] = []' apps/api/src/modules/ps03/leaveService.ts 2>/dev/null \
+  && red "NEGATIVE: ps03 leave applications still a bare in-memory array" || grn "negative ok: ps03 applications array removed"
+grep -qF 'private readonly ledger: LeaveLedgerEntry[] = []' apps/api/src/modules/ps03/leaveService.ts 2>/dev/null \
+  && red "NEGATIVE: ps03 leave ledger still a bare in-memory array" || grn "negative ok: ps03 ledger array removed"
+grep -qF 'private readonly balances: LeaveBalance[] = []' apps/api/src/modules/ps03/leaveService.ts 2>/dev/null \
+  && red "NEGATIVE: ps03 leave balances still a bare in-memory array" || grn "negative ok: ps03 balances array removed"
+grep -qF 'private readonly orders: TransferOrder[] = []' apps/api/src/modules/ps05/transferService.ts 2>/dev/null \
+  && red "NEGATIVE: ps05 transfer orders still a bare in-memory array" || grn "negative ok: ps05 orders array removed"
 
 # 5) fail-closed negative: parameterised queries only (no ${} interpolation into SQL)
 if find apps/api/src -name '*.ts' -not -path '*node_modules*' -print0 2>/dev/null | xargs -0 grep -nE '(SELECT |INSERT INTO |UPDATE |DELETE FROM )[^;]*\$\{' 2>/dev/null | grep -q .; then

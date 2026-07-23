@@ -1,7 +1,7 @@
 # Attendance and Leave Management — HRMS Module BRD (v2.0)
 
 **Module code:** M03-ATL
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — government/public-sector context, hosted at CGG Data Centre.
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — enterprise/public-sector context, hosted at CGG Data Centre.
 **Authoring standard:** World-class global HCM (Workday / SAP SuccessFactors / Oracle HCM bar) layered on public-sector statutory rules (CCS Leave Rules).
 **Source of truth for shared elements:** `docs/brd/SHARED_FOUNDATION.md` (referenced, never redefined).
 **Document version:** v2.0 — 2026-06-30 (supersedes v1.0).
@@ -858,8 +858,8 @@ all state changes ──> audit_log ; all events ──> notifications
 **rosters**
 | employee | shift_code | effective_from | effective_to | weekly_off_pattern | status |
 |---|---|---|---|---|---|
-| GOV-1001 | GEN | 2026-01-01 | (open) | ["SUN","SAT2","SAT4"] | PUBLISHED |
-| GOV-2087 | NIGHT-A | 2026-04-01 | 2026-06-30 | ["SUN"] | PUBLISHED |
+| PS-1001 | GEN | 2026-01-01 | (open) | ["SUN","SAT2","SAT4"] | PUBLISHED |
+| PS-2087 | NIGHT-A | 2026-04-01 | 2026-06-30 | ["SUN"] | PUBLISHED |
 
 **holiday_calendars / holidays**
 | calendar_code | year | location | holiday_date | name | holiday_type |
@@ -876,14 +876,14 @@ all state changes ──> audit_log ; all events ──> notifications
 **attendance_punches**
 | employee | device | punch_time (UTC) | attendance_date | direction | capture_method | ingestion_status |
 |---|---|---|---|---|---|---|
-| GOV-1001 | BIO-HQ-01 | 2026-06-29T04:02:11Z | 2026-06-29 | IN | BIOMETRIC | ACCEPTED |
-| GOV-2087 | BIO-HQ-01 | 2026-06-29T16:31:00Z | 2026-06-29 | IN | BIOMETRIC | FLAGGED_FOR_REVIEW |
+| PS-1001 | BIO-HQ-01 | 2026-06-29T04:02:11Z | 2026-06-29 | IN | BIOMETRIC | ACCEPTED |
+| PS-2087 | BIO-HQ-01 | 2026-06-29T16:31:00Z | 2026-06-29 | IN | BIOMETRIC | FLAGGED_FOR_REVIEW |
 
 **attendance_daily / attendance_day_allocations**
 | employee | attendance_date | status (rollup) | present_units | allocation: segment×fraction |
 |---|---|---|---|---|
-| GOV-1001 | 2026-06-29 | PRESENT | 1.00 | PRESENT×1.0 |
-| GOV-2087 | 2026-06-29 | HALF_DAY | 0.50 | ON_LEAVE×0.5 + PRESENT×0.5 |
+| PS-1001 | 2026-06-29 | PRESENT | 1.00 | PRESENT×1.0 |
+| PS-2087 | 2026-06-29 | HALF_DAY | 0.50 | ON_LEAVE×0.5 + PRESENT×0.5 |
 
 **attendance_processing_runs**
 | scope | date_from | date_to | trigger_type | status | employees_processed |
@@ -894,32 +894,32 @@ all state changes ──> audit_log ; all events ──> notifications
 **rh_elections**
 | employee | calendar | holiday | leave_year | status |
 |---|---|---|---|---|
-| GOV-1001 | HQ-2026 | Local Festival | 2026 | ELECTED |
-| GOV-2087 | HQ-2026 | Local Festival | 2026 | ELECTED |
+| PS-1001 | HQ-2026 | Local Festival | 2026 | ELECTED |
+| PS-2087 | HQ-2026 | Local Festival | 2026 | ELECTED |
 
 **regularisation_requests**
 | employee | requested_status | proposed_first_in | reason | status |
 |---|---|---|---|---|
-| GOV-1001 | PRESENT | 2026-06-25 09:35 | Biometric failed at gate | APPROVED |
-| GOV-2087 | PRESENT | 2026-06-20 22:10 | Forgot to punch in | SUBMITTED |
+| PS-1001 | PRESENT | 2026-06-25 09:35 | Biometric failed at gate | APPROVED |
+| PS-2087 | PRESENT | 2026-06-20 22:10 | Forgot to punch in | SUBMITTED |
 
 **overtime_records**
 | employee | attendance_date | ot_minutes | ot_treatment | status |
 |---|---|---|---|---|
-| GOV-2087 | 2026-06-15 | 180 | PAID | APPROVED |
-| GOV-1001 | 2026-06-18 | 240 | COMP_OFF | CONVERTED_TO_COMPOFF |
+| PS-2087 | 2026-06-15 | 180 | PAID | APPROVED |
+| PS-1001 | 2026-06-18 | 240 | COMP_OFF | CONVERTED_TO_COMPOFF |
 
 **attendance_exceptions**
 | employee | exception_type | start_date | end_date | day_portion | status |
 |---|---|---|---|---|---|
-| GOV-1001 | WFH | 2026-06-22 | 2026-06-22 | FULL | APPROVED |
-| GOV-2087 | TOUR | 2026-06-10 | 2026-06-12 | FULL | APPROVED |
+| PS-1001 | WFH | 2026-06-22 | 2026-06-22 | FULL | APPROVED |
+| PS-2087 | TOUR | 2026-06-10 | 2026-06-12 | FULL | APPROVED |
 
 **comp_off_ledger**
 | employee | entry_type | days | source_ref_type | earned_on | expires_on | balance_after |
 |---|---|---|---|---|---|---|
-| GOV-1001 | EARN | +1.0 | OVERTIME | 2026-06-18 | 2026-09-18 | 1.0 |
-| GOV-1001 | REDEEM | -1.0 | LEAVE_APPLICATION | 2026-06-26 | (n/a) | 0.0 |
+| PS-1001 | EARN | +1.0 | OVERTIME | 2026-06-18 | 2026-09-18 | 1.0 |
+| PS-1001 | REDEEM | -1.0 | LEAVE_APPLICATION | 2026-06-26 | (n/a) | 0.0 |
 
 **leave_types**
 | leave_code | category | is_accruable | is_sanction_based | debit_ratio | debits_against | year_basis | sandwich_rule | retire_encash |
@@ -940,45 +940,45 @@ all state changes ──> audit_log ; all events ──> notifications
 **leave_balances**
 | employee | leave_type | year | opening | accrued | availed | reserved | current | available | version |
 |---|---|---|---|---|---|---|---|---|---|
-| GOV-1001 | EL | 2026 | 120 | 15 | 5 | 2.5 | 130 | 127.5 | 7 |
-| GOV-2087 | CL | 2026 | 0 | 12 | 3 | 0 | 9 | 9 | 3 |
+| PS-1001 | EL | 2026 | 120 | 15 | 5 | 2.5 | 130 | 127.5 | 7 |
+| PS-2087 | CL | 2026 | 0 | 12 | 3 | 0 | 9 | 9 | 3 |
 
 **leave_reservations**
 | employee | leave_type | application | reserved_units | status | expires_at |
 |---|---|---|---|---|---|
-| GOV-1001 | EL | LV-2026-000453 | 2.5 | RESERVED | 2026-07-02T10:00Z |
-| GOV-2087 | CL | LV-2026-000460 | 1.0 | RELEASED | (n/a) |
+| PS-1001 | EL | LV-2026-000453 | 2.5 | RESERVED | 2026-07-02T10:00Z |
+| PS-2087 | CL | LV-2026-000460 | 1.0 | RELEASED | (n/a) |
 
 **leave_balance_ledger**
 | employee | leave_type | entry_type | amount | balance_after | source_ref_type | effective_date |
 |---|---|---|---|---|---|---|
-| GOV-1001 | EL | ACCRUAL | +15 | 135 | ACCRUAL_RUN | 2026-01-01 |
-| GOV-1001 | EL | AVAIL | -5 | 130 | LEAVE_APPLICATION | 2026-06-29 |
-| GOV-5500 | EL | CLAWBACK | -3 | 12 | EXIT_CLAWBACK | 2026-05-31 |
+| PS-1001 | EL | ACCRUAL | +15 | 135 | ACCRUAL_RUN | 2026-01-01 |
+| PS-1001 | EL | AVAIL | -5 | 130 | LEAVE_APPLICATION | 2026-06-29 |
+| PS-5500 | EL | CLAWBACK | -3 | 12 | EXIT_CLAWBACK | 2026-05-31 |
 
 **leave_entitlements**
 | employee | leave_type | quota_basis | total_quota | consumed | remaining | eligibility_predicate |
 |---|---|---|---|---|---|---|
-| GOV-3300 | CCL | CAREER | 730 | 120 | 610 | {"surviving_children_max":2,"child_age_max":18} |
-| GOV-3300 | MAT | EVENT | 180 | 0 | 180 | {"surviving_children_max":2} |
+| PS-3300 | CCL | CAREER | 730 | 120 | 610 | {"surviving_children_max":2,"child_age_max":18} |
+| PS-3300 | MAT | EVENT | 180 | 0 | 180 | {"surviving_children_max":2} |
 
 **employee_dependents**
 | employee | relation | dob | is_surviving | is_disabled |
 |---|---|---|---|---|
-| GOV-3300 | CHILD | 2020-03-15 | true | false |
-| GOV-3300 | CHILD | 2016-09-01 | true | false |
+| PS-3300 | CHILD | 2020-03-15 | true | false |
+| PS-3300 | CHILD | 2016-09-01 | true | false |
 
 **leave_applications / leave_application_days**
 | application_no | employee | leave_type | start | end | total_days | ledger_debit_units | status | sr_posting |
 |---|---|---|---|---|---|---|---|---|
-| LV-2026-000451 | GOV-1001 | EL | 2026-06-29 | 2026-07-03 | 5 | 5 | APPROVED | POSTED |
-| LV-2026-000470 | GOV-3300 | COMMUTED | 2026-07-10 | 2026-07-11 | 2 | 4 | SUBMITTED | NOT_REQUIRED |
+| LV-2026-000451 | PS-1001 | EL | 2026-06-29 | 2026-07-03 | 5 | 5 | APPROVED | POSTED |
+| LV-2026-000470 | PS-3300 | COMMUTED | 2026-07-10 | 2026-07-11 | 2 | 4 | SUBMITTED | NOT_REQUIRED |
 
 **leave_encashment_requests**
 | employee | leave_type | encashment_type | days_requested | el_component | hpl_component | ltc_block_ref | status |
 |---|---|---|---|---|---|---|---|
-| GOV-5500 | EL | RETIREMENT | 300 | 240 | 60 | (n/a) | SETTLED |
-| GOV-1001 | EL | LTC | 10 | 10 | 0 | LTC-2025-2028 | APPROVED |
+| PS-5500 | EL | RETIREMENT | 300 | 240 | 60 | (n/a) | SETTLED |
+| PS-1001 | EL | LTC | 10 | 10 | 0 | LTC-2025-2028 | APPROVED |
 
 **leave_year_close_runs**
 | leave_year | scope | run_status | employees | total_carried | total_lapsed |
@@ -989,8 +989,8 @@ all state changes ──> audit_log ; all events ──> notifications
 **payroll_attendance_feed / payroll_feed_adjustments**
 | pay_period | employee | lwp_days | half_pay_days | paid_ot_min | present_units | is_locked |
 |---|---|---|---|---|---|---|
-| 2026-06 | GOV-2087 | 2 | 1 | 180 | 19.5 | true |
-| (adj) 2026-07 | GOV-2087 | LWP_DELTA −1 (late regularisation of 2026-06-20) | | | | PENDING |
+| 2026-06 | PS-2087 | 2 | 1 | 180 | 19.5 | true |
+| (adj) 2026-07 | PS-2087 | LWP_DELTA −1 (late regularisation of 2026-06-20) | | | | PENDING |
 
 **module_config**
 | config_key | config_value | scope | effective_from | status |
@@ -1006,17 +1006,17 @@ all state changes ──> audit_log ; all events ──> notifications
 **biometric_consents**
 | employee | lawful_basis | capture_types | consent_status | fallback_method | retention_until |
 |---|---|---|---|---|---|
-| GOV-1001 | STATUTORY_DUTY | ["BIOMETRIC","GEO"] | GRANTED | RFID | 2031-06-29 |
-| GOV-2200 | CONSENT | ["BIOMETRIC"] | WITHDRAWN | MANUAL | 2026-12-31 |
+| PS-1001 | STATUTORY_DUTY | ["BIOMETRIC","GEO"] | GRANTED | RFID | 2031-06-29 |
+| PS-2200 | CONSENT | ["BIOMETRIC"] | WITHDRAWN | MANUAL | 2026-12-31 |
 
 **punch_anomaly_reviews**
 | punch | employee | anomaly_type | status | reviewer |
 |---|---|---|---|---|
-| pch-9001 | GOV-2087 | IMPOSSIBLE_TRAVEL | OPEN | HR-OFF-7 |
-| pch-9002 | GOV-1500 | DUPLICATE_SECOND | CONFIRMED_VALID | HR-OFF-7 |
+| pch-9001 | PS-2087 | IMPOSSIBLE_TRAVEL | OPEN | HR-OFF-7 |
+| pch-9002 | PS-1500 | DUPLICATE_SECOND | CONFIRMED_VALID | HR-OFF-7 |
 
 ### 5.8 End-to-end worked example — "one leave day, end to end" *(R23 / Outsider)*
-> GOV-1001 (EL year basis CALENDAR, current 130.0, reserved 0). Applies for 0.5-day EL on 2026-07-10 (FIRST_HALF), works the afternoon.
+> PS-1001 (EL year basis CALENDAR, current 130.0, reserved 0). Applies for 0.5-day EL on 2026-07-10 (FIRST_HALF), works the afternoon.
 
 1. **Apply (FR-12):** `total_days = 0.5` (sandwich rule N/A — single working day), `ledger_debit_units = 0.5 × debit_ratio(1.0) = 0.5`. A `leave_reservations` row (0.5, RESERVED) is created; `leave_balances.reserved` → 0.5, `available_balance` → 129.5. Balance preview shows `before 130.0, softReserved 0.5, available 129.5`. (`SUM(day_units)=0.5=total_days` passes — R18.)
 2. **Concurrency (R1):** a second concurrent application by the same employee re-reads `available_balance` already net of the 0.5 reservation; the balance row is locked `FOR UPDATE` with version assertion at debit time.
@@ -1888,7 +1888,7 @@ all state changes ──> audit_log ; all events ──> notifications
 ### FR-21 — DPDP Biometric/Geo Consent, Lawful Basis & Non-Biometric Fallback *(v2 new — R9)*
 - **Module:** Governance / Privacy
 - **Primary Role(s):** Employee (consent), HR/DPO (govern), SysAdmin (config)
-- **User Story:** As a data principal and as a government data fiduciary, we want biometric/geo capture to have a recorded lawful basis, captured consent, a non-biometric fallback, and an explicit retention/purge schedule, so attendance is DPDP-Act-2023 compliant.
+- **User Story:** As a data principal and as a enterprise data fiduciary, we want biometric/geo capture to have a recorded lawful basis, captured consent, a non-biometric fallback, and an explicit retention/purge schedule, so attendance is DPDP-Act-2023 compliant.
 - **Description:** Record per-employee lawful basis (statutory duty / consent / contract), capture consent for biometric/geo/photo, provide an alternative `fallback_method` (RFID/manual/OTP) for non-enrolled or refusing employees, declare biometric-template storage location, and enforce a retention/purge schedule for punches/geo/leave records.
 - **Acceptance Criteria:**
   1. Each employee has a `biometric_consents` record with a lawful basis before biometric/geo capture is permitted.

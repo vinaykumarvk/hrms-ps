@@ -1,7 +1,7 @@
 # Employee Personal Details Modification Workflow — HRMS Module BRD (v2.0)
 
 **Module code:** M02-EPDM
-**Program:** Enterprise HRMS — "PeopleGov / HRMS Suite" (government / public-sector context, hosted at CGG Data Centre)
+**Program:** Enterprise HRMS — "PeopleGov / HRMS Suite" (enterprise / public-sector context, hosted at CGG Data Centre)
 **Document version:** v2.0 (revised — incorporates Adversarial Council adopted improvements 1–23)
 **Supersedes:** v1.0 (`docs/brd/v1/M02-personal-details-modification-workflow.md`)
 **Status:** Baseline for build (parallel-agent ready) — security-hardened, statutory-hardened, dependency-honest
@@ -167,7 +167,7 @@ Every adopted council improvement and every High/Critical risk mitigation is inc
 - M10/M11/M06 expose an **acknowledgeable** retro-impact consumer endpoint (or subscribe to the event and post an ACK) so the downstream loop can be reconciled (FR-M02-022).
 - An **authority-verification provider** exists for UIDAI (Aadhaar), Income-Tax (PAN) and the caste/category certificate portal; where a portal is unavailable, the field is HR-verified with recorded manual attestation and flagged.
 - All actors are authenticated via shared OIDC/SSO + MFA; M02 enforces authorization and **invokes step-up** re-authentication for sensitive initiation.
-- Statutory retention: change requests and their audit retained per government records schedule (default 7 years post-separation, configurable), reconciled against DPDP erasure rights via the legal-basis/retention-override statement (§4.4).
+- Statutory retention: change requests and their audit retained per enterprise records schedule (default 7 years post-separation, configurable), reconciled against DPDP erasure rights via the legal-basis/retention-override statement (§4.4).
 
 ---
 
@@ -431,7 +431,7 @@ This module inherits, without redefinition, the Shared Foundation (`docs/brd/SHA
 | Field | Type | Null | Default | Notes |
 |---|---|:--:|---|---|
 | `matrix_id` | UUID (PK) | N | gen | |
-| `name` | VARCHAR(120) | N | | e.g. "Default Govt Matrix v3" |
+| `name` | VARCHAR(120) | N | | e.g. "Default Enterprise Matrix v3" |
 | `org_scope_id` | UUID (FK→org_units) | Y | | Null = global default |
 | `status` | ENUM | N | `DRAFT` | `DRAFT`,`ACTIVE`,`RETIRED` |
 | `version` | INT | N | 1 | |
@@ -812,7 +812,7 @@ delegations *───1 users (delegator) / users (delegate, role-verified)
 
 | matrix_id | name | org_scope_id | status | version | effective_from |
 |---|---|---|---|---|---|
-| mx-001 | Default Govt Matrix | null | ACTIVE | 3 | 2026-06-01 |
+| mx-001 | Default Enterprise Matrix | null | ACTIVE | 3 | 2026-06-01 |
 | mx-002 | Secretariat Override | ou-secr | DRAFT | 1 | 2026-08-01 |
 
 **approval_matrix_rules**
@@ -2809,8 +2809,8 @@ This table asserts **specification** completeness (every contract surface is def
 | **Saga / Outbox** ★ | A reliability pattern for atomic, eventually-consistent commit across services: M02 records the intent in an *outbox* table inside its own DB transaction, then a worker reliably applies it to M01 and compensates on failure — no partial visible commit |
 | Retro impact | A correction's downstream recomputation in payroll/pension/seniority — in v2 **tracked, acknowledged and reconciled** (not fire-and-forget) |
 | **Data subject** ★ | The employee whose record is being changed; in v2 a first-class party with notice and objection rights |
-| **Gazette** ★ | An official government notification; the traditional documentary proof for statutory name/DOB changes |
-| **Cadre** ★ | A service classification/grade of a government employee (owned by M05/M06); distinct from social/reservation `category`; NOT editable via M02 |
+| **Gazette** ★ | An official enterprise notification; the traditional documentary proof for statutory name/DOB changes |
+| **Cadre** ★ | A service classification/grade of a enterprise employee (owned by M05/M06); distinct from social/reservation `category`; NOT editable via M02 |
 | **Social category** ★ | Statutory reservation category (GEN/OBC/SC/ST/EWS) = M01 `employees.category`; verified via authority portal |
 | **Dignity-aware gender path** ★ | A path distinguishing a gender-marker *data-error correction* from *gender-identity recognition* (NALSA / Transgender Persons Act 2019), with privacy-protected, non-gazette evidence |
 | **Mule account** ★ | A bank account reused across multiple employees, a fraud signal (`DUPLICATE_BANK_ACCOUNT`) |

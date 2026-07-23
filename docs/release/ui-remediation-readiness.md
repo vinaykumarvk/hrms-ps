@@ -24,6 +24,6 @@ Blocking Gates Evaluated: 16/16 — 15 PASS, 1 PARTIAL
 | Error boundary coverage | PARTIAL | safe fallback/reload and sanitized reporting hook; forced-failure browser fixture remains follow-on |
 | UI determinism | PASS | seeded personas/workspaces/states |
 | Behavioral trust | PASS | no dead nav/no-op config/false state gallery |
-| Component substance | PASS | all G01-G14 modules retained with fields/data/API behavior |
+| Component substance | PASS | all PS01-PS14 modules retained with fields/data/API behavior |
 
 Status: **CONDITIONAL IMPLEMENTATION READINESS** after the UIR-08 final oracle remains GREEN. Production release is blocked pending the authentication and deployment-security amendments recorded by full review. This document does not authorize production/UAT deployment.

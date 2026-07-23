@@ -9,7 +9,7 @@
     - docs/reviews/brd-coverage-audit-20260702.md
     - docs/spec/pipeline/checks/ph-04d.sh              # the oracle — run it to get the numbers; never edit it
     - apps/api/src/routes/*.routes.ts                  # the implemented registry the oracle parses
-    - docs/contracts/openapi/*.yaml                    # P01 + G01..G14 contract operations
+    - docs/contracts/openapi/*.yaml                    # P01 + PS01..PS14 contract operations
     - docs/contracts/error-taxonomy.yaml
     - apps/api/test/ph04-contract-conformance.test.cjs
   audit_gaps:                                          # what a freeze packet must never repeat
@@ -21,7 +21,7 @@
     - HONESTY IS THE DELIVERABLE. Run `bash docs/spec/pipeline/checks/ph-04d.sh` and copy ITS coverage
       percentage, per-contract rows, and `unmatched_implemented` drift count into the verdict verbatim.
       Do not round differently, re-derive, or editorialise the numbers upward.
-    - The verdict must contain: (1) a per-module coverage table with a row for P01 and G01..G14
+    - The verdict must contain: (1) a per-module coverage table with a row for P01 and PS01..PS14
       (implemented/total operations and %), (2) the overall coverage % exactly as the oracle prints it,
       (3) a line `unmatched_implemented: <N>` with the oracle's drift count and the drifting routes named,
       (4) a named-gaps section (what is NOT implemented, per module, grounded in the audit), and
@@ -40,7 +40,7 @@
       steps: [npm run -s typecheck, npm test, run the oracle, capture its printed numbers]
     - name: write the honest freeze packet
       max_iterations: 4
-      repeat_until: docs/spec/ph-04-verdict.md (>=1500 bytes) contains the coverage table for P01+G01..G14,
+      repeat_until: docs/spec/ph-04-verdict.md (>=1500 bytes) contains the coverage table for P01+PS01..PS14,
         the oracle's overall percentage string, the `unmatched_implemented: N` line, the named per-module
         gap list, and the freeze recommendation — and re-running the oracle prints GREEN.
       steps: [draft table from ROW lines, list drift routes, write gaps from the audit + oracle output,

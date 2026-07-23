@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-52A oracle: raise measured contract coverage by exposing the G06 FR-015 sanctioned-posts establishment
+# PH-52A oracle: raise measured contract coverage by exposing the PS06 FR-015 sanctioned-posts establishment
 # lifecycle (register/revise with maker!=checker; reconcile with STRENGTH_INCONSISTENT guard; reads + vacancy)
 # as kernel routes. Checks routes registered + dispatched, and the ratchet advanced to >= 495 / 37.4%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g06.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-52A exit-criteria (G06 sanctioned-post route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps06.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-52A exit-criteria (PS06 sanctioned-post route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in registerSanctionedPost reviseSanctionedPost reconcileSanctionedPost getSanctionedPost listSanctionedPosts getVacancyComputation; do
   have "$R" "$m" "route wires backing method: $m"

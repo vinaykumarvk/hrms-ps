@@ -2,7 +2,7 @@
   objective: Define the authority RESOLVER MODEL & contract for HRMS workflow resolution — map every
     state-machine trigger to a resolver type, define resolver types (reporting-chain, positional/statutory
     authority, org-unit-head, committee, delegation/acting-charge), the historical-correction snapshot rule,
-    and the G03/G05 vertical-slice bindings. Contract + model only (no schema, no seed, no tests yet).
+    and the PS03/PS05 vertical-slice bindings. Contract + model only (no schema, no seed, no tests yet).
   context:
     - docs/spec/phased-plan.yaml            # PH-02 goal/requirements/implementation_steps
     - docs/contracts/state-machines.yaml    # the triggers that must all map to a resolver type
@@ -23,8 +23,8 @@
     - name: Contract + bindings
       max_iterations: 3
       repeat_until: authority-resolution-contract.yaml defines each resolver's input/output/error (ambiguous→blocked),
-        vertical_slice_bindings covers G03_leave and G05_transfer, and snapshot_rule is stated.
-      steps: [write the resolver SPI contract, bind G03/G05, define the historical-correction snapshot rule]
+        vertical_slice_bindings covers PS03_leave and PS05_transfer, and snapshot_rule is stated.
+      steps: [write the resolver SPI contract, bind PS03/PS05, define the historical-correction snapshot rule]
     - name: Review-repair
       max_iterations: 2
       repeat_until: A completeness critic finds no trigger unmapped and no resolver whose ambiguity handling is unspecified.

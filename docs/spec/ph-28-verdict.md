@@ -25,9 +25,9 @@ route → service → response), not only against the in-memory fixture:
 
 | Module | Route | Backing service | Evidence |
 |---|---|---|---|
-| **G13** | `GET /api/v1/dsr` (DSR list) | `documentVault.listDataSubjectRequests` (PH-15E) | `ph28a-g13-dsr-route.test.cjs` |
-| **G09** | `GET /api/v1/disciplinary/cases/{id}/evidence` | `disciplinary.listCaseEvidence` (new) | `ph28b-g09-evidence-route.test.cjs` |
-| **G05** | `GET /api/v1/counselling-sessions/{id}` | `transferCounselling.getCounsellingSession` (PH-16D) | `ph28c-g05-counselling-route.test.cjs` |
+| **PS13** | `GET /api/v1/dsr` (DSR list) | `documentVault.listDataSubjectRequests` (PH-15E) | `ph28a-ps13-dsr-route.test.cjs` |
+| **PS09** | `GET /api/v1/disciplinary/cases/{id}/evidence` | `disciplinary.listCaseEvidence` (new) | `ph28b-ps09-evidence-route.test.cjs` |
+| **PS05** | `GET /api/v1/counselling-sessions/{id}` | `transferCounselling.getCounsellingSession` (PH-16D) | `ph28c-ps05-counselling-route.test.cjs` |
 
 The `adjudicateDsr` / choose-vacancy write routes already existed (PH-15E / PH-16D); this pass added
 the read/list routes the consoles need to load.
@@ -37,10 +37,10 @@ the read/list routes the consoles need to load.
 - **Route exposure for the remaining in-memory PH-16F..PH-26 services** (loans/GL, PDA, treasury,
   tax/TDS, GL→ERP, retro-impact, punch anomaly, death recovery, correction cascade, LMS, 360, DSC,
   OCR, TSA, predictive) — these are service+test complete but not all route-exposed.
-- **G01**: privacy/DPDP console UI. **G06**: sealed-cover full workflow UI. **G14**: embedded BI, mobile.
-- **G02**: additional fraud detectors. **G03**: backdated-leave team-calendar conflict threshold.
-- **G04**: CI port-conformance gate. **G07**: content/assessment-item bank. **G08**: calibration
-  analytics depth. **G09**: POSH conciliation depth. **G10**: remaining TDS edge cases, Form-16 Part-A
+- **PS01**: privacy/DPDP console UI. **PS06**: sealed-cover full workflow UI. **PS14**: embedded BI, mobile.
+- **PS02**: additional fraud detectors. **PS03**: backdated-leave team-calendar conflict threshold.
+- **PS04**: CI port-conformance gate. **PS07**: content/assessment-item bank. **PS08**: calibration
+  analytics depth. **PS09**: POSH conciliation depth. **PS10**: remaining TDS edge cases, Form-16 Part-A
   matching depth.
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**

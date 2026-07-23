@@ -13,7 +13,7 @@
 
 ### Advisor 1 — The Proponent
 
-This is a genuinely strong, build-ready BRD that sits well above the typical government-tender artefact and is close to the HCM-suite bar on structure. Its core architectural decision — an **append-only `leave_balance_ledger` as the single source of truth with `leave_balances` as a reconciled projection** (E15/E14, integrity rule §5.6.1) — is exactly what Workday and Oracle HCM do internally, and it is the single most important thing to get right in any leave engine. The discipline is consistent: every mutating path (`AVAIL`, `AVAIL_REVERSAL`, `ENCASHMENT`, `LAPSE`, `CARRY_FORWARD`, `HPL_CONVERSION`, `ADJUSTMENT`) writes a signed entry with `balance_after`, and corrections are compensating entries, never updates. That is auditor-grade.
+This is a genuinely strong, build-ready BRD that sits well above the typical enterprise-tender artefact and is close to the HCM-suite bar on structure. Its core architectural decision — an **append-only `leave_balance_ledger` as the single source of truth with `leave_balances` as a reconciled projection** (E15/E14, integrity rule §5.6.1) — is exactly what Workday and Oracle HCM do internally, and it is the single most important thing to get right in any leave engine. The discipline is consistent: every mutating path (`AVAIL`, `AVAIL_REVERSAL`, `ENCASHMENT`, `LAPSE`, `CARRY_FORWARD`, `HPL_CONVERSION`, `ADJUSTMENT`) writes a signed entry with `balance_after`, and corrections are compensating entries, never updates. That is auditor-grade.
 
 The **transactional approval contract** in FR-12 (§5.6.6) — ledger debit + balance update + application status + attendance flip + SR enqueue + notification in one DB transaction — is precisely the atomicity a payroll-feeding system needs. The **year-close SIMULATED→COMMITTED dry-run** (FR-15) with idempotency per (year, scope) is best-in-class; many commercial suites lack a true dry-run with a downloadable reconciliation report.
 
@@ -31,7 +31,7 @@ The polish hides several latent defects that will surface as money and audit pro
 
 3. **Commuted leave debits the wrong pot.** Commuted Leave is its own `leave_type` (COMMUTED) yet statutorily debits **2 HPL days per 1 commuted day** (Appendix A, glossary). There is no rule linking an `AVAIL` against COMMUTED to a 2× debit of HPL balance. As written, the engine debits a COMMUTED balance that has no accrual source. Encashment and HPL exhaustion will be wrong.
 
-4. **Retirement encashment under-counts.** Under CCS rules, the 300-day cap is met from EL **and**, on shortfall, the cash-equivalent of HPL — but HPL is flagged `is_encashable=false` with no retirement exception. Retirees will be short-changed, which in government means litigation.
+4. **Retirement encashment under-counts.** Under CCS rules, the 300-day cap is met from EL **and**, on shortfall, the cash-equivalent of HPL — but HPL is flagged `is_encashable=false` with no retirement exception. Retirees will be short-changed, which in enterprise means litigation.
 
 5. **Retroactive recompute vs. locked payroll.** Roster/holiday edits "trigger attendance recompute for affected days" (FR-01/02 LLD). If those days are in an EXPORTED/locked period (FR-17), recompute either silently corrupts a fed period or is silently dropped. The interaction is unspecified — a reconciliation landmine.
 
@@ -53,7 +53,7 @@ Net: the engine is well-built for paradigm (a). It is bolting paradigm (b) and s
 
 As someone who does not live in HR systems, most of this is impressively legible — but a few places hide assumptions behind jargon that a new employee, an auditor, or a non-Indian reviewer cannot decode.
 
-- **"Sandwich rule"** appears in the glossary, FR-02, and FR-12 as a configurable toggle, but the actual behaviour ("a holiday or weekly-off falling between two leave days is or isn't counted as leave") is never stated as a rule with a worked example. Whether it is configured per-leave-type or globally is ambiguous (CL and EL treat sandwiched holidays differently in real government practice). A reader cannot tell what the system will actually do.
+- **"Sandwich rule"** appears in the glossary, FR-02, and FR-12 as a configurable toggle, but the actual behaviour ("a holiday or weekly-off falling between two leave days is or isn't counted as leave") is never stated as a rule with a worked example. Whether it is configured per-leave-type or globally is ambiguous (CL and EL treat sandwiched holidays differently in real enterprise practice). A reader cannot tell what the system will actually do.
 - **"SAT2","SAT4"** weekly-off codes are used in sample data with no legend. Second and fourth Saturday? Or the 2nd and 4th of the month? An implementer will guess.
 - **"Soft-reserve"** is defined but, as the Contrarian noted, has no home — so a reader who tries to trace it finds nothing.
 - **"LTC"** appears as an `encashment_type` value and in a one-line business rule ("in-service encashment may need LTC linkage") but is otherwise undefined. An outsider has no idea LTC = Leave Travel Concession, that it has its own 10-day/60-career-day EL-encashment rule, and there is no entity for it. It is jargon pointing at nothing.
@@ -111,7 +111,7 @@ Feasibility is good — this is parcelable to parallel agents and the build plan
 3. (deferred)
 
 **What ALL FIVE missed (genuine):**
-**Biometric/template data governance and consent under DPDP 2023.** The whole council debated balances, races, and entities, but none flagged that **biometric templates and continuous geo-location are "sensitive personal data"** whose collection, storage location (device vs. server), retention, and **employee consent** carry specific DPDP obligations for a government data fiduciary. The BRD says "no PII in push payloads" and "geo minimised," but never addresses biometric template governance, consent capture, a lawful basis for mandatory biometric attendance, or a non-biometric fallback for employees who refuse/cannot enrol — and never addresses **time-fraud controls** (liveness, photo-on-punch, impossible-travel/same-second anomaly detection) beyond a single "GPS spoofing → flag + review" line. For a government system this is both a compliance exposure and a fraud exposure, and it is entirely absent. Secondarily, all five missed that **no leave/attendance data-retention-and-purge schedule** is specified despite the NFR claiming "retention per statutory schedule" — the schedule itself is never given.
+**Biometric/template data governance and consent under DPDP 2023.** The whole council debated balances, races, and entities, but none flagged that **biometric templates and continuous geo-location are "sensitive personal data"** whose collection, storage location (device vs. server), retention, and **employee consent** carry specific DPDP obligations for a enterprise data fiduciary. The BRD says "no PII in push payloads" and "geo minimised," but never addresses biometric template governance, consent capture, a lawful basis for mandatory biometric attendance, or a non-biometric fallback for employees who refuse/cannot enrol — and never addresses **time-fraud controls** (liveness, photo-on-punch, impossible-travel/same-second anomaly detection) beyond a single "GPS spoofing → flag + review" line. For a enterprise system this is both a compliance exposure and a fraud exposure, and it is entirely absent. Secondarily, all five missed that **no leave/attendance data-retention-and-purge schedule** is specified despite the NFR claiming "retention per statutory schedule" — the schedule itself is never given.
 
 ---
 
@@ -129,7 +129,7 @@ Feasibility is good — this is parcelable to parallel agents and the build plan
 - **Scope of effort (E vs. C):** E's "no architectural rework" estimate is only valid if C's reframing is declined.
 
 ### 3.3 Blind spots (council-level)
-- **DPDP biometric/geo consent, lawful basis, non-biometric fallback, and retention/purge schedule** — missed by all five; material for a government fiduciary.
+- **DPDP biometric/geo consent, lawful basis, non-biometric fallback, and retention/purge schedule** — missed by all five; material for a enterprise fiduciary.
 - **Time-fraud / buddy-punching controls** beyond a single GPS-spoof line — below best-in-class.
 
 ### 3.4 Idea evolution

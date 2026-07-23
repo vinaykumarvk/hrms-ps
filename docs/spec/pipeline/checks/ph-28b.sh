@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-28B oracle: G09 case-evidence list route — a real kernel route registered and dispatched in an API test.
+# PH-28B oracle: PS09 case-evidence list route — a real kernel route registered and dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g09.routes.ts"; T=apps/api/test
-echo "== PH-28B exit-criteria (G09 case-evidence list route) =="
+R="apps/api/src/routes/ps09.routes.ts"; T=apps/api/test
+echo "== PH-28B exit-criteria (PS09 case-evidence list route) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" 'evidence' "route path registered: evidence"
 have "$R" 'kernel.register' "route uses kernel.register"

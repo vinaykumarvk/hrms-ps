@@ -21,12 +21,12 @@ to net-new implementation. Built by hand — subagents credit-exhausted until 20
 
 | Module | Net-new operation cluster | Backing | Evidence |
 |---|---|---|---|
-| **G01** | FR-EPM-004 nominee register (`GET/POST /employees/{id}/nominees`, `PATCH /employees/{id}/nominees/{nomineeId}`, `POST .../{nomineeId}:remove`) | **new** `NomineeService` + `InMemoryNomineeRepository` (built this tranche): VAL-NOMINEE share invariant (ACTIVE shares per benefit_type ≤ 100 → 422), row_version optimistic locking (409), soft-delete that frees the share, per-mutation audit | `ph62a-g01-nominee-route.test.cjs` |
+| **PS01** | FR-EPM-004 nominee register (`GET/POST /employees/{id}/nominees`, `PATCH /employees/{id}/nominees/{nomineeId}`, `POST .../{nomineeId}:remove`) | **new** `NomineeService` + `InMemoryNomineeRepository` (built this tranche): VAL-NOMINEE share invariant (ACTIVE shares per benefit_type ≤ 100 → 422), row_version optimistic locking (409), soft-delete that frees the share, per-mutation audit | `ph62a-ps01-nominee-route.test.cjs` |
 
 Unlike the 22 prior exposure tranches, this is **genuinely new implementation**: a new service module, a new
 repository, a new registered error code (`VAL-NOMINEE` → 422), and new tests exercising the business rule —
 not a route wired over a pre-existing engine. Measured contract coverage ratchets **552 / 41.7% → 556 / 42%**
-(G01 **30.3% → 32.7%**), and the PH-37 gate floor was raised in lockstep so the gain is locked.
+(PS01 **30.3% → 32.7%**), and the PH-37 gate floor was raised in lockstep so the gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 

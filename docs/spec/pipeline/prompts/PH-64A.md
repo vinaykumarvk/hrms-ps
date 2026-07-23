@@ -1,20 +1,20 @@
-# PH-64A — Net-new implementation: G01 FR-EPM-006 education register
+# PH-64A — Net-new implementation: PS01 FR-EPM-006 education register
 
 ## Objective
 Implement the FR-EPM-006 education register **end-to-end** — new backing (third net-new tranche).
 
 ## Context
-- Contract: `docs/contracts/openapi/G01.yaml` `Education` schema + `/employees/{id}/education` (GET/POST/PATCH/
-  DELETE); BRD `docs/brd/v3/G01-employee-profile-management.md` FR-EPM-006.
+- Contract: `docs/contracts/openapi/PS01.yaml` `Education` schema + `/employees/{id}/education` (GET/POST/PATCH/
+  DELETE); BRD `docs/brd/v3/PS01-employee-profile-management.md` FR-EPM-006.
 
 ## What to build
-- `apps/api/src/modules/g01/educationService.ts` — repository + `InMemoryEducationRepository` +
+- `apps/api/src/modules/ps01/educationService.ts` — repository + `InMemoryEducationRepository` +
   `EducationService` (list/add/update/remove).
 - Single-highest invariant: within one employee, AT MOST ONE ACTIVE record may carry `is_highest=true`.
   The service maintains it — promoting a record auto-demotes the prior highest (not a rejection).
 - `year_of_passing` validation (1950–2100); optimistic locking on update (row_version → CONFLICT 409);
   soft-delete (INACTIVE) that also clears is_highest.
-- Wire `services.education` in `foundationServices.ts`; register the 4 routes in `g01.routes.ts`.
+- Wire `services.education` in `foundationServices.ts`; register the 4 routes in `ps01.routes.ts`.
 
 ## Constraints
 - **Real behavior, no stubs.** The single-highest auto-demotion, optimistic lock, and soft-delete must work.

@@ -1,0 +1,991 @@
+import { ApiKernel, accepted, created, ok } from "../http/apiKernel";
+import { optionalNumber, optionalRecord, optionalString, readBodyRecord, requiredString } from "../http/body";
+import { RouteDefinition } from "../http/apiTypes";
+import type { ChargePhase, ChargeType, DeemedServiceBasis, DeliveryChannel } from "../modules/ps05/transferService";
+import type { CounsellingChoiceAction, TurnOrderMethod } from "../modules/ps05/counsellingVacancyService";
+import { FoundationError } from "../platform/types";
+import { ph03Ids } from "../seed/ph03Seed";
+
+export const ps05RouteEvidence = {
+  transferOrders: "/api/v1/transfers/orders",
+  approval: "/api/v1/transfers/orders/{id}/approve",
+  clearances: "/api/v1/transfers/orders/{id}/clearances/{clearance_code}:deem",
+  relieveJoin: "/api/v1/transfers/orders/{id}:relieve-and-join",
+  representations: "/api/v1/transfers/orders/{id}/representations",
+  retain: "/api/v1/transfers/representations/{id}:retain",
+  cancel: "/api/v1/transfers/orders/{id}:cancel",
+  deemRelieved: "/api/v1/transfers/orders/{id}:deem-relieved",
+  // PH-08B administration depth (FR-PS05-007/009/011/020/022).
+  serve: "/api/v1/transfers/orders/{id}/serve",
+  acknowledge: "/api/v1/transfers/orders/{id}/acknowledge",
+  deemServed: "/api/v1/transfers/orders/{id}/deem-served",
+  serviceRecord: "/api/v1/transfers/orders/{id}/service-record",
+  chargeHandover: "/api/v1/transfers/orders/{id}/charge-handover",
+  chargeHandoverUnderProtest: "/api/v1/charge-handovers/{id}/under-protest",
+  joiningTime: "/api/v1/transfers/orders/{id}/joining-time",
+  deputations: "/api/v1/deputations",
+  repatriate: "/api/v1/deputations/{id}/repatriate",
+  quarterRetention: "/api/v1/transfers/orders/{id}/quarter-retention",
+  quarterAllotments: "/api/v1/quarter-allotments",
+  // PH-16D counselling/vacancy/mutual depth (FR-PS05-003/019 + BRD rules 5/6).
+  vacancies: "/api/v1/transfers/drives/{id}/vacancies",
+  preferences: "/api/v1/transfers/drives/{id}/preferences",
+  allot: "/api/v1/transfers/drives/{id}/allot",
+  reservationVacate: "/api/v1/transfers/reservations/{id}:vacate-on-relief",
+  reservationFill: "/api/v1/transfers/reservations/{id}:fill-on-join",
+  counsellingSessions: "/api/v1/transfers/drives/{id}/counselling-sessions",
+  counsellingRecordChoice: "/api/v1/counselling-sessions/{id}/record-choice",
+  counsellingChoices: "/api/v1/counselling-sessions/{id}/choices",
+  mutualRequests: "/api/v1/transfers/mutual-requests",
+  mutualPairApprove: "/api/v1/transfers/mutual-pairs/{id}:approve",
+  resolver: "POSITION_AUTHORITY",
+  parallel: "PARALLEL_ALL_OF",
+};
+
+export function registerPS05Routes(kernel: ApiKernel): void {
+  const routes: RouteDefinition[] = [
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders",
+      operationId: "ps05.initiateTransferOrder",
+      protected: true,
+      permission: "ps05.transfer.initiate",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created(
+          context.services.transfer.initiate(context.actor, {
+            employeeId: optionalString(body, "employeeId") ?? ph03Ids.employee,
+            fromOrgUnitId: optionalString(body, "fromOrgUnitId") ?? ph03Ids.orgRevenue,
+            toOrgUnitId: requiredString(body, "toOrgUnitId"),
+            orderDate: requiredString(body, "orderDate"),
+            effectiveDate: requiredString(body, "effectiveDate"),
+            reason: optionalString(body, "reason"),
+          })
+        );
+      },
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/orders",
+      operationId: "ps05.listTransferOrders",
+      protected: true,
+      permission: "ps05.transfer.read",
+      list: { defaultLimit: 25, maxLimit: 100 },
+      handler: (context) => {
+        const pagination = context.pagination ?? { limit: 25 };
+        const orders = context.services.transfer.listOrders(context.scope);
+        return ok({ items: orders.slice(0, pagination.limit), limit: pagination.limit, next_cursor: null });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/approve",
+      operationId: "ps05.approveTransferOrder",
+      protected: true,
+      permission: "ps05.transfer.approve",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) =>
+        accepted(
+          context.services.transfer.approve(context.actor, requiredParam(context.params, "id"), {
+            idempotencyKey: requiredString({ key: context.idempotencyKey }, "key"),
+          })
+        ),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/orders/{id}/clearance",
+      operationId: "ps05.getTransferClearance",
+      protected: true,
+      permission: "ps05.transfer.read",
+      handler: (context) => ok({ clearanceItems: context.services.transfer.getOrder(context.scope, requiredParam(context.params, "id")).clearanceItems }),
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/clearances/{clearance_code}:complete",
+      operationId: "ps05.completeTransferClearance",
+      protected: true,
+      permission: "ps05.transfer.clearance",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          order: context.services.transfer.completeClearance(
+            context.actor,
+            requiredParam(context.params, "id"),
+            requiredParam(context.params, "clearance_code"),
+            optionalString(body, "completedOn") ?? "2026-07-11"
+          ),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/clearances/{clearance_code}:deem",
+      operationId: "ps05.deemTransferClearance",
+      protected: true,
+      permission: "ps05.transfer.clearance.deem",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          order: context.services.transfer.deemClearance(
+            context.actor,
+            requiredParam(context.params, "id"),
+            requiredParam(context.params, "clearance_code"),
+            optionalString(body, "deemedOn") ?? "2026-07-12"
+          ),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}:relieve-and-join",
+      operationId: "ps05.relieveAndJoinTransferOrder",
+      protected: true,
+      permission: "ps05.transfer.join",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transfer.relieveAndJoin(context.actor, requiredParam(context.params, "id"), {
+            relievingDate: requiredString(body, "relievingDate"),
+            joiningDate: requiredString(body, "joiningDate"),
+            idempotencyKey: requiredString({ key: context.idempotencyKey }, "key"),
+          })
+        );
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/representations",
+      operationId: "ps05.fileTransferRepresentation",
+      protected: true,
+      permission: "ps05.transfer.representation.file",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          representation: context.services.transfer.fileRepresentation(context.actor, requiredParam(context.params, "id"), {
+            grounds: requiredString(body, "grounds"),
+            evidenceTitle: optionalString(body, "evidenceTitle"),
+          }),
+        });
+      },
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/representations",
+      operationId: "ps05.listTransferRepresentations",
+      protected: true,
+      permission: "ps05.transfer.read",
+      list: { defaultLimit: 25, maxLimit: 100 },
+      handler: (context) => {
+        const pagination = context.pagination ?? { limit: 25 };
+        const representations = context.services.transfer.listRepresentations(context.scope);
+        return ok({ items: representations.slice(0, pagination.limit), limit: pagination.limit, next_cursor: null });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/representations/{id}:retain",
+      operationId: "ps05.retainTransferOnRepresentation",
+      protected: true,
+      permission: "ps05.transfer.representation.decide",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transfer.retainOnRepresentation(context.actor, requiredParam(context.params, "id"), {
+            decisionDate: requiredString(body, "decisionDate"),
+            reason: requiredString(body, "reason"),
+            idempotencyKey: requiredString({ key: context.idempotencyKey }, "key"),
+          })
+        );
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}:cancel",
+      operationId: "ps05.cancelTransferOrder",
+      protected: true,
+      permission: "ps05.transfer.cancel",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transfer.cancel(context.actor, requiredParam(context.params, "id"), {
+            cancellationDate: requiredString(body, "cancellationDate"),
+            reason: requiredString(body, "reason"),
+            idempotencyKey: requiredString({ key: context.idempotencyKey }, "key"),
+          })
+        );
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}:deem-relieved",
+      operationId: "ps05.deemTransferRelieved",
+      protected: true,
+      permission: "ps05.transfer.deem_relieved",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transfer.deemRelieved(context.actor, requiredParam(context.params, "id"), {
+            deemedRelievingDate: requiredString(body, "deemedRelievingDate"),
+            reason: requiredString(body, "reason"),
+            idempotencyKey: requiredString({ key: context.idempotencyKey }, "key"),
+          })
+        );
+      },
+    },
+    // --- PH-08B: proof-of-service & acknowledgement (FR-PS05-020) -------------------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/serve",
+      operationId: "ps05.serveTransferOrder",
+      protected: true,
+      permission: "ps05.transfer.serve",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          acknowledgement: context.services.transfer.serveOrder(context.actor, requiredParam(context.params, "id"), {
+            servedOnDate: requiredString(body, "servedOnDate"),
+            deliveryChannel: requiredString(body, "deliveryChannel") as DeliveryChannel,
+            proofDocumentTitle: optionalString(body, "proofDocumentTitle"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/acknowledge",
+      operationId: "ps05.acknowledgeTransferOrder",
+      protected: true,
+      permission: "ps05.transfer.acknowledge",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          acknowledgement: context.services.transfer.acknowledgeOrder(context.actor, requiredParam(context.params, "id"), {
+            acknowledgedAt: requiredString(body, "acknowledgedAt"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/deem-served",
+      operationId: "ps05.deemTransferOrderServed",
+      protected: true,
+      permission: "ps05.transfer.deem_served",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          acknowledgement: context.services.transfer.deemOrderServed(context.actor, requiredParam(context.params, "id"), {
+            asOf: requiredString(body, "asOf"),
+            basis: requiredString(body, "basis") as DeemedServiceBasis,
+            reason: requiredString(body, "reason"),
+          }),
+        });
+      },
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/orders/{id}/service-record",
+      operationId: "ps05.getTransferServiceRecord",
+      protected: true,
+      permission: "ps05.transfer.read",
+      handler: (context) =>
+        ok({ acknowledgement: context.services.transfer.getServiceRecord(context.scope, requiredParam(context.params, "id")) ?? null }),
+    },
+    // --- PH-08B: charge handover incl. under-protest (FR-PS05-007) ------------------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/charge-handover",
+      operationId: "ps05.recordChargeHandover",
+      protected: true,
+      permission: "ps05.transfer.handover.record",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          chargeHandover: context.services.transfer.recordChargeHandover(context.actor, requiredParam(context.params, "id"), {
+            receivingEmployeeId: requiredString(body, "receivingEmployeeId"),
+            handoverDate: requiredString(body, "handoverDate"),
+            phase: optionalString(body, "phase") as ChargePhase | undefined,
+            chargeType: optionalString(body, "chargeType") as ChargeType | undefined,
+            cashImprestAmount: optionalNumber(body, "cashImprestAmount"),
+            pendingFilesCount: optionalNumber(body, "pendingFilesCount"),
+            noteTitle: optionalString(body, "noteTitle"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/charge-handovers/{id}/accept",
+      operationId: "ps05.acceptChargeHandover",
+      protected: true,
+      permission: "ps05.transfer.handover.accept",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          chargeHandover: context.services.transfer.acceptChargeHandover(context.actor, requiredParam(context.params, "id"), {
+            acceptedAt: requiredString(body, "acceptedAt"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/charge-handovers/{id}/dispute",
+      operationId: "ps05.disputeChargeHandover",
+      protected: true,
+      permission: "ps05.transfer.handover.dispute",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          chargeHandover: context.services.transfer.disputeChargeHandover(context.actor, requiredParam(context.params, "id"), {
+            remarks: requiredString(body, "remarks"),
+            disputedAt: requiredString(body, "disputedAt"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/charge-handovers/{id}/under-protest",
+      operationId: "ps05.certifyChargeHandoverUnderProtest",
+      protected: true,
+      permission: "ps05.transfer.handover.protest",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          chargeHandover: context.services.transfer.certifyHandoverUnderProtest(context.actor, requiredParam(context.params, "id"), {
+            asOf: requiredString(body, "asOf"),
+            reason: requiredString(body, "reason"),
+          }),
+        });
+      },
+    },
+    // --- PH-08B: joining time by distance band (FR-PS05-009 / VAL-PS05-JTIME) --------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/joining-time",
+      operationId: "ps05.computeJoiningTime",
+      protected: true,
+      permission: "ps05.transfer.joining_time.compute",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transfer.computeJoiningTime(context.actor, requiredParam(context.params, "id"), {
+            distanceKm: optionalNumber(body, "distanceKm"),
+            sameStation: body.sameStation === true,
+          })
+        );
+      },
+    },
+    // --- PH-08B: deputation records with tenure caps + repatriation (FR-PS05-011) ---------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/deputation",
+      operationId: "ps05.createDeputationRecord",
+      protected: true,
+      permission: "ps05.deputation.manage",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          deputation: context.services.transfer.createDeputationRecord(context.actor, requiredParam(context.params, "id"), {
+            startDate: requiredString(body, "startDate"),
+            initialTenureMonths: optionalNumber(body, "initialTenureMonths") ?? 12,
+            maxTenureMonths: optionalNumber(body, "maxTenureMonths"),
+            borrowingOrgUnitId: optionalString(body, "borrowingOrgUnitId"),
+            lendingOrgUnitId: optionalString(body, "lendingOrgUnitId"),
+            deputationTerms: optionalRecord(body, "deputationTerms"),
+          }),
+        });
+      },
+    },
+    {
+      method: "GET",
+      path: "/api/v1/deputations",
+      operationId: "ps05.listDeputations",
+      protected: true,
+      permission: "ps05.transfer.read",
+      list: { defaultLimit: 25, maxLimit: 100 },
+      handler: (context) => {
+        const pagination = context.pagination ?? { limit: 25 };
+        const deputations = context.services.transfer.listDeputationRecords(context.scope);
+        return ok({ items: deputations.slice(0, pagination.limit), limit: pagination.limit, next_cursor: null });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/deputations/{id}/extend",
+      operationId: "ps05.extendDeputation",
+      protected: true,
+      permission: "ps05.deputation.extend",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          deputation: context.services.transfer.extendDeputation(context.actor, requiredParam(context.params, "id"), {
+            extensionMonths: optionalNumber(body, "extensionMonths") ?? 0,
+            reason: optionalString(body, "reason"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/deputations/{id}/repatriate",
+      operationId: "ps05.repatriateDeputation",
+      protected: true,
+      permission: "ps05.deputation.repatriate",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transfer.repatriateDeputation(context.actor, requiredParam(context.params, "id"), {
+            repatriationDate: requiredString(body, "repatriationDate"),
+            reason: requiredString(body, "reason"),
+          })
+        );
+      },
+    },
+    // --- PH-08B: quarters / estate retention + penal-rate flip (FR-PS05-022) --------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/orders/{id}/quarter-retention",
+      operationId: "ps05.requestQuarterRetention",
+      protected: true,
+      permission: "ps05.quarter.request",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          quarterAllotment: context.services.transfer.requestQuarterRetention(context.actor, requiredParam(context.params, "id"), {
+            quarterRef: requiredString(body, "quarterRef"),
+            orgUnitId: optionalString(body, "orgUnitId"),
+            vacateByDate: requiredString(body, "vacateByDate"),
+            licenceFeeRate: optionalNumber(body, "licenceFeeRate") ?? 0,
+            penalLicenceFeeRate: optionalNumber(body, "penalLicenceFeeRate"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/quarter-allotments/{id}/approve-retention",
+      operationId: "ps05.approveQuarterRetention",
+      protected: true,
+      permission: "ps05.quarter.approve",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          quarterAllotment: context.services.transfer.approveQuarterRetention(context.actor, requiredParam(context.params, "id"), {
+            approvedOn: requiredString(body, "approvedOn"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/quarter-allotments/{id}/flag-overstay",
+      operationId: "ps05.flagQuarterOverstay",
+      protected: true,
+      permission: "ps05.quarter.overstay",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          quarterAllotment: context.services.transfer.flagQuarterOverstay(context.actor, requiredParam(context.params, "id"), {
+            asOf: requiredString(body, "asOf"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/quarter-allotments/{id}/record-vacation",
+      operationId: "ps05.recordQuarterVacation",
+      protected: true,
+      permission: "ps05.quarter.vacate",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          quarterAllotment: context.services.transfer.recordQuarterVacation(context.actor, requiredParam(context.params, "id"), {
+            vacatedOn: requiredString(body, "vacatedOn"),
+          }),
+        });
+      },
+    },
+    {
+      method: "GET",
+      path: "/api/v1/quarter-allotments",
+      operationId: "ps05.listQuarterAllotments",
+      protected: true,
+      permission: "ps05.transfer.read",
+      list: { defaultLimit: 25, maxLimit: 100 },
+      handler: (context) => {
+        const pagination = context.pagination ?? { limit: 25 };
+        const allotments = context.services.transfer.listQuarterAllotments(context.scope);
+        return ok({ items: allotments.slice(0, pagination.limit), limit: pagination.limit, next_cursor: null });
+      },
+    },
+    // --- PH-16D — FR-PS05-003 vacancy publication (strength read-through) + preferences -----
+    {
+      method: "POST",
+      path: "/api/v1/transfers/drives/{id}/vacancies",
+      operationId: "ps05.publishVacancyPosition",
+      protected: true,
+      permission: "ps05.vacancy.publish",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          vacancyPosition: context.services.transferCounselling.publishVacancyPosition(context.actor, {
+            sanctionedPostId: requiredString(body, "sanctionedPostId"),
+            driveId: requiredParam(context.params, "id"),
+            cadre: optionalString(body, "cadre"),
+          }),
+        });
+      },
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/drives/{id}/vacancies",
+      operationId: "ps05.listVacancyPositions",
+      protected: true,
+      permission: "ps05.transfer.read",
+      list: { defaultLimit: 25, maxLimit: 100 },
+      handler: (context) => {
+        const pagination = context.pagination ?? { limit: 25 };
+        const items = context.services.transferCounselling.listVacancyPositions(context.actor, requiredParam(context.params, "id"));
+        return ok({ items: items.slice(0, pagination.limit), limit: pagination.limit, next_cursor: null });
+      },
+    },
+    {
+      method: "PUT",
+      path: "/api/v1/transfers/drives/{id}/preferences",
+      operationId: "ps05.capturePreferences",
+      protected: true,
+      permission: "ps05.preference.submit",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          preferences: context.services.transferCounselling.capturePreferences(context.actor, {
+            driveId: requiredParam(context.params, "id"),
+            employeeId: requiredString(body, "employeeId"),
+            preferences: readPreferenceRows(body.preferences),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/drives/{id}/allot",
+      operationId: "ps05.allotVacancy",
+      protected: true,
+      permission: "ps05.vacancy.allot",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          reservation: context.services.transferCounselling.allotVacancy(context.actor, {
+            vacancyPositionId: requiredString(body, "vacancyPositionId"),
+            employeeId: requiredString(body, "employeeId"),
+            driveId: requiredParam(context.params, "id"),
+          }),
+        });
+      },
+    },
+    // --- PH-16D — BRD rule 6 vacancy_reservations lifecycle ---------------------------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/reservations/{id}:vacate-on-relief",
+      operationId: "ps05.vacateReservationOnRelief",
+      protected: true,
+      permission: "ps05.vacancy.lifecycle",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          reservation: context.services.transferCounselling.markReservationVacatedOnRelief(context.actor, requiredParam(context.params, "id"), {
+            vacatedOn: requiredString(body, "vacatedOn"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/reservations/{id}:fill-on-join",
+      operationId: "ps05.fillReservationOnJoin",
+      protected: true,
+      permission: "ps05.vacancy.lifecycle",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          reservation: context.services.transferCounselling.markReservationFilledOnJoin(context.actor, requiredParam(context.params, "id"), {
+            joinedOn: requiredString(body, "joinedOn"),
+          }),
+        });
+      },
+    },
+    // --- PH-16D — FR-PS05-019 interactive counselling turn engine ----------------------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/drives/{id}/counselling-sessions",
+      operationId: "ps05.scheduleCounsellingSession",
+      protected: true,
+      permission: "ps05.counselling.schedule",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          session: context.services.transferCounselling.scheduleCounsellingSession(context.actor, {
+            sessionCode: requiredString(body, "sessionCode"),
+            driveId: requiredParam(context.params, "id"),
+            scheduledAt: requiredString(body, "scheduledAt"),
+            turnOrderMethod: (optionalString(body, "turnOrderMethod") ?? "SENIORITY") as TurnOrderMethod,
+            presidingOfficerId: requiredString(body, "presidingOfficerId"),
+            turnTimeoutSeconds: optionalNumber(body, "turnTimeoutSeconds"),
+            candidates: readCandidateRows(body.candidates),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/counselling-sessions/{id}:start",
+      operationId: "ps05.startCounsellingSession",
+      protected: true,
+      permission: "ps05.counselling.conduct",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) =>
+        accepted({ session: context.services.transferCounselling.startCounsellingSession(context.actor, requiredParam(context.params, "id")) }),
+    },
+    // PH-28C — counselling session read (consumed by the PS05 counselling console UI, PH-27B).
+    {
+      method: "GET",
+      path: "/api/v1/counselling-sessions/{id}",
+      operationId: "ps05.getCounsellingSession",
+      protected: true,
+      permission: "ps05.counselling.read",
+      handler: (context) => ok({ session: context.services.transferCounselling.getCounsellingSession(context.actor, requiredParam(context.params, "id")) }),
+    },
+    {
+      method: "POST",
+      path: "/api/v1/counselling-sessions/{id}/record-choice",
+      operationId: "ps05.recordCounsellingChoice",
+      protected: true,
+      permission: "ps05.counselling.choice",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transferCounselling.recordChoice(context.actor, requiredParam(context.params, "id"), {
+            employeeId: requiredString(body, "employeeId"),
+            choiceAction: requiredString(body, "choiceAction") as Exclude<CounsellingChoiceAction, "AUTO_PASS_TIMEOUT">,
+            vacancyPositionId: optionalString(body, "vacancyPositionId"),
+            remarks: optionalString(body, "remarks"),
+          })
+        );
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/counselling-sessions/{id}:sweep-timeout",
+      operationId: "ps05.sweepCounsellingTurnTimeout",
+      protected: true,
+      permission: "ps05.counselling.conduct",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) =>
+        accepted(context.services.transferCounselling.sweepTurnTimeout(context.actor, requiredParam(context.params, "id"))),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/counselling-sessions/{id}/choices",
+      operationId: "ps05.listCounsellingChoices",
+      protected: true,
+      permission: "ps05.transfer.read",
+      list: { defaultLimit: 25, maxLimit: 100 },
+      handler: (context) => {
+        const pagination = context.pagination ?? { limit: 25 };
+        const items = context.services.transferCounselling.listChoices(context.actor, requiredParam(context.params, "id"));
+        return ok({ items: items.slice(0, pagination.limit), limit: pagination.limit, next_cursor: null });
+      },
+    },
+    // --- PH-16D — BRD rule 5 MUTUAL_TRANSFER coupled pairing ---------------------------------
+    {
+      method: "POST",
+      path: "/api/v1/transfers/mutual-requests",
+      operationId: "ps05.fileMutualRequest",
+      protected: true,
+      permission: "ps05.mutual.request",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          request: context.services.transferCounselling.fileMutualRequest(context.actor, {
+            employeeId: requiredString(body, "employeeId"),
+            mutualCounterpartEmployeeId: requiredString(body, "mutualCounterpartEmployeeId"),
+            fromOrgUnitId: requiredString(body, "fromOrgUnitId"),
+            toOrgUnitId: requiredString(body, "toOrgUnitId"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/mutual-requests:pair",
+      operationId: "ps05.pairMutualRequests",
+      protected: true,
+      permission: "ps05.mutual.pair",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transferCounselling.pairMutualRequests(context.actor, {
+            requestId: requiredString(body, "requestId"),
+            counterpartRequestId: requiredString(body, "counterpartRequestId"),
+          })
+        );
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/mutual-pairs/{id}:approve",
+      operationId: "ps05.approveMutualPair",
+      protected: true,
+      permission: "ps05.mutual.approve",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted(
+          context.services.transferCounselling.approveMutualPair(context.actor, requiredParam(context.params, "id"), {
+            orderDate: requiredString(body, "orderDate"),
+            effectiveDate: requiredString(body, "effectiveDate"),
+            idempotencyKey: context.idempotencyKey ?? "",
+          })
+        );
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/mutual-orders/{id}:relieve",
+      operationId: "ps05.recordMutualRelief",
+      protected: true,
+      permission: "ps05.mutual.progress",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          order: context.services.transferCounselling.recordMutualRelief(context.actor, requiredParam(context.params, "id"), {
+            relievedOn: requiredString(body, "relievedOn"),
+          }),
+        });
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/v1/transfers/mutual-orders/{id}:join",
+      operationId: "ps05.recordMutualJoin",
+      protected: true,
+      permission: "ps05.mutual.progress",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return accepted({
+          order: context.services.transferCounselling.recordMutualJoin(context.actor, requiredParam(context.params, "id"), {
+            joinedOn: requiredString(body, "joinedOn"),
+          }),
+        });
+      },
+    },
+    // PH-31B — PS05 joining-sequence + inter-se seniority (route exposure for the PH-18C engine).
+    {
+      method: "POST",
+      path: "/api/v1/transfers/joining-sequence",
+      operationId: "ps05.assignJoiningSequence",
+      protected: true,
+      permission: "ps05.joining.sequence",
+      unsafe: true,
+      requiresIdempotencyKey: true,
+      handler: (context) => {
+        const body = readBodyRecord(context.request.body);
+        return created({
+          sequence: context.services.joiningSequence.assignJoiningSequence(context.actor, {
+            batchId: requiredString(body, "batchId"),
+            joiners: Array.isArray(body.joiners) ? (body.joiners as Array<{ employeeId: string; orderDate: string; serviceNo: string }>) : [],
+          }),
+        });
+      },
+    },
+    // PH-54A — PS05 transfer/counselling reads (vacancy position, reservations, preferences, mutual orders,
+    // charge-handovers, relieving orders, joining reports). Route exposure for tested transfer/counselling.
+    {
+      method: "GET",
+      path: "/api/v1/transfers/vacancy-positions/{id}",
+      operationId: "ps05.getVacancyPosition",
+      protected: true,
+      permission: "ps05.counselling.read",
+      handler: (context) => ok({ vacancyPosition: context.services.transferCounselling.getVacancyPosition(context.actor, requiredParam(context.params, "id")) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/reservations/{id}",
+      operationId: "ps05.getReservation",
+      protected: true,
+      permission: "ps05.counselling.read",
+      handler: (context) => ok({ reservation: context.services.transferCounselling.getReservation(context.actor, requiredParam(context.params, "id")) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/reservations",
+      operationId: "ps05.listReservations",
+      protected: true,
+      permission: "ps05.counselling.read",
+      handler: (context) => ok({ items: context.services.transferCounselling.listReservations(context.actor, context.request.query?.vacancyPositionId) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/drives/{driveId}/employees/{employeeId}/preferences",
+      operationId: "ps05.listPreferences",
+      protected: true,
+      permission: "ps05.counselling.read",
+      handler: (context) => ok({ items: context.services.transferCounselling.listPreferences(context.actor, requiredParam(context.params, "driveId"), requiredParam(context.params, "employeeId")) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/mutual-orders/{id}",
+      operationId: "ps05.getMutualOrder",
+      protected: true,
+      permission: "ps05.mutual.progress",
+      handler: (context) => ok({ mutualOrder: context.services.transferCounselling.getMutualOrder(context.actor, requiredParam(context.params, "id")) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/mutual-orders",
+      operationId: "ps05.listMutualOrders",
+      protected: true,
+      permission: "ps05.mutual.progress",
+      handler: (context) => ok({ items: context.services.transferCounselling.listMutualOrders(context.actor, context.request.query?.pairId) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/orders/{id}/charge-handovers",
+      operationId: "ps05.listChargeHandovers",
+      protected: true,
+      permission: "ps05.transfer.read",
+      handler: (context) => ok({ items: context.services.transfer.listChargeHandovers(context.scope, requiredParam(context.params, "id")) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/relieving-orders",
+      operationId: "ps05.listRelievingOrders",
+      protected: true,
+      permission: "ps05.transfer.read",
+      handler: (context) => ok({ items: context.services.transfer.listRelievingOrders(context.scope) }),
+    },
+    {
+      method: "GET",
+      path: "/api/v1/transfers/joining-reports",
+      operationId: "ps05.listJoiningReports",
+      protected: true,
+      permission: "ps05.transfer.read",
+      handler: (context) => ok({ items: context.services.transfer.listJoiningReports(context.scope) }),
+    },
+  ];
+  routes.forEach((route) => kernel.register(route));
+}
+
+/** Parses the ranked preference rows for PUT /transfers/drives/{id}/preferences. */
+function readPreferenceRows(value: unknown): { preferenceRank: number; preferredOrgUnitId: string; vacancyPositionId?: string; seniorityScore?: number }[] {
+  if (!Array.isArray(value)) {
+    throw new FoundationError("VALIDATION_FAILED", "preferences must be an array", { field: "preferences" });
+  }
+  return value.map((entry) => {
+    const row = readBodyRecord(entry);
+    return {
+      preferenceRank: Number(row.preferenceRank),
+      preferredOrgUnitId: requiredString(row, "preferredOrgUnitId"),
+      vacancyPositionId: optionalString(row, "vacancyPositionId"),
+      seniorityScore: optionalNumber(row, "seniorityScore"),
+    };
+  });
+}
+
+/** Parses the counselling candidate rows for POST /transfers/drives/{id}/counselling-sessions. */
+function readCandidateRows(value: unknown): { employeeId: string; seniorityScore?: number; meritScore?: number }[] {
+  if (!Array.isArray(value)) {
+    throw new FoundationError("VALIDATION_FAILED", "candidates must be an array", { field: "candidates" });
+  }
+  return value.map((entry) => {
+    const row = readBodyRecord(entry);
+    return {
+      employeeId: requiredString(row, "employeeId"),
+      seniorityScore: optionalNumber(row, "seniorityScore"),
+      meritScore: optionalNumber(row, "meritScore"),
+    };
+  });
+}
+
+function requiredParam(params: Record<string, string>, key: string): string {
+  const value = params[key];
+  if (!value) {
+    throw new Error(`Missing route parameter ${key}`);
+  }
+  return value;
+}

@@ -14,13 +14,13 @@
 
 ### 1.1 Purpose
 
-The Employee Disciplinary Cases and Punishment Management module (**M09-DCP**) digitises the **end-to-end disciplinary lifecycle** of a public-sector / government employer, from the first receipt of a complaint or detection of misconduct through preliminary inquiry, optional suspension, framing of articles of charge, departmental inquiry, penalty imposition, and statutory appeal / revision / review — concluding with an immutable posting of the outcome (punishment **or** exoneration) into the Digital Service Register (M12).
+The Employee Disciplinary Cases and Punishment Management module (**M09-DCP**) digitises the **end-to-end disciplinary lifecycle** of a public-sector / enterprise employer, from the first receipt of a complaint or detection of misconduct through preliminary inquiry, optional suspension, framing of articles of charge, departmental inquiry, penalty imposition, and statutory appeal / revision / review — concluding with an immutable posting of the outcome (punishment **or** exoneration) into the Digital Service Register (M12).
 
 The module exists to guarantee that **every** disciplinary proceeding satisfies the **principles of natural justice** (audi alteram partem — the right to be heard; nemo judex in causa sua — no one a judge in their own cause), is conducted by an **authority competent to impose the penalty**, observes **mandatory external consultation** (UPSC/CVC/ICC) where the regime requires it, respects **statutory timelines** (with lawful clock-pauses), preserves a **cryptographically tamper-evident audit trail**, and produces **legally and digitally signed** orders that withstand departmental appeal and judicial review.
 
 ### 1.2 Business context
 
-Disciplinary action against a government servant is a **quasi-judicial** process. A procedural defect — a denied opportunity to defend, an inquiry officer who is also a witness, a charge-sheet served after a barred period, a penalty exceeding what was proposed in the show-cause, **an order signed by an authority not competent to impose it (Article 311(1)), or a final order passed without mandatory UPSC/CVC consultation** — routinely results in penalty orders being set aside on appeal or by tribunals/courts, with consequential financial liability (back-wages, restoration of seniority, pension re-computation). Today these cases are run on paper files that are slow, opaque, prone to loss, and impossible to audit at scale.
+Disciplinary action against a employee is a **quasi-judicial** process. A procedural defect — a denied opportunity to defend, an inquiry officer who is also a witness, a charge-sheet served after a barred period, a penalty exceeding what was proposed in the show-cause, **an order signed by an authority not competent to impose it (Article 311(1)), or a final order passed without mandatory UPSC/CVC consultation** — routinely results in penalty orders being set aside on appeal or by tribunals/courts, with consequential financial liability (back-wages, restoration of seniority, pension re-computation). Today these cases are run on paper files that are slow, opaque, prone to loss, and impossible to audit at scale.
 
 M09-DCP converts this risk-laden manual process into a **controlled, time-bound, fully audited, two-layer workflow** — an **invariant natural-justice kernel** (charge → genuine opportunity to defend → reasoned finding on evidence → proportionate penalty within what was proposed, by a competent authority → independent appeal) wrapped in a **configurable jurisdiction overlay** (`procedure_template`: required consultations, authority-competence matrix, statutory timelines, valid service modes, appeal limitation, dispense-with-inquiry conditions). Seed reference data ships the CCS(CCA) regime as the default; a corporate code of conduct or a foreign-subsidiary regime is simply a different template.
 
@@ -44,7 +44,7 @@ Out of scope (owned elsewhere, integrated here): the SR ledger itself (M12), pay
 
 ### 1.5 Key outcomes
 
-A complete, confidential, time-bound, audit-grade, **competence- and consultation-gated**, **digitally signed** disciplinary case system, configurable across jurisdictions, that an enterprise/government HR organisation can rely on for **defensible** penalty orders that withstand judicial review, **transparent** ageing, and **accurate, exactly-once** downstream propagation of consequences.
+A complete, confidential, time-bound, audit-grade, **competence- and consultation-gated**, **digitally signed** disciplinary case system, configurable across jurisdictions, that an enterprise/enterprise HR organisation can rely on for **defensible** penalty orders that withstand judicial review, **transparent** ageing, and **accurate, exactly-once** downstream propagation of consequences.
 
 ### 1.6 Amendments (v1 → v2)
 
@@ -163,7 +163,7 @@ The following table maps **every** Council "Adopted Improvement for BRD v2" (and
 
 | Role | Description | Source |
 |------|-------------|--------|
-| Employee (Charged Officer / Respondent) | The government servant facing proceedings; restricted self-service view of own case + rights/deadlines surface | Shared |
+| Employee (Charged Officer / Respondent) | The employee facing proceedings; restricted self-service view of own case + rights/deadlines surface | Shared |
 | Complainant / Reporting Source | Raises a complaint; limited view of own complaint status | Shared (Employee/Manager) |
 | Vigilance Officer | Screens complaints, maintains integrity register & vigilance clearance | M09 |
 | Disciplinary Authority (DA) | Competent authority who initiates charges, considers inquiry report, imposes penalty (competence verified, DI-13) | Shared (Appointing/Disciplinary Authority) |
@@ -300,7 +300,7 @@ This module **inherits** §5 of `SHARED_FOUNDATION.md` in full:
 | `is_jurisdiction_transferred` | BOOLEAN | N | **(v2)** True if DA re-resolved mid-proceeding (AI-13) |
 | `is_sealed_cover` | BOOLEAN | N | **(v2)** Promotion frozen pending proceedings (AI-13) |
 | `is_retiree_case` | BOOLEAN | N | **(v2)** Subject retired; Rule 9 guard applies (AI-13) |
-| `retiree_sanction_ref` | VARCHAR(120) | Y | **(v2)** President/Govt sanction reference for retiree proceedings |
+| `retiree_sanction_ref` | VARCHAR(120) | Y | **(v2)** President/Enterprise sanction reference for retiree proceedings |
 | `is_confidential` | BOOLEAN | N | Default true |
 | `is_confidential_source` | BOOLEAN | N | Whistle-blower protection |
 | `vigilance_flag` | BOOLEAN | N | Routed through Vigilance |
@@ -958,7 +958,7 @@ propagating posts *──1 idempotency_keys                             (v2)
 | Reduction to lower stage/rank | MAJOR | M06 seniority, M10 pay |
 | Compulsory retirement | MAJOR (Art. 311(1) competence) | M11 pension (reduced) |
 | Removal from service | MAJOR (Art. 311(1) competence) | M11 |
-| Dismissal from service | MAJOR (Art. 311(1) competence) | M11 (disqualifies future govt employment) |
+| Dismissal from service | MAJOR (Art. 311(1) competence) | M11 (disqualifies future enterprise employment) |
 
 ### 5.6 Data integrity rules
 
@@ -2686,7 +2686,7 @@ propagating posts *──1 idempotency_keys                             (v2)
 
 **User Story:** As a Case Manager, when a charged officer is transferred, promoted, or retires mid-proceeding, I want the competent authority re-resolved, promotion frozen via sealed cover, and the Rule 9 time-bar/sanction enforced so that the proceeding stays valid against lifecycle changes.
 
-**Description:** Handles employee-lifecycle races against long proceedings: a **jurisdiction-transfer** event re-resolves the competent DA (from M05/M06 changes) and records `JURISDICTION_TRANSFER` in the timeline; **sealed cover** freezes M06 promotion recommendations while proceedings are pending; **retiree proceedings** enforce the CCS (Pension) Rule 9 **four-year event bar** plus required government/President sanction (DI-27).
+**Description:** Handles employee-lifecycle races against long proceedings: a **jurisdiction-transfer** event re-resolves the competent DA (from M05/M06 changes) and records `JURISDICTION_TRANSFER` in the timeline; **sealed cover** freezes M06 promotion recommendations while proceedings are pending; **retiree proceedings** enforce the CCS (Pension) Rule 9 **four-year event bar** plus required enterprise/President sanction (DI-27).
 
 **Acceptance Criteria:**
 1. On a transfer/promotion event for a charged officer, the system re-resolves the competent DA, updates `disciplinary_cases.disciplinary_authority_id` (and per-respondent), and records a `JURISDICTION_TRANSFER` timeline event.

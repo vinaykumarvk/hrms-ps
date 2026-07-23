@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-17A oracle: G03 FR-15 leave-year close (carry-forward/lapse/HPL-conversion, simulate->commit,
+# PH-17A oracle: PS03 FR-15 leave-year close (carry-forward/lapse/HPL-conversion, simulate->commit,
 # YEAR_ALREADY_CLOSED, PENDING_LEAVE_BLOCKS_CLOSE) + FR-16 encashment (cap, NOT_ENCASHABLE).
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g03 apps/api/src/routes/g03.routes.ts"; T=apps/api/test
-echo "== PH-17A exit-criteria (G03 leave year-close + encashment) =="
+S="apps/api/src/modules/ps03 apps/api/src/routes/ps03.routes.ts"; T=apps/api/test
+echo "== PH-17A exit-criteria (PS03 leave year-close + encashment) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "year-close entity consumed (leave_year_close)::leave_year_close" \

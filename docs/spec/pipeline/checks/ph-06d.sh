@@ -1,43 +1,43 @@
 #!/usr/bin/env bash
-# PH-06D oracle: G03/G05 demo UI proof — real leave-apply form, approver inbox with approve/reject,
+# PH-06D oracle: PS03/PS05 demo UI proof — real leave-apply form, approver inbox with approve/reject,
 # transfer initiate form, and loading/empty/error states, all wired through the shared API client.
-# REAL-outcome oracle over apps/web/src/modules/g03|g05 source + web tests + all four suites green.
+# REAL-outcome oracle over apps/web/src/modules/ps03|ps05 source + web tests + all four suites green.
 # Fail-closed negative: a <form> without an onSubmit handler (skeleton UI) is RED. No marker assertions.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
-echo "== PH-06D exit-criteria (G03/G05 demo UI proof) =="
+echo "== PH-06D exit-criteria (PS03/PS05 demo UI proof) =="
 
 [ -d node_modules ] || red "node_modules absent — typecheck/test oracle cannot run (npm install required)"
-W3=apps/web/src/modules/g03
-W5=apps/web/src/modules/g05
+W3=apps/web/src/modules/ps03
+W5=apps/web/src/modules/ps05
 CLIENT=apps/web/src/api
 
-# 1) G03 leave-apply form: inputs + submit + client call ("label::pattern" list, BSD-grep safe)
+# 1) PS03 leave-apply form: inputs + submit + client call ("label::pattern" list, BSD-grep safe)
 for spec in \
-  "g03 form element::<form" \
-  "g03 submit handler::onSubmit" \
-  "g03 form inputs::<input|<select" \
-  "g03 local state (useState)::useState" \
-  "g03 uses shared api client::from \"\.\./\.\./api|hrmsClient" \
+  "ps03 form element::<form" \
+  "ps03 submit handler::onSubmit" \
+  "ps03 form inputs::<input|<select" \
+  "ps03 local state (useState)::useState" \
+  "ps03 uses shared api client::from \"\.\./\.\./api|hrmsClient" \
 ; do
   label="${spec%%::*}"; pat="${spec#*::}"
   grep -rqE "$pat" "$W3" 2>/dev/null && grn "$label" || red "missing: $label"
 done
 grep -rqE '/api/v1/atl/leave-applications' "$CLIENT" "$W3" 2>/dev/null && grn "leave-applications route consumed" || red "leave-applications route not consumed by web layer"
 
-# 2) G03 approver inbox: approve/reject actions wired to the decision route
-grep -rqiE 'approve' "$W3" 2>/dev/null && grn "g03 approve action present" || red "no approve action in g03 UI"
-grep -rqiE 'reject' "$W3" 2>/dev/null && grn "g03 reject action present" || red "no reject action in g03 UI"
-grep -rqE '<button|onClick' "$W3" 2>/dev/null && grn "g03 actionable controls present" || red "no buttons/onClick in g03 UI"
+# 2) PS03 approver inbox: approve/reject actions wired to the decision route
+grep -rqiE 'approve' "$W3" 2>/dev/null && grn "ps03 approve action present" || red "no approve action in ps03 UI"
+grep -rqiE 'reject' "$W3" 2>/dev/null && grn "ps03 reject action present" || red "no reject action in ps03 UI"
+grep -rqE '<button|onClick' "$W3" 2>/dev/null && grn "ps03 actionable controls present" || red "no buttons/onClick in ps03 UI"
 grep -rqE '/decision|decideLeave|leaveDecision' "$CLIENT" "$W3" 2>/dev/null && grn "decision route consumed" || red "decision route not consumed by web layer"
 
-# 3) G05 transfer workspace: initiate form + orders view
+# 3) PS05 transfer workspace: initiate form + orders view
 for spec in \
-  "g05 form element::<form" \
-  "g05 submit handler::onSubmit" \
-  "g05 form inputs::<input|<select" \
-  "g05 uses shared api client::from \"\.\./\.\./api|hrmsClient" \
+  "ps05 form element::<form" \
+  "ps05 submit handler::onSubmit" \
+  "ps05 form inputs::<input|<select" \
+  "ps05 uses shared api client::from \"\.\./\.\./api|hrmsClient" \
 ; do
   label="${spec%%::*}"; pat="${spec#*::}"
   grep -rqE "$pat" "$W5" 2>/dev/null && grn "$label" || red "missing: $label"

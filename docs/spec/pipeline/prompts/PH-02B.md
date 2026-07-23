@@ -5,7 +5,7 @@
     so the resolvers defined in PH-02A have real facts to read.
   context:
     - docs/spec/hrms-authority-model.yaml    # PH-02A output — the tables must satisfy these resolver types
-    - docs/data-model/00-platform-core.sql , 01-G01-employee-profile.sql , 06-G06-promotion-posting-progression.sql , 09-G09-disciplinary-punishment.sql
+    - docs/data-model/00-platform-core.sql , 01-PS01-employee-profile.sql , 06-PS06-promotion-posting-progression.sql , 09-PS09-disciplinary-punishment.sql
     - docs/data-model/CONVENTIONS.md
     - docs/contracts/auth-matrix.yaml
   constraints:
@@ -16,7 +16,7 @@
     - name: Substrate tables
       max_iterations: 5
       repeat_until: The schema contains (or explicitly reuses) tables for positions, position_history,
-        employee_job_assignments, reporting/reports_to_position, g01_authority_assignments (statutory matrix),
+        employee_job_assignments, reporting/reports_to_position, ps01_authority_assignments (statutory matrix),
         delegation/acting-charge (effective-dated), and committee/panel membership — each per CONVENTIONS.
       steps: [add/confirm each table with tenant/entity/effective-dates + no-overlap constraints, index FKs, RLS]
     - name: Auth-matrix + full-load
@@ -25,7 +25,7 @@
         payroll/SR-custodian roles, AND loading 00->14 into a throwaway PostgreSQL DB (ON_ERROR_STOP=1) succeeds.
       steps: [amend auth-matrix.yaml, run the full-load validation, fix any collision/constraint break]
   evidence_required:
-    - amended docs/data-model/01-G01/06-G06/09-G09*.sql (+ 00-core if needed)
+    - amended docs/data-model/01-PS01/06-PS06/09-PS09*.sql (+ 00-core if needed)
     - amended docs/contracts/auth-matrix.yaml
     - a full-load validation transcript (00->14 clean)
     - docs/spec/manifest.json                 # record PH-02B verdict

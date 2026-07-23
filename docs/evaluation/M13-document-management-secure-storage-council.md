@@ -25,7 +25,7 @@ The polish hides several load-bearing failures.
 
 **2. The dedup oracle leaks existence.** Dedup keyed on plaintext SHA-256 lets anyone who can upload a *guessed* file observe a hit (faster store, `ref_count`, the BRD's own "duplicate detected" edge case) and thereby confirm that a specific known document — a particular charge-sheet template, a named salary letter — already exists. That is a confirmation attack on a SECRET store.
 
-**3. The signed-URL fetch bypasses audit, ACL and watermark.** FR-016 returns `contentUrl: https://blob.gov/...?sig=...`. That URL goes *direct to blob*, not through the gateway that FR-012 says "emits every audit event." So DOWNLOAD via signed URL escapes `document_audit`, escapes the mandatory CONFIDENTIAL+ watermark (FR-011 BR-3), and is forwardable within TTL — IDOR-by-URL on the most sensitive records, in a system whose entire value is "prove who accessed what."
+**3. The signed-URL fetch bypasses audit, ACL and watermark.** FR-016 returns `contentUrl: https://blob.enterprise/...?sig=...`. That URL goes *direct to blob*, not through the gateway that FR-012 says "emits every audit event." So DOWNLOAD via signed URL escapes `document_audit`, escapes the mandatory CONFIDENTIAL+ watermark (FR-011 BR-3), and is forwardable within TTL — IDOR-by-URL on the most sensitive records, in a system whose entire value is "prove who accessed what."
 
 **4. `clearance_level` is undefined.** §3.3 and FR-006 gate everything on `clearance_level ≥ document.classification`, but no field on `users`/`employees` and no entity stores a principal's clearance. The central access rule references an attribute that does not exist.
 
@@ -37,7 +37,7 @@ The polish hides several load-bearing failures.
 
 Strip it to essence: M13 must do three irreducible things — (a) store a byte-stream durably and confidentially, (b) hand other modules a stable reference and a permissioned way to get it back, (c) prove custody (who/when/immutable) for statutory records. Everything else is feature.
 
-The hidden assumption is that all of this must be **built**. The BRD silently specifies an in-house OpenText/Documentum/Veeva-Vault — *plus* DocuSign (FR-010), *plus* AWS Macie (DLP, FR-016), *plus* Textract (OCR, FR-008), *plus* a redaction studio (FR-011). That is four mature commercial categories rebuilt at once. The justification — "CGG on-prem government cloud" — is real but unstated, and it is doing enormous work. If managed/COTS services *are* reachable, most of FR-008/010/011/016's engine logic is buy-not-build and the BRD should specify *integration contracts*, not *implementations*.
+The hidden assumption is that all of this must be **built**. The BRD silently specifies an in-house OpenText/Documentum/Veeva-Vault — *plus* DocuSign (FR-010), *plus* AWS Macie (DLP, FR-016), *plus* Textract (OCR, FR-008), *plus* a redaction studio (FR-011). That is four mature commercial categories rebuilt at once. The justification — "CGG on-prem enterprise cloud" — is real but unstated, and it is doing enormous work. If managed/COTS services *are* reachable, most of FR-008/010/011/016's engine logic is buy-not-build and the BRD should specify *integration contracts*, not *implementations*.
 
 The cleaner decomposition is **object store + thin metadata + pluggable services**: S3-compatible object-lock for durability/WORM, KMS for keys, a small metadata/ACL/audit core (the genuinely bespoke part — the four-dimensional authorization engine and the attach/fetch contract are the real intellectual property here), and *adapters* to AV, OCR, DLP, and signing providers behind interfaces. The BRD half-acknowledges this (`StorageProvider` interface, FR-016) but only for storage; it should apply the same provider-abstraction discipline to AV/OCR/DLP/PKI so the build is a *thin orchestration layer*, not a content-processing platform.
 
@@ -47,7 +47,7 @@ A second first-principles tension: **WORM + dedup + crypto-shred + DPDP erasure 
 
 I am the records clerk and the M07 developer who must *use* this. Two problems: it is intimidating, and a few simple things are missing under the sophistication.
 
-The vocabulary wall is real — PAdES, envelope encryption, wrapped DEK, object-lock retain-until, crypto-shred, ICAP, deferrable FK, "convergent" dedup. There is no one-paragraph "what happens when I drag a PDF in" story for a non-engineer, and the glossary, while present, sits at the very end. A government records officer approving a disposition needs a plain narrative, not a state table.
+The vocabulary wall is real — PAdES, envelope encryption, wrapped DEK, object-lock retain-until, crypto-shred, ICAP, deferrable FK, "convergent" dedup. There is no one-paragraph "what happens when I drag a PDF in" story for a non-engineer, and the glossary, while present, sits at the very end. A enterprise records officer approving a disposition needs a plain narrative, not a state table.
 
 The **role roster is overloaded and overlapping**: Document Owner vs Employee (Self-Service) do nearly the same thing; "DMS Librarian / Records Officer" vs "Records Manager (Custodian)" vs "Security/DLP Officer" split duties in ways that will confuse a 200-person office that has *one* person doing all three. Nine module roles on top of the nine shared roles is a lot to provision. And the matrix gates everything on a "clearance level" the org has no obvious process to *assign* — who decides a clerk is CONFIDENTIAL-cleared, and where is that recorded?
 
@@ -57,7 +57,7 @@ For the integrating developer, the attach example is good but the **fetch contra
 
 Feasibility is high but the **sequencing buries the real critical path**. M13 is the long pole for the *entire program*: M01–M12 cannot finish their document features until M13's attach/fetch contract and `documents` entity exist. The build order (§16.2) correctly starts with storage+KMS, but it treats M13 as self-contained. In reality the **Monday step is: freeze and publish a stub/mock attach/fetch contract (`:attach`, `:fetch`, error catalog, `document_id` semantics) on day one** so all 13 other module teams develop against a contract while M13's internals are built behind it. Without that, M13 serialises the whole suite.
 
-Dependencies that will bite: (1) **KMS is a single point of catastrophic failure** — "KMS down ⇒ 503, no plaintext fallback" is correct security but there is no key-DR/escrow/recovery runbook; lose or corrupt a CMK and every document is permanently dark. That is the #1 availability risk and it is unspecified. (2) **Object-lock semantics differ by provider** — true WORM (S3 Object Lock COMPLIANCE mode) vs the "government blob" backend may not be equivalent; the WORM guarantee must be proven on the *actual* CGG storage before FR-014 is credible (the launch checklist has one line for this — good, but it should be a gating spike, not a checkbox). (3) **AV/OCR/DLP/PKI are four external integrations**, each with its own latency, outage, and licensing reality; the async pipeline (scan→OCR→index→DLP) is correct but needs a durable queue, dead-letter handling, and back-pressure that the BRD only gestures at.
+Dependencies that will bite: (1) **KMS is a single point of catastrophic failure** — "KMS down ⇒ 503, no plaintext fallback" is correct security but there is no key-DR/escrow/recovery runbook; lose or corrupt a CMK and every document is permanently dark. That is the #1 availability risk and it is unspecified. (2) **Object-lock semantics differ by provider** — true WORM (S3 Object Lock COMPLIANCE mode) vs the "enterprise blob" backend may not be equivalent; the WORM guarantee must be proven on the *actual* CGG storage before FR-014 is credible (the launch checklist has one line for this — good, but it should be a gating spike, not a checkbox). (3) **AV/OCR/DLP/PKI are four external integrations**, each with its own latency, outage, and licensing reality; the async pipeline (scan→OCR→index→DLP) is correct but needs a durable queue, dead-letter handling, and back-pressure that the BRD only gestures at.
 
 Practical scope cut for v1: defer redaction (FR-011 redaction), certified-copy studio, and DRAWN e-sign; ship upload + encryption + WORM + audit + attach/fetch + access control + AV first. That is the bulletproof core; the rest is fast-follow. Estimate the bespoke authorization engine and the audit-immutability work as the highest-risk, longest-pole *code*, distinct from the integrations.
 
@@ -74,7 +74,7 @@ Practical scope cut for v1: defer redaction (FR-011 redaction), certified-copy s
 
 **Reviewer 2 (on C, the First Principles Thinker).**
 *Strongest:* Naming the precedence lattice (retention/hold > WORM > erasure; dedup only within a key domain) is the unifying insight that resolves four scattered contradictions at once.
-*Biggest blind spot:* C's "buy not build" is right in spirit but hand-waves that the *government on-prem* constraint may genuinely forbid SaaS DocuSign/Macie/Textract for PII — the build may be forced, and C should weigh data-sovereignty before recommending COTS.
+*Biggest blind spot:* C's "buy not build" is right in spirit but hand-waves that the *enterprise on-prem* constraint may genuinely forbid SaaS DocuSign/Macie/Textract for PII — the build may be forced, and C should weigh data-sovereignty before recommending COTS.
 *Missed by all five:* **Backup/restore of the metadata Postgres** and its consistency with the immutable object store and KMS — a point-in-time DB restore could resurrect a disposed document's metadata while its blob is gone (or vice-versa).
 
 **Reviewer 3 (on A, the Proponent).**
@@ -103,7 +103,7 @@ Practical scope cut for v1: defer redaction (FR-011 redaction), certified-copy s
 - The **signed-URL fetch** as written undermines audit, watermark, and the VIEW/DOWNLOAD distinction — the system's core promises.
 
 ### Clashes
-- **Build vs buy (C vs A/E):** C wants a thin orchestration layer over COTS AV/OCR/DLP/PKI; A/E note the government on-prem/sovereignty constraint may force the build. *Resolution: not fundamental — adopt provider-abstraction for all four engines (already done for storage) so build-vs-buy becomes a deployment choice, not an architecture rewrite.*
+- **Build vs buy (C vs A/E):** C wants a thin orchestration layer over COTS AV/OCR/DLP/PKI; A/E note the enterprise on-prem/sovereignty constraint may force the build. *Resolution: not fundamental — adopt provider-abstraction for all four engines (already done for storage) so build-vs-buy becomes a deployment choice, not an architecture rewrite.*
 - **Scope cut (E vs Reviewer 4):** E defers certified copies/redaction; Reviewer 4 says certified true copies are statutorily mandatory. *Resolution below (focused pass).*
 
 ### Blind spots none caught well
@@ -145,7 +145,7 @@ Resolution: **Split FR-011.** Watermarking and **certified true copies are v1** 
 | R22 | TOP_SECRET + heavy check-in/out are likely over-engineering | Low-Med | C / D | Drop/justify TOP_SECRET; make check-out optional per type (M13 doesn't author content) |
 
 ### Recommendation
-**Proceed — the BRD is a strong, defensible foundation — but it is not yet bulletproof.** Treat v2 as a *correctness and contradiction-resolution* pass, not a rewrite. The skeleton (entities, attach/fetch, ACL, WORM, audit, governance) stays. Fix the four Critical items (R1–R4) and the audit-immutability + KMS-DR + search-index + DPDP-lattice High items before build, freeze the contract day one, abstract the four engines, and phase redaction as fast-follow. Done, this is best-in-class for a statutory government HRMS.
+**Proceed — the BRD is a strong, defensible foundation — but it is not yet bulletproof.** Treat v2 as a *correctness and contradiction-resolution* pass, not a rewrite. The skeleton (entities, attach/fetch, ACL, WORM, audit, governance) stays. Fix the four Critical items (R1–R4) and the audit-immutability + KMS-DR + search-index + DPDP-lattice High items before build, freeze the contract day one, abstract the four engines, and phase redaction as fast-follow. Done, this is best-in-class for a statutory PrimeSoft HRMS.
 
 ### The One Thing To Do First
 **Freeze and publish the stubbed attach/fetch contract and `documents` entity (with the corrected VIEW-vs-DOWNLOAD fetch and a defined `clearance_level`) on day one** — it is the program's critical path that unblocks all 13 other modules, and pinning it now forces resolution of the fetch/audit/watermark hole (R2) and the clearance gap (R3) before they calcify.

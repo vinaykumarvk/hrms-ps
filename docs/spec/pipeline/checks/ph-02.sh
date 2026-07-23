@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Exit-criteria for PH-02 (HRMS hierarchy/authority fixture substrate).
-# GREEN only if authority contracts parse, schema contains the resolver data substrates, auth matrix covers G03/G05,
+# GREEN only if authority contracts parse, schema contains the resolver data substrates, auth matrix covers PS03/PS05,
 # full schema loads, and fixture queries prove reporting-chain, statutory-authority, delegation, and committee data.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
@@ -17,7 +17,7 @@ need_file docs/spec/hrms-seed-data-plan.yaml 600
 need_file docs/tests/authority-resolution-tests.md 400
 need_file docs/spec/pipeline/prompts/PH-02.md 300
 
-python3 - <<'PY' && grn "PH-02 YAML artifacts parse and cover G03/G05" || red "PH-02 YAML artifacts invalid"
+python3 - <<'PY' && grn "PH-02 YAML artifacts parse and cover PS03/PS05" || red "PH-02 YAML artifacts invalid"
 import yaml, sys
 model = yaml.safe_load(open("docs/spec/hrms-authority-model.yaml"))
 seed = yaml.safe_load(open("docs/spec/hrms-seed-data-plan.yaml"))
@@ -25,9 +25,9 @@ required_resolvers = {"REPORTING_CHAIN", "STATUTORY_AUTHORITY", "ORG_UNIT_HEAD",
 if not required_resolvers.issubset(set((model.get("resolver_types") or {}).keys())):
     sys.exit(1)
 vertical = model.get("vertical_slice_bindings") or {}
-if not {"G03_leave", "G05_transfer"}.issubset(vertical):
+if not {"PS03_leave", "PS05_transfer"}.issubset(vertical):
     sys.exit(1)
-if seed.get("fixtures", {}).get("statutory_authority", {}).get("table") != "g01_authority_assignments":
+if seed.get("fixtures", {}).get("statutory_authority", {}).get("table") != "ps01_authority_assignments":
     sys.exit(1)
 for path in ["docs/contracts/auth-matrix.yaml", "docs/contracts/state-machines.yaml", "docs/spec/authority-resolution-contract.yaml"]:
     yaml.safe_load(open(path))
@@ -47,27 +47,27 @@ PY
 
 python3 - <<'PY' && grn "schema/contracts contain PH-02 authority substrates" || red "schema/contracts missing PH-02 substrates"
 from pathlib import Path
-sql = Path("docs/data-model/01-G01-employee-profile.sql").read_text()
+sql = Path("docs/data-model/01-PS01-employee-profile.sql").read_text()
 required_sql = [
-    "CREATE TABLE g01_authority_assignments",
-    "CREATE TABLE g01_authority_delegations",
-    "CREATE TABLE g01_committees",
-    "CREATE TABLE g01_committee_members",
-    "'g01_authority_assignments'",
-    "'g01_committee_members'",
-    "G05_TRANSFER_REVENUE",
-    "G03_LEAVE_HEAD_ASSESSMENT",
+    "CREATE TABLE ps01_authority_assignments",
+    "CREATE TABLE ps01_authority_delegations",
+    "CREATE TABLE ps01_committees",
+    "CREATE TABLE ps01_committee_members",
+    "'ps01_authority_assignments'",
+    "'ps01_committee_members'",
+    "PS05_TRANSFER_REVENUE",
+    "PS03_LEAVE_HEAD_ASSESSMENT",
 ]
 if any(item not in sql for item in required_sql):
     raise SystemExit(1)
-g06 = Path("docs/data-model/06-G06-promotion-posting-progression.sql").read_text()
-g09 = Path("docs/data-model/09-G09-disciplinary-punishment.sql").read_text()
-if "ck_g06_panel_quorum" not in g06 or "ck_g06_pm_recusal" not in g06:
+ps06 = Path("docs/data-model/06-PS06-promotion-posting-progression.sql").read_text()
+ps09 = Path("docs/data-model/09-PS09-disciplinary-punishment.sql").read_text()
+if "ck_ps06_panel_quorum" not in ps06 or "ck_ps06_pm_recusal" not in ps06:
     raise SystemExit(1)
-if "ck_inquiry_appointment_recusal" not in g09 or "PH-02 statutory-authority resolver input" not in g09:
+if "ck_inquiry_appointment_recusal" not in ps09 or "PH-02 statutory-authority resolver input" not in ps09:
     raise SystemExit(1)
 auth = Path("docs/contracts/auth-matrix.yaml").read_text()
-for item in ["ph02_authority_fixture_contract", "G03_leave", "G05_transfer", "g01_authority_assignments"]:
+for item in ["ph02_authority_fixture_contract", "PS03_leave", "PS05_transfer", "ps01_authority_assignments"]:
     if item not in auth:
         raise SystemExit(1)
 PY
@@ -112,14 +112,14 @@ PY
   done
   if [ "$load_ok" = 1 ]; then
     grn "full 00->14 schema load passed"
-    assert_sql "$tmpdir" "$port" "select count(*) from employee_job_assignments where employee_id='99999999-9999-9999-9999-999999999902' and reporting_manager_id='99999999-9999-9999-9999-999999999901';" "1" "G03 reporting-chain fixture"
+    assert_sql "$tmpdir" "$port" "select count(*) from employee_job_assignments where employee_id='99999999-9999-9999-9999-999999999902' and reporting_manager_id='99999999-9999-9999-9999-999999999901';" "1" "PS03 reporting-chain fixture"
     assert_sql "$tmpdir" "$port" "select count(*) from positions p join positions mgr on p.reports_to_position_id=mgr.id where p.position_code='POS-REV-AS-05' and mgr.position_code='POS-REV-DC-01';" "1" "reports_to_position fixture"
-    assert_sql "$tmpdir" "$port" "select count(*) from g01_authority_assignments where authority_type='TRANSFER_AUTHORITY' and authority_code='G05_TRANSFER_REVENUE' and authority_employee_id='99999999-9999-9999-9999-999999999901' and status='ACTIVE';" "1" "G05 transfer authority fixture"
-    assert_sql "$tmpdir" "$port" "select count(*) from g01_authority_assignments where authority_type='ORG_UNIT_HEAD' and authority_code='G03_LEAVE_HEAD_ASSESSMENT' and authority_employee_id='99999999-9999-9999-9999-999999999901' and status='ACTIVE';" "1" "G03 org-unit-head fallback fixture"
-    assert_sql "$tmpdir" "$port" "select count(*) from g01_authority_delegations where authority_assignment_id='a1000000-0000-0000-0000-000000000001' and from_employee_id <> to_employee_id and status='ACTIVE';" "1" "delegation/acting-charge fixture"
-    assert_sql "$tmpdir" "$port" "select count(*) from g01_committees c where c.committee_code='PH02-DPC-REVENUE' and (select count(*) from g01_committee_members m where m.committee_id=c.id and m.status='ACTIVE' and m.is_required_for_quorum) >= c.quorum_required;" "1" "DPC committee quorum fixture"
-    assert_sql "$tmpdir" "$port" "select count(*) from pg_class where relname in ('g01_authority_assignments','g01_authority_delegations','g01_committees','g01_committee_members') and relrowsecurity and relforcerowsecurity;" "4" "PH-02 tables have forced RLS"
-    assert_sql "$tmpdir" "$port" "select count(*) from g01_authority_assignments a join g01_authority_assignments b on a.id < b.id and a.tenant_id=b.tenant_id and a.authority_type=b.authority_type and a.authority_code=b.authority_code and daterange(a.effective_from, coalesce(a.effective_to,'infinity'::date),'[]') && daterange(b.effective_from, coalesce(b.effective_to,'infinity'::date),'[]');" "0" "no overlapping authority fixture rows"
+    assert_sql "$tmpdir" "$port" "select count(*) from ps01_authority_assignments where authority_type='TRANSFER_AUTHORITY' and authority_code='PS05_TRANSFER_REVENUE' and authority_employee_id='99999999-9999-9999-9999-999999999901' and status='ACTIVE';" "1" "PS05 transfer authority fixture"
+    assert_sql "$tmpdir" "$port" "select count(*) from ps01_authority_assignments where authority_type='ORG_UNIT_HEAD' and authority_code='PS03_LEAVE_HEAD_ASSESSMENT' and authority_employee_id='99999999-9999-9999-9999-999999999901' and status='ACTIVE';" "1" "PS03 org-unit-head fallback fixture"
+    assert_sql "$tmpdir" "$port" "select count(*) from ps01_authority_delegations where authority_assignment_id='a1000000-0000-0000-0000-000000000001' and from_employee_id <> to_employee_id and status='ACTIVE';" "1" "delegation/acting-charge fixture"
+    assert_sql "$tmpdir" "$port" "select count(*) from ps01_committees c where c.committee_code='PH02-DPC-REVENUE' and (select count(*) from ps01_committee_members m where m.committee_id=c.id and m.status='ACTIVE' and m.is_required_for_quorum) >= c.quorum_required;" "1" "DPC committee quorum fixture"
+    assert_sql "$tmpdir" "$port" "select count(*) from pg_class where relname in ('ps01_authority_assignments','ps01_authority_delegations','ps01_committees','ps01_committee_members') and relrowsecurity and relforcerowsecurity;" "4" "PH-02 tables have forced RLS"
+    assert_sql "$tmpdir" "$port" "select count(*) from ps01_authority_assignments a join ps01_authority_assignments b on a.id < b.id and a.tenant_id=b.tenant_id and a.authority_type=b.authority_type and a.authority_code=b.authority_code and daterange(a.effective_from, coalesce(a.effective_to,'infinity'::date),'[]') && daterange(b.effective_from, coalesce(b.effective_to,'infinity'::date),'[]');" "0" "no overlapping authority fixture rows"
   fi
   pg_ctl -D "$dbdir" -m fast stop >/tmp/ph02-pg-stop.log 2>&1 || true
 }

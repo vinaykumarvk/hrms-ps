@@ -5,7 +5,7 @@ Write an honest `docs/spec/ph-36-verdict.md` for remediation tranche 23 (PH-36A)
 
 ## Constraints (the verdict oracle greps for these)
 - Chains from `ph-35-verdict`; cites `brd-coverage-delta-20260703`.
-- Carries a **G09** row and names the POSH **conciliation** work.
+- Carries a **PS09** row and names the POSH **conciliation** work.
 - States the **exact** oracle-recomputed suite pass counts (API + web).
 - Names remaining gaps; includes the "necessary … not sufficient" caveat and the 1,306 contract-op caveat.
 - No approval token minted by the agent — `gate: human`.

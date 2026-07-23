@@ -44,7 +44,7 @@ PH-00B is ready only when:
 - No code is extracted into a shared workflow package; that remains PH-00C.
 - License/provenance and full aggregate-golden cleanup are recorded as human-gate caveats before extraction.
 
-The earlier G03 reporting-chain and G05 transfer-clearance proofs are now assigned to later phases:
+The earlier PS03 reporting-chain and PS05 transfer-clearance proofs are now assigned to later phases:
 
 - PH-01/PH-02: hierarchy/statutory authority resolver data and SPI implementation.
-- PH-06: G03 Leave and G05 Transfer vertical slices through the enhanced platform.
+- PH-06: PS03 Leave and PS05 Transfer vertical slices through the enhanced platform.

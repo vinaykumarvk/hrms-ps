@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PH-56B oracle (human gate): honest tranche-43 verdict — cites the tranche-42 verdict + coverage delta,
-# names the coverage ratchet (519->526 / 39.8%) and the G10 engine-run route exposure, remaining-gaps,
+# names the coverage ratchet (519->526 / 39.8%) and the PS10 engine-run route exposure, remaining-gaps,
 # necessary-not-sufficient, contract-op caveat, and the EXACT suite pass counts.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
@@ -22,7 +22,7 @@ fi
 must "verdict chains from tranche-42 verdict::ph-55-verdict" "$V"
 must "verdict cites the coverage delta::brd-coverage-delta-20260703" "$V"
 must "verdict names the coverage ratchet::526|39.8%|engine.run|payroll" "$V"
-must "verdict carries a G10 row::G10" "$V"
+must "verdict carries a PS10 row::PS10" "$V"
 must "verdict names remaining gaps::NOT_FOUND|remaining|still open|open gap" "$V"
 must "verdict necessary-not-sufficient::necessary.{0,4}not sufficient" "$V"
 must "verdict contract-op caveat::1,?323|contract-op|OpenAPI" "$V"

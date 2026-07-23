@@ -5,7 +5,7 @@ Continue the coverage workstream: expose the APAR **PIP lifecycle**, **probation
 APAR **read** endpoints as kernel routes over already-tested `aparService` backing, and ratchet the floor.
 
 ## Context
-- Backing (`apps/api/src/modules/g08/aparService.ts`, tested at `ph16e-g07-g08-depth`):
+- Backing (`apps/api/src/modules/ps08/aparService.ts`, tested at `ph16e-ps07-ps08-depth`):
   `createPip` (one open PIP/employee), `updatePipMilestone`, `closePip`, `openProbationConfirmation`,
   `decideProbation` (cumulative extension cap), `listReportPeriods`, `listGoalSnapshots`.
 - Coverage gate: `tools/contract-coverage.mjs` + `docs/reviews/contract-coverage-20260703.md` + `ph-37a.sh`.
@@ -18,7 +18,7 @@ APAR **read** endpoints as kernel routes over already-tested `aparService` backi
 - Raise the ratchet floor (report + `ph37a` test + `ph-37a.sh`) 397/30% → 404/30.5%.
 
 ## Evidence required
-- 7 routes in `g08.routes.ts`; `apps/api/test/ph39a-*.test.cjs` covering PIP happy path, probation
+- 7 routes in `ps08.routes.ts`; `apps/api/test/ph39a-*.test.cjs` covering PIP happy path, probation
   extend-cap + confirm, and the read endpoints.
 - `bash docs/spec/pipeline/checks/ph-39a.sh` GREEN and `bash docs/spec/pipeline/checks/ph-37a.sh` GREEN at
   the raised floor; typecheck + full suite green.

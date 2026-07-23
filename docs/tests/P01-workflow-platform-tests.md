@@ -46,7 +46,7 @@ PH-01 freezes the following test obligations:
 
 | Area | Assertion |
 |---|---|
-| Schema load | `docs/data-model/00-platform-core.sql` through `14-G14-dashboard-analytics.sql` loads into disposable PostgreSQL. |
+| Schema load | `docs/data-model/00-platform-core.sql` through `14-PS14-dashboard-analytics.sql` loads into disposable PostgreSQL. |
 | Runtime tables | `workflow_idempotency_records`, `workflow_resolution_snapshots`, `workflow_tasks`, `workflow_waits`, `workflow_fork_executions`, `workflow_fork_branches`, and `workflow_references` exist and are tenant-scoped. |
 | P01 OpenAPI | `/api/v1/workflows` contract parses as OpenAPI 3.x and all internal refs resolve. |
 | Task/action separation | `workflow_tasks` is P01-owned actionable work-item state; `workflow_actions` is immutable decision history. |

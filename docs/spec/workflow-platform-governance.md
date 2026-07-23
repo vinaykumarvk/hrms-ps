@@ -45,7 +45,7 @@ Activation is immediate for new workflow instances. Existing instances continue 
 
 ## Resolver And Hook Governance
 
-PH-00D defines the SPI, not the full government hierarchy resolver.
+PH-00D defines the SPI, not the full enterprise hierarchy resolver.
 
 Implemented now:
 
@@ -103,7 +103,7 @@ Schema load:
 bash docs/spec/pipeline/checks/ph-00d.sh
 ```
 
-The gate starts a disposable local PostgreSQL instance and loads `docs/data-model/00-platform-core.sql` through `14-G14-dashboard-analytics.sql`.
+The gate starts a disposable local PostgreSQL instance and loads `docs/data-model/00-platform-core.sql` through `14-PS14-dashboard-analytics.sql`.
 
 Result:
 

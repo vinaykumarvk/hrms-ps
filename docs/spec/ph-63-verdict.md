@@ -21,11 +21,11 @@ subagents credit-exhausted until 2026-07-08.
 
 | Module | Net-new operation cluster | Backing | Evidence |
 |---|---|---|---|
-| **G01** | FR-EPM-005 emergency-contact register (`GET/POST /employees/{id}/emergency-contacts`, `PATCH /employees/{id}/emergency-contacts/{contactId}`, `POST .../{contactId}:remove`) | **new** `EmergencyContactService` + `InMemoryEmergencyContactRepository` (built this tranche): unique call-order priority invariant (duplicate priority → CONFLICT 409; list sorted by priority), row_version optimistic locking (409), soft-delete that frees the priority, per-mutation audit | `ph63a-g01-emergency-contact-route.test.cjs` |
+| **PS01** | FR-EPM-005 emergency-contact register (`GET/POST /employees/{id}/emergency-contacts`, `PATCH /employees/{id}/emergency-contacts/{contactId}`, `POST .../{contactId}:remove`) | **new** `EmergencyContactService` + `InMemoryEmergencyContactRepository` (built this tranche): unique call-order priority invariant (duplicate priority → CONFLICT 409; list sorted by priority), row_version optimistic locking (409), soft-delete that frees the priority, per-mutation audit | `ph63a-ps01-emergency-contact-route.test.cjs` |
 
 Genuinely new implementation: a new service module + repository, real business logic (the priority invariant,
 optimistic lock, and share-freeing soft-delete all actually work and are tested) — not a route wired over a
-pre-existing engine. Measured contract coverage ratchets **556 / 42% → 560 / 42.3%** (G01 **32.7% → 35.2%**),
+pre-existing engine. Measured contract coverage ratchets **556 / 42% → 560 / 42.3%** (PS01 **32.7% → 35.2%**),
 and the PH-37 gate floor was raised in lockstep so the gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)

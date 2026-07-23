@@ -1,20 +1,20 @@
 # =============================================================================
-# Government HRMS — Consolidated Authorization Matrix
+# PrimeSoft HRMS — Consolidated Authorization Matrix
 # =============================================================================
-# Machine-readable authorization model for the 14-module government HRMS (G01–G14).
+# Machine-readable authorization model for the 14-module PrimeSoft HRMS (PS01–PS14).
 #
 # Grounding (single sources of truth — this file re-states, never re-invents):
 #   - RBAC Design Document v1.7  (docs/platform-grounding/extracts/rbac_design.txt)
 #       §2 role taxonomy · §3 scoping dimensions · §4.3 capability-flag registry ·
 #       §5 action-level access · §6 sensitive-data / PII ceiling · §7 field access
-#   - PLATFORM_FOUNDATION.md §6  (RBAC model to reuse; §6.6 gov roles as ADDITIONS)
+#   - PLATFORM_FOUNDATION.md §6  (RBAC model to reuse; §6.6 enterprise roles as ADDITIONS)
 #   - Platform Spec P02 — Authorization.check (enforcement; resolution order)
 #   - Each v3 BRD's "User Roles & Permissions" + "Alignment with PrimeSoft Platform"
 #
 # Authoring rule (PLATFORM_FOUNDATION §6, §9.4): the access-control MODEL is owned
-# by RBAC v1.7. Government statutory actors are expressed ONLY as ADDITIONS — new
+# by RBAC v1.7. Enterprise statutory actors are expressed ONLY as ADDITIONS — new
 # roles + capability flags — never a parallel scheme. No role here contradicts
-# RBAC v1.7; base roles are reproduced verbatim, gov roles are marked additions
+# RBAC v1.7; base roles are reproduced verbatim, enterprise roles are marked additions
 # with the introducing module. Enforcement is model-driven via P02 (see notes).
 # =============================================================================
 
@@ -35,25 +35,25 @@ meta:
     source: docs/spec/hrms-authority-model.yaml
     seed_plan: docs/spec/hrms-seed-data-plan.yaml
     vertical_slice_actor_coverage:
-      G03_leave:
+      PS03_leave:
         resolver_types: [REPORTING_CHAIN, ORG_UNIT_HEAD]
         required_roles: [employee, l1_manager, leave_admin, sanctioning_authority]
-        fixture_tables: [employee_job_assignments, positions, g01_authority_assignments]
-      G05_transfer:
+        fixture_tables: [employee_job_assignments, positions, ps01_authority_assignments]
+      PS05_transfer:
         resolver_types: [STATUTORY_AUTHORITY, WORK_QUEUE]
         required_roles: [hr_admin, transfer_authority, sr_custodian]
-        fixture_tables: [g01_authority_assignments, g01_authority_delegations]
-      G06_DPC:
+        fixture_tables: [ps01_authority_assignments, ps01_authority_delegations]
+      PS06_DPC:
         resolver_types: [STATUTORY_AUTHORITY, COMMITTEE]
-        required_roles: [g06_dpc_secretary, g06_dpc_member, g06_appointing_authority]
-        fixture_tables: [g01_committees, g01_committee_members, g06_promotion_panels, g06_promotion_panel_members]
-      G09_inquiry:
+        required_roles: [ps06_dpc_secretary, ps06_dpc_member, ps06_appointing_authority]
+        fixture_tables: [ps01_committees, ps01_committee_members, ps06_promotion_panels, ps06_promotion_panel_members]
+      PS09_inquiry:
         resolver_types: [STATUTORY_AUTHORITY, COMMITTEE]
         required_roles: [disciplinary_authority, inquiry_officer, appellate_authority]
         fixture_tables: [authority_competence, inquiry_appointments]
 
 # -----------------------------------------------------------------------------
-# 1. ROLES  — RBAC v1.7 base roles + every gov-added role
+# 1. ROLES  — RBAC v1.7 base roles + every enterprise-added role
 # -----------------------------------------------------------------------------
 roles:
 
@@ -235,311 +235,311 @@ roles:
     scope_type: self
     is_platform_base: true
 
-  # === GOVERNMENT ADDITIONS (PLATFORM_FOUNDATION §6.6; per-module BRD §3) ===
+  # === ENTERPRISE ADDITIONS (PLATFORM_FOUNDATION §6.6; per-module BRD §3) ===
 
   - role_code: dpo
     name: Data Protection Officer
-    description: DPDPA governance — data-principal-rights processing, consent/notice ledger oversight, erasure sign-off, breach handling. PII-ceiling-bound. (Granted as governance capability in G03/G14.)
+    description: DPDPA governance — data-principal-rights processing, consent/notice ledger oversight, erasure sign-off, breach handling. PII-ceiling-bound. (Granted as governance capability in PS03/PS14.)
     scope_type: tenant
     is_platform_base: false
     gov_addition: true
-    introduced_in: G01
+    introduced_in: PS01
   - role_code: sr_custodian
     name: SR Custodian / Registrar
-    description: Statutory Service-Register custodian at the Module-Admin tier — attests entries, approves corrections/annotations, promotes legacy batches, issues certified extracts, owns verification cycle. Mirrors Document Admin pattern; runs on P05 substrate (G12).
+    description: Statutory Service-Register custodian at the Module-Admin tier — attests entries, approves corrections/annotations, promotes legacy batches, issues certified extracts, owns verification cycle. Mirrors Document Admin pattern; runs on P05 substrate (PS12).
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G12
+    introduced_in: PS12
   - role_code: sr_second_custodian
     name: SR Second Custodian
     description: Independent second custodian required for routine corrigenda and FULL_SR extracts (runtime maker!=checker!=second-custodian SoD).
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G12
+    introduced_in: PS12
   - role_code: appointing_authority
     name: Appointing Authority
     description: Senior sanctioning authority; P01 approver for statutory personal-detail changes and dual-authoriser for break-glass. MFA-enforced.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G02
+    introduced_in: PS02
   - role_code: sanctioning_authority
     name: Sanctioning Authority (Dept Head)
     description: Final sanction for special leaves (Maternity, Study, Sabbatical, Commuted, LWP, encashment); P01 approver; no self-approve.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G03
+    introduced_in: PS03
   - role_code: integ_ops
     name: Integration Operator (IntegOps)
-    description: Entity-scoped ops role (module-admin pattern) for the G03->G12 leave-SR relay — monitors dashboard, triages DLQ, triggers replay/backfill/reconciliation; cannot author SR entries bypassing maker-checker.
+    description: Entity-scoped ops role (module-admin pattern) for the PS03->PS12 leave-SR relay — monitors dashboard, triages DLQ, triggers replay/backfill/reconciliation; cannot author SR entries bypassing maker-checker.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G04
+    introduced_in: PS04
   - role_code: pension_officer
     name: Pension Officer / Dealing Assistant
     description: Entity-scoped module-admin role (analogous to Payroll Admin) — maker for pension/terminal-benefit cases; consumes qualifying-service flags. MFA required.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G04
+    introduced_in: PS04
   - role_code: transfer_authority
     name: Transfer / Appointing Authority (Transfers)
     description: Sanctioning authority for transfer/deputation/repatriation orders, amendments, cancellations, forced-action powers; P01 approver; MFA-enforced.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G05
-  - role_code: g06_establishment_officer
+    introduced_in: PS05
+  - role_code: ps06_establishment_officer
     name: Establishment / Seniority Officer
     description: Maker for seniority lists and qualifying-service ledger; cannot self-approve publication.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_strength_officer
+    introduced_in: PS06
+  - role_code: ps06_strength_officer
     name: Establishment-Strength Officer
     description: Independent authority over sanctioned-post strength and vacancy figures (audited P05); separate from case maker.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_roster_officer
+    introduced_in: PS06
+  - role_code: ps06_roster_officer
     name: Reservation / Roster Officer
     description: Independent control on the DPC reservation roster and own-merit migration.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_vigilance_clearance
+    introduced_in: PS06
+  - role_code: ps06_vigilance_clearance
     name: Vigilance Clearance Officer (Promotion)
-    description: Reads disciplinary/vigilance status from G09; attests clearance (case-scoped entitlement) for promotion eligibility.
+    description: Reads disciplinary/vigilance status from PS09; attests clearance (case-scoped entitlement) for promotion eligibility.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_dpc_secretary
+    introduced_in: PS06
+  - role_code: ps06_dpc_secretary
     name: DPC Secretary
     description: Convenes the Departmental Promotion Committee (P01 initiator); cannot vote or grade.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_dpc_member
+    introduced_in: PS06
+  - role_code: ps06_dpc_member
     name: DPC / Panel Member
     description: P01 PARALLEL_ALL_OF approver; grades candidates; cannot be in own promotion field.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_appointing_authority
+    introduced_in: PS06
+  - role_code: ps06_appointing_authority
     name: Appointing Authority (Promotion)
     description: P01 checker / DYNAMIC_APPROVER for promotion orders; maker!=checker enforced by P02.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_reviewing_authority
+    introduced_in: PS06
+  - role_code: ps06_reviewing_authority
     name: Reviewing Authority (Promotion)
     description: Review-DPC / supersession-review approver on P01.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
-  - role_code: g06_legal_officer
+    introduced_in: PS06
+  - role_code: ps06_legal_officer
     name: Legal / Litigation Officer
     description: Writes only to legal/court-case-linkage entities; cannot adjudicate promotion.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G06
+    introduced_in: PS06
   - role_code: ld_officer
     name: L&D Officer (HR)
     description: Entity-scoped module-admin role (analogous to Performance/Payroll Admin) — catalog, content, sessions, attendance/assessment, certs, campaigns, credential capture.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G07
+    introduced_in: PS07
   - role_code: ld_manager
     name: L&D Manager / Training Head
     description: Approves annual plan & budget; L2 P01 approver for nominations; launches/approves campaigns.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G07
+    introduced_in: PS07
   - role_code: ld_trainer
     name: Trainer / Facilitator
     description: Session-scoped — view assigned rosters, mark attendance, enter scores, close session.
     scope_type: team
     is_platform_base: false
     gov_addition: true
-    introduced_in: G07
+    introduced_in: PS07
   - role_code: ld_kiosk_operator
     name: Kiosk / Assisted-Capture Operator
     description: Operates shared kiosk for non-login staff with attributed (never anonymous) audit.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G07
-  - role_code: g08_accepting_authority
+    introduced_in: PS07
+  - role_code: ps08_accepting_authority
     name: Accepting Authority (APAR)
     description: Final APAR certifying authority (Appointing-Authority analogue) — settles grade, ratifies calibration, triggers disclosure, signs with DSC.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G08
-  - role_code: g08_competent_authority
+    introduced_in: PS08
+  - role_code: ps08_competent_authority
     name: Competent / Adjudicating Authority (APAR)
     description: Adjudicates representations; senior to Accepting Authority; not in appraisee's chain.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G08
-  - role_code: g08_apar_custodian
+    introduced_in: PS08
+  - role_code: ps08_apar_custodian
     name: APAR Custodian
     description: Confidential custody, retention, expunction execution, heir-access grants (aligns with SR Custodian / Document Admin pattern).
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G08
+    introduced_in: PS08
   - role_code: disciplinary_authority
     name: Disciplinary Authority (DA)
     description: Competent sanctioning authority — initiates charges, considers inquiry report, imposes penalty. Competence-verified (DI-13); cannot self-approve; must differ from complainant/witness/IO/PO. MFA-enforced.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: inquiry_officer
     name: Inquiry Officer (IO)
     description: Conducts the departmental inquiry impartially; case-scoped read entitlement; distinct from DA/PO/witness.
     scope_type: self
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: presenting_officer
     name: Presenting Officer (PO)
     description: Presents the department's case before the IO; distinct from DA/IO.
     scope_type: self
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: appellate_authority
     name: Appellate / Reviewing Authority
-    description: Decides appeals/revisions/reviews; competence-verified; must differ from DA (G09) or upholding custodian (G12). Read + decision, no direct ledger write.
+    description: Decides appeals/revisions/reviews; competence-verified; must differ from DA (PS09) or upholding custodian (PS12). Read + decision, no direct ledger write.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: vigilance_officer
     name: Vigilance Officer
     description: Screens complaints, maintains integrity register & vigilance-clearance status; confidential-source visibility (P02 PII ceiling).
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: icc_presiding
     name: ICC Presiding Officer (POSH)
     description: Presides over the POSH Internal Committee route (replaces IO for HARASSMENT cases).
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: icc_member
     name: ICC Member (POSH)
     description: Internal Committee member; external member mandatory via icc_external_member flag.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G09
+    introduced_in: PS09
   - role_code: payroll_officer
     name: Payroll Officer (Maker)
     description: Entity-scoped module-admin role — configure/run payroll (draft), adjustments, prepare bank file, prepare FnF. Cannot approve, sign, or confirm positive-pay.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G10
+    introduced_in: PS10
   - role_code: payroll_approver
     name: Payroll Approver / Controller (Checker)
     description: Reviews reconciliation, approves & locks runs (P01), authorises off-cycle/supplementary/FnF, certifies remittances/Form-16. Must differ from run creator. MFA-enforced.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G10
+    introduced_in: PS10
   - role_code: payroll_disburser
     name: Payroll Disburser
     description: DSC-signs the bank file and transmits over X.3. Distinct from Officer and Approver (strict 3-way SoD). MFA-enforced.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G10
+    introduced_in: PS10
   - role_code: pension_sanctioning_authority
     name: Pension Sanctioning Authority / Head of Office
     description: Checker for pension cases (P01 approver); sanctions pension/anticipatory pension; SoD-enforced. MFA-enforced.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G11
+    introduced_in: PS11
   - role_code: pension_disbursing_authority
     name: Treasury / Pension Disbursing Authority (PDA)
     description: Bank CPPC / treasury disbursal of PPOs; integration over X.3. Read + disburse; no case authoring.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G11
+    introduced_in: PS11
   - role_code: medical_board
     name: Medical Board
     description: Certifies invalidation for invalid-pension cases; scoped read of case medical context.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G11
+    introduced_in: PS11
   - role_code: records_manager
     name: Records Manager (Custodian)
     description: Checker for document lifecycle — approves disposition, manages WORM, certifies true copies. maker!=checker enforced by P01. Holds Letter Admin flag where it certifies generated copies.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G13
+    introduced_in: PS13
   - role_code: legal_hold_admin
     name: Legal Hold Administrator
     description: Places legal holds; manages e-discovery exports. Separated from the custodian who can destroy.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G13
+    introduced_in: PS13
   - role_code: legal_hold_approver
     name: Legal Hold Approver
     description: Approves high-value placement and all releases (dual control) — release re-enables destruction, needs a second authority.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G13
+    introduced_in: PS13
   - role_code: security_dlp_officer
     name: Security / DLP Officer
     description: Classification-downgrade approval, DLP rules, quarantine release, key policy, clearance grants, anti-brute-force unlocks.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G13
+    introduced_in: PS13
   - role_code: establishment_officer
     name: Establishment Officer (Analytics)
     description: Authors/maintains establishment_position (sanctioned strength / roster points); values feed vacancy & reservation denominators; no dashboard publication authority.
     scope_type: entity
     is_platform_base: false
     gov_addition: true
-    introduced_in: G14
+    introduced_in: PS14
 
 # Mapping notes (do NOT create parallel write roles) per PLATFORM_FOUNDATION §6.6:
 role_mappings_to_existing:
   Auditor: "Org Admin read access + read-only individual entitlement + P05 query access (RBAC §3.2). No parallel write role."
   "System Administrator": "Org Admin (tenant config) or Platform Super Admin (cross-tenant). No transactional self-approval."
-  "Data Engineer (G14)": "Analytics capability flag on an IT/Analytics admin role; no dashboard publication authority."
+  "Data Engineer (PS14)": "Analytics capability flag on an IT/Analytics admin role; no dashboard publication authority."
 
 # -----------------------------------------------------------------------------
-# 2. CAPABILITY FLAGS  (RBAC §4.3 base registry + gov additions)
+# 2. CAPABILITY FLAGS  (RBAC §4.3 base registry + enterprise additions)
 #    A flag is NOT a role — an opt-in capability Org Admin grants on an existing
 #    role assignment. Grant/revoke audit-logged to P05. New flags register in
 #    RBAC §4.3 via the §14 working-group process.
@@ -579,95 +579,95 @@ capability_flags:
     module: platform
     is_platform_base: true
 
-  # --- Government additions ---
+  # --- Enterprise additions ---
   - flag_code: grievance_officer
     grants: "Handle data-principal grievances / privacy grievance queue."
     grantable_on: [hr_admin, appointing_authority]
-    module: G02
+    module: PS02
   - flag_code: fraud_reviewer
     grants: "Access the fraud-review queue; act on HIGH/BLOCKED risk-scored change requests (gates the P01 CONDITIONAL fraud stage)."
     grantable_on: [hr_officer, hr_admin, appointing_authority]
-    module: G02
+    module: PS02
   - flag_code: dpo_governance
-    grants: "Read across consent/biometric/geo governance + retention/purge oversight; approve lawful-basis config. PII-ceiling-bound. (DPO expressed as flag in G03/G14.)"
+    grants: "Read across consent/biometric/geo governance + retention/purge oversight; approve lawful-basis config. PII-ceiling-bound. (DPO expressed as flag in PS03/PS14.)"
     grantable_on: [hr_admin, org_admin]
-    module: G03
+    module: PS03
   - flag_code: anomaly_reviewer
     grants: "Review FLAGGED_FOR_REVIEW punches; approve/reject/escalate via P01. Cannot self-clear own punches (SoD)."
     grantable_on: [hr_admin, attendance_admin]
-    module: G03
-  - flag_code: g04_dlq_ops
-    grants: "Leave-SR relay operations: g04.relay.pause, g04.dlq.triage, g04.replay.trigger, g04.recon.trigger. SR writes still require SR Custodian checker."
+    module: PS03
+  - flag_code: ps04_dlq_ops
+    grants: "Leave-SR relay operations: ps04.relay.pause, ps04.dlq.triage, ps04.replay.trigger, ps04.recon.trigger. SR writes still require SR Custodian checker."
     grantable_on: [integ_ops, hr_admin]
-    module: G04
-  - flag_code: g04_prepension_sign
+    module: PS04
+  - flag_code: ps04_prepension_sign
     grants: "Sign the pre-pension SR-completeness certificate."
     grantable_on: [sr_custodian]
-    module: G04
-  - flag_code: g12_sr_custodian
+    module: PS04
+  - flag_code: ps12_sr_custodian
     grants: "Elevated SR-ledger powers: legacy promotion, integrity/anchor verification, bulk corrigendum, Section-65B issuance."
     grantable_on: [sr_custodian]
-    module: G12
-  - flag_code: g05_clearance_officer
+    module: PS12
+  - flag_code: ps05_clearance_officer
     grants: "Grant/deny no-dues for a specific department branch (IT, Library, Accounts, Stores, Advances, Estate); record outstanding dues. Scoped per org_unit."
     grantable_on: [hr_admin, it_admin, finance_admin]
-    module: G05
-  - flag_code: g05_estate_officer
+    module: PS05
+  - flag_code: ps05_estate_officer
     grants: "Record official-accommodation retention, vacation-by dates; raise licence-fee-recovery signal."
     grantable_on: [hr_admin]
-    module: G05
-  - flag_code: g05_presiding_officer
+    module: PS05
+  - flag_code: ps05_presiding_officer
     grants: "Run interactive transfer-counselling session; record observed choices."
     grantable_on: [transfer_authority]
-    module: G05
+    module: PS05
   - flag_code: ld_developmental
     grants: "Phase-2 developmental layer: ld.gap-weighted, ld.recommendations, ld.marketplace, ld.campaign-launch, ld.credential-verify, ld.feature-flags. Gated on framework-curation evidence."
     grantable_on: [ld_officer, ld_manager]
-    module: G07
+    module: PS07
   - flag_code: ld_vendor_admin
     grants: "Maintain empanelment records/contracts/procurement refs. Cannot approve own empanelment (SoD)."
     grantable_on: [ld_officer]
-    module: G07
-  - flag_code: g08_appraiser_roles
-    grants: "APAR tier participation: g08.reporting-officer, g08.reviewing-officer (resolved by P01 reporting-chain position)."
+    module: PS07
+  - flag_code: ps08_appraiser_roles
+    grants: "APAR tier participation: ps08.reporting-officer, ps08.reviewing-officer (resolved by P01 reporting-chain position)."
     grantable_on: [l1_manager, l2_manager, l3_manager, l4_manager, l5_manager]
-    module: G08
-  - flag_code: g08_condonation
+    module: PS08
+  - flag_code: ps08_condonation
     grants: "Authorise acceptance of a late APAR representation."
-    grantable_on: [g08_competent_authority, g08_accepting_authority]
-    module: G08
-  - flag_code: g08_dual_control
+    grantable_on: [ps08_competent_authority, ps08_accepting_authority]
+    module: PS08
+  - flag_code: ps08_dual_control
     grants: "Second-person approval for APAR disposal and confidentiality downgrade (P01 checker)."
-    grantable_on: [g08_apar_custodian, hr_admin]
-    module: G08
-  - flag_code: g08_feature_flags
-    grants: "Staged differentiators (default off): g08.calibration, g08.continuous-feedback, g08.msf-360, g08.bell-curve, g08.calibration-member."
+    grantable_on: [ps08_apar_custodian, hr_admin]
+    module: PS08
+  - flag_code: ps08_feature_flags
+    grants: "Staged differentiators (default off): ps08.calibration, ps08.continuous-feedback, ps08.msf-360, ps08.bell-curve, ps08.calibration-member."
     grantable_on: [performance_admin, org_admin]
-    module: G08
+    module: PS08
   - flag_code: icc_external_member
     grants: "Mandatory external member of the POSH Internal Committee for HARASSMENT cases."
     grantable_on: [icc_member]
-    module: G09
+    module: PS09
   - flag_code: PAYROLL_APPROVE
     grants: "Approve & lock payroll runs; authorise off-cycle/supplementary/FnF; certify remittances/Form-16. Must differ from run creator."
     grantable_on: [payroll_approver]
-    module: G10
+    module: PS10
   - flag_code: PAYROLL_DISBURSE
     grants: "DSC-sign and transmit the bank file (X.3). Distinct from Officer and Approver (3-way SoD)."
     grantable_on: [payroll_disburser]
-    module: G10
+    module: PS10
   - flag_code: DDO_SANCTION
     grants: "Sanction loans/advances, off-cycle/FnF within authority; adjudicate legally-barred overpayment recovery."
     grantable_on: [hod]
-    module: G10
-  - flag_code: g13_security_powers
+    module: PS10
+  - flag_code: ps13_security_powers
     grants: "Classification downgrade, DLP rule authoring, quarantine release, clearance grants, key-policy, anti-brute-force unlocks."
     grantable_on: [security_dlp_officer]
-    module: G13
+    module: PS13
   - flag_code: analytics_data_engineer
     grants: "Operate ETL/mart refresh (X.1), monitor freshness/reconciliation, manage source data contracts. No dashboard publication."
     grantable_on: [analytics_admin, it_admin]
-    module: G14
+    module: PS14
 
 # -----------------------------------------------------------------------------
 # 3. PII TIERS  — PII Protection Ceiling model (RBAC §1, §6, §7; Foundation §6.3)
@@ -677,7 +677,7 @@ capability_flags:
 # -----------------------------------------------------------------------------
 pii_tiers:
   - tier: TIER-1
-    label: "Government / statutory identity & financial credentials"
+    label: "Enterprise / statutory identity & financial credentials"
     examples: [PAN, Aadhaar, "Passport Number", "Driving Licence", "Bank account number", "Biometric data"]
     view_unmasked:
       - "Employee — own only (national IDs shown masked; biometric never displayed to any role)"
@@ -701,9 +701,9 @@ pii_tiers:
     examples:
       - "Performance ratings — draft (reviewer only) / published / calibration"
       - "Confidential separation & exit-interview fields"
-      - "Vigilance notes, sealed-cover contents, preliminary-inquiry reports (G09)"
-      - "Sealed/TOP_SECRET documents (G13)"
-      - "Confidential-source / whistle-blower identity (G09 is_confidential_source)"
+      - "Vigilance notes, sealed-cover contents, preliminary-inquiry reports (PS09)"
+      - "Sealed/TOP_SECRET documents (PS13)"
+      - "Confidential-source / whistle-blower identity (PS09 is_confidential_source)"
     view_unmasked:
       - "Draft ratings — reviewer only; no entitlement exposes them pre-publish"
       - "Vigilance/sealed content — Vigilance Officer + DA only; charged officer sees only formally-served artefacts (and relied-upon evidence)"
@@ -749,13 +749,13 @@ resolution_order:
       rule: "Apply field mask (V/M/H per RBAC §7) on serialization so an over-broad query cannot leak; E·AR fields route edits through P01, never direct write."
 
 # -----------------------------------------------------------------------------
-# 4. MATRIX  — per module (G01–G14), key actions grounded in module BRD FRs.
+# 4. MATRIX  — per module (PS01–PS14), key actions grounded in module BRD FRs.
 #    Each action: allowed_roles / required_capability_flags / scope / pii_tier_gate / sod.
 #    Every cell is additionally resolved through `resolution_order` by P02.
 # -----------------------------------------------------------------------------
 matrix:
 
-  G01:
+  PS01:
     module: "Employee Profile Management"
     actions:
       - action_code: epm.profile.view_own
@@ -801,98 +801,98 @@ matrix:
         pii_tier_gate: "TIER-1/2 governance access, PII-ceiling-bound"
         sod: "erasure sign-off by DPO; purge sign-off DPO/Dept Head"
       - action_code: epm.legal_hold.place
-        description: "Place a legal hold blocking erasure/purge (often from G09/G11)."
+        description: "Place a legal hold blocking erasure/purge (often from PS09/PS11)."
         allowed_roles: [dpo, hod, sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "policy = System Admin; holds = Dept Head/SR Custodian/DPO; erasure sign-off = DPO"
 
-  G02:
+  PS02:
     module: "Personal Details Modification Workflow"
     actions:
-      - action_code: g02.change_request.create
+      - action_code: ps02.change_request.create
         description: "Raise a self-service personal-detail change request (maker)."
         allowed_roles: [employee]
         required_capability_flags: []
         scope: self
         pii_tier_gate: "TIER-1 bank/ID changes step-up + fraud-scored"
         sod: "request.created_by != approval.actor"
-      - action_code: g02.change_request.review
+      - action_code: ps02.change_request.review
         description: "Review/checker on a change request; bulk-correction maker."
         allowed_roles: [hr_admin, hrbp]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-1/2 per field-access catalog"
         sod: "checker != requester; no self-approval of own master record"
-      - action_code: g02.change_request.approve_statutory
+      - action_code: ps02.change_request.approve_statutory
         description: "Senior approval for STATUTORY changes; dual-authoriser for break-glass."
         allowed_roles: [hod, appointing_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "maker != checker; delegate must independently satisfy the stage role"
-      - action_code: g02.fraud.review
+      - action_code: ps02.fraud.review
         description: "Triage HIGH/BLOCKED risk-scored requests (P01 CONDITIONAL fraud stage)."
         allowed_roles: [hr_admin, hrbp, appointing_authority]
         required_capability_flags: [fraud_reviewer]
         scope: entity
         pii_tier_gate: "TIER-1 financial-change signals"
         sod: "reviewer != request creator"
-      - action_code: g02.grievance.handle
+      - action_code: ps02.grievance.handle
         description: "Handle data-subject privacy grievance."
         allowed_roles: [hr_admin, appointing_authority]
         required_capability_flags: [grievance_officer]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g02.sr.post
-        description: "Post approved statutory personal-detail change to the G12 SR (via G01 master owner)."
+      - action_code: ps02.sr.post
+        description: "Post approved statutory personal-detail change to the PS12 SR (via PS01 master owner)."
         allowed_roles: [sr_custodian, hr_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR write enforces maker != checker (P01); dual-auth on reversals"
 
-  G03:
+  PS03:
     module: "Attendance & Leave Management"
     actions:
-      - action_code: g03.leave.apply
+      - action_code: ps03.leave.apply
         description: "Apply for leave; view own balance/history (FR-*). Zero-balance & context-restricted types hidden."
         allowed_roles: [employee]
         required_capability_flags: []
         scope: self
         pii_tier_gate: null
         sod: null
-      - action_code: g03.leave.approve_standard
+      - action_code: ps03.leave.approve_standard
         description: "Approve/reject leave at any stage of the standard flow."
         allowed_roles: [l1_manager, l2_manager, l3_manager, l4_manager, l5_manager, hrbp, leave_admin, hr_admin]
         required_capability_flags: []
         scope: team
         pii_tier_gate: null
         sod: "approver != applicant; managers cannot revoke"
-      - action_code: g03.leave.sanction_special
+      - action_code: ps03.leave.sanction_special
         description: "Final sanction for special leaves (Maternity/Study/Sabbatical/Commuted/LWP) & encashment (Stage-2 mandatory)."
         allowed_roles: [sanctioning_authority, hr_admin, leave_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "no self-approve; encashment case-by-case = HR Admin only"
-      - action_code: g03.attendance.regularize_approve
+      - action_code: ps03.attendance.regularize_approve
         description: "Submit (employee) / approve all attendance request types."
         allowed_roles: [employee, l1_manager, hrbp, attendance_admin, hr_admin]
         required_capability_flags: []
         scope: team
         pii_tier_gate: null
         sod: "approver != submitter"
-      - action_code: g03.punch.review_anomaly
+      - action_code: ps03.punch.review_anomaly
         description: "Review FLAGGED_FOR_REVIEW punches; approve/reject/escalate via P01."
         allowed_roles: [hr_admin, attendance_admin]
         required_capability_flags: [anomaly_reviewer]
         scope: entity
         pii_tier_gate: null
         sod: "reviewer != punch owner (cannot self-clear)"
-      - action_code: g03.biometric.govern
+      - action_code: ps03.biometric.govern
         description: "Govern biometric/geo consent, lawful-basis config, retention/purge."
         allowed_roles: [dpo, hr_admin]
         required_capability_flags: [dpo_governance]
@@ -900,45 +900,45 @@ matrix:
         pii_tier_gate: "TIER-1 biometric — no UI display; governance only"
         sod: null
 
-  G04:
+  PS04:
     module: "Leave–SR Integration"
     actions:
-      - action_code: g04.relay.monitor
+      - action_code: ps04.relay.monitor
         description: "Monitor the leave-SR relay dashboard, freshness, DLQ."
         allowed_roles: [integ_ops, hr_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g04.dlq.triage_replay
+      - action_code: ps04.dlq.triage_replay
         description: "Triage DLQ; trigger replay/backfill; run on-demand reconciliation."
         allowed_roles: [integ_ops, hr_admin]
-        required_capability_flags: [g04_dlq_ops]
+        required_capability_flags: [ps04_dlq_ops]
         scope: entity
         pii_tier_gate: null
         sod: "any resulting SR write = IntegOps maker -> SR Custodian checker (P01)"
-      - action_code: g04.sr_mapping.draft
+      - action_code: ps04.sr_mapping.draft
         description: "Draft the leave-type -> SR-entry mapping catalog (W.2 form)."
         allowed_roles: [org_admin]
         required_capability_flags: []
         scope: tenant
         pii_tier_gate: null
         sod: "Sys Admin draft (maker)"
-      - action_code: g04.sr_mapping.publish
+      - action_code: ps04.sr_mapping.publish
         description: "Publish the SR mapping catalog version (immutable once PUBLISHED)."
         allowed_roles: [sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR Custodian publish (checker) != Sys Admin maker"
-      - action_code: g04.prepension.sign
+      - action_code: ps04.prepension.sign
         description: "Sign the pre-pension SR-completeness certificate."
         allowed_roles: [sr_custodian]
-        required_capability_flags: [g04_prepension_sign]
+        required_capability_flags: [ps04_prepension_sign]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g04.qualsvc.consume
+      - action_code: ps04.qualsvc.consume
         description: "Consume qualifying-service flags & pre-pension certificate; read impact reports."
         allowed_roles: [pension_officer]
         required_capability_flags: []
@@ -946,338 +946,338 @@ matrix:
         pii_tier_gate: null
         sod: null
 
-  G05:
+  PS05:
     module: "Transfer / Relieving / Joining Workflow"
     actions:
-      - action_code: g05.transfer.initiate
+      - action_code: ps05.transfer.initiate
         description: "Initiate/prepare a transfer order at source/destination office."
         allowed_roles: [hr_admin, hrbp]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "initiator != sanctioning authority"
-      - action_code: g05.transfer.sanction
+      - action_code: ps05.transfer.sanction
         description: "Sanction transfer/deputation/repatriation orders, amendments, cancellations; forced-action powers; decide representations."
         allowed_roles: [transfer_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "MFA-enforced; maker != checker"
-      - action_code: g05.clearance.grant
+      - action_code: ps05.clearance.grant
         description: "Grant/deny departmental no-dues; record outstanding dues (per org_unit branch)."
         allowed_roles: [hr_admin, it_admin, finance_admin]
-        required_capability_flags: [g05_clearance_officer]
+        required_capability_flags: [ps05_clearance_officer]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g05.estate.record
+      - action_code: ps05.estate.record
         description: "Record accommodation retention/vacation; raise licence-fee-recovery signal."
         allowed_roles: [hr_admin]
-        required_capability_flags: [g05_estate_officer]
+        required_capability_flags: [ps05_estate_officer]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g05.counselling.conduct
+      - action_code: ps05.counselling.conduct
         description: "Run interactive transfer-counselling session; record observed choices."
         allowed_roles: [transfer_authority]
-        required_capability_flags: [g05_presiding_officer]
+        required_capability_flags: [ps05_presiding_officer]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g05.sr.post
-        description: "Post transfer/relieving/joining events to the G12 SR; reconcile outbox."
+      - action_code: ps05.sr.post
+        description: "Post transfer/relieving/joining events to the PS12 SR; reconcile outbox."
         allowed_roles: [sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR write maker != checker (P01/P05)"
 
-  G06:
+  PS06:
     module: "Promotion / Posting / Progression"
     actions:
-      - action_code: g06.seniority.prepare
+      - action_code: ps06.seniority.prepare
         description: "Prepare multi-stream seniority list & qualifying-service ledger (maker)."
-        allowed_roles: [g06_establishment_officer]
+        allowed_roles: [ps06_establishment_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "cannot self-approve publication"
-      - action_code: g06.vacancy.compute
+      - action_code: ps06.vacancy.compute
         description: "Compute sanctioned-strength/vacancy figures (audited P05)."
-        allowed_roles: [g06_strength_officer]
+        allowed_roles: [ps06_strength_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "independent of case maker"
-      - action_code: g06.roster.apply
+      - action_code: ps06.roster.apply
         description: "Apply reservation roster with own-merit migration & consequential seniority."
-        allowed_roles: [g06_roster_officer]
+        allowed_roles: [ps06_roster_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "independent control on DPC select list"
-      - action_code: g06.vigilance.attest
-        description: "Attest vigilance/disciplinary clearance (reads G09; sealed-cover where pending)."
-        allowed_roles: [g06_vigilance_clearance]
+      - action_code: ps06.vigilance.attest
+        description: "Attest vigilance/disciplinary clearance (reads PS09; sealed-cover where pending)."
+        allowed_roles: [ps06_vigilance_clearance]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3 vigilance status; case-scoped"
         sod: null
-      - action_code: g06.dpc.convene
+      - action_code: ps06.dpc.convene
         description: "Convene the DPC (P01 initiator); prepare panel."
-        allowed_roles: [g06_dpc_secretary]
+        allowed_roles: [ps06_dpc_secretary]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "cannot vote or grade"
-      - action_code: g06.dpc.grade
+      - action_code: ps06.dpc.grade
         description: "Grade candidates as DPC/panel member (P01 PARALLEL_ALL_OF)."
-        allowed_roles: [g06_dpc_member]
+        allowed_roles: [ps06_dpc_member]
         required_capability_flags: []
         scope: entity
-        pii_tier_gate: "TIER-3 APAR grades (from G08)"
+        pii_tier_gate: "TIER-3 APAR grades (from PS08)"
         sod: "cannot be in own promotion field"
-      - action_code: g06.promotion.approve
+      - action_code: ps06.promotion.approve
         description: "Approve/sanction promotion order & select list (checker)."
-        allowed_roles: [g06_appointing_authority]
+        allowed_roles: [ps06_appointing_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "maker != checker (P02)"
-      - action_code: g06.supersession.review
+      - action_code: ps06.supersession.review
         description: "Review-DPC / supersession-review approval."
-        allowed_roles: [g06_reviewing_authority]
+        allowed_roles: [ps06_reviewing_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g06.legal.link
+      - action_code: ps06.legal.link
         description: "Link court/tribunal cases; manage sub-judice/stay handling."
-        allowed_roles: [g06_legal_officer]
+        allowed_roles: [ps06_legal_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "cannot adjudicate promotion"
-      - action_code: g06.sr.post
-        description: "Post promotion/establishment events to the G12 SR."
+      - action_code: ps06.sr.post
+        description: "Post promotion/establishment events to the PS12 SR."
         allowed_roles: [sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR write maker != checker"
 
-  G07:
+  PS07:
     module: "Training & Skill Development"
     actions:
-      - action_code: g07.catalog.manage
+      - action_code: ps07.catalog.manage
         description: "Manage catalog/content/sessions/trainers; needs analysis; plan; attendance/assessment; issue certs; run campaigns."
         allowed_roles: [ld_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g07.plan.approve
+      - action_code: ps07.plan.approve
         description: "Approve annual plan & budget; final-approve nominations (L2 P01); launch/approve campaigns."
         allowed_roles: [ld_manager]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "approver != nominator"
-      - action_code: g07.session.deliver
+      - action_code: ps07.session.deliver
         description: "View assigned rosters, mark attendance, enter scores, close session."
         allowed_roles: [ld_trainer]
         required_capability_flags: []
         scope: team
         pii_tier_gate: null
         sod: null
-      - action_code: g07.attendance.capture_kiosk
+      - action_code: ps07.attendance.capture_kiosk
         description: "Capture attendance at a shared kiosk for non-login staff (attributed audit)."
         allowed_roles: [ld_kiosk_operator]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "never anonymous — operator attributed"
-      - action_code: g07.vendor.manage
+      - action_code: ps07.vendor.manage
         description: "Maintain empanelment records/contracts/procurement refs."
         allowed_roles: [ld_officer]
         required_capability_flags: [ld_vendor_admin]
         scope: entity
         pii_tier_gate: null
         sod: "cannot approve own empanelment"
-      - action_code: g07.developmental.use
+      - action_code: ps07.developmental.use
         description: "Phase-2 weighted competency scoring, recommendations, marketplace (flag-gated)."
         allowed_roles: [ld_officer, ld_manager, employee]
         required_capability_flags: [ld_developmental]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g07.cert.sr_post
-        description: "Post statutory-training/certification events to the G12 SR."
+      - action_code: ps07.cert.sr_post
+        description: "Post statutory-training/certification events to the PS12 SR."
         allowed_roles: [sr_custodian, ld_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR write maker != checker"
 
-  G08:
+  PS08:
     module: "Performance Appraisal (APAR)"
     actions:
-      - action_code: g08.self.appraise
+      - action_code: ps08.self.appraise
         description: "Self-appraisal participation; view own published APAR post-disclosure; represent/appeal."
         allowed_roles: [employee]
         required_capability_flags: []
         scope: self
         pii_tier_gate: "TIER-3 draft ratings never visible pre-publish"
         sod: null
-      - action_code: g08.report.assess
+      - action_code: ps08.report.assess
         description: "Reporting-Officer part-period assessment, integrity/pen-picture, grade (Tier 1)."
         allowed_roles: [l1_manager, l2_manager, l3_manager, l4_manager, l5_manager]
-        required_capability_flags: [g08_appraiser_roles]
+        required_capability_flags: [ps08_appraiser_roles]
         scope: team
         pii_tier_gate: "TIER-3 confidential APAR body"
         sod: "resolved by P01 reporting-chain; RO != RvO != AA"
-      - action_code: g08.review
+      - action_code: ps08.review
         description: "Reviewing-Officer scrutiny (Tier 2)."
         allowed_roles: [l2_manager, l3_manager, l4_manager, l5_manager]
-        required_capability_flags: [g08_appraiser_roles]
+        required_capability_flags: [ps08_appraiser_roles]
         scope: team
         pii_tier_gate: "TIER-3"
         sod: "RvO != RO, != appraisee"
-      - action_code: g08.accept.certify
+      - action_code: ps08.accept.certify
         description: "Accepting-Authority settle grade, ratify calibration, trigger disclosure; DSC sign (Tier 3)."
-        allowed_roles: [g08_accepting_authority]
+        allowed_roles: [ps08_accepting_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3"
         sod: "MFA step-up; AA != RO/RvO"
-      - action_code: g08.representation.adjudicate
+      - action_code: ps08.representation.adjudicate
         description: "Adjudicate representation/appeal against the APAR."
-        allowed_roles: [g08_competent_authority]
-        required_capability_flags: [g08_condonation]
+        allowed_roles: [ps08_competent_authority]
+        required_capability_flags: [ps08_condonation]
         scope: entity
         pii_tier_gate: "TIER-3"
         sod: "not in appraisee's chain"
-      - action_code: g08.apar.custody
+      - action_code: ps08.apar.custody
         description: "Confidential custody, retention, expunction execution, heir-access grants."
-        allowed_roles: [g08_apar_custodian]
+        allowed_roles: [ps08_apar_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3"
-        sod: "disposal/downgrade needs g08_dual_control second person"
-      - action_code: g08.grade.sr_post
-        description: "Post the final APAR grade to the G12 SR."
-        allowed_roles: [g08_accepting_authority, sr_custodian]
+        sod: "disposal/downgrade needs ps08_dual_control second person"
+      - action_code: ps08.grade.sr_post
+        description: "Post the final APAR grade to the PS12 SR."
+        allowed_roles: [ps08_accepting_authority, sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR write maker != checker"
 
-  G09:
+  PS09:
     module: "Disciplinary Cases & Punishment"
     actions:
-      - action_code: g09.complaint.screen
+      - action_code: ps09.complaint.screen
         description: "Screen complaints; maintain integrity register & vigilance-clearance status."
         allowed_roles: [vigilance_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3 confidential-source hard-hidden except VO/DA"
         sod: null
-      - action_code: g09.charge.initiate
+      - action_code: ps09.charge.initiate
         description: "Initiate charges / charge-sheet (competence-verified, DI-13)."
         allowed_roles: [disciplinary_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3"
         sod: "DA != complainant/witness/IO/PO (DI-2); MFA-enforced"
-      - action_code: g09.inquiry.conduct
+      - action_code: ps09.inquiry.conduct
         description: "Conduct the departmental inquiry impartially (witnesses, exhibits, order sheets)."
         allowed_roles: [inquiry_officer]
         required_capability_flags: []
         scope: self
         pii_tier_gate: "TIER-3 case-scoped; cannot view vigilance scoring/sealed-cover"
         sod: "IO != DA/PO/witness"
-      - action_code: g09.case.present
+      - action_code: ps09.case.present
         description: "Present the department's case before the IO."
         allowed_roles: [presenting_officer]
         required_capability_flags: []
         scope: self
         pii_tier_gate: "TIER-3 case-scoped"
         sod: "PO != DA/IO"
-      - action_code: g09.penalty.impose
+      - action_code: ps09.penalty.impose
         description: "Impose minor/major penalty or exonerate (proportionality, recovery caps, DSC-signed)."
         allowed_roles: [disciplinary_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3"
         sod: "DA cannot self-approve; competence-verified; UPSC/CVC consult where mandated"
-      - action_code: g09.appeal.decide
+      - action_code: ps09.appeal.decide
         description: "Decide appeal/revision/review; may spawn corrigendum."
         allowed_roles: [appellate_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3"
         sod: "Appellate != DA; competence-verified"
-      - action_code: g09.posh.inquiry
+      - action_code: ps09.posh.inquiry
         description: "POSH Internal Committee route for HARASSMENT cases (replaces IO)."
         allowed_roles: [icc_presiding, icc_member]
         required_capability_flags: [icc_external_member]
         scope: entity
         pii_tier_gate: "TIER-3; external member mandatory"
         sod: "committee members mutually distinct"
-      - action_code: g09.sr.post
-        description: "Post penalty/exoneration & downstream effects to the G12 SR (idempotent)."
+      - action_code: ps09.sr.post
+        description: "Post penalty/exoneration & downstream effects to the PS12 SR (idempotent)."
         allowed_roles: [sr_custodian, disciplinary_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR write maker != checker"
 
-  G10:
+  PS10:
     module: "Payroll & Benefits"
     actions:
-      - action_code: g10.run.prepare
+      - action_code: ps10.run.prepare
         description: "Configure components/rules (draft), run payroll (draft/parallel), adjustments, prepare bank file & FnF (maker)."
         allowed_roles: [payroll_officer, payroll_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-1/2 salary/bank in run context"
         sod: "cannot approve, sign, or confirm positive-pay"
-      - action_code: g10.run.approve
+      - action_code: ps10.run.approve
         description: "Review reconciliation; approve & lock runs (P01); certify remittances/Form-16."
         allowed_roles: [payroll_approver]
         required_capability_flags: [PAYROLL_APPROVE]
         scope: entity
         pii_tier_gate: "TIER-2"
         sod: "approver != run creator; MFA-enforced"
-      - action_code: g10.bankfile.sign_transmit
+      - action_code: ps10.bankfile.sign_transmit
         description: "DSC-sign the bank file and transmit over X.3."
         allowed_roles: [payroll_disburser]
         required_capability_flags: [PAYROLL_DISBURSE]
         scope: entity
         pii_tier_gate: "TIER-1 bank file"
         sod: "disburser != officer != approver (3-way SoD); MFA-enforced"
-      - action_code: g10.loan.sanction
+      - action_code: ps10.loan.sanction
         description: "Sanction loans/advances, off-cycle/FnF within authority."
         allowed_roles: [hod]
         required_capability_flags: [DDO_SANCTION]
         scope: entity
         pii_tier_gate: null
         sod: "DDO sanction != payroll maker"
-      - action_code: g10.overpayment.adjudicate
+      - action_code: ps10.overpayment.adjudicate
         description: "Adjudicate legally-barred overpayment recovery (Rafiq Masih line) via P01."
         allowed_roles: [hod]
         required_capability_flags: [DDO_SANCTION]
         scope: entity
         pii_tier_gate: null
         sod: "recorded justification; reversal needs Approver + source confirm"
-      - action_code: g10.fnf.settle
+      - action_code: ps10.fnf.settle
         description: "Consolidate FnF dues/recoveries (compute -> sanction -> approve -> pay)."
         allowed_roles: [payroll_officer, hod, payroll_approver, finance_admin, hr_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-2"
-        sod: "DDO sanction + Approver approval; approver != creator; gratuity handoff to G11"
-      - action_code: g10.payslip.view_own
+        sod: "DDO sanction + Approver approval; approver != creator; gratuity handoff to PS11"
+      - action_code: ps10.payslip.view_own
         description: "View/download own payslips and tax documents."
         allowed_roles: [employee]
         required_capability_flags: []
@@ -1285,52 +1285,52 @@ matrix:
         pii_tier_gate: "TIER-2 own payslip"
         sod: null
 
-  G11:
+  PS11:
     module: "Retirement & Pension"
     actions:
-      - action_code: g11.case.create
+      - action_code: ps11.case.create
         description: "Create/drive a separation/pension case for any type & regime (maker)."
         allowed_roles: [pension_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-1/2 bank/PAN in settlement context"
         sod: "maker != sanctioning authority"
-      - action_code: g11.sr.verify
-        description: "Run SR verification / completeness gate; certify gap-free service (G12)."
+      - action_code: ps11.sr.verify
+        description: "Run SR verification / completeness gate; certify gap-free service (PS12)."
         allowed_roles: [sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "SR Custodian certify != case maker"
-      - action_code: g11.qualsvc.compute
+      - action_code: ps11.qualsvc.compute
         description: "Compute qualifying service (deduct non-qualifying spells, add prior service); pension/gratuity."
         allowed_roles: [pension_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "Officer compute; SR Custodian verify; lock post-verify"
-      - action_code: g11.pension.sanction
+      - action_code: ps11.pension.sanction
         description: "Sanction final/anticipatory pension (checker); issue PPO."
         allowed_roles: [pension_sanctioning_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-2"
         sod: "sanctioning authority != pension officer; MFA-enforced"
-      - action_code: g11.invalidation.assess
+      - action_code: ps11.invalidation.assess
         description: "Certify invalidation for invalid-pension cases."
         allowed_roles: [medical_board]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-2 medical data (case-scoped)"
         sod: null
-      - action_code: g11.ppo.disburse
+      - action_code: ps11.ppo.disburse
         description: "Treasury/PDA/Bank-CPPC disbursal of PPOs over X.3."
         allowed_roles: [pension_disbursing_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-1 bank details"
         sod: "PDA != sanctioning authority"
-      - action_code: g11.pensioner.self_service
+      - action_code: ps11.pensioner.self_service
         description: "Pensioner/family-pensioner self-service (Me workspace)."
         allowed_roles: [employee]
         required_capability_flags: []
@@ -1338,59 +1338,59 @@ matrix:
         pii_tier_gate: "TIER-1/2 own masked"
         sod: null
 
-  G12:
+  PS12:
     module: "Digital Service Register"
     actions:
-      - action_code: g12.sr.append
+      - action_code: ps12.sr.append
         description: "Append an SR event via the write port (source modules, service principal, append-only)."
         allowed_roles: [hr_admin, sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "maker (source) != checker (custodian)"
-      - action_code: g12.sr.attest
+      - action_code: ps12.sr.attest
         description: "Attest entries with a qualified signature."
         allowed_roles: [sr_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g12.correction.approve
+      - action_code: ps12.correction.approve
         description: "Approve corrigendum / supersession / annotation (append-only, never hard-edit)."
         allowed_roles: [sr_custodian, sr_second_custodian]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "routine corrigenda require second custodian (maker != checker != 2nd)"
-      - action_code: g12.legacy.promote
+      - action_code: ps12.legacy.promote
         description: "Promote confidence-flagged legacy digitisation batches (checker)."
         allowed_roles: [sr_custodian]
-        required_capability_flags: [g12_sr_custodian]
+        required_capability_flags: [ps12_sr_custodian]
         scope: entity
         pii_tier_gate: null
         sod: "checker != data-entry maker"
-      - action_code: g12.extract.certify
+      - action_code: ps12.extract.certify
         description: "Issue certified true copy + qualified signing + redaction; Section-65B."
         allowed_roles: [sr_custodian, sr_second_custodian]
-        required_capability_flags: [g12_sr_custodian]
+        required_capability_flags: [ps12_sr_custodian]
         scope: entity
         pii_tier_gate: "TIER-1 DOB/national-ID redaction"
         sod: "FULL_SR extract requires second custodian"
-      - action_code: g12.appeal.decide
+      - action_code: ps12.appeal.decide
         description: "Decide SR appeals beyond a custodian uphold; record binding outcome."
         allowed_roles: [appellate_authority]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "read + decision only, no ledger write; independent of upholding custodian"
-      - action_code: g12.sr.read_full
-        description: "Read full SR / consume pull-feed extract for terminal-benefit computation (G11)."
+      - action_code: ps12.sr.read_full
+        description: "Read full SR / consume pull-feed extract for terminal-benefit computation (PS11)."
         allowed_roles: [pension_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-1 masked per ceiling"
         sod: "read-only, no write"
-      - action_code: g12.verification.cycle
+      - action_code: ps12.verification.cycle
         description: "Own the periodic verification cycle (bulk/assisted/heir) & gap register."
         allowed_roles: [sr_custodian, employee]
         required_capability_flags: []
@@ -1398,98 +1398,98 @@ matrix:
         pii_tier_gate: null
         sod: null
 
-  G13:
+  PS13:
     module: "Document Management & Secure Storage"
     actions:
-      - action_code: g13.document.store
+      - action_code: ps13.document.store
         description: "Store/manage documents in the vault (policy library, storage/retention profiles)."
         allowed_roles: [document_admin, hr_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "TIER-3 sealed docs invisible to subject"
         sod: null
-      - action_code: g13.letter.author
+      - action_code: ps13.letter.author
         description: "Author/manage letter templates & merge fields; certify generated copies."
         allowed_roles: [document_admin, hr_admin, records_manager]
         required_capability_flags: [letter_admin]
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g13.disposition.approve
+      - action_code: ps13.disposition.approve
         description: "Approve document disposition; manage WORM; certify true copies (checker)."
         allowed_roles: [records_manager]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "maker != checker (P01)"
-      - action_code: g13.legal_hold.place
+      - action_code: ps13.legal_hold.place
         description: "Place legal holds; manage e-discovery exports."
         allowed_roles: [legal_hold_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "placer separated from destroying custodian"
-      - action_code: g13.legal_hold.release_approve
+      - action_code: ps13.legal_hold.release_approve
         description: "Approve high-value placement and all releases (dual control)."
         allowed_roles: [legal_hold_approver]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "release re-enables destruction -> second authority (!= admin)"
-      - action_code: g13.classification.downgrade
+      - action_code: ps13.classification.downgrade
         description: "Approve classification downgrade; DLP rules; quarantine release; clearance grants."
         allowed_roles: [security_dlp_officer]
-        required_capability_flags: [g13_security_powers]
+        required_capability_flags: [ps13_security_powers]
         scope: entity
         pii_tier_gate: "TIER-3 TOP_SECRET/sealed"
         sod: null
 
-  G14:
+  PS14:
     module: "Dashboard & Analytics"
     actions:
-      - action_code: g14.dashboard.view
+      - action_code: ps14.dashboard.view
         description: "View role-scoped dashboards/KPIs (P02 scope + metric-level complementary suppression)."
         allowed_roles: [employee, l1_manager, hod, hrbp, hr_admin, ceo, org_admin, platform_super_admin]
         required_capability_flags: []
         scope: self
         pii_tier_gate: "All tiers via P02 field-mask + aggregate re-identification suppression"
         sod: null
-      - action_code: g14.kpi.define
+      - action_code: ps14.kpi.define
         description: "Define/publish governed KPI definitions with effective-dated targets; manage dashboards."
         allowed_roles: [analytics_admin]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: null
-      - action_code: g14.report.build
+      - action_code: ps14.report.build
         description: "Self-service report builder; schedule distribution & multi-format export."
         allowed_roles: [hr_admin, analytics_admin, hod]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: "Exports inherit P02 scope + mask"
         sod: null
-      - action_code: g14.etl.operate
+      - action_code: ps14.etl.operate
         description: "Operate ETL/mart refresh (X.1); monitor freshness/reconciliation; manage source contracts."
         allowed_roles: [analytics_admin, it_admin]
         required_capability_flags: [analytics_data_engineer]
         scope: entity
         pii_tier_gate: null
         sod: "no dashboard publication authority"
-      - action_code: g14.establishment.author
+      - action_code: ps14.establishment.author
         description: "Author/maintain establishment_position (sanctioned strength / roster points) — vacancy/reservation denominators."
         allowed_roles: [establishment_officer]
         required_capability_flags: []
         scope: entity
         pii_tier_gate: null
         sod: "authoring != reporting; no post approval/adjudication"
-      - action_code: g14.dpr.propagate
+      - action_code: ps14.dpr.propagate
         description: "Propagate DPDP rectification/erasure across the analytics estate (reconciled with statutory retention)."
         allowed_roles: [dpo]
         required_capability_flags: [dpo_governance]
         scope: tenant
         pii_tier_gate: "TIER-1/2 governance"
         sod: null
-      - action_code: g14.audit.read
+      - action_code: ps14.audit.read
         description: "Read the P05 read-access ledger / access-anomaly detection (Auditor pattern)."
         allowed_roles: [org_admin]
         required_capability_flags: []
@@ -1505,14 +1505,14 @@ notes:
     Enforcement is performed by Platform Spec P02 `Authorization.check`. The roles,
     matrix, scoping, field-access and capability flags in this file are the MODEL
     INPUT — model-driven and owned by RBAC Design v1.7 — NOT logic re-coded per
-    endpoint. Government module endpoints never re-implement permission checks;
+    endpoint. Enterprise module endpoints never re-implement permission checks;
     they call `Authorization.check({subject,action,resource_ref,fields[]}) ->
     {allowed, scope_filter, field_mask[]}` and receive a scope filter + field mask.
   model_ownership: >
     RBAC Design v1.7 is the single source of the access-control model. This file
-    reproduces the v1.7 base roles/flags/PII ceiling verbatim and adds government
+    reproduces the v1.7 base roles/flags/PII ceiling verbatim and adds enterprise
     statutory actors ONLY as ADDITIONS (new roles + capability flags), per
-    PLATFORM_FOUNDATION §6.6. No entry contradicts v1.7. New gov roles/flags are
+    PLATFORM_FOUNDATION §6.6. No entry contradicts v1.7. New enterprise roles/flags are
     registered in RBAC §2.2/§4.3 via the §14 working-group process, each with
     grant authority and P05 audit logging.
   sod: >

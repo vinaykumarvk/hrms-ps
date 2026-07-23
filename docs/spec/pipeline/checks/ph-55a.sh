@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-55A oracle: raise measured contract coverage by exposing the G01 governed write-ports (identity change /
+# PH-55A oracle: raise measured contract coverage by exposing the PS01 governed write-ports (identity change /
 # transfer posting / probation confirmation) + live-record/count reads (real, service-tested backing) as
 # kernel routes. Checks routes registered + dispatched, and the ratchet advanced to >= 519 / 39.2%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g01.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-55A exit-criteria (G01 governed write-port route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps01.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-55A exit-criteria (PS01 governed write-port route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in governedIdentityChange applyTransferPosting applyProbationConfirmation getLiveRecordForIdentityOps listLiveRecordsForIdentityOps 'employeeMaster.count'; do
   have "$R" "$m" "route wires backing method: $m"

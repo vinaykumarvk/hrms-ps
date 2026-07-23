@@ -23,26 +23,26 @@ subagents remain credit-exhausted until 2026-07-08.
 
 | Module | Closed in PH-26 | Evidence |
 |---|---|---|
-| **G13** | OCR extraction engine binding — OcrProvider seam + built-in extractor (text is EXTRACTED from the payload, not caller-supplied), unsupported-format guard | `ph26a-g13-ocr-engine.test.cjs` |
-| **G12** | RFC-3161 timestamp authority binding — LocalTimestampAuthority issues a token over a digest with a keyed signature; verify detects a tampered digest | `ph26b-g12-tsa.test.cjs` |
-| **G14** | probabilistic predictive analytics + fairness — attrition scoring that EXCLUDES protected features (rejects protected input) + a disparity metric over a monitored attribute | `ph26c-g14-predictive.test.cjs` |
+| **PS13** | OCR extraction engine binding — OcrProvider seam + built-in extractor (text is EXTRACTED from the payload, not caller-supplied), unsupported-format guard | `ph26a-ps13-ocr-engine.test.cjs` |
+| **PS12** | RFC-3161 timestamp authority binding — LocalTimestampAuthority issues a token over a digest with a keyed signature; verify detects a tampered digest | `ph26b-ps12-tsa.test.cjs` |
+| **PS14** | probabilistic predictive analytics + fairness — attrition scoring that EXCLUDES protected features (rejects protected input) + a disparity metric over a monitored attribute | `ph26c-ps14-predictive.test.cjs` |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 Tranche 13 closed the last of the real-engine bindings; the residual is now dominated by **UI
 surfaces** plus a few deep-analytics/tax edge cases and a build-pipeline gate:
 
-- **G01**: privacy/DPDP console UI (the DSR engine exists from PH-15E).
-- **G02**: additional fraud/velocity detectors.
-- **G03**: backdated-leave team-calendar conflict threshold.
-- **G04**: CI port-conformance gate in the build pipeline (runtime conformance exists).
-- **G05**: interactive counselling UI (the counselling engine exists from PH-16D).
-- **G06**: sealed-cover full workflow UI.
-- **G07**: content/assessment-item bank.
-- **G08**: calibration analytics depth.
-- **G09**: POSH conciliation depth, evidence-vault UI listing.
-- **G10**: remaining TDS edge cases, Form-16 Part-A remittance matching depth.
-- **G14**: embedded BI dashboards, mobile briefing.
+- **PS01**: privacy/DPDP console UI (the DSR engine exists from PH-15E).
+- **PS02**: additional fraud/velocity detectors.
+- **PS03**: backdated-leave team-calendar conflict threshold.
+- **PS04**: CI port-conformance gate in the build pipeline (runtime conformance exists).
+- **PS05**: interactive counselling UI (the counselling engine exists from PH-16D).
+- **PS06**: sealed-cover full workflow UI.
+- **PS07**: content/assessment-item bank.
+- **PS08**: calibration analytics depth.
+- **PS09**: POSH conciliation depth, evidence-vault UI listing.
+- **PS10**: remaining TDS edge cases, Form-16 Part-A remittance matching depth.
+- **PS14**: embedded BI dashboards, mobile briefing.
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**
 OpenAPI operations frozen in `docs/contracts/openapi/*.yaml`. "All oracles GREEN" reflects the tranche's

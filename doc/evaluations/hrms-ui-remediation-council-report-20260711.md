@@ -27,7 +27,7 @@ The targeted second pass resolved most of the clash. The council now agrees on a
 - **Finding disappearance during consolidation:** three anonymous reviewers independently required a stable closure ledger mapping each original finding to disposition, role, viewport, theme, files, automated/manual proof, rollback trigger, and final status.
 - **Deterministic test data:** the council initially discussed a green harness without specifying stable personas, permissions, workspaces, loading/error controls, and denial cases. These must be seeded alongside the harness.
 - **Authorization negatives:** route/workspace tests must prove that cached, stale, or deep-linked content cannot cross workspace/role boundaries—not merely that permitted navigation renders.
-- **Human usability evidence:** code and axe checks do not replace task-based validation with representative government-HRMS users and at least one keyboard/screen-reader user for the critical journeys.
+- **Human usability evidence:** code and axe checks do not replace task-based validation with representative primesoft-hrms users and at least one keyboard/screen-reader user for the critical journeys.
 - **Dependency authority:** adding routing, Tailwind, shadcn, i18n, or browser-test packages is a contract/dependency change and must follow the amendment workflow.
 
 ### Idea Evolution

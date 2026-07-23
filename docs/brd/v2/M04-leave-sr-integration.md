@@ -1,7 +1,7 @@
 # Leave Management Integration with Digital Service Register — HRMS Module BRD (v2.0)
 
 **Module code:** M04-LSR
-**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (government / public-sector context, hosted at CGG Data Centre)
+**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (enterprise / public-sector context, hosted at CGG Data Centre)
 **Document version:** v2.0
 **Status:** Revised — council-hardened (supersedes v1.0)
 **Author persona:** Global HR/HCM domain expert (Workday / SAP SuccessFactors / Oracle HCM bar) honouring the public-sector statutory context
@@ -18,7 +18,7 @@
 
 ### 1.1 Purpose
 
-The Digital Service Register (Digital SR, owned by **M12**) is the **statutory system of record** for an employee's entire service lifecycle. In a government HR context, the Service Register is a legal document: pension, seniority, increments, qualifying-service computation, and audit by the Accountant General all depend on it being **complete, accurate, append-only, and tamper-evident**. Leave — especially **long leave, Leave Without Pay (LWP / EOL), study leave, and suspension-as-leave** — directly affects **qualifying service for pension**, **increment dates**, and **seniority**. Therefore every leave spell that is *approved* in M03 must become a **permanent, immutable SR entry** in M12, and every *cancellation or amendment* of that leave must produce a **correcting SR entry** (the SR is never hard-edited).
+The Digital Service Register (Digital SR, owned by **M12**) is the **statutory system of record** for an employee's entire service lifecycle. In a enterprise HR context, the Service Register is a legal document: pension, seniority, increments, qualifying-service computation, and audit by the Accountant General all depend on it being **complete, accurate, append-only, and tamper-evident**. Leave — especially **long leave, Leave Without Pay (LWP / EOL), study leave, and suspension-as-leave** — directly affects **qualifying service for pension**, **increment dates**, and **seniority**. Therefore every leave spell that is *approved* in M03 must become a **permanent, immutable SR entry** in M12, and every *cancellation or amendment* of that leave must produce a **correcting SR entry** (the SR is never hard-edited).
 
 **M04-LSR is the integration that guarantees this.** It is not a leave system and not the SR itself; it is the **reliable, idempotent, reconciled, monitorable bridge** that maps leave domain events to statutory SR entries with **exactly-once *effect*** (defined precisely in §1.6), full **replay**, automated **drift detection**, and explicit **failure handling** (retry / dead-letter / manual intervention).
 
@@ -2014,7 +2014,7 @@ POST /api/v1/lsr/reconciliation/runs
 | Category | Requirement |
 |---|---|
 | Performance | Relay P95 posting lag (approval→SR confirm) ≤ 5 min; management API P95 < 500ms; reconciliation of 100k records < 30 min; reaper interval ≤ 2 min. |
-| Throughput/Scalability **(v2, R12)** | Right-sized to realistic government volume: **low thousands of leave decisions/day** sustained, with **bursts only during migration/backfill**. Horizontal relay workers use **per-partition (employee/lineage) in-order claiming**. A modest burst ceiling + **rate-limit/back-pressure** protects M12 during migration. The v1 50/s-sustained / 500/s-burst figures are **removed** as fantasy-scale. |
+| Throughput/Scalability **(v2, R12)** | Right-sized to realistic enterprise volume: **low thousands of leave decisions/day** sustained, with **bursts only during migration/backfill**. Horizontal relay workers use **per-partition (employee/lineage) in-order claiming**. A modest burst ceiling + **rate-limit/back-pressure** protects M12 during migration. The v1 50/s-sustained / 500/s-burst figures are **removed** as fantasy-scale. |
 | Reliability **(v2, R10/R11)** | **Exactly-once *effect*** = at-least-once delivery + idempotent dedupe, **conditional on the M12 port contract (FR-16)**; no event loss (durable outbox + lease reaper FR-15 + source↔outbox integrity FR-17); RPO ≤ 15 min, RTO ≤ 4h; 99.9% uptime. |
 | Consistency | Eventual consistency between leave ledger and SR with bounded lag; state-aware reconciliation closes residual drift without false positives. |
 | Availability/Resilience **(v2, R13)** | Core: bounded retry + DLQ + **manual relay-pause**. Circuit breaker is an **optional Phase-2 enhancement** (`breaker_enabled`, default off). |

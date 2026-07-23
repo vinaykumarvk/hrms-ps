@@ -1,37 +1,37 @@
 import { createFoundationServices, FoundationServices } from "../platform/foundationServices";
 import { ApiKernel, createApiKernel } from "../http/apiKernel";
-import { registerG01Routes } from "./g01.routes";
-import { registerG02Routes } from "./g02.routes";
-import { registerG03Routes } from "./g03.routes";
-import { registerG04Routes } from "./g04.routes";
-import { registerG05Routes } from "./g05.routes";
-import { registerG06Routes } from "./g06.routes";
-import { registerG07Routes } from "./g07.routes";
-import { registerG08Routes } from "./g08.routes";
-import { registerG09Routes } from "./g09.routes";
-import { registerG10Routes } from "./g10.routes";
-import { registerG11Routes } from "./g11.routes";
-import { registerG12Routes } from "./g12.routes";
-import { registerG13Routes } from "./g13.routes";
-import { registerG14Routes } from "./g14.routes";
+import { registerPS01Routes } from "./ps01.routes";
+import { registerPS02Routes } from "./ps02.routes";
+import { registerPS03Routes } from "./ps03.routes";
+import { registerPS04Routes } from "./ps04.routes";
+import { registerPS05Routes } from "./ps05.routes";
+import { registerPS06Routes } from "./ps06.routes";
+import { registerPS07Routes } from "./ps07.routes";
+import { registerPS08Routes } from "./ps08.routes";
+import { registerPS09Routes } from "./ps09.routes";
+import { registerPS10Routes } from "./ps10.routes";
+import { registerPS11Routes } from "./ps11.routes";
+import { registerPS12Routes } from "./ps12.routes";
+import { registerPS13Routes } from "./ps13.routes";
+import { registerPS14Routes } from "./ps14.routes";
 import { registerP01WorkflowRoutes } from "./p01-workflow.routes";
 
 export function registerFoundationRoutes(kernel: ApiKernel): void {
   registerP01WorkflowRoutes(kernel);
-  registerG01Routes(kernel);
-  registerG02Routes(kernel);
-  registerG03Routes(kernel);
-  registerG04Routes(kernel);
-  registerG05Routes(kernel);
-  registerG06Routes(kernel);
-  registerG07Routes(kernel);
-  registerG08Routes(kernel);
-  registerG09Routes(kernel);
-  registerG10Routes(kernel);
-  registerG11Routes(kernel);
-  registerG12Routes(kernel);
-  registerG13Routes(kernel);
-  registerG14Routes(kernel);
+  registerPS01Routes(kernel);
+  registerPS02Routes(kernel);
+  registerPS03Routes(kernel);
+  registerPS04Routes(kernel);
+  registerPS05Routes(kernel);
+  registerPS06Routes(kernel);
+  registerPS07Routes(kernel);
+  registerPS08Routes(kernel);
+  registerPS09Routes(kernel);
+  registerPS10Routes(kernel);
+  registerPS11Routes(kernel);
+  registerPS12Routes(kernel);
+  registerPS13Routes(kernel);
+  registerPS14Routes(kernel);
 }
 
 export function createFoundationApi(services: FoundationServices = createFoundationServices()): ApiKernel {
@@ -40,18 +40,18 @@ export function createFoundationApi(services: FoundationServices = createFoundat
   return kernel;
 }
 
-export * from "./g01.routes";
-export * from "./g02.routes";
-export * from "./g03.routes";
-export * from "./g04.routes";
-export * from "./g05.routes";
-export * from "./g06.routes";
-export * from "./g07.routes";
-export * from "./g08.routes";
-export * from "./g09.routes";
-export * from "./g10.routes";
-export * from "./g11.routes";
-export * from "./g12.routes";
-export * from "./g13.routes";
-export * from "./g14.routes";
+export * from "./ps01.routes";
+export * from "./ps02.routes";
+export * from "./ps03.routes";
+export * from "./ps04.routes";
+export * from "./ps05.routes";
+export * from "./ps06.routes";
+export * from "./ps07.routes";
+export * from "./ps08.routes";
+export * from "./ps09.routes";
+export * from "./ps10.routes";
+export * from "./ps11.routes";
+export * from "./ps12.routes";
+export * from "./ps13.routes";
+export * from "./ps14.routes";
 export * from "./p01-workflow.routes";

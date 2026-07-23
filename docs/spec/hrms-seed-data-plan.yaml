@@ -2,7 +2,7 @@ meta:
   phase: PH-02
   status: implemented_agentic_gate_green
   generated_on: "2026-07-01"
-  purpose: Seed enough deterministic HRMS hierarchy and authority facts for G03 and G05 vertical slices.
+  purpose: Seed enough deterministic HRMS hierarchy and authority facts for PS03 and PS05 vertical slices.
 
 seed_scope:
   tenant_id: 11111111-1111-1111-1111-111111111111
@@ -17,42 +17,42 @@ fixtures:
         reports_to_position: POS-REV-DC-01
       - employee: 99999999-9999-9999-9999-999999999902
         reporting_manager: 99999999-9999-9999-9999-999999999901
-        use_case: G03 leave approval
+        use_case: PS03 leave approval
   statutory_authority:
-    table: g01_authority_assignments
+    table: ps01_authority_assignments
     rows:
-      - authority_code: G05_TRANSFER_REVENUE
+      - authority_code: PS05_TRANSFER_REVENUE
         authority_type: TRANSFER_AUTHORITY
         scope_type: ORG_UNIT
         expected_assignee: 99999999-9999-9999-9999-999999999901
-        use_case: G05 transfer sanction
-      - authority_code: G03_LEAVE_HEAD_ASSESSMENT
+        use_case: PS05 transfer sanction
+      - authority_code: PS03_LEAVE_HEAD_ASSESSMENT
         authority_type: ORG_UNIT_HEAD
         scope_type: ORG_UNIT
         expected_assignee: 99999999-9999-9999-9999-999999999901
-        use_case: G03 fallback approver
-      - authority_code: G06_APPOINTING_GROUP_B
+        use_case: PS03 fallback approver
+      - authority_code: PS06_APPOINTING_GROUP_B
         authority_type: APPOINTING_AUTHORITY
         scope_type: CADRE
         expected_assignee: 99999999-9999-9999-9999-999999999901
-        use_case: G06/G09 statutory competence
-      - authority_code: G12_SR_CUSTODIAN_ENTITY
+        use_case: PS06/PS09 statutory competence
+      - authority_code: PS12_SR_CUSTODIAN_ENTITY
         authority_type: SR_CUSTODIAN
         scope_type: ENTITY
         expected_assignee: 99999999-9999-9999-9999-999999999901
-        use_case: G12 SR attestation
+        use_case: PS12 SR attestation
   delegation:
-    table: g01_authority_delegations
+    table: ps01_authority_delegations
     rows:
       - id: d1000000-0000-0000-0000-000000000001
-        authority_code: G05_TRANSFER_REVENUE
+        authority_code: PS05_TRANSFER_REVENUE
         from_employee: 99999999-9999-9999-9999-999999999901
         to_employee: 99999999-9999-9999-9999-999999999902
         kind: ACTING_CHARGE
         valid_window: 2026-07-01/2026-07-31
         sod_note: P01/P02 must still block self-approval when the delegate is the subject.
   committees:
-    tables: [g01_committees, g01_committee_members]
+    tables: [ps01_committees, ps01_committee_members]
     rows:
       - committee_code: PH02-DPC-REVENUE
         committee_type: DPC
@@ -70,7 +70,7 @@ hard_resolver_cases:
   vacant_manager:
     resolver_type: REPORTING_CHAIN            # primary
     fallback_resolver: ORG_UNIT_HEAD          # applied because direct manager is VACANT
-    use_case: G03 leave approval when the direct reporting-manager position is unfilled.
+    use_case: PS03 leave approval when the direct reporting-manager position is unfilled.
     inputs:
       tenant_id: 11111111-1111-1111-1111-111111111111
       entity_id: 22222222-2222-2222-2222-222222222201
@@ -81,13 +81,13 @@ hard_resolver_cases:
         # POS-REV-DC-01 is VACANT: no active employee_job_assignment holds it as of as_of.
         direct_reporting_manager_id: null
         direct_manager_position_vacant: true
-        org_unit_head_source: g01_authority_assignments   # G03_LEAVE_HEAD_ASSESSMENT
+        org_unit_head_source: ps01_authority_assignments   # PS03_LEAVE_HEAD_ASSESSMENT
       as_of: 2026-07-15
     expected:
       resolved_assignee: 99999999-9999-9999-9999-999999999901   # org-unit head via fallback
       resolver_type: REPORTING_CHAIN
       fallback_applied: true
-      fallback_path: [g01_authority_assignments, org_units.head_employee_id, parent_org_unit]
+      fallback_path: [ps01_authority_assignments, org_units.head_employee_id, parent_org_unit]
       fail_closed: false
       note: >
         REPORTING_CHAIN primary source is null (manager position vacant); resolution deterministically
@@ -96,14 +96,14 @@ hard_resolver_cases:
   cross_entity_authority:
     resolver_type: STATUTORY_AUTHORITY
     use_case: >
-      G05 transfer sanction where the competent authority sits in a DIFFERENT ENTITY from the subject,
+      PS05 transfer sanction where the competent authority sits in a DIFFERENT ENTITY from the subject,
       permitted only by the Org-Admin widened-scope rule and never across tenants.
     inputs:
       tenant_id: 11111111-1111-1111-1111-111111111111
       subject_entity_id: 22222222-2222-2222-2222-222222222201
       authority_entity_id: 22222222-2222-2222-2222-222222222202   # different entity, same tenant
       subject_employee_id: 99999999-9999-9999-9999-999999999902
-      authority_code: G05_TRANSFER_REVENUE
+      authority_code: PS05_TRANSFER_REVENUE
       authority_type: TRANSFER_AUTHORITY
       scope_type: ORG_UNIT
       org_admin_widened_scope: true          # entity-202 authority is scoped to cover entity-201 org unit
@@ -111,7 +111,7 @@ hard_resolver_cases:
       decoy_rows:
         # A same-role holder in a DIFFERENT TENANT must never be selected (tenant isolation).
         - tenant_id: 11111111-1111-1111-1111-111111111199
-          authority_code: G05_TRANSFER_REVENUE
+          authority_code: PS05_TRANSFER_REVENUE
           expected_selectable: false
     expected:
       resolved_assignee: 99999999-9999-9999-9999-999999999904   # authority holder in entity-202
@@ -126,7 +126,7 @@ hard_resolver_cases:
 
 data_quality_assertions:
   - Current reporting-chain fixture has one non-null reporting_manager_id.
-  - G05 transfer authority has exactly one active priority-10 row for the fixture org unit.
+  - PS05 transfer authority has exactly one active priority-10 row for the fixture org unit.
   - Active delegation windows have from_employee_id != to_employee_id.
   - Committee quorum is positive and active required members meet or exceed quorum.
   - No fixture bypasses tenant_id/entity_id scoping.
@@ -137,5 +137,5 @@ data_quality_assertions:
 
 out_of_scope:
   - Full production employee master load.
-  - Full authority import from government service books.
+  - Full authority import from enterprise service books.
   - Historical migration of PUDA workflow cases.

@@ -30,7 +30,7 @@ test("UIR-06 login blocks double submit clears errors and has no unsupported res
 test("UIR-06 terminal workflow and payroll actions have explicit dialogs", () => {
   const workflow = read("apps/web/src/workflow/TaskActionPanel.tsx");
   const config = read("apps/web/src/workflow/WorkflowConfigConsole.tsx");
-  const payroll = read("apps/web/src/modules/g10/PayrollRunConsole.tsx");
+  const payroll = read("apps/web/src/modules/ps10/PayrollRunConsole.tsx");
   assert.match(workflow, /Cancel this workflow/);
   assert.match(config, /Publish workflow configuration/);
   assert.match(config, /exportEvidence/);

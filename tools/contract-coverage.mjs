@@ -20,7 +20,7 @@ function countOps(yaml) {
   return matches ? matches.length : 0;
 }
 
-/** docs/contracts/openapi/G06.yaml -> "g06"; P01-workflow.yaml -> "p01". */
+/** docs/contracts/openapi/PS06.yaml -> "ps06"; P01-workflow.yaml -> "p01". */
 function moduleKey(fileName) {
   const base = fileName.replace(/\.ya?ml$/i, "");
   const tag = base.split("-")[0];

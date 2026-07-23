@@ -1,7 +1,7 @@
 # Dashboard and Analytics — HRMS Module BRD (v2.0)
 
 **Module code:** M14-DAS
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government / Public-Sector context
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise / Public-Sector context
 **Authoring standard:** World-class global HCM analytics (Workday Prism / SAP SuccessFactors People Analytics / Oracle HCM OTBI bar) honouring Indian public-sector statutory reporting (reservation roster, SR verification, cadre/seniority, retirement profiling)
 **Source of truth:** `docs/brd/SHARED_FOUNDATION.md` (canonical shared entities, conventions, RBAC, technical defaults). This BRD references and extends — it does not redefine — those shared elements.
 **Document version:** v2.0 (revised after Adversarial Council stress-test; supersedes v1.0)
@@ -35,7 +35,7 @@ Public-sector HR leadership today reconstructs the workforce picture from spread
 | G7 | Forward-looking insight, fairly governed | Retirement forecasting (deterministic) ships early; attrition/succession is advisory, **fairness-audited, friction-gated, and prohibited as a sole administrative basis** |
 | G8 | Performance at scale | P95 dashboard load < 2.5s on pre-aggregated marts for an enterprise of 100k+ employees, with **async audit-on-read** sustaining 500 concurrent users |
 | G9 | Temporal honesty | Every snapshot is bitemporal (valid-time + knowledge-time); an "as-of-knowledge" report reproduces exactly what was shown historically |
-| G10 | Rectifiability | A DPDP correction/erasure in M01 propagates to marts, snapshots, predictions, and export artefacts within SLA, reconciled against statutory retention |
+| PS10 | Rectifiability | A DPDP correction/erasure in M01 propagates to marts, snapshots, predictions, and export artefacts within SLA, reconciled against statutory retention |
 
 ### 1.4 Scope Summary
 
@@ -904,8 +904,8 @@ marts READ FROM (via source_data_contract): employees(M01), leave/attendance(M03
 
 | token_id | widget_ids | subject_role | allowed_frame_ancestors | expires_at | status |
 |---|---|---|---|---|---|
-| tok-91a | {w-headcount} | DEPT_HEAD | {portal.gov.local} | 2026-07-01T12:00Z | ACTIVE |
-| tok-5fe | {w-vacancy} | EXECUTIVE | {exec.gov.local} | 2026-06-30T09:00Z | REVOKED |
+| tok-91a | {w-headcount} | DEPT_HEAD | {portal.enterprise.local} | 2026-07-01T12:00Z | ACTIVE |
+| tok-5fe | {w-vacancy} | EXECUTIVE | {exec.enterprise.local} | 2026-06-30T09:00Z | REVOKED |
 
 **establishment_position**
 
@@ -2247,7 +2247,7 @@ marts READ FROM (via source_data_contract): employees(M01), leave/attendance(M03
 | Embedded BI | Snippet uses header/code-exchange (**no URL token**); CSP frame-ancestors; revocation surfaced. |
 | Accessibility | WCAG 2.1 AA: keyboard-operable charts, focus order, contrast, data-table fallback, screen-reader summaries, no colour-only meaning. |
 | i18n/locale | Dates `DD-MMM-YYYY`, INR money formatting, user timezone for as-of, translatable labels (incl. role-adaptive copy). |
-| Theming | Light/dark mode; government-portal visual compliance. |
+| Theming | Light/dark mode; enterprise-portal visual compliance. |
 
 ---
 

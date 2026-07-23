@@ -8,19 +8,19 @@
     - "All green reflects slice coverage, not requirement coverage" — this gate makes the delta explicit
       instead of self-certifying.
   context:
-    - docs/reviews/brd-coverage-audit-20260702.md          # baseline numbers: G03 9/118 CONFIRMED, G05 9/34, ~84% NOT_FOUND overall
+    - docs/reviews/brd-coverage-audit-20260702.md          # baseline numbers: PS03 9/118 CONFIRMED, PS05 9/34, ~84% NOT_FOUND overall
     - docs/spec/pipeline/checks/ph-06a.sh .. ph-06d.sh     # the upstream oracles (must all be GREEN first)
-    - apps/api/src/modules/g03/** , apps/api/src/modules/g05/** , apps/web/src/modules/g03|g05/**
-    - docs/brd/v3/G03-attendance-and-leave-management.md , docs/brd/v3/G05-transfer-relieving-joining-workflow.md
+    - apps/api/src/modules/ps03/** , apps/api/src/modules/ps05/** , apps/web/src/modules/ps03|ps05/**
+    - docs/brd/v3/PS03-attendance-and-leave-management.md , docs/brd/v3/PS05-transfer-relieving-joining-workflow.md
   deliverables:
     - Run and record: `npm run typecheck`, `npm test`, `npm run web:typecheck`, `npm run web:test` — all green.
     - Re-run `bash docs/spec/pipeline/checks/ph-06a.sh` .. `ph-06d.sh` and capture their GREEN output.
     - Write docs/spec/ph-06-verdict.md containing:
-        * a coverage-delta table with one row per module (G03, G05) and columns:
+        * a coverage-delta table with one row per module (PS03, PS05) and columns:
           audit baseline (CONFIRMED/PARTIAL/NOT_FOUND from brd-coverage-audit-20260702), items closed by
           PH-06 (each with file:line evidence), items still NOT_FOUND / remaining, and the new totals;
         * an explicit "Remaining gaps" section — the verdict must NOT claim BRD completeness; the audit
-          counted 118 G03 items and PH-06 closes a bounded subset, so remaining NOT_FOUND counts stay visible;
+          counted 118 PS03 items and PH-06 closes a bounded subset, so remaining NOT_FOUND counts stay visible;
         * the persistence substrate outcome (which entities now live in Postgres, which remain in memory);
         * a scale-up recommendation with risks for the human gate.
   constraints:
@@ -51,8 +51,8 @@
   verdict_table_hint: |
     | Module | Audit CONFIRMED | Audit NOT_FOUND | Closed in PH-06 (evidence) | Remaining NOT_FOUND |
     |---|---|---|---|---|
-    | G03 | 9/118 | 97 | ... file:line + test ... | ... |
-    | G05 | 9/34 | 19 | ... file:line + test ... | ... |
+    | PS03 | 9/118 | 97 | ... file:line + test ... | ... |
+    | PS05 | 9/34 | 19 | ... file:line + test ... | ... |
   evidence_required:
     - docs/spec/ph-06-verdict.md (honest coverage-delta vs docs/reviews/brd-coverage-audit-20260702.md)
     - green output of the four npm suites and ph-06a..d

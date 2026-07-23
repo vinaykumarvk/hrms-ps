@@ -20,12 +20,12 @@ route-exposure pass. Built by hand — subagents credit-exhausted until 2026-07-
 
 | Module | Routes added | Backing service |
 |---|---|---|
-| **G02** | `change-requests/{id}/e-signatures`, `change-request-templates` | `changeEsignStepUp` (PH-17B), `changeRequestTemplate` (PH-20C) |
-| **G03** | `atl/punch-anomaly:screen` | `punchAnomaly` (PH-25C) |
-| **G07** | `training/learning-record-stores` | `lmsIntegration` (PH-21A) |
-| **G08** | `apar/360-feedback` | `feedback360` (PH-21B) |
-| **G11** | `pension/grievances` | `pensionTreasury` (PH-16F) |
-| **G14** | `analytics/fairness-report` | `predictiveAnalytics` (PH-26C) |
+| **PS02** | `change-requests/{id}/e-signatures`, `change-request-templates` | `changeEsignStepUp` (PH-17B), `changeRequestTemplate` (PH-20C) |
+| **PS03** | `atl/punch-anomaly:screen` | `punchAnomaly` (PH-25C) |
+| **PS07** | `training/learning-record-stores` | `lmsIntegration` (PH-21A) |
+| **PS08** | `apar/360-feedback` | `feedback360` (PH-21B) |
+| **PS11** | `pension/grievances` | `pensionTreasury` (PH-16F) |
+| **PS14** | `analytics/fairness-report` | `predictiveAnalytics` (PH-26C) |
 
 Across PH-28..PH-33 (six passes), every service built in PH-15E..PH-26 that was service+test complete
 but not yet route-exposed now has at least one `/api/v1` route reachable and API-tested end-to-end.
@@ -34,9 +34,9 @@ but not yet route-exposed now has at least one `/api/v1` route reachable and API
 
 The residual is now down to a small, specific list:
 
-- **UI surfaces:** G01 privacy/DPDP console, G06 sealed-cover UI, G14 embedded BI / mobile briefing.
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A remittance matching depth;
-  G09 POSH conciliation depth; G04 CI port-conformance gate in the build pipeline.
+- **UI surfaces:** PS01 privacy/DPDP console, PS06 sealed-cover UI, PS14 embedded BI / mobile briefing.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A remittance matching depth;
+  PS09 POSH conciliation depth; PS04 CI port-conformance gate in the build pipeline.
 - **Persistence:** the newest hand-built services (PH-16F..PH-33 engines) use in-memory repositories;
   Postgres-backed repos + migrations for these remain a deferred workstream, and the `ph06-persistence`
   migration-list assertion froze at 0008.

@@ -1,22 +1,22 @@
 # Prototype Screen → Module Map
 
 Classifies **all 296 PrimeSoft prototype screens** (every `*.txt` in
-`reconciliation/prototype-extract/`) into a **government module** (G01–G14 / platform-core /
+`reconciliation/prototype-extract/`) into a **enterprise module** (PS01–PS14 / platform-core /
 platform-config) or **out-of-scope commercial** (recruitment, onboarding, separation, IT/service
-desk, platform super-admin, payroll). Module labels are best-fit against the gov HRMS BRD set;
-the load-bearing axis is **in-gov-scope vs out-of-scope**.
+desk, platform super-admin, payroll). Module labels are best-fit against the enterprise HRMS BRD set;
+the load-bearing axis is **in-enterprise-scope vs out-of-scope**.
 
 ## Summary counts
 
 | Scope | Screens |
 |---|---|
-| **In gov scope** (G01/G02/G03/G08/G13/platform-core/platform-config) | **183** |
+| **In enterprise scope** (PS01/PS02/PS03/PS08/PS13/platform-core/platform-config) | **183** |
 | **Out of scope** (recruitment/onboarding/separation/ITSM/psa/payroll) | **113** |
 | **Total** | **296** |
 
-In-gov-scope by module: G01 = 32, G02 = 2,
-G03 = 33, G08 = 31,
-G13 = 20,
+In-enterprise-scope by module: PS01 = 32, PS02 = 2,
+PS03 = 33, PS08 = 31,
+PS13 = 20,
 platform-core = 12,
 platform-config = 53.
 
@@ -24,168 +24,168 @@ Out-of-scope by group: Recruitment = 45,
 Onboarding = 12, Separation = 18,
 IT assets & Service Desk = 21,
 Platform Super-Admin = 13,
-G10 Payroll = 4.
+PS10 Payroll = 4.
 
 ---
 
-## In gov scope (183)
+## In enterprise scope (183)
 
-### G01 employee profile / master / directory / org / lifecycle (32)
+### PS01 employee profile / master / directory / org / lifecycle (32)
 
-*Rationale:* Employee golden-record CRUD, directory, org chart, and lifecycle (probation/confirmation) surfaces — core gov HR.
+*Rationale:* Employee golden-record CRUD, directory, org chart, and lifecycle (probation/confirmation) surfaces — core enterprise HR.
 
 | Screen | Module |
 |---|---|
-| `add-certification` | G01 employee profile / master / directory / org / lifecycle |
-| `add-dependent` | G01 employee profile / master / directory / org / lifecycle |
-| `add-disability` | G01 employee profile / master / directory / org / lifecycle |
-| `add-education` | G01 employee profile / master / directory / org / lifecycle |
-| `add-experience` | G01 employee profile / master / directory / org / lifecycle |
-| `add-skill` | G01 employee profile / master / directory / org / lifecycle |
-| `add-visa` | G01 employee profile / master / directory / org / lifecycle |
-| `bank-entry` | G01 employee profile / master / directory / org / lifecycle |
-| `dept-headcount` | G01 employee profile / master / directory / org / lifecycle |
-| `dept-view` | G01 employee profile / master / directory / org / lifecycle |
-| `directory` | G01 employee profile / master / directory / org / lifecycle |
-| `directory-mini-profile` | G01 employee profile / master / directory / org / lifecycle |
-| `dob-view` | G01 employee profile / master / directory / org / lifecycle |
-| `employee-detail` | G01 employee profile / master / directory / org / lifecycle |
-| `employee-master` | G01 employee profile / master / directory / org / lifecycle |
-| `hod-employee-detail` | G01 employee profile / master / directory / org / lifecycle |
-| `hod-employees` | G01 employee profile / master / directory / org / lifecycle |
-| `hr-add-employee` | G01 employee profile / master / directory / org / lifecycle |
-| `hr-employee-detail` | G01 employee profile / master / directory / org / lifecycle |
-| `hr-project-master` | G01 employee profile / master / directory / org / lifecycle |
-| `hrbp-employee-detail` | G01 employee profile / master / directory / org / lifecycle |
-| `hrbp-my-employees` | G01 employee profile / master / directory / org / lifecycle |
-| `my-org` | G01 employee profile / master / directory / org / lifecycle |
-| `my-profile` | G01 employee profile / master / directory / org / lifecycle |
-| `my-team` | G01 employee profile / master / directory / org / lifecycle |
-| `national-id` | G01 employee profile / master / directory / org / lifecycle |
-| `nominees` | G01 employee profile / master / directory / org / lifecycle |
-| `org-chart` | G01 employee profile / master / directory / org / lifecycle |
-| `probation-approval` | G01 employee profile / master / directory / org / lifecycle |
-| `probation-confirmation` | G01 employee profile / master / directory / org / lifecycle |
-| `probation-decision` | G01 employee profile / master / directory / org / lifecycle |
-| `probation-management` | G01 employee profile / master / directory / org / lifecycle |
+| `add-certification` | PS01 employee profile / master / directory / org / lifecycle |
+| `add-dependent` | PS01 employee profile / master / directory / org / lifecycle |
+| `add-disability` | PS01 employee profile / master / directory / org / lifecycle |
+| `add-education` | PS01 employee profile / master / directory / org / lifecycle |
+| `add-experience` | PS01 employee profile / master / directory / org / lifecycle |
+| `add-skill` | PS01 employee profile / master / directory / org / lifecycle |
+| `add-visa` | PS01 employee profile / master / directory / org / lifecycle |
+| `bank-entry` | PS01 employee profile / master / directory / org / lifecycle |
+| `dept-headcount` | PS01 employee profile / master / directory / org / lifecycle |
+| `dept-view` | PS01 employee profile / master / directory / org / lifecycle |
+| `directory` | PS01 employee profile / master / directory / org / lifecycle |
+| `directory-mini-profile` | PS01 employee profile / master / directory / org / lifecycle |
+| `dob-view` | PS01 employee profile / master / directory / org / lifecycle |
+| `employee-detail` | PS01 employee profile / master / directory / org / lifecycle |
+| `employee-master` | PS01 employee profile / master / directory / org / lifecycle |
+| `hod-employee-detail` | PS01 employee profile / master / directory / org / lifecycle |
+| `hod-employees` | PS01 employee profile / master / directory / org / lifecycle |
+| `hr-add-employee` | PS01 employee profile / master / directory / org / lifecycle |
+| `hr-employee-detail` | PS01 employee profile / master / directory / org / lifecycle |
+| `hr-project-master` | PS01 employee profile / master / directory / org / lifecycle |
+| `hrbp-employee-detail` | PS01 employee profile / master / directory / org / lifecycle |
+| `hrbp-my-employees` | PS01 employee profile / master / directory / org / lifecycle |
+| `my-org` | PS01 employee profile / master / directory / org / lifecycle |
+| `my-profile` | PS01 employee profile / master / directory / org / lifecycle |
+| `my-team` | PS01 employee profile / master / directory / org / lifecycle |
+| `national-id` | PS01 employee profile / master / directory / org / lifecycle |
+| `nominees` | PS01 employee profile / master / directory / org / lifecycle |
+| `org-chart` | PS01 employee profile / master / directory / org / lifecycle |
+| `probation-approval` | PS01 employee profile / master / directory / org / lifecycle |
+| `probation-confirmation` | PS01 employee profile / master / directory / org / lifecycle |
+| `probation-decision` | PS01 employee profile / master / directory / org / lifecycle |
+| `probation-management` | PS01 employee profile / master / directory / org / lifecycle |
 
-### G02 personal-details change workflow (2)
+### PS02 personal-details change workflow (2)
 
 *Rationale:* Governed self-service / HR-on-behalf change requests for sensitive fields — this module.
 
 | Screen | Module |
 |---|---|
-| `edit-profile` | G02 personal-details change workflow |
-| `sensitive-changes` | G02 personal-details change workflow |
+| `edit-profile` | PS02 personal-details change workflow |
+| `sensitive-changes` | PS02 personal-details change workflow |
 
-### G03 leave & attendance (33)
+### PS03 leave & attendance (33)
 
-*Rationale:* Leave apply/approve/config, attendance, shifts, holidays, biometric/geofence — the G03 gov module.
-
-| Screen | Module |
-|---|---|
-| `apply-leave` | G03 leave & attendance |
-| `apply-optional-holiday` | G03 leave & attendance |
-| `attendance` | G03 leave & attendance |
-| `attendance-approvals` | G03 leave & attendance |
-| `attendance-config` | G03 leave & attendance |
-| `attendance-lock` | G03 leave & attendance |
-| `attendance-policies` | G03 leave & attendance |
-| `attendance-reasons` | G03 leave & attendance |
-| `attendance-shifts` | G03 leave & attendance |
-| `biometric-mgmt` | G03 leave & attendance |
-| `calendar` | G03 leave & attendance |
-| `checkin-approvals` | G03 leave & attendance |
-| `compoff-approvals` | G03 leave & attendance |
-| `dept-attendance` | G03 leave & attendance |
-| `dept-leave` | G03 leave & attendance |
-| `geofencing` | G03 leave & attendance |
-| `holiday-admin` | G03 leave & attendance |
-| `holiday-calendar` | G03 leave & attendance |
-| `holiday-calendar-config` | G03 leave & attendance |
-| `leave-balance-adjust` | G03 leave & attendance |
-| `leave-config` | G03 leave & attendance |
-| `leave-policies` | G03 leave & attendance |
-| `leave-reasons` | G03 leave & attendance |
-| `leave-revocation` | G03 leave & attendance |
-| `my-leave` | G03 leave & attendance |
-| `office-attendance` | G03 leave & attendance |
-| `pl-encashment` | G03 leave & attendance |
-| `request-ot` | G03 leave & attendance |
-| `request-regularisation` | G03 leave & attendance |
-| `team-attendance` | G03 leave & attendance |
-| `team-leave` | G03 leave & attendance |
-| `team-member-attendance-history` | G03 leave & attendance |
-| `team-member-leave-history` | G03 leave & attendance |
-
-### G08 performance (goals / reviews / calibration / PIP) (31)
-
-*Rationale:* Goal-setting, appraisal cycles, reviews, calibration, normalization and PIP — the G08 gov module.
+*Rationale:* Leave apply/approve/config, attendance, shifts, holidays, biometric/geofence — the PS03 enterprise module.
 
 | Screen | Module |
 |---|---|
-| `add-goal` | G08 performance (goals / reviews / calibration / PIP) |
-| `add-goal-for-reportee` | G08 performance (goals / reviews / calibration / PIP) |
-| `admin-add-goal` | G08 performance (goals / reviews / calibration / PIP) |
-| `ai-suggest-goals` | G08 performance (goals / reviews / calibration / PIP) |
-| `appraisal-review` | G08 performance (goals / reviews / calibration / PIP) |
-| `calibration` | G08 performance (goals / reviews / calibration / PIP) |
-| `copy-previous-goal` | G08 performance (goals / reviews / calibration / PIP) |
-| `copy-previous-goal-mgr` | G08 performance (goals / reviews / calibration / PIP) |
-| `dept-performance` | G08 performance (goals / reviews / calibration / PIP) |
-| `goal-approvals` | G08 performance (goals / reviews / calibration / PIP) |
-| `manager-appraisal-tasks` | G08 performance (goals / reviews / calibration / PIP) |
-| `my-goals` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-assign-plan` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-calibration` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-cycle-create` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-cycle-detail` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-exclusions` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-goal-plan-create` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-goal-plan-detail` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-goal-plans` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-metrics` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-normalization` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-pip` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-review-cycles` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-review-status` | G08 performance (goals / reviews / calibration / PIP) |
-| `pa-scorecard-pillars` | G08 performance (goals / reviews / calibration / PIP) |
-| `pip-cases` | G08 performance (goals / reviews / calibration / PIP) |
-| `review-goal-plan` | G08 performance (goals / reviews / calibration / PIP) |
-| `reviews` | G08 performance (goals / reviews / calibration / PIP) |
-| `self-review` | G08 performance (goals / reviews / calibration / PIP) |
-| `start-review` | G08 performance (goals / reviews / calibration / PIP) |
+| `apply-leave` | PS03 leave & attendance |
+| `apply-optional-holiday` | PS03 leave & attendance |
+| `attendance` | PS03 leave & attendance |
+| `attendance-approvals` | PS03 leave & attendance |
+| `attendance-config` | PS03 leave & attendance |
+| `attendance-lock` | PS03 leave & attendance |
+| `attendance-policies` | PS03 leave & attendance |
+| `attendance-reasons` | PS03 leave & attendance |
+| `attendance-shifts` | PS03 leave & attendance |
+| `biometric-mgmt` | PS03 leave & attendance |
+| `calendar` | PS03 leave & attendance |
+| `checkin-approvals` | PS03 leave & attendance |
+| `compoff-approvals` | PS03 leave & attendance |
+| `dept-attendance` | PS03 leave & attendance |
+| `dept-leave` | PS03 leave & attendance |
+| `geofencing` | PS03 leave & attendance |
+| `holiday-admin` | PS03 leave & attendance |
+| `holiday-calendar` | PS03 leave & attendance |
+| `holiday-calendar-config` | PS03 leave & attendance |
+| `leave-balance-adjust` | PS03 leave & attendance |
+| `leave-config` | PS03 leave & attendance |
+| `leave-policies` | PS03 leave & attendance |
+| `leave-reasons` | PS03 leave & attendance |
+| `leave-revocation` | PS03 leave & attendance |
+| `my-leave` | PS03 leave & attendance |
+| `office-attendance` | PS03 leave & attendance |
+| `pl-encashment` | PS03 leave & attendance |
+| `request-ot` | PS03 leave & attendance |
+| `request-regularisation` | PS03 leave & attendance |
+| `team-attendance` | PS03 leave & attendance |
+| `team-leave` | PS03 leave & attendance |
+| `team-member-attendance-history` | PS03 leave & attendance |
+| `team-member-leave-history` | PS03 leave & attendance |
 
-### G13 documents / letters / policy library (20)
+### PS08 performance (goals / reviews / calibration / PIP) (31)
 
-*Rationale:* Document admin (da-*), vault, uploads, letters, policy library and acknowledgements — G13.
+*Rationale:* Goal-setting, appraisal cycles, reviews, calibration, normalization and PIP — the PS08 enterprise module.
 
 | Screen | Module |
 |---|---|
-| `da-ack-campaign` | G13 documents / letters / policy library |
-| `da-bulk-letters` | G13 documents / letters / policy library |
-| `da-categories` | G13 documents / letters / policy library |
-| `da-doc-master` | G13 documents / letters / policy library |
-| `da-letter-queue` | G13 documents / letters / policy library |
-| `da-merge-fields` | G13 documents / letters / policy library |
-| `da-policies` | G13 documents / letters / policy library |
-| `da-signoff-tracker` | G13 documents / letters / policy library |
-| `da-storage` | G13 documents / letters / policy library |
-| `da-templates` | G13 documents / letters / policy library |
-| `da-vault` | G13 documents / letters / policy library |
-| `da-versioning` | G13 documents / letters / policy library |
-| `document-clusters` | G13 documents / letters / policy library |
-| `document-upload` | G13 documents / letters / policy library |
-| `documents-oversight` | G13 documents / letters / policy library |
-| `letters` | G13 documents / letters / policy library |
-| `my-letters` | G13 documents / letters / policy library |
-| `policies` | G13 documents / letters / policy library |
-| `policy-ack` | G13 documents / letters / policy library |
-| `upload-document` | G13 documents / letters / policy library |
+| `add-goal` | PS08 performance (goals / reviews / calibration / PIP) |
+| `add-goal-for-reportee` | PS08 performance (goals / reviews / calibration / PIP) |
+| `admin-add-goal` | PS08 performance (goals / reviews / calibration / PIP) |
+| `ai-suggest-goals` | PS08 performance (goals / reviews / calibration / PIP) |
+| `appraisal-review` | PS08 performance (goals / reviews / calibration / PIP) |
+| `calibration` | PS08 performance (goals / reviews / calibration / PIP) |
+| `copy-previous-goal` | PS08 performance (goals / reviews / calibration / PIP) |
+| `copy-previous-goal-mgr` | PS08 performance (goals / reviews / calibration / PIP) |
+| `dept-performance` | PS08 performance (goals / reviews / calibration / PIP) |
+| `goal-approvals` | PS08 performance (goals / reviews / calibration / PIP) |
+| `manager-appraisal-tasks` | PS08 performance (goals / reviews / calibration / PIP) |
+| `my-goals` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-assign-plan` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-calibration` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-cycle-create` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-cycle-detail` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-exclusions` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-goal-plan-create` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-goal-plan-detail` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-goal-plans` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-metrics` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-normalization` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-pip` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-review-cycles` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-review-status` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pa-scorecard-pillars` | PS08 performance (goals / reviews / calibration / PIP) |
+| `pip-cases` | PS08 performance (goals / reviews / calibration / PIP) |
+| `review-goal-plan` | PS08 performance (goals / reviews / calibration / PIP) |
+| `reviews` | PS08 performance (goals / reviews / calibration / PIP) |
+| `self-review` | PS08 performance (goals / reviews / calibration / PIP) |
+| `start-review` | PS08 performance (goals / reviews / calibration / PIP) |
+
+### PS13 documents / letters / policy library (20)
+
+*Rationale:* Document admin (da-*), vault, uploads, letters, policy library and acknowledgements — PS13.
+
+| Screen | Module |
+|---|---|
+| `da-ack-campaign` | PS13 documents / letters / policy library |
+| `da-bulk-letters` | PS13 documents / letters / policy library |
+| `da-categories` | PS13 documents / letters / policy library |
+| `da-doc-master` | PS13 documents / letters / policy library |
+| `da-letter-queue` | PS13 documents / letters / policy library |
+| `da-merge-fields` | PS13 documents / letters / policy library |
+| `da-policies` | PS13 documents / letters / policy library |
+| `da-signoff-tracker` | PS13 documents / letters / policy library |
+| `da-storage` | PS13 documents / letters / policy library |
+| `da-templates` | PS13 documents / letters / policy library |
+| `da-vault` | PS13 documents / letters / policy library |
+| `da-versioning` | PS13 documents / letters / policy library |
+| `document-clusters` | PS13 documents / letters / policy library |
+| `document-upload` | PS13 documents / letters / policy library |
+| `documents-oversight` | PS13 documents / letters / policy library |
+| `letters` | PS13 documents / letters / policy library |
+| `my-letters` | PS13 documents / letters / policy library |
+| `policies` | PS13 documents / letters / policy library |
+| `policy-ack` | PS13 documents / letters / policy library |
+| `upload-document` | PS13 documents / letters / policy library |
 
 ### platform-core (9)
 
-*Rationale:* Cross-cutting P01/X.2 inbox, tasks, notifications, dashboard, AI chat and settings shared by all gov modules.
+*Rationale:* Cross-cutting P01/X.2 inbox, tasks, notifications, dashboard, AI chat and settings shared by all enterprise modules.
 
 | Screen | Module |
 |---|---|
@@ -210,7 +210,7 @@ G10 Payroll = 4.
 
 ### platform-core (compliance) (1)
 
-*Rationale:* Statutory POSH grievance/compliance reporting — gov statutory scope.
+*Rationale:* Statutory POSH grievance/compliance reporting — enterprise statutory scope.
 
 | Screen | Module |
 |---|---|
@@ -218,7 +218,7 @@ G10 Payroll = 4.
 
 ### platform-config (53)
 
-*Rationale:* Tenant/module configuration (cfg-*, access-control): workflows, SLA, RBAC, masters, policies for gov modules.
+*Rationale:* Tenant/module configuration (cfg-*, access-control): workflows, SLA, RBAC, masters, policies for enterprise modules.
 
 | Screen | Module |
 |---|---|
@@ -282,7 +282,7 @@ G10 Payroll = 4.
 
 ### Recruitment / TA (45)
 
-*Rationale:* Requisitions, candidates, interviews, offers, recruiter/vendor and referral screens — commercial talent-acquisition, out of gov scope.
+*Rationale:* Requisitions, candidates, interviews, offers, recruiter/vendor and referral screens — commercial talent-acquisition, out of enterprise scope.
 
 | Screen | Module |
 |---|---|
@@ -424,13 +424,13 @@ G10 Payroll = 4.
 | `psa-tenant-detail` | Platform Super-Admin |
 | `psa-tenants` | Platform Super-Admin |
 
-### G10 Payroll (4)
+### PS10 Payroll (4)
 
-*Rationale:* Payroll export, TDS, PF/UAN and reimbursements — G10 payroll, treated as commercial/out of gov scope here.
+*Rationale:* Payroll export, TDS, PF/UAN and reimbursements — PS10 payroll, treated as commercial/out of enterprise scope here.
 
 | Screen | Module |
 |---|---|
-| `payroll-export` | G10 Payroll |
-| `pf-uan` | G10 Payroll |
-| `reimbursements` | G10 Payroll |
-| `tds-tax` | G10 Payroll |
+| `payroll-export` | PS10 Payroll |
+| `pf-uan` | PS10 Payroll |
+| `reimbursements` | PS10 Payroll |
+| `tds-tax` | PS10 Payroll |

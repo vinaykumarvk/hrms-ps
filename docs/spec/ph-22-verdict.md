@@ -23,27 +23,27 @@ subagents remain credit-exhausted until 2026-07-08.
 
 | Module | Closed in PH-22 | Evidence |
 |---|---|---|
-| **G08** | DSC / non-repudiation signing — digital_signatures (SHA-256 payload, signer identity), method policy (DSC/AADHAAR_ESIGN/HSM), action gate on certify/ratify/expunge | `ph22a-g08-digital-signature.test.cjs` |
-| **G13** | OCR index + permission-aware search — clearance-filtered results, over-classified (SECRET+) exclusion with no content leak | `ph22b-g13-ocr-search.test.cjs` |
-| **G14** | natural-language query — whitelisted-metric mapping, confidence gate (low → not executed), PII-stripped nl_query_log | `ph22c-g14-nl-query.test.cjs` |
+| **PS08** | DSC / non-repudiation signing — digital_signatures (SHA-256 payload, signer identity), method policy (DSC/AADHAAR_ESIGN/HSM), action gate on certify/ratify/expunge | `ph22a-ps08-digital-signature.test.cjs` |
+| **PS13** | OCR index + permission-aware search — clearance-filtered results, over-classified (SECRET+) exclusion with no content leak | `ph22b-ps13-ocr-search.test.cjs` |
+| **PS14** | natural-language query — whitelisted-metric mapping, confidence gate (low → not executed), PII-stripped nl_query_log | `ph22c-ps14-nl-query.test.cjs` |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 Tranche 9 did not close, and these remain `NOT_FOUND` / open for a later tranche:
 
-- **G01**: phonetic/transliteration search, dedup ML matcher depth, privacy/DPDP console UI.
-- **G02**: extra fraud detectors, retro-impact fan-out.
-- **G03**: backdated-leave team-calendar conflict threshold, punch anomaly review depth.
-- **G04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
-- **G05**: interactive counselling UI, proof-of-service deeming automation.
-- **G06**: sealed-cover full workflow, correction cascade recompute.
-- **G07**: content/assessment-item bank.
-- **G08**: calibration analytics depth.
-- **G09**: POSH conciliation depth, evidence-vault UI listing.
-- **G10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
-- **G11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
-- **G12/G14**: offline-QR verification, real TSA; embedded BI, predictive+fairness, mobile briefing.
-- **G13**: real AV/OCR engine binding (the OCR text is currently supplied, not extracted in a sandbox).
+- **PS01**: phonetic/transliteration search, dedup ML matcher depth, privacy/DPDP console UI.
+- **PS02**: extra fraud detectors, retro-impact fan-out.
+- **PS03**: backdated-leave team-calendar conflict threshold, punch anomaly review depth.
+- **PS04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
+- **PS05**: interactive counselling UI, proof-of-service deeming automation.
+- **PS06**: sealed-cover full workflow, correction cascade recompute.
+- **PS07**: content/assessment-item bank.
+- **PS08**: calibration analytics depth.
+- **PS09**: POSH conciliation depth, evidence-vault UI listing.
+- **PS10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
+- **PS11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
+- **PS12/PS14**: offline-QR verification, real TSA; embedded BI, predictive+fairness, mobile briefing.
+- **PS13**: real AV/OCR engine binding (the OCR text is currently supplied, not extracted in a sandbox).
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**
 OpenAPI operations frozen in `docs/contracts/openapi/*.yaml`. "All oracles GREEN" reflects the tranche's

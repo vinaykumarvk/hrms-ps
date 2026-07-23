@@ -21,10 +21,10 @@ hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G08** | APAR calibration lifecycle: `POST /calibration-sessions`, `:recommend`, `.../{recommendationId}:ratify`, `:apply`, `GET .../distribution` | existing `aparService` calibration methods (SoD on ratify; fail-closed `ERR-G08-RATIFY` on apply; read-only diagnostic), previously service-tested at `ph16e-g07-g08-depth` | `ph38a-g08-calibration-route.test.cjs` |
+| **PS08** | APAR calibration lifecycle: `POST /calibration-sessions`, `:recommend`, `.../{recommendationId}:ratify`, `:apply`, `GET .../distribution` | existing `aparService` calibration methods (SoD on ratify; fail-closed `ERR-PS08-RATIFY` on apply; read-only diagnostic), previously service-tested at `ph16e-ps07-ps08-depth` | `ph38a-ps08-calibration-route.test.cjs` |
 
 These are **real behavioral routes over already-tested backing** — deliberately *not* skeleton routes minted
-to inflate the number. Measured contract coverage ratchets **392 / 29.6% → 397 / 30%** (G08 **15.8% → 19.5%**),
+to inflate the number. Measured contract coverage ratchets **392 / 29.6% → 397 / 30%** (PS08 **15.8% → 19.5%**),
 and the PH-37 gate's floor was raised in lockstep (report + `ph37a` test + `ph-37a.sh`) so the gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
@@ -32,7 +32,7 @@ and the PH-37 gate's floor was raised in lockstep (report + `ph37a` test + `ph-3
 - **Contract coverage is 30%** — ~926 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. This workstream continues: the
   next candidates are other modules with real-but-unexposed backing (e.g. the APAR PIP lifecycle and
-  probation-confirmation methods, and low-coverage G07/G01/G14 read endpoints).
+  probation-confirmation methods, and low-coverage PS07/PS01/PS14 read endpoints).
 - **Persistence workstream:** the hand-built services (PH-16F..PH-38 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

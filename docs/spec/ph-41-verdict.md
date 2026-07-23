@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-41A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Fourth tranche of the user-directed "raise contract coverage" workstream, moving into G07. Built by
+GREEN. Fourth tranche of the user-directed "raise contract coverage" workstream, moving into PS07. Built by
 hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
@@ -21,18 +21,18 @@ hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G07** | FR-G07-020 training-sponsorship + service-bond lifecycle: `POST /training/sponsorships`, `:sanction`, `:activate-bond`, `:fulfil`, `:breach`, `:emit-recovery`, `:recover`, `:waive`, `GET /training/sponsorships/{id}`, `.../costs` | existing `trainingService` sponsorship methods (SoD on sanction; pro-rata bond recovery in integer paise; VAL-G07-BOND fail-closed on recover; idempotent G10 cost feed), service-tested | `ph41a-g07-sponsorship-route.test.cjs` |
+| **PS07** | FR-PS07-020 training-sponsorship + service-bond lifecycle: `POST /training/sponsorships`, `:sanction`, `:activate-bond`, `:fulfil`, `:breach`, `:emit-recovery`, `:recover`, `:waive`, `GET /training/sponsorships/{id}`, `.../costs` | existing `trainingService` sponsorship methods (SoD on sanction; pro-rata bond recovery in integer paise; VAL-PS07-BOND fail-closed on recover; idempotent PS10 cost feed), service-tested | `ph41a-ps07-sponsorship-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**411 / 31.1% → 421 / 31.8%** (G07 **16.2% → 25.2%**), and the PH-37 gate floor was raised in lockstep so the
+**411 / 31.1% → 421 / 31.8%** (PS07 **16.2% → 25.2%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 31.8%** — ~902 of the **1,323** contracted operations remain unimplemented. The
-  coverage tool is still **count-based**, not per-operation path matching. G07 has more unexposed backing
+  coverage tool is still **count-based**, not per-operation path matching. PS07 has more unexposed backing
   (external-credential lifecycle, empanelment decisions, LMS statement ingest); the workstream continues
-  there and into G14, G01, G13.
+  there and into PS14, PS01, PS13.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-41 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

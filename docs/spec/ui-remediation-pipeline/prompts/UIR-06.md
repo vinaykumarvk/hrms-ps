@@ -5,7 +5,7 @@
     - apps/web/src/App.tsx
     - apps/web/src/app/**
     - apps/web/src/workflow/**
-    - apps/web/src/modules/g10/**
+    - apps/web/src/modules/ps10/**
   constraints:
     - UI navigation never widens server authorization.
     - No visible no-op, dead target, false state, or invented API behavior.

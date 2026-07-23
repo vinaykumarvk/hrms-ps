@@ -8,8 +8,8 @@
 // Authored as typed cases so the suite typechecks and compiles with the project build; executed under
 // `npm test` via apps/api/test/migrationStagingReconciliation.test.cjs.
 import { MigrationStagingService } from "./migrationStagingService";
-import { EmployeeMasterService, EmployeeRecord } from "../../modules/g01/employeeMasterService";
-import { ServiceRegisterService } from "../../modules/g12/serviceRegisterService";
+import { EmployeeMasterService, EmployeeRecord } from "../../modules/ps01/employeeMasterService";
+import { ServiceRegisterService } from "../../modules/ps12/serviceRegisterService";
 import { AuditService } from "../../platform/audit/auditService";
 import { AuthorizationService } from "../../platform/authorization/authorizationService";
 import { TenantScope } from "../../platform/types";
@@ -73,7 +73,7 @@ function productionEmployee(serviceNo: string, id: string): EmployeeRecord {
 function stagingService(): { staging: MigrationStagingService; employees: EmployeeMasterService } {
   const audit = new AuditService();
   const employees = new EmployeeMasterService(
-    [productionEmployee("GOV-1", "emp-mig-1"), productionEmployee("GOV-2", "emp-mig-2")],
+    [productionEmployee("PS-1", "emp-mig-1"), productionEmployee("PS-2", "emp-mig-2")],
     new AuthorizationService(),
     audit,
     new ServiceRegisterService(audit)
@@ -87,8 +87,8 @@ export const migrationStagingReconciliationCases: StagingCase[] = [
     run: () => {
       const { staging, employees } = stagingService();
       const before = employees.count(scope);
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One", sourceSystem: "legacy" });
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-2", displayName: "Legacy Two", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-2", displayName: "Legacy Two", sourceSystem: "legacy" });
       const staged = staging.listStaged(scope);
       assertEqual(staged.length, 2, "both legacy records land in staging");
       assertEqual(staged.every((row) => row.status === "STAGED"), true, "staged rows start in STAGED status");
@@ -99,14 +99,14 @@ export const migrationStagingReconciliationCases: StagingCase[] = [
     name: "reconciliation report classifies matched / missing / duplicate legacy identities",
     run: () => {
       const { staging } = stagingService();
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One", sourceSystem: "legacy" });
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-404", displayName: "Legacy Missing", sourceSystem: "legacy" });
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-404", displayName: "Legacy Missing Dup", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-404", displayName: "Legacy Missing", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-404", displayName: "Legacy Missing Dup", sourceSystem: "legacy" });
       const report = staging.reconcileEmployeeIdentity(scope);
       assertEqual(report.totalStaged, 3, "all staged rows reconciled");
       assertEqual(report.matchedEmployees, 1, "one legacy identity matches production");
       assertEqual(report.missingEmployees, 2, "two legacy identities are missing from production");
-      assertDeepEqual(report.duplicateServiceNos, ["GOV-404"], "duplicate service number flagged");
+      assertDeepEqual(report.duplicateServiceNos, ["PS-404"], "duplicate service number flagged");
       assertEqual(report.reconciled, false, "report is not reconciled while mismatches exist");
       assertEqual(report.productionEmployeeCountBefore, report.productionEmployeeCountAfter, "reconcile is read-only");
     },
@@ -116,8 +116,8 @@ export const migrationStagingReconciliationCases: StagingCase[] = [
     run: () => {
       const { staging, employees } = stagingService();
       const before = employees.count(scope);
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One", sourceSystem: "legacy" });
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-404", displayName: "Legacy Missing", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-404", displayName: "Legacy Missing", sourceSystem: "legacy" });
       assertThrows(
         () => staging.promote(scope),
         /promotion blocked/i,
@@ -136,8 +136,8 @@ export const migrationStagingReconciliationCases: StagingCase[] = [
     run: () => {
       const { staging, employees } = stagingService();
       const before = employees.count(scope);
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One", sourceSystem: "legacy" });
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One Dup", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One Dup", sourceSystem: "legacy" });
       assertThrows(() => staging.promote(scope), /promotion blocked/i, "duplicate service number blocks promotion");
       assertEqual(employees.count(scope), before, "blocked promotion left the system of record untouched");
     },
@@ -147,8 +147,8 @@ export const migrationStagingReconciliationCases: StagingCase[] = [
     run: () => {
       const { staging, employees } = stagingService();
       const before = employees.count(scope);
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One", sourceSystem: "legacy" });
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-2", displayName: "Legacy Two", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-2", displayName: "Legacy Two", sourceSystem: "legacy" });
       const result = staging.promote(scope);
       assertEqual(result.report.reconciled, true, "clean reconciliation permits promotion");
       assertEqual(result.promoted, 2, "both matched legacy identities are promoted");
@@ -164,7 +164,7 @@ export const migrationStagingReconciliationCases: StagingCase[] = [
     name: "cross-tenant staging cannot reconcile or leak another tenant's staged rows",
     run: () => {
       const { staging } = stagingService();
-      staging.stageEmployeeIdentity(scope, { serviceNo: "GOV-1", displayName: "Legacy One", sourceSystem: "legacy" });
+      staging.stageEmployeeIdentity(scope, { serviceNo: "PS-1", displayName: "Legacy One", sourceSystem: "legacy" });
       const otherTenant: TenantScope = { tenantId: "tenant-other", entityId: "entity-other" };
       assert(staging.listStaged(otherTenant).length === 0, "other tenant sees no staged rows");
       const report = staging.reconcileEmployeeIdentity(otherTenant);

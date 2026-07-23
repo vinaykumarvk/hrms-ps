@@ -1,6 +1,6 @@
 /goal
-  objective: PH-06B — take the G03 leave backend from thin happy-path slice to BRD depth for the core
-    application lifecycle. The audit (docs/reviews/brd-coverage-audit-20260702.md) scored G03 at 9/118
+  objective: PH-06B — take the PS03 leave backend from thin happy-path slice to BRD depth for the core
+    application lifecycle. The audit (docs/reviews/brd-coverage-audit-20260702.md) scored PS03 at 9/118
     CONFIRMED: no leave-type/accrual-policy config entities, generic CONFLICT instead of named errors,
     no overlap check, no withdraw/partial-cancel, no holiday calendar, no eligibility/entitlement gates,
     and the leave_balances.version field never used for optimistic locking.
@@ -16,11 +16,11 @@
     - Eligibility/entitlement checks at submit: ELIGIBILITY_FAILED and ENTITLEMENT_EXCEEDED per leave type.
     - Optimistic locking: balance mutations take an expected version and raise OPTIMISTIC_LOCK_CONFLICT on mismatch.
   context:
-    - docs/brd/v3/G03-attendance-and-leave-management.md   # FR-02, FR-10, FR-13; named error codes in section 8
-    - docs/data-model/03-G03-attendance-leave.sql          # leave_types, leave_accrual_policies, holiday_calendars, holidays, leave_balances.version
-    - apps/api/src/modules/g03/**                          # service + repository from PH-06A
-    - apps/api/src/routes/g03.routes.ts , apps/api/src/http/errors.ts
-    - apps/api/test/ph06-g03-leave.test.cjs                # existing slice test that must stay green
+    - docs/brd/v3/PS03-attendance-and-leave-management.md   # FR-02, FR-10, FR-13; named error codes in section 8
+    - docs/data-model/03-PS03-attendance-leave.sql          # leave_types, leave_accrual_policies, holiday_calendars, holidays, leave_balances.version
+    - apps/api/src/modules/ps03/**                          # service + repository from PH-06A
+    - apps/api/src/routes/ps03.routes.ts , apps/api/src/http/errors.ts
+    - apps/api/test/ph06-ps03-leave.test.cjs                # existing slice test that must stay green
   constraints:
     - Error codes must be the BRD-named codes above, surfaced through FoundationError/ErrorEnvelope; do not invent synonyms.
     - Persist new entities through the PH-06A repository/migration path (parameterised queries only; transactions for multi-step writes).
@@ -41,7 +41,7 @@
     - name: FR-13 withdraw + partial cancel + tests
       max_iterations: 5
       repeat_until: withdraw (SUBMITTED->WITHDRAWN, reservation released) and partial cancellation of an
-        APPROVED spell (partial CANCELLATION_CREDIT + corrected G04 relay) are exposed via g03 routes; new
+        APPROVED spell (partial CANCELLATION_CREDIT + corrected PS04 relay) are exposed via ps03 routes; new
         tests in apps/api/test drive the behavior and assert LEAVE_OVERLAP, INSUFFICIENT_BALANCE, withdraw,
         partial cancel and OPTIMISTIC_LOCK_CONFLICT; `npm run typecheck` + `npm test` green;
         `bash docs/spec/pipeline/checks/ph-06b.sh` GREEN.
@@ -50,11 +50,11 @@
     - Repository method shapes, seed data content, and route naming for the new endpoints (keep them under
       the existing /api/v1/atl/** namespace) are yours to design.
     - Holiday-counting semantics per leave type may be modelled as a leave_types flag if the BRD grain allows.
-    - You may refactor within apps/api/src/modules/g03 as needed; adjacent modules only via their public services.
+    - You may refactor within apps/api/src/modules/ps03 as needed; adjacent modules only via their public services.
   evidence_required:
-    - apps/api/src/modules/g03/** diffs; g03.routes.ts routes for withdraw, partial cancel, leave-type config
+    - apps/api/src/modules/ps03/** diffs; ps03.routes.ts routes for withdraw, partial cancel, leave-type config
     - tests under apps/api/test asserting each named error is thrown by real behavior (not string echoes)
     - `npm run typecheck` + `npm test` green; ph-06b.sh GREEN
   escalate_when:
     - A BRD rule conflicts with the frozen DDL or an approved state machine (record the exact clause).
-    - Partial cancellation cannot be expressed without altering the G04 relay contract.
+    - Partial cancellation cannot be expressed without altering the PS04 relay contract.

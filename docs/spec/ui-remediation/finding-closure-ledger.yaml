@@ -78,7 +78,7 @@ findings:
     id: UI-10
     disposition: terminal_actions_only
     blocking_gate: sensitive_action_safety
-    expected_files: [apps/web/src/workflow, apps/web/src/modules/g10]
+    expected_files: [apps/web/src/workflow, apps/web/src/modules/ps10]
     automated_tests: [terminal confirmation and cancel]
   - <<: *defaults
     id: UI-11

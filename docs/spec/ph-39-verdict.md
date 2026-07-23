@@ -21,10 +21,10 @@ credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G08** | APAR PIP lifecycle (`POST /pips`, `.../{id}/milestones/{milestoneId}:update`, `:close`), probation-confirmation (`POST /probation-confirmations`, `:decide`), and reads (`GET /apar/forms/{id}/report-periods`, `/goal-snapshots`) | existing `aparService` methods (PIP one-open-per-employee + ≥1 milestone guards; probation cumulative extension cap), previously service-tested at `ph16e-g07-g08-depth` | `ph39a-g08-pip-probation-route.test.cjs` |
+| **PS08** | APAR PIP lifecycle (`POST /pips`, `.../{id}/milestones/{milestoneId}:update`, `:close`), probation-confirmation (`POST /probation-confirmations`, `:decide`), and reads (`GET /apar/forms/{id}/report-periods`, `/goal-snapshots`) | existing `aparService` methods (PIP one-open-per-employee + ≥1 milestone guards; probation cumulative extension cap), previously service-tested at `ph16e-ps07-ps08-depth` | `ph39a-ps08-pip-probation-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage
-ratchets **397 / 30% → 404 / 30.5%** (G08 **19.5% → 24.8%**), and the PH-37 gate floor was raised in lockstep
+ratchets **397 / 30% → 404 / 30.5%** (PS08 **19.5% → 24.8%**), and the PH-37 gate floor was raised in lockstep
 so the gain is locked. A `requiredNumber` body helper was added so JSON numeric fields parse correctly (the
 prior calibration routes only worked because the test sent numeric strings).
 
@@ -32,7 +32,7 @@ prior calibration routes only worked because the test sent numeric strings).
 
 - **Contract coverage is 30.5%** — ~919 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. Workstream continues: next
-  candidates are the remaining G08 read endpoints and the low-coverage modules G07 (16.2%), G01, G14.
+  candidates are the remaining PS08 read endpoints and the low-coverage modules PS07 (16.2%), PS01, PS14.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-39 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

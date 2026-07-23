@@ -1,8 +1,8 @@
 {
-  "name": "government-hrms",
+  "name": "primesoft-hrms",
   "version": "0.1.0",
   "private": true,
-  "description": "Government HRMS modular-monolith foundation services.",
+  "description": "PrimeSoft HRMS modular-monolith foundation services.",
   "scripts": {
     "typecheck": "npx tsc -p tsconfig.json --noEmit",
     "build": "npx tsc -p tsconfig.json",
@@ -16,12 +16,6 @@
     "web:dev": "node node_modules/vite/bin/vite.js --config apps/web/vite.config.ts --host 127.0.0.1"
   },
   "dependencies": {
-    "@hrms-workflow/adapters-hrms": "file:../workflow-platform/packages/adapters-hrms",
-    "@hrms-workflow/workflow-config": "file:../workflow-platform/packages/workflow-config",
-    "@hrms-workflow/workflow-core": "file:../workflow-platform/packages/workflow-core",
-    "@hrms-workflow/workflow-postgres": "file:../workflow-platform/packages/workflow-postgres",
-    "@hrms-workflow/workflow-resolvers": "file:../workflow-platform/packages/workflow-resolvers",
-    "@hrms-workflow/workflow-test-kit": "file:../workflow-platform/packages/workflow-test-kit",
     "@radix-ui/react-dialog": "1.1.15",
     "@types/pg": "^8.20.0",
     "class-variance-authority": "0.7.1",

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# PH-27B oracle: G05 interactive counselling UI — a real controlled web surface using the injected client
+# PH-27B oracle: PS05 interactive counselling UI — a real controlled web surface using the injected client
 # with canonical loading/error/empty states; the client carries the submitCounsellingChoice method; web suites green.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-COMP="apps/web/src/modules/g05/CounsellingConsole.tsx"; CLIENT="apps/web/src/api/hrmsClient.ts"; FIX="apps/web/src/api/fixtureHrmsClient.ts"; APP="apps/web/src/App.tsx"
-echo "== PH-27B exit-criteria (G05 interactive counselling UI) =="
+COMP="apps/web/src/modules/ps05/CounsellingConsole.tsx"; CLIENT="apps/web/src/api/hrmsClient.ts"; FIX="apps/web/src/api/fixtureHrmsClient.ts"; APP="apps/web/src/App.tsx"
+echo "== PH-27B exit-criteria (PS05 interactive counselling UI) =="
 [ -d node_modules ] || red "node_modules absent"
 [ -f "$COMP" ] && grn "component present: $COMP" || red "missing component: $COMP"
 have "$COMP" 'onSubmit=|onClick=' "component has a submit/click handler"

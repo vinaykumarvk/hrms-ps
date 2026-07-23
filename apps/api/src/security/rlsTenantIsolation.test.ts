@@ -5,9 +5,9 @@
 //   - an AUTHORIZED cross-entity viewer (tenant-scoped, no entity pin) can read across entities.
 // Authored as typed cases so the suite typechecks and compiles with the project build; executed under
 // `npm test` via apps/api/test/rlsTenantIsolation.test.cjs.
-import { EmployeeMasterService, EmployeeRecord } from "../modules/g01/employeeMasterService";
-import { DocumentRecord, DocumentVaultService } from "../modules/g13/documentVaultService";
-import { ServiceRegisterService } from "../modules/g12/serviceRegisterService";
+import { EmployeeMasterService, EmployeeRecord } from "../modules/ps01/employeeMasterService";
+import { DocumentRecord, DocumentVaultService } from "../modules/ps13/documentVaultService";
+import { ServiceRegisterService } from "../modules/ps12/serviceRegisterService";
 import { AuditService } from "../platform/audit/auditService";
 import { AuthorizationService } from "../platform/authorization/authorizationService";
 import { ActorContext, TenantScope } from "../platform/types";
@@ -136,7 +136,7 @@ function actor(scope: TenantScope): ActorContext {
     entityId: scope.entityId,
     userId: "u-viewer",
     roles: ["viewer"],
-    permissions: ["g01.employee.read"],
+    permissions: ["ps01.employee.read"],
     fieldGrants: [],
   };
 }

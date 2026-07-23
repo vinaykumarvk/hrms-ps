@@ -1,13 +1,13 @@
 /goal
   objective: Close remediation tranche 2 with an honest, oracle-checkable verdict. Write docs/spec/ph-15-verdict.md
     updating the coverage position against docs/reviews/brd-coverage-delta-20260703.md for the six modules this
-    tranche touched (G03, G06, G09, G10, G11, G12, G13): per-module rows stating what PH-15A..PH-15F closed
+    tranche touched (PS03, PS06, PS09, PS10, PS11, PS12, PS13): per-module rows stating what PH-15A..PH-15F closed
     (tax/TDS + Form-16/24Q; pensioner lifecycle + revisions; shifts/rosters/punches/comp-off; 65B certificates +
     subscriptions + LTV; envelope encryption + DPDP DSR; POSH/ICC + hearings + SLA pause + rota-quota) and what
-    remains NOT_FOUND in each module from the delta's backlog (e.g. G10 bank-file DSC/positive-pay depth, loans,
-    perquisites, GL; G11 treasury/PDA, grievances, DigiLocker; G03 year-close, encashment; G12 offline QR, real
-    TSA; G13 OCR/search, e-sign PAdES-LTV, watermarking, sharing, real AV; G09 vigilance register, evidence-vault
-    listing; G06 sealed cover full, correction cascade, career paths). The verdict must state the exact API and
+    remains NOT_FOUND in each module from the delta's backlog (e.g. PS10 bank-file DSC/positive-pay depth, loans,
+    perquisites, GL; PS11 treasury/PDA, grievances, DigiLocker; PS03 year-close, encashment; PS12 offline QR, real
+    TSA; PS13 OCR/search, e-sign PAdES-LTV, watermarking, sharing, real AV; PS09 vigilance register, evidence-vault
+    listing; PS06 sealed cover full, correction cascade, career paths). The verdict must state the exact API and
     web test pass counts as reported by the suites at verdict time (the oracle recomputes both counts itself and
     fails if the verdict's numbers differ), and must carry the standing necessary-not-sufficient statement: a
     GREEN oracle at this human gate is necessary, not sufficient — the human reviews this verdict before any
@@ -26,7 +26,7 @@
       `npm test` and `npm run web:test` pass counts and greps the verdict for the same numbers — stale or rounded
       numbers make the oracle RED).
     - The verdict must cite docs/reviews/brd-coverage-delta-20260703.md by name, contain a per-module row for each
-      of G03, G06, G09, G10, G11, G12, G13, name remaining gaps (no "100% complete" claims), and contain the
+      of PS03, PS06, PS09, PS10, PS11, PS12, PS13, name remaining gaps (no "100% complete" claims), and contain the
       necessary-not-sufficient statement for the human gate.
     - Also note the still-open cross-cutting item from the delta: contract-op coverage remains a small fraction of
       the 1,306 OpenAPI operations — do not imply route-surface completeness.
@@ -44,7 +44,7 @@
     - name: Verdict document
       max_iterations: 4
       repeat_until: docs/spec/ph-15-verdict.md contains the delta citation, per-module closed-vs-remaining rows
-        for all six touched modules plus G13, the exact API and web pass counts, the contract-coverage caveat,
+        for all six touched modules plus PS13, the exact API and web pass counts, the contract-coverage caveat,
         and the necessary-not-sufficient statement; `bash docs/spec/pipeline/checks/ph-15g.sh` GREEN.
       steps: [draft verdict, verify numbers against suite output, run oracle, fix]
   evidence_required:

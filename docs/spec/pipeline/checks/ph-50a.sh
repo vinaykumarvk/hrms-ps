@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-50A oracle: raise measured contract coverage by exposing the G03 leave year-close simulate + encashment
+# PH-50A oracle: raise measured contract coverage by exposing the PS03 leave year-close simulate + encashment
 # + mass-leave + punch-review/exception reads (real, service-tested backing) as kernel routes. Checks routes
 # registered + dispatched, and the ratchet advanced to >= 482 / 36.4%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g03.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-50A exit-criteria (G03 leave/attendance route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps03.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-50A exit-criteria (PS03 leave/attendance route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in simulateYearClose encashLeave listEncashments applyMassLeave resolveReview getReview listExceptions; do
   have "$R" "$m" "route wires backing method: $m"

@@ -1,6 +1,6 @@
-# Data-Model Conventions — Government HRMS
+# Data-Model Conventions — PrimeSoft HRMS
 
-**Authoritative for:** every module schema author (`01-G01.sql` … `14-G14.sql`).
+**Authoritative for:** every module schema author (`01-PS01.sql` … `14-PS14.sql`).
 **Inherited from:** `00-platform-core.sql` (the shared platform core) and
 `docs/brd/PLATFORM_FOUNDATION.md`. These rules are **mandatory** — a module schema that
 violates them is rejected at review. The shared core (`00-platform-core.sql`) is the single
@@ -122,16 +122,16 @@ These canonical tables live in `00-platform-core.sql`; module schemas **FK to th
 `notifications`, `jobs`, `integration_credentials`, `migration_runs`.
 
 **Ownership notes for the canonical entities other modules reference:**
-- `employees` / `employee_dependents` — **owned by G01**; G01's module schema adds the
+- `employees` / `employee_dependents` — **owned by PS01**; PS01's module schema adds the
   governance satellites (attribute-history spine, aadhaar vault, identity docs, positions,
   nominees, …). Other modules reference, read-only, with no divergent field/enum redeclaration.
-- `service_register_events` — **owned by G12**; append-only, hash-chained per
-  `(tenant_id, employee_id)`. The canonical writer set (G01/G04/G05/G06/G08/G09/G10/G11) posts
-  via G12's ingestion contract; **no module mutates it directly**. Sub-ledgers
-  (`sr_status_events`, `sr_anchors`, `sr_event_type`, `sr_ingestion_requests`, …) live in 12-G12.
-- `documents` / `document_versions` — **owned by G13**; other modules attach via `document_id`
+- `service_register_events` — **owned by PS12**; append-only, hash-chained per
+  `(tenant_id, employee_id)`. The canonical writer set (PS01/PS04/PS05/PS06/PS08/PS09/PS10/PS11) posts
+  via PS12's ingestion contract; **no module mutates it directly**. Sub-ledgers
+  (`sr_status_events`, `sr_anchors`, `sr_event_type`, `sr_ingestion_requests`, …) live in 12-PS12.
+- `documents` / `document_versions` — **owned by PS13**; other modules attach via `document_id`
   and store only the reference. The full vault model (storage objects, folders, retention, legal
-  holds, security clearances, signatures) lives in 13-G13.
+  holds, security clearances, signatures) lives in 13-PS13.
 - `workflows` / `workflow_instances` / `workflow_actions` — **P01 engine**; module flows are
   configured W.1 definitions, not new engines.
 
@@ -141,4 +141,4 @@ These canonical tables live in `00-platform-core.sql`; module schemas **FK to th
 - Index prefix `ix_<table>_<column>`; unique-constraint prefix `uq_`; check-constraint prefix
   `ck_`; foreign-key constraint prefix `fk_`.
 - Module-unique validation/job/message ids follow the Foundation scheme:
-  `VAL-<gov>-*`, `JOB-<gov>-*`, `MSG-<gov>-*`, `ERR-<gov>-*`, registered in the Foundation indexes.
+  `VAL-<enterprise>-*`, `JOB-<enterprise>-*`, `MSG-<enterprise>-*`, `ERR-<enterprise>-*`, registered in the Foundation indexes.

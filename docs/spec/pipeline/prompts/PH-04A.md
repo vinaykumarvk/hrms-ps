@@ -64,6 +64,6 @@
     - GREEN output of `bash docs/spec/pipeline/checks/ph-04a.sh` captured in the phase log
   escalate_when:
     - A route genuinely cannot be classified public vs protected from contracts/BRD (name the route; do not guess).
-    - Replay semantics conflict with an existing module's own idempotency layer (e.g. G12 ingest) and
+    - Replay semantics conflict with an existing module's own idempotency layer (e.g. PS12 ingest) and
       reconciling would require changing module behaviour outside this phase's scope.
     - The oracle stays RED after the loop budget for reasons outside apps/api/src/http.

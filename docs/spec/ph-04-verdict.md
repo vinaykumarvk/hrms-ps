@@ -28,20 +28,20 @@ Per-contract rows (oracle output, verbatim):
 
 | Contract | Oracle row (implemented/total operations) |
 |---|---|
-| G01 | 9/165 operations implemented (5.5%) |
-| G02 | 0/65 operations implemented (0.0%) |
-| G03 | 0/92 operations implemented (0.0%) |
-| G04 | 2/45 operations implemented (4.4%) |
-| G05 | 2/75 operations implemented (2.7%) |
-| G06 | 2/86 operations implemented (2.3%) |
-| G07 | 1/111 operations implemented (0.9%) |
-| G08 | 1/133 operations implemented (0.8%) |
-| G09 | 1/89 operations implemented (1.1%) |
-| G10 | 2/87 operations implemented (2.3%) |
-| G11 | 2/90 operations implemented (2.2%) |
-| G12 | 8/65 operations implemented (12.3%) |
-| G13 | 13/114 operations implemented (11.4%) |
-| G14 | 0/90 operations implemented (0.0%) |
+| PS01 | 9/165 operations implemented (5.5%) |
+| PS02 | 0/65 operations implemented (0.0%) |
+| PS03 | 0/92 operations implemented (0.0%) |
+| PS04 | 2/45 operations implemented (4.4%) |
+| PS05 | 2/75 operations implemented (2.7%) |
+| PS06 | 2/86 operations implemented (2.3%) |
+| PS07 | 1/111 operations implemented (0.9%) |
+| PS08 | 1/133 operations implemented (0.8%) |
+| PS09 | 1/89 operations implemented (1.1%) |
+| PS10 | 2/87 operations implemented (2.3%) |
+| PS11 | 2/90 operations implemented (2.2%) |
+| PS12 | 8/65 operations implemented (12.3%) |
+| PS13 | 13/114 operations implemented (11.4%) |
+| PS14 | 0/90 operations implemented (0.0%) |
 | P01-workflow | 4/16 operations implemented (25.0%) |
 
 Measurement caveat (stated, not corrected): the oracle parses literal `kernel.register({...})`
@@ -66,7 +66,7 @@ contracts, not by changing app code), bringing drift to the `unmatched_implement
 | POST /workflow/tasks/{task_id}/approve | Amended into `docs/contracts/openapi/P01-workflow.yaml` (operationId `approveWorkflowTask`) |
 | POST /workflow/tasks/{task_id}/reject | Amended into `docs/contracts/openapi/P01-workflow.yaml` (operationId `rejectWorkflowTask`) |
 | POST /workflow/tasks/{task_id}/delegate | Amended into `docs/contracts/openapi/P01-workflow.yaml` (operationId `delegateWorkflowTask`, new `TaskDelegateRequest` schema) |
-| GET /documents/{id}/retention | Amended into `docs/contracts/openapi/G13.yaml` (`get` added beside the existing `post` on `/documents/{id}/retention`, operationId `getRetention`) |
+| GET /documents/{id}/retention | Amended into `docs/contracts/openapi/PS13.yaml` (`get` added beside the existing `post` on `/documents/{id}/retention`, operationId `getRetention`) |
 
 Each amendment is annotated in the contract file with `Contract amendment 2026-07-02 (PH-04D freeze
 packet)`. The task-level workflow action routes are a deliberate PH-04B convention (task inbox acts on
@@ -84,15 +84,15 @@ All 4 PH-04 test files pass: **21 PH-04 tests** inside the full API suite of **1
   reduced to `INTERNAL` / "Request failed"); a **working Idempotency-Key replay store** (same key
   returns the same stored response); real cursor pagination helper (default 25, max 100,
   `next_cursor`); `X-Correlation-Id` echo/generation.
-- **PH-04B — P01 workflow + G01 employee** (`apps/api/test/ph04-p01-g01-routes.test.cjs`, 6 tests):
-  G01 employee **create** (FR-EPM-001) plus list/detail/profile-360 with P02 field masking; a real
+- **PH-04B — P01 workflow + PS01 employee** (`apps/api/test/ph04-p01-ps01-routes.test.cjs`, 6 tests):
+  PS01 employee **create** (FR-EPM-001) plus list/detail/profile-360 with P02 field masking; a real
   `/changes` feed (no longer hardcoded `[]`); **governed change decisions** — `:approve`/`:reject`
-  execute real decisions and post to the G12 SR ledger (no echo stubs); **task-level workflow
+  execute real decisions and post to the PS12 SR ledger (no echo stubs); **task-level workflow
   routes** claim/approve/reject/delegate over the PH-03 hierarchy resolver.
-- **PH-04C — G12 + G13** (`apps/api/test/ph04-g12-g13-routes.test.cjs`, 7 tests): G12 timeline with
-  **real cursor paging** (bounded limits, non-hardcoded `next_cursor`); G12 **reversal honouring the
-  BRD `is_reversal` envelope**; idempotent ingest replay and semantic dedup; G13
-  **`:fetch?intent=VIEW|DOWNLOAD`** (FR-G13-016) and **DI-14 attach-target validation**; legal-hold /
+- **PH-04C — PS12 + PS13** (`apps/api/test/ph04-ps12-ps13-routes.test.cjs`, 7 tests): PS12 timeline with
+  **real cursor paging** (bounded limits, non-hardcoded `next_cursor`); PS12 **reversal honouring the
+  BRD `is_reversal` envelope**; idempotent ingest replay and semantic dedup; PS13
+  **`:fetch?intent=VIEW|DOWNLOAD`** (FR-PS13-016) and **DI-14 attach-target validation**; legal-hold /
   retention fail-closed behaviour.
 - **PH-04D — conformance regression** (`apps/api/test/ph04-contract-conformance.test.cjs`, 3 tests):
   frozen minimum route set present; all routes protected + permissioned; unsafe routes require
@@ -109,24 +109,24 @@ line items NOT_FOUND). Per module, the missing operation families and the owning
 | Module | Not implemented (operation families) | Owner |
 |---|---|---|
 | P01 | wait/timer satisfy, references fan-out; maker-checker/SoD, parallel topologies, SLA/escalation depth | PH-05C (inbox UI consumption); topology depth across module waves |
-| G01 | satellite-entity CRUD (service history, qualifications, family, postings…), outbox events — 156/165 ops missing | PH-07A, PH-07E |
-| G02 | entire personal-details workflow surface (65/65 missing): field catalogues, verification, bulk ops | PH-07C |
-| G03 | entire attendance/leave surface (92/92 missing): calendars, accrual/carry-forward, encashment, regularisation | PH-06B, PH-07D |
-| G04 | relay/DLQ administration beyond enqueue+ingest (43/45 missing) | PH-07B |
-| G05 | transfer administration depth (73/75 missing): requests, panels, clearance matrices | PH-06C, PH-08B |
-| G06 | promotion/DPC/MACP/sanctioned-posts/QSL/roster (84/86 missing) | PH-08A, PH-08C |
-| G07 | training catalogue, sessions, feedback, budgets (110/111 missing) | PH-08D |
-| G08 | APAR forms, workflows, gradation, representation (132/133 missing) | PH-08D |
-| G09 | natural-justice chain: PI, suspension, show-cause, consultation, POSH (88/89 missing) | PH-08E |
-| G10 | payroll rate tables/DSL, proration/LWP, arrears, TDS/PT, bank file, GL (85/87 missing) | PH-09A, PH-09B, PH-09D |
-| G11 | scheme branching OPS/NPS/UPS, commutation, family pension, GPF, disbursement (88/90 missing) | PH-09C |
-| G12 | real SHA-256 chain, verify endpoint, attestation, §65B/LTV, anchor/status-chain (57/65 missing) | PH-10A, PH-10B |
-| G13 | scan/OCR, e-sign, search/reindex, disposition SoD, KMS/clearance/DPDP, shares/redaction (101/114 missing) | PH-10A, PH-10C |
-| G14 | the whole analytics engine: KPI engine, bitemporal, suppression, scope-policy, 24-table DDL consumption (90/90 missing) | PH-10D, PH-10E |
+| PS01 | satellite-entity CRUD (service history, qualifications, family, postings…), outbox events — 156/165 ops missing | PH-07A, PH-07E |
+| PS02 | entire personal-details workflow surface (65/65 missing): field catalogues, verification, bulk ops | PH-07C |
+| PS03 | entire attendance/leave surface (92/92 missing): calendars, accrual/carry-forward, encashment, regularisation | PH-06B, PH-07D |
+| PS04 | relay/DLQ administration beyond enqueue+ingest (43/45 missing) | PH-07B |
+| PS05 | transfer administration depth (73/75 missing): requests, panels, clearance matrices | PH-06C, PH-08B |
+| PS06 | promotion/DPC/MACP/sanctioned-posts/QSL/roster (84/86 missing) | PH-08A, PH-08C |
+| PS07 | training catalogue, sessions, feedback, budgets (110/111 missing) | PH-08D |
+| PS08 | APAR forms, workflows, gradation, representation (132/133 missing) | PH-08D |
+| PS09 | natural-justice chain: PI, suspension, show-cause, consultation, POSH (88/89 missing) | PH-08E |
+| PS10 | payroll rate tables/DSL, proration/LWP, arrears, TDS/PT, bank file, GL (85/87 missing) | PH-09A, PH-09B, PH-09D |
+| PS11 | scheme branching OPS/NPS/UPS, commutation, family pension, GPF, disbursement (88/90 missing) | PH-09C |
+| PS12 | real SHA-256 chain, verify endpoint, attestation, §65B/LTV, anchor/status-chain (57/65 missing) | PH-10A, PH-10B |
+| PS13 | scan/OCR, e-sign, search/reindex, disposition SoD, KMS/clearance/DPDP, shares/redaction (101/114 missing) | PH-10A, PH-10C |
+| PS14 | the whole analytics engine: KPI engine, bitemporal, suppression, scope-policy, 24-table DDL consumption (90/90 missing) | PH-10D, PH-10E |
 
 Cross-cutting (audit): persistence (SQL data model largely unconsumed — PH-06A onwards), all module
-UIs (PH-05, then per-wave UI sub-phases), module `ERR-Gxx-*` error codes, scheduled jobs
-(`JOB-Gxx-*`), and statutory notifications remain missing across modules.
+UIs (PH-05, then per-wave UI sub-phases), module `ERR-PSxx-*` error codes, scheduled jobs
+(`JOB-PSxx-*`), and statutory notifications remain missing across modules.
 
 ## 6. Recommendation to the human gate
 
@@ -146,6 +146,6 @@ UIs (PH-05, then per-wave UI sub-phases), module `ERR-Gxx-*` error codes, schedu
    fixtures — the frozen shapes must survive that substitution unchanged.
 
 Residual risks: in-process handlers only (no deployed server); the oracle's registry parser
-undercounts array-registered routes (Section 2 caveat); G13 production adapters (object storage,
+undercounts array-registered routes (Section 2 caveat); PS13 production adapters (object storage,
 KMS, AV, WORM, timestamping) are future work; contract totals include operation families whose
-statutory design decisions (G10/G11/G09) are still open.
+statutory design decisions (PS10/PS11/PS09) are still open.

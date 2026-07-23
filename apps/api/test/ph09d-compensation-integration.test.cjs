@@ -1,24 +1,24 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-// PH-09D oracle tests — G10 compensation integration, SoD, and provenance:
+// PH-09D oracle tests — PS10 compensation integration, SoD, and provenance:
 // - FR-14/15 bank disbursement tie-out on real ledger rows: Σ disbursed + Σ held + Σ failed
 //   = run net in integer paise, NO tolerance window; an induced residual (a written-off
-//   suspense hold) blocks with ERR-G10-RECON-TIEOUT.
+//   suspense hold) blocks with ERR-PS10-RECON-TIEOUT.
 // - FR-15 reconciliation sign-off SoD by ACTOR IDENTITY: the signer must differ from the
-//   run maker and approver; a same-actor sign-off rejects ERR-G10-RECON-UNSIGNED, and
+//   run maker and approver; a same-actor sign-off rejects ERR-PS10-RECON-UNSIGNED, and
 //   disbursement cannot complete behind an unsigned reconciliation.
-// - FR-09 recovery scheduling from a REAL G09 penalty order, bounded by the net-pay floor
+// - FR-09 recovery scheduling from a REAL PS09 penalty order, bounded by the net-pay floor
 //   + the CPC s.60 attachment cap (seeded configuration with a recorded basis — never an
-//   invented fraction); an over-bound recovery raises ERR-G10-RECOVERY-BARRED and books
+//   invented fraction); an over-bound recovery raises ERR-PS10-RECOVERY-BARRED and books
 //   the residue into deduction_carryforwards.
 // - FR-20 FnF consolidated settlement (fnf_settlements) pulling the open loans_advances
 //   and deduction_carryforwards into one record with the AC2 net equation and FNF SoD.
-// - FR-23 SR provenance: PAY_FIXATION / ANNUAL_INCREMENT post via the G12 ingest contract
+// - FR-23 SR provenance: PAY_FIXATION / ANNUAL_INCREMENT post via the PS12 ingest contract
 //   with a deterministic fact_key; a replayed posting is a SEMANTIC duplicate (no second
-//   ledger row). G10 never writes the SR ledger directly.
-// - G11 FR-14 pre-credit gate: disbursement without an ACTIVE PASSED
-//   pen_bank_account_verifications row fails closed with ERR-G11-ACCOUNT-VERIFY.
+//   ledger row). PS10 never writes the SR ledger directly.
+// - PS11 FR-14 pre-credit gate: disbursement without an ACTIVE PASSED
+//   pen_bank_account_verifications row fails closed with ERR-PS11-ACCOUNT-VERIFY.
 // All amounts are INTEGER paise; rates are integer basis points (test fixture values,
 // not statutory claims).
 
@@ -81,7 +81,7 @@ function runPeriodToLock(services, period) {
   return services.payrollEngine.getEngineRun(maker, run.id);
 }
 
-/** G09 due-process shortcut to a served penalty order for the seeded employee. */
+/** PS09 due-process shortcut to a served penalty order for the seeded employee. */
 function imposePenaltyOrder(services) {
   const maker = actor();
   const opened = services.disciplinary.openCase(maker, {
@@ -118,7 +118,7 @@ test("PH-09D FR-14/15: disbursed + held + failed = run net on real ledger rows; 
   assert.equal(prepared.holds[0].reason, "INVALID_ACCOUNT");
   assert.ok(prepared.disbursement.disbursedTotalPaise > 0);
   assert.ok(prepared.disbursement.heldTotalPaise > 0);
-  // The tie-out equation over the split (VAL-G10-TIEOUT): disbursed + held + failed = run net.
+  // The tie-out equation over the split (VAL-PS10-TIEOUT): disbursed + held + failed = run net.
   assert.equal(
     prepared.disbursement.disbursedTotalPaise + prepared.disbursement.heldTotalPaise + prepared.disbursement.failedTotalPaise,
     run.netTotalCents
@@ -127,24 +127,24 @@ test("PH-09D FR-14/15: disbursed + held + failed = run net on real ledger rows; 
   const reconciliation = services.compensationIntegration.reconcileDisbursement(maker, run.id);
   assert.equal(reconciliation.status, "BALANCED");
   assert.equal(reconciliation.residualPaise, 0);
-  assert.equal(reconciliation.validation, "VAL-G10-TIEOUT");
+  assert.equal(reconciliation.validation, "VAL-PS10-TIEOUT");
   assert.equal(reconciliation.disbursedTotalPaise + reconciliation.heldTotalPaise + reconciliation.failedTotalPaise, reconciliation.runNetPaise);
 
   // NEGATIVE SoD: the run maker signing their own reconciliation is rejected — actor
-  // identity, not a boolean flag (ERR-G10-RECON-UNSIGNED).
+  // identity, not a boolean flag (ERR-PS10-RECON-UNSIGNED).
   assert.throws(
     () => services.compensationIntegration.signOffReconciliation(maker, run.id),
-    (error) => error instanceof FoundationError && error.code === "ERR-G10-RECON-UNSIGNED" && String(error.details.marker) === "PAYROLL_SOD"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS10-RECON-UNSIGNED" && String(error.details.marker) === "PAYROLL_SOD"
   );
   // The run approver is equally barred from signing.
   assert.throws(
     () => services.compensationIntegration.signOffReconciliation(approver(), run.id),
-    (error) => error instanceof FoundationError && error.code === "ERR-G10-RECON-UNSIGNED"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS10-RECON-UNSIGNED"
   );
   // Unsigned reconciliation blocks disbursement completion (FR-16 AC1 gate).
   assert.throws(
     () => services.compensationIntegration.completeDisbursement(maker, run.id),
-    (error) => error instanceof FoundationError && error.code === "ERR-G10-RECON-UNSIGNED"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS10-RECON-UNSIGNED"
   );
 
   const signed = services.compensationIntegration.signOffReconciliation(signer(), run.id);
@@ -155,7 +155,7 @@ test("PH-09D FR-14/15: disbursed + held + failed = run net on real ledger rows; 
   assert.ok(services.payrollEngine.getEngineRun(maker, run.id).transmittedAt);
 });
 
-test("PH-09D NEGATIVE FR-15: an induced residual (written-off hold) blocks with ERR-G10-RECON-TIEOUT", () => {
+test("PH-09D NEGATIVE FR-15: an induced residual (written-off hold) blocks with ERR-PS10-RECON-TIEOUT", () => {
   const services = createFoundationServices();
   const maker = actor();
   seedRules(services, [
@@ -174,13 +174,13 @@ test("PH-09D NEGATIVE FR-15: an induced residual (written-off hold) blocks with 
     () => services.compensationIntegration.reconcileDisbursement(maker, run.id),
     (error) =>
       error instanceof FoundationError &&
-      error.code === "ERR-G10-RECON-TIEOUT" &&
-      String(error.details.validation) === "VAL-G10-TIEOUT" &&
+      error.code === "ERR-PS10-RECON-TIEOUT" &&
+      String(error.details.validation) === "VAL-PS10-TIEOUT" &&
       Number(error.details.residualPaise) === prepared.holds[0].heldAmountPaise
   );
 });
 
-test("PH-09D FR-09: G09 penalty recovery is bounded by the net-pay floor + CPC s.60 cap; barred residue books to deduction_carryforwards", () => {
+test("PH-09D FR-09: PS09 penalty recovery is bounded by the net-pay floor + CPC s.60 cap; barred residue books to deduction_carryforwards", () => {
   const services = createFoundationServices();
   const maker = actor();
   seedRules(services, [{ employeeId: ph03Ids.employee, basicPaise: 3100000 }]);
@@ -219,7 +219,7 @@ test("PH-09D FR-09: G09 penalty recovery is bounded by the net-pay floor + CPC s
       }),
     (error) =>
       error instanceof FoundationError &&
-      error.code === "ERR-G10-RECOVERY-BARRED" &&
+      error.code === "ERR-PS10-RECOVERY-BARRED" &&
       Number(error.details.attachmentCapPaise) > 0 &&
       Number(error.details.allowedPerCyclePaise) < payslip.netPayCents
   );
@@ -227,10 +227,10 @@ test("PH-09D FR-09: G09 penalty recovery is bounded by the net-pay floor + CPC s
   assert.equal(carryforwards.length, before + 1);
   const residue = carryforwards[carryforwards.length - 1];
   assert.equal(residue.sourceType, "DISCIPLINARY");
-  assert.equal(residue.sourceRef, `g09_penalty_orders:${penaltyOrder.id}`);
+  assert.equal(residue.sourceRef, `ps09_penalty_orders:${penaltyOrder.id}`);
   assert.ok(residue.outstandingCents > 0);
 
-  // A bounded per-cycle demand schedules cleanly and ties back to the real G09 order.
+  // A bounded per-cycle demand schedules cleanly and ties back to the real PS09 order.
   const schedule = services.compensationIntegration.scheduleRecoveryFromPenaltyOrder(maker, {
     penaltyOrderId: penaltyOrder.id,
     period: "2026-10",
@@ -275,7 +275,7 @@ test("PH-09D FR-20: fnf_settlements consolidates open loans_advances + deduction
         orderedTotalPaise: payslip.netPayCents,
         requestedPerCyclePaise: payslip.netPayCents,
       }),
-    (error) => error instanceof FoundationError && error.code === "ERR-G10-RECOVERY-BARRED"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS10-RECOVERY-BARRED"
   );
   const openCarryforward = services.payrollEngine.listCarryforwards(maker, ph03Ids.employee).find((row) => row.status === "OPEN");
   assert.ok(openCarryforward);
@@ -341,7 +341,7 @@ test("PH-09D FR-20: fnf_settlements consolidates open loans_advances + deduction
   assert.equal(negative.status, "RECOVERY_PENDING");
 });
 
-test("PH-09D FR-23: PAY_FIXATION / ANNUAL_INCREMENT post via the G12 ingest contract; a replayed fact_key is a SEMANTIC duplicate", () => {
+test("PH-09D FR-23: PAY_FIXATION / ANNUAL_INCREMENT post via the PS12 ingest contract; a replayed fact_key is a SEMANTIC duplicate", () => {
   const services = createFoundationServices();
   const maker = actor();
   const timelineBefore = services.serviceRegister.getTimeline(maker, ph03Ids.employee).length;
@@ -350,22 +350,22 @@ test("PH-09D FR-23: PAY_FIXATION / ANNUAL_INCREMENT post via the G12 ingest cont
     employeeId: ph03Ids.employee,
     eventTypeCode: "PAY_FIXATION",
     eventDate: "2026-09-30",
-    sourceReferenceId: "g10_payroll_runs:engine-run-000001:PAY_FIXATION",
+    sourceReferenceId: "ps10_payroll_runs:engine-run-000001:PAY_FIXATION",
     payload: { period: "2026-09" },
     idempotencyKey: "idem-ph09d-sr-001",
   });
   assert.equal(first.semanticDuplicate, false);
-  assert.equal(first.event.sourceModule, "G10");
+  assert.equal(first.event.sourceModule, "PS10");
   assert.equal(first.event.eventTypeCode, "PAY_FIXATION");
-  assert.equal(first.event.factKey, `G10:PAY_FIXATION:${ph03Ids.employee}:2026-09-30`);
+  assert.equal(first.event.factKey, `PS10:PAY_FIXATION:${ph03Ids.employee}:2026-09-30`);
 
   // Replay the SAME FACT from a different source row (a reopen successor re-posting): the
-  // derived fact_key matches, so G12 dedups SEMANTICALLY — no second ledger row.
+  // derived fact_key matches, so PS12 dedups SEMANTICALLY — no second ledger row.
   const replay = services.compensationIntegration.postPayEventToSr(maker, {
     employeeId: ph03Ids.employee,
     eventTypeCode: "PAY_FIXATION",
     eventDate: "2026-09-30",
-    sourceReferenceId: "g10_payroll_runs:engine-run-000002:PAY_FIXATION",
+    sourceReferenceId: "ps10_payroll_runs:engine-run-000002:PAY_FIXATION",
     payload: { period: "2026-09", replayedFrom: "engine-run-000001" },
     idempotencyKey: "idem-ph09d-sr-002",
   });
@@ -378,7 +378,7 @@ test("PH-09D FR-23: PAY_FIXATION / ANNUAL_INCREMENT post via the G12 ingest cont
     employeeId: ph03Ids.employee,
     eventTypeCode: "ANNUAL_INCREMENT",
     eventDate: "2026-07-01",
-    sourceReferenceId: "g10_payroll_runs:engine-run-000001:ANNUAL_INCREMENT",
+    sourceReferenceId: "ps10_payroll_runs:engine-run-000001:ANNUAL_INCREMENT",
     payload: { period: "2026-07" },
     idempotencyKey: "idem-ph09d-sr-003",
   });
@@ -387,7 +387,7 @@ test("PH-09D FR-23: PAY_FIXATION / ANNUAL_INCREMENT post via the G12 ingest cont
   assert.equal(services.serviceRegister.getTimeline(maker, ph03Ids.employee).length, timelineBefore + 2);
 });
 
-test("PH-09D NEGATIVE G11 FR-14: disbursement without an ACTIVE PASSED account verification fails closed with ERR-G11-ACCOUNT-VERIFY", () => {
+test("PH-09D NEGATIVE PS11 FR-14: disbursement without an ACTIVE PASSED account verification fails closed with ERR-PS11-ACCOUNT-VERIFY", () => {
   const services = createFoundationServices();
   const maker = actor();
   const sanctioner = actor({ userId: "user-ph09d-pension-sanctioner", actorUserId: "user-ph09d-pension-sanctioner" });
@@ -428,7 +428,7 @@ test("PH-09D NEGATIVE G11 FR-14: disbursement without an ACTIVE PASSED account v
   // BLOCKED, fail closed (IR16).
   assert.throws(
     () => services.pensionDisbursement.disburse(maker, { caseId: pensionCase.id, lineType: "FIRST_PENSION", ...account, amountPaise: 900000 }),
-    (error) => error instanceof FoundationError && error.code === "ERR-G11-ACCOUNT-VERIFY" && String(error.details.marker) === "IR16"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS11-ACCOUNT-VERIFY" && String(error.details.marker) === "IR16"
   );
   // NEGATIVE: a FAILED penny-drop never satisfies the gate.
   services.pensionDisbursement.recordAccountVerification(maker, {
@@ -441,7 +441,7 @@ test("PH-09D NEGATIVE G11 FR-14: disbursement without an ACTIVE PASSED account v
   });
   assert.throws(
     () => services.pensionDisbursement.disburse(maker, { caseId: pensionCase.id, lineType: "FIRST_PENSION", ...account, amountPaise: 900000 }),
-    (error) => error instanceof FoundationError && error.code === "ERR-G11-ACCOUNT-VERIFY"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS11-ACCOUNT-VERIFY"
   );
 
   // A PASSED verification (E42, ACTIVE) opens the gate; the credit carries the E42 ref.
@@ -473,6 +473,6 @@ test("PH-09D NEGATIVE G11 FR-14: disbursement without an ACTIVE PASSED account v
         ifsc: "HDFC0000002",
         amountPaise: 1000000,
       }),
-    (error) => error instanceof FoundationError && error.code === "ERR-G11-ACCOUNT-VERIFY"
+    (error) => error instanceof FoundationError && error.code === "ERR-PS11-ACCOUNT-VERIFY"
   );
 });

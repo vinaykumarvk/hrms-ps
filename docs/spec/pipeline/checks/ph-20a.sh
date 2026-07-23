@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-20A oracle: G07 FR-019 vendor/external-trainer empanelment — vendor_empanelments status machine
+# PH-20A oracle: PS07 FR-019 vendor/external-trainer empanelment — vendor_empanelments status machine
 # (APPLIED->EMPANELLED/REJECTED), requester != approver SoD, contract/procurement refs.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g07 apps/api/src/routes/g07.routes.ts"; T=apps/api/test
-echo "== PH-20A exit-criteria (G07 vendor empanelment) =="
+S="apps/api/src/modules/ps07 apps/api/src/routes/ps07.routes.ts"; T=apps/api/test
+echo "== PH-20A exit-criteria (PS07 vendor empanelment) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "empanelment entity consumed (vendor_empanelments)::vendor_empanelments|vendorEmpanelment" \

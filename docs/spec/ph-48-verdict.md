@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-48A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Eleventh tranche of the user-directed "raise contract coverage" workstream, moving into G12. Built by
+GREEN. Eleventh tranche of the user-directed "raise contract coverage" workstream, moving into PS12. Built by
 hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
@@ -21,17 +21,17 @@ hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G12** | SR-ledger chain reads (`GET /sr/employees/{id}/entry-chain`, `/status-chain`, `/status-events`, `GET /sr/chain-employees`, `/sr/feed-events`) + RFC-3161 timestamp verify (`POST /sr/timestamp:verify`) + offline-bundle verify (`POST /sr/verification-bundle:verify`) | existing `serviceRegisterService` chain queries + `timestampAuthorityService.verifyTimestamp` + `offlineVerificationService.verifyBundle` (verify round-trips against the issue routes; tamper → valid:false), service-tested | `ph48a-g12-chain-verify-route.test.cjs` |
+| **PS12** | SR-ledger chain reads (`GET /sr/employees/{id}/entry-chain`, `/status-chain`, `/status-events`, `GET /sr/chain-employees`, `/sr/feed-events`) + RFC-3161 timestamp verify (`POST /sr/timestamp:verify`) + offline-bundle verify (`POST /sr/verification-bundle:verify`) | existing `serviceRegisterService` chain queries + `timestampAuthorityService.verifyTimestamp` + `offlineVerificationService.verifyBundle` (verify round-trips against the issue routes; tamper → valid:false), service-tested | `ph48a-ps12-chain-verify-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**462 / 34.9% → 469 / 35.4%** (G12 **43.1% → 53.8%** — G12 has now crossed 50%), and the PH-37 gate floor was
+**462 / 34.9% → 469 / 35.4%** (PS12 **43.1% → 53.8%** — PS12 has now crossed 50%), and the PH-37 gate floor was
 raised in lockstep so the gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract coverage is 35.4%** — ~854 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. The workstream continues into the
-  remaining lower-coverage modules **G02 (38.5%)**, G03 (40.2%), G05, G04, G06, G09.
+  remaining lower-coverage modules **PS02 (38.5%)**, PS03 (40.2%), PS05, PS04, PS06, PS09.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-48 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 
@@ -42,5 +42,5 @@ implemented as behavioral kernel routes (**35.4%**).
 
 Approve PH-48B, OR direct a further tranche (PH-49). The active workstream (per your steer) is raising
 measured coverage by exposing real, tested backing, with the ratchet gate proving each gain and forbidding
-regression; next candidates move to G02/G03/G05. The standing **persistence migration workstream** remains
+regression; next candidates move to PS02/PS03/PS05. The standing **persistence migration workstream** remains
 the alternative. Carried debt is unchanged: in-memory repositories for the newest services.

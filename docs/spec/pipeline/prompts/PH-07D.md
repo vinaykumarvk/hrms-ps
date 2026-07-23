@@ -1,5 +1,5 @@
 /goal
-  objective: PH-07D — G03 attendance, leave and payroll signals become a real payroll feed. The audit
+  objective: PH-07D — PS03 attendance, leave and payroll signals become a real payroll feed. The audit
     (docs/reviews/brd-coverage-audit-20260702.md) found: payroll signals are an in-memory list with no
     feed entity or period lock, attendance day status is only PRESENT/ANOMALY(/REGULARISED), and
     regularisation has no time window or cap.
@@ -16,13 +16,13 @@
     - Regularisation discipline: requests outside the configured backdate window raise WINDOW_EXPIRED,
       and a per-period cap on regularisations is enforced.
   context:
-    - docs/brd/v3/G03-attendance-and-leave-management.md   # FR-17 feed + lock; g03_attendance_status values; WINDOW_EXPIRED
-    - docs/data-model/03-G03-attendance-leave.sql          # payroll_attendance_feed, payroll_feed_adjustments, attendance_daily, attendance_lock_periods
-    - apps/api/src/modules/g03/**                          # service + repository (PH-06A/06B state)
-    - apps/api/src/routes/g03.routes.ts
+    - docs/brd/v3/PS03-attendance-and-leave-management.md   # FR-17 feed + lock; ps03_attendance_status values; WINDOW_EXPIRED
+    - docs/data-model/03-PS03-attendance-leave.sql          # payroll_attendance_feed, payroll_feed_adjustments, attendance_daily, attendance_lock_periods
+    - apps/api/src/modules/ps03/**                          # service + repository (PH-06A/06B state)
+    - apps/api/src/routes/ps03.routes.ts
   constraints:
     - Codes verbatim from the BRD: PERIOD_ALREADY_LOCKED, WINDOW_EXPIRED, LOCKED_PERIOD_ADJUSTMENT_EMITTED
-      (as the emitted adjustment marker/audit action); status values verbatim from g03_attendance_status
+      (as the emitted adjustment marker/audit action); status values verbatim from ps03_attendance_status
       (ON_LEAVE, HOLIDAY, HALF_DAY, ...).
     - Persist feed + adjustments via the repository/migration path; parameterised queries; lock-check +
       write (or adjustment emission) is transactional.
@@ -54,7 +54,7 @@
       order of precedence for a day matching multiple sources are yours to design within the BRD rules.
     - Half-day representation may reuse leave_application_days grain if the DDL supports it.
   evidence_required:
-    - apps/api/src/modules/g03/** diffs, feed/lock/adjustment migrations, g03.routes.ts feed/lock routes
+    - apps/api/src/modules/ps03/** diffs, feed/lock/adjustment migrations, ps03.routes.ts feed/lock routes
     - tests: locked-period negative + adjustment emission, day-status derivation, WINDOW_EXPIRED negative
     - `npm run typecheck` + `npm test` green; ph-07d.sh GREEN
   escalate_when:

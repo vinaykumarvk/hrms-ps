@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-58A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Second-pass deepening tranche, into G11. Built by hand — subagents credit-exhausted until 2026-07-08.
+GREEN. Second-pass deepening tranche, into PS11. Built by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
@@ -20,10 +20,10 @@ GREEN. Second-pass deepening tranche, into G11. Built by hand — subagents cred
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G11** | pension disbursement (`POST /pension/disbursements`, `GET /pension/cases/{caseId}/disbursements`) + pensioner lifecycle reads (`GET /pension/pensioners/{pensionerId}/life-certificates`, `GET /pension/cases/{caseId}/pensioner`) | existing `pensionDisbursementService` (integer-paise + disbursable guards) + `pensionerLifecycleService` (pensioner NOT_FOUND guard), service-tested | `ph58a-g11-disbursement-route.test.cjs` |
+| **PS11** | pension disbursement (`POST /pension/disbursements`, `GET /pension/cases/{caseId}/disbursements`) + pensioner lifecycle reads (`GET /pension/pensioners/{pensionerId}/life-certificates`, `GET /pension/cases/{caseId}/pensioner`) | existing `pensionDisbursementService` (integer-paise + disbursable guards) + `pensionerLifecycleService` (pensioner NOT_FOUND guard), service-tested | `ph58a-ps11-disbursement-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**532 / 40.2% → 536 / 40.5%** (G11 **36.7% → 41.1%**), and the PH-37 gate floor was raised in lockstep so the
+**532 / 40.2% → 536 / 40.5%** (PS11 **36.7% → 41.1%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)

@@ -102,7 +102,7 @@ export function AppShell({ permissions, sessionUser, activeWorkspace, activePath
         </Button>
 
         <div className="app-heading">
-          <p className="eyebrow">Government HRMS</p>
+          <p className="eyebrow">PrimeSoft HRMS</p>
           <h1>Operations Workspace</h1>
         </div>
 

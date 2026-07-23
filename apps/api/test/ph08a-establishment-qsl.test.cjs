@@ -1,7 +1,7 @@
-// PH-08A: statutory shared kernels — sanctioned_posts establishment register (G06 FR-015)
-// and qualifying_service_ledger + service_exclusion_rules (G06 FR-016).
-// Grounded in docs/brd/v3/G06-promotion-posting-progression.md (VAL-G06-QUOTA-SPLIT,
-// VAL-G06-VACANCY-RECON, VAL-G06-QUALSVC) and docs/data-model/06-*.sql.
+// PH-08A: statutory shared kernels — sanctioned_posts establishment register (PS06 FR-015)
+// and qualifying_service_ledger + service_exclusion_rules (PS06 FR-016).
+// Grounded in docs/brd/v3/PS06-promotion-posting-progression.md (VAL-PS06-QUOTA-SPLIT,
+// VAL-PS06-VACANCY-RECON, VAL-PS06-QUALSVC) and docs/data-model/06-*.sql.
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -71,8 +71,8 @@ function finalisedSeniorityList(services) {
     cadreId: ph03Ids.cadreRevenue,
     effectiveDate: "2026-08-01",
     entries: [
-      { employeeId: ph03Ids.employee, serviceNo: "GOV-100246", appointmentDate: "2018-01-01" },
-      { employeeId: ph03Ids.manager, serviceNo: "GOV-100245", appointmentDate: "2018-01-01" },
+      { employeeId: ph03Ids.employee, serviceNo: "PS-100246", appointmentDate: "2018-01-01" },
+      { employeeId: ph03Ids.manager, serviceNo: "PS-100245", appointmentDate: "2018-01-01" },
     ],
   });
   services.promotion.publishSeniorityList(actor(), list.id);
@@ -103,7 +103,7 @@ test("PH-08A FR-016 QSL compute: netQualifyingYears = gross - exclusions with it
   assert.equal(supersededSnapshotId, undefined, "first compute supersedes nothing");
   assert.equal(snapshot.grossServiceYears, 20);
   assert.equal(snapshot.totalExclusionDays, 340);
-  assert.equal(snapshot.netQualifyingYears, 19.068, "net qualifying years = (7300 - 340) / 365 (VAL-G06-QUALSVC)");
+  assert.equal(snapshot.netQualifyingYears, 19.068, "net qualifying years = (7300 - 340) / 365 (VAL-PS06-QUALSVC)");
   assert.equal(snapshot.isCurrent, true);
   assert.equal(snapshot.serviceExclusionRuleId, rule.id);
   assert.equal(snapshot.exclusionBreakdownJson.length, 5, "exclusion breakdown is itemised per period");
@@ -254,7 +254,7 @@ test("PH-08A FR-016/FR-003 eligibility cites the current QSL snapshot instead of
 
 test("PH-08A durability: kernel state survives re-opening (rehydrate) the file-backed persistence layer", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ph08a-kernel-"));
-  const storePath = path.join(dir, "g06-kernel-state.json");
+  const storePath = path.join(dir, "ps06-kernel-state.json");
   try {
     const repoA = new FileBackedEstablishmentQslRepository(storePath);
     const post = {
@@ -329,7 +329,7 @@ test("PH-08A FR-015 register derives vacancies and reconciles strength; promotio
   assert.equal(computation.promotionQuotaVacancies, 4, "(current 8 + anticipated 2 + carried 0) x 40% = 4");
 
   const list = finalisedSeniorityList(services);
-  // VAL-G06-VACANCY-RECON: case vacancies must equal the register-computed promotion-quota figure.
+  // VAL-PS06-VACANCY-RECON: case vacancies must equal the register-computed promotion-quota figure.
   const reconciledCase = services.promotion.createPromotionCase(actor(), {
     seniorityListId: list.id,
     vacancies: 4,
@@ -363,7 +363,7 @@ test("PH-08A FR-015 negative: quota split above 100 is rejected with QUOTA_SPLIT
   assert.throws(
     () => registerPost(services, { drQuotaPct: 60, promotionQuotaPct: 50, ldceQuotaPct: 10 }),
     (error) => error.code === "QUOTA_SPLIT_INVALID" && error.name === "FoundationError",
-    "VAL-G06-QUOTA-SPLIT: dr + promotion + ldce must not exceed 100"
+    "VAL-PS06-QUOTA-SPLIT: dr + promotion + ldce must not exceed 100"
   );
   // Revision path enforces the same invariant.
   const post = registerPost(services);

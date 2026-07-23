@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-10B oracle: G12 integrity pillars — verify endpoint + JOB-G12-INTEGRITY, real Merkle anchors,
+# PH-10B oracle: PS12 integrity pillars — verify endpoint + JOB-PS12-INTEGRITY, real Merkle anchors,
 # gap register (expected-event rules -> GAP_FLAGGED), custodian attestation, redacted certified
 # extracts. Tamper-detection negative test required. Behavior + executed tests only.
 set -uo pipefail
@@ -7,10 +7,10 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S12="apps/api/src/modules/g12 apps/api/src/routes/g12.routes.ts apps/api/src/jobs"
+S12="apps/api/src/modules/ps12 apps/api/src/routes/ps12.routes.ts apps/api/src/jobs"
 T=apps/api/test
 
-echo "== PH-10B exit-criteria (G12 integrity pillars) =="
+echo "== PH-10B exit-criteria (PS12 integrity pillars) =="
 
 [ -d node_modules ] || red "node_modules absent — toolchain oracle cannot run; refusing GREEN without it"
 
@@ -18,14 +18,14 @@ echo "== PH-10B exit-criteria (G12 integrity pillars) =="
 for spec in \
   "integrity verify path present::verify" \
   "verify recomputes hashes (createHash/sha256Hex)::createHash|sha256Hex" \
-  "scheduled recompute job (JOB-G12-INTEGRITY)::JOB-G12-INTEGRITY" \
+  "scheduled recompute job (JOB-PS12-INTEGRITY)::JOB-PS12-INTEGRITY" \
   "anchor entity (sr_anchors)::sr_anchors|srAnchors" \
   "real Merkle computation::[Mm]erkle" \
   "TSA behind an interface (stubbable)::TSA|[Tt]imestampAuthority" \
   "expected-event rules (sr_expected_event_rule)::sr_expected_event_rule" \
   "gap register (sr_gap_register)::sr_gap_register" \
   "gaps flagged (GAP_FLAGGED)::GAP_FLAGGED" \
-  "gap scan job (JOB-G12-GAPSCAN)::JOB-G12-GAPSCAN" \
+  "gap scan job (JOB-PS12-GAPSCAN)::JOB-PS12-GAPSCAN" \
   "custodian attestation (sr_attestations)::sr_attestations|srAttestations" \
   "certified extracts (sr_certified_extracts)::sr_certified_extracts" \
   "extracts apply P02 redaction::redact"

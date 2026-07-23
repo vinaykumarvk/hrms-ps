@@ -1,5 +1,5 @@
-// PH-10A: G12/G13 integrity substrate — real SHA-256 hashing (known-vector), trusted-time
-// recorded_at, the hash-chained sr_status_events sub-ledger, and G13 append-only version rows
+// PH-10A: PS12/PS13 integrity substrate — real SHA-256 hashing (known-vector), trusted-time
+// recorded_at, the hash-chained sr_status_events sub-ledger, and PS13 append-only version rows
 // with checkout locks. Executed against the compiled dist under `npm test`.
 "use strict";
 
@@ -30,7 +30,7 @@ function actor(userId) {
 
 function srRequest(overrides = {}) {
   return {
-    sourceModule: "G01",
+    sourceModule: "PS01",
     sourceReferenceId: `employee:identity:ph10a:${overrides.sourceEventVersion ?? 1}:${overrides.seq ?? 1}`,
     sourceEventVersion: 1,
     employeeId: "emp-ph10a-0001",
@@ -49,7 +49,7 @@ test("PH-10A sha256Hex is real SHA-256 (node crypto) — known vector", () => {
   assert.equal(sha256Hex(""), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 });
 
-test("PH-10A G12 entry chain uses SHA-256 over canonical content including server-stamped recorded_at", () => {
+test("PH-10A PS12 entry chain uses SHA-256 over canonical content including server-stamped recorded_at", () => {
   const services = createFoundationServices();
   const scope = actor("user-ph10a-ledger");
   const first = services.serviceRegister.ingest(scope, "idem-ph10a-chain-1", srRequest({ seq: 1 })).event;
@@ -90,7 +90,7 @@ test("PH-10A G12 entry chain uses SHA-256 over canonical content including serve
   assert.notEqual(second.entryHash, tampered);
 });
 
-test("PH-10A G12 sr_status_events sub-ledger: status changes are hash-chained appends, never field updates", () => {
+test("PH-10A PS12 sr_status_events sub-ledger: status changes are hash-chained appends, never field updates", () => {
   const services = createFoundationServices();
   const scope = actor("user-ph10a-status");
   const original = services.serviceRegister.ingest(scope, "idem-ph10a-status-1", srRequest({ seq: 11 })).event;
@@ -146,7 +146,7 @@ test("PH-10A G12 sr_status_events sub-ledger: status changes are hash-chained ap
   assert.equal(typeof services.serviceRegister.updateStatus, "undefined");
 });
 
-test("PH-10A G13 checkIn appends immutable version rows (append-only history)", () => {
+test("PH-10A PS13 checkIn appends immutable version rows (append-only history)", () => {
   const services = createFoundationServices();
   const scope = actor("user-ph10a-vault");
   const document = services.documentVault.createDocument(scope, {
@@ -170,7 +170,7 @@ test("PH-10A G13 checkIn appends immutable version rows (append-only history)", 
   assert.equal(versions[1].contentHash, "2222".repeat(16));
 });
 
-test("PH-10A NEGATIVE G13: mutation/deletion of an existing version row is rejected (append-only, immutable)", () => {
+test("PH-10A NEGATIVE PS13: mutation/deletion of an existing version row is rejected (append-only, immutable)", () => {
   const services = createFoundationServices();
   const scope = actor("user-ph10a-immutable");
   const document = services.documentVault.createDocument(scope, {
@@ -199,7 +199,7 @@ test("PH-10A NEGATIVE G13: mutation/deletion of an existing version row is rejec
   assert.equal(typeof services.documentVault.deleteVersion, "undefined");
 });
 
-test("PH-10A NEGATIVE G13: check-in under another actor's active checkout lock is rejected with ERR-G13-DOCUMENT_LOCKED", () => {
+test("PH-10A NEGATIVE PS13: check-in under another actor's active checkout lock is rejected with ERR-PS13-DOCUMENT_LOCKED", () => {
   const services = createFoundationServices();
   const holder = actor("user-ph10a-holder");
   const intruder = actor("user-ph10a-intruder");
@@ -216,12 +216,12 @@ test("PH-10A NEGATIVE G13: check-in under another actor's active checkout lock i
   // NEGATIVE: conflicting write by another actor rejected with the registered taxonomy code.
   assert.throws(
     () => services.documentVault.checkIn(intruder, document.id, { contentHash: "6666".repeat(16) }),
-    (error) => error.code === "ERR-G13-DOCUMENT_LOCKED"
+    (error) => error.code === "ERR-PS13-DOCUMENT_LOCKED"
   );
   // NEGATIVE: a second checkout by another actor is rejected the same way.
   assert.throws(
     () => services.documentVault.checkout(intruder, document.id),
-    (error) => error.code === "ERR-G13-DOCUMENT_LOCKED"
+    (error) => error.code === "ERR-PS13-DOCUMENT_LOCKED"
   );
 
   // The holder can check in; the lock survives check-in — release is explicit.

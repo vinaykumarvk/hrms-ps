@@ -21,7 +21,7 @@ if [ -d node_modules ]; then
 fi
 must "verdict chains from tranche-8 verdict::ph-21-verdict" "$V"
 must "verdict cites the coverage delta::brd-coverage-delta-20260703" "$V"
-for m in G08 G13 G14; do must "verdict carries a $m row::$m" "$V"; done
+for m in PS08 PS13 PS14; do must "verdict carries a $m row::$m" "$V"; done
 must "verdict names remaining gaps::NOT_FOUND|remaining|still open|open gap" "$V"
 must "verdict necessary-not-sufficient::necessary.{0,4}not sufficient" "$V"
 must "verdict contract-op caveat::1,?306|contract-op|OpenAPI" "$V"

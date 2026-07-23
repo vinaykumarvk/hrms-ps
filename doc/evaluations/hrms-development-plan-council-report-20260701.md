@@ -1,6 +1,6 @@
 # Council Evaluation: HRMS Development Plan
 
-*2026-07-01 · Framed question: Should the HRMS development plan start by extracting and enhancing the PUDA workflow engine, and how should that plan be sequenced, tested, governed, and de-risked for a reusable enterprise/government HRMS platform?*
+*2026-07-01 · Framed question: Should the HRMS development plan start by extracting and enhancing the PUDA workflow engine, and how should that plan be sequenced, tested, governed, and de-risked for a reusable enterprise/PrimeSoft HRMS platform?*
 
 Process note: the first-pass council was run with independent sub-agents. One anonymous peer reviewer also ran as a sub-agent; the remaining peer reviews were completed using the skill's sequential fallback because the active agent thread limit was reached.
 
@@ -10,9 +10,9 @@ The recommendation is to proceed with the PUDA workflow reuse strategy, but not 
 
 ### Where the Council Agrees
 
-The council strongly agrees that copying PUDA workflow code directly into HRMS would create a fork that becomes expensive and risky. It also agrees that a separate network microservice is premature because HRMS workflow actions are tightly coupled with G01 employee facts, G12 SR writes, G13 documents, P02 authorization, P05 audit, and transactional consistency. The shared conclusion is that workflow must be a platform capability with adapters, but the first release should consume it in-process.
+The council strongly agrees that copying PUDA workflow code directly into HRMS would create a fork that becomes expensive and risky. It also agrees that a separate network microservice is premature because HRMS workflow actions are tightly coupled with PS01 employee facts, PS12 SR writes, PS13 documents, P02 authorization, P05 audit, and transactional consistency. The shared conclusion is that workflow must be a platform capability with adapters, but the first release should consume it in-process.
 
-The council also agrees that G03 leave and G05 transfer are the right proof slices. G03 validates the simple reporting-chain path. G05 validates the harder statutory workflow surface: position authority, parallel clearances, deemed outcomes, document output, notifications, and SR posting.
+The council also agrees that PS03 leave and PS05 transfer are the right proof slices. PS03 validates the simple reporting-chain path. PS05 validates the harder statutory workflow surface: position authority, parallel clearances, deemed outcomes, document output, notifications, and SR posting.
 
 ### Where the Council Clashes
 
@@ -28,7 +28,7 @@ Another peer-review blind spot was ownership. A workflow platform reused across 
 
 ### Idea Evolution
 
-The idea evolved from "extract PUDA workflow engine first" into "prove PUDA behavior through a boundary first, then extract a minimum reusable platform." It also evolved from a feature build plan into a controlled platform-and-product plan with governance, conformance tests, fixture packs, migration staging, and gates that prevent broad module build before G03/G05 evidence exists.
+The idea evolved from "extract PUDA workflow engine first" into "prove PUDA behavior through a boundary first, then extract a minimum reusable platform." It also evolved from a feature build plan into a controlled platform-and-product plan with governance, conformance tests, fixture packs, migration staging, and gates that prevent broad module build before PS03/PS05 evidence exists.
 
 ### Risk Register
 
@@ -41,12 +41,12 @@ The idea evolved from "extract PUDA workflow engine first" into "prove PUDA beha
 | Platform ownership is unclear | Medium | Outsider, Proponent | Yes | Governance section with owner, semver, compatibility tests, patching, contribution rules |
 | P01 workflow_tasks versus workflow_actions contradiction remains unresolved | High | Contrarian, Proponent | Yes | PH-01 formal schema/API amendment before PH-02 |
 | Workflow config UI port delays backend proof | Medium | Executor | Yes | YAML-backed review/publish/simulation accepted until after PH-06 |
-| Committee/quorum complexity delays G03/G05 proof | Medium | First Principles, Executor | Yes | Committee semantics are contract/fixture only in PH-02; full workflows wait for G06/G09 |
-| Broad module teams start before platform proof | High | Executor | Yes | Gate 3 blocks PH-07, PH-08, and PH-09 until G03/G05 pass |
+| Committee/quorum complexity delays PS03/PS05 proof | Medium | First Principles, Executor | Yes | Committee semantics are contract/fixture only in PH-02; full workflows wait for PS06/PS09 |
+| Broad module teams start before platform proof | High | Executor | Yes | Gate 3 blocks PH-07, PH-08, and PH-09 until PS03/PS05 pass |
 
 ### Recommendation
 
-Adopt the final plan in `docs/spec/phased-plan.yaml`. Its core decision is correct: extract and govern a reusable workflow platform, embed it in HRMS release 1, and prove it through G03/G05 before scaling module development. The chairman explicitly rejects direct code copying and also rejects a release-1 standalone workflow microservice.
+Adopt the final plan in `docs/spec/phased-plan.yaml`. Its core decision is correct: extract and govern a reusable workflow platform, embed it in HRMS release 1, and prove it through PS03/PS05 before scaling module development. The chairman explicitly rejects direct code copying and also rejects a release-1 standalone workflow microservice.
 
 ### The One Thing to Do First
 
@@ -58,7 +58,7 @@ Start PH-00A: run a 3-5 day PUDA workflow inventory and golden-test capture. The
 
 The proponent endorsed the overall architecture. Their case was that HRMS is not simply fourteen independent modules; it is a statutory decision and record system where workflow, employee master data, SR ledger events, documents, authorization, and audit evidence must be transactionally coherent. PUDA already contains valuable workflow capabilities: queues, waits, fork/join, references, publish/review, simulation, and admin UI. Forking that code into HRMS would waste this investment and split future maintenance. Creating a separate network service immediately would introduce distributed transactions before the platform boundary is proven.
 
-The proponent argued that the planned sequence was mostly right: workflow extraction first, P01 contract/schema reconciliation second, hierarchy and authority matrices third, then foundation services, then APIs/UI, then G03/G05 proof slices. They recommended strengthening the plan with platform governance: ownership, semantic versioning, adapter compatibility tests, contribution rules, IP/provenance checks, and a conformance suite. They also asked for explicit PUDA migration criteria so PUDA remains a protected consumer rather than an accidental casualty of HRMS reuse.
+The proponent argued that the planned sequence was mostly right: workflow extraction first, P01 contract/schema reconciliation second, hierarchy and authority matrices third, then foundation services, then APIs/UI, then PS03/PS05 proof slices. They recommended strengthening the plan with platform governance: ownership, semantic versioning, adapter compatibility tests, contribution rules, IP/provenance checks, and a conformance suite. They also asked for explicit PUDA migration criteria so PUDA remains a protected consumer rather than an accidental casualty of HRMS reuse.
 
 ### Contrarian
 
@@ -70,11 +70,11 @@ They also raised a non-obvious legal risk: HRMS authority resolution cannot mere
 
 The first-principles analysis reframed the goal. The real problem is not building fourteen HRMS modules; it is creating a trustworthy statutory decision-and-recording system. From that framing, workflow extraction is correct only if it improves decision trust, traceability, reuse, and correctness. The essential sequence is employee identity, authority facts, workflow decisions, audit evidence, documents, and SR ledger writes. Feature breadth comes after those foundations are demonstrably reliable.
 
-This advisor challenged the plan to separate platform productization from platform refactoring. A platform needs ownership, release policy, compatibility guarantees, adapter boundaries, schema migration strategy, and a conformance suite. A refactor only moves code. The plan needed to say which one PH-00 was doing. They recommended a minimum reusable workflow slice first: actions, work items, waits, fork/join, config publish, one resolver SPI, and golden tests. They also recommended treating PH-02 as contract/schema/fixture preparation, not as full employee-master implementation, and deferring advanced UI and committee depth until after G03/G05 prove the spine.
+This advisor challenged the plan to separate platform productization from platform refactoring. A platform needs ownership, release policy, compatibility guarantees, adapter boundaries, schema migration strategy, and a conformance suite. A refactor only moves code. The plan needed to say which one PH-00 was doing. They recommended a minimum reusable workflow slice first: actions, work items, waits, fork/join, config publish, one resolver SPI, and golden tests. They also recommended treating PH-02 as contract/schema/fixture preparation, not as full employee-master implementation, and deferring advanced UI and committee depth until after PS03/PS05 prove the spine.
 
 ### Outsider
 
-The outsider found the plan direction understandable but said it assumed too much insider knowledge. Terms like P01, P02, P05, W.1, G03, SR, SoD, PrimeSoft, adapter, golden behavior, and semantic deduplication needed a glossary so future stakeholders and engineers do not misread the plan. They also flagged ownership as unclear: is the workflow platform a new repository, a package inside HRMS, a package inside PUDA, or a shared company platform? Without that answer, release cadence, security patching, version compatibility, and adapter breakages become ambiguous.
+The outsider found the plan direction understandable but said it assumed too much insider knowledge. Terms like P01, P02, P05, W.1, PS03, SR, SoD, PrimeSoft, adapter, golden behavior, and semantic deduplication needed a glossary so future stakeholders and engineers do not misread the plan. They also flagged ownership as unclear: is the workflow platform a new repository, a package inside HRMS, a package inside PUDA, or a shared company platform? Without that answer, release cadence, security patching, version compatibility, and adapter breakages become ambiguous.
 
 They also identified a sequencing confusion: the architecture discussion said platform services were already defined, but the plan treated PUDA extraction and P01 amendment as prerequisites. The final plan now clarifies that the existing HRMS artefacts define the target P01 contract, while PUDA is the implementation seed. The outsider asked for named owners, duration bands, and "what ships" per phase, which are now included.
 
@@ -82,7 +82,7 @@ They also identified a sequencing confusion: the architecture discussion said pl
 
 The executor judged the plan feasible only if PH-00 through PH-06 are protected as a critical path. Their immediate action was a small platform team and a three-to-five-day PUDA inventory plus golden-test capture. They recommended weekly PH-00 increments rather than a broad extraction milestone: inventory/provenance, strangler boundary, minimum core extraction, persistence/config/adapters, and conformance proof.
 
-They also warned that frontend workflow configuration work could easily consume time before the backend platform is proven. Their recommendation was to accept YAML-backed reviewed workflow configs until after G03/G05 run end to end. They asked for fixture packs and CI command contracts per phase, plus specific staffing: architect, two senior backend engineers, database engineer, QA automation, and frontend only after backend contracts stabilize. The final plan incorporates this by making the inbox/task UI mandatory and the advanced workflow config UI optional until after PH-06.
+They also warned that frontend workflow configuration work could easily consume time before the backend platform is proven. Their recommendation was to accept YAML-backed reviewed workflow configs until after PS03/PS05 run end to end. They asked for fixture packs and CI command contracts per phase, plus specific staffing: architect, two senior backend engineers, database engineer, QA automation, and frontend only after backend contracts stabilize. The final plan incorporates this by making the inbox/task UI mandatory and the advanced workflow config UI optional until after PH-06.
 
 ## Peer Reviews
 

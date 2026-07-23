@@ -9,15 +9,15 @@
     - docs/reviews/brd-coverage-audit-20260702.md
     - apps/web/src/app/**                              # AppShell, navigation, RouteGuard, WorkspaceSwitcher, OperationalStates
     - apps/web/src/App.tsx , apps/web/src/modules/**   # the 14 module workspaces to reach
-    - docs/brd/v3/*.md                                 # module names/surfaces G01..G14
+    - docs/brd/v3/*.md                                 # module names/surfaces PS01..PS14
     - apps/web/test/ph05-shell.test.cjs
     - docs/spec/pipeline/checks/ph-05b.sh              # the oracle — read it, satisfy it, never edit it
   audit_gaps:                                          # each gap below is asserted by the oracle
-    - navigation.ts lists inbox/employees/service-register/documents/workflow-config only; G02–G11 and
-      G14 workspaces are unreachable. Add a nav entry per module: employees (G01), personal-details (G02),
-      attendance/leave (G03), leave-sr relay (G04), transfers (G05), promotions (G06), training (G07),
-      apar (G08), disciplinary (G09), payroll (G10), pension (G11), service-register (G12),
-      documents (G13), analytics (G14).
+    - navigation.ts lists inbox/employees/service-register/documents/workflow-config only; PS02–PS11 and
+      PS14 workspaces are unreachable. Add a nav entry per module: employees (PS01), personal-details (PS02),
+      attendance/leave (PS03), leave-sr relay (PS04), transfers (PS05), promotions (PS06), training (PS07),
+      apar (PS08), disciplinary (PS09), payroll (PS10), pension (PS11), service-register (PS12),
+      documents (PS13), analytics (PS14).
     - App.tsx passes permissions={["*"]} — the guard is decorative. Permissions must come from a session
       source (login/token), and every module workspace must render behind a RouteGuard with its own
       requiredPermission.
@@ -26,7 +26,7 @@
   constraints:
     - RouteGuard remains the single gating point (canAccess + no-permission render); do not fork a second
       guard mechanism. Each of the 14 workspaces declares a distinct requiredPermission aligned with the
-      API permission families (g01..g14 prefixes).
+      API permission families (ps01..ps14 prefixes).
     - Session/identity comes from the PH-05A client/session provider; never hardcode a wildcard grant or
       a literal token in src. Secrets via env only.
     - Keep WCAG basics intact: nav is keyboard-reachable, states use the existing OperationalState kinds.

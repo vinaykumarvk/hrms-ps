@@ -1,7 +1,7 @@
 # Training and Skill Development Management — HRMS Module BRD
 
 **Module code:** M07-TSD
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — government/public-sector HCM, hosted at CGG Data Centre
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — enterprise/public-sector HCM, hosted at CGG Data Centre
 **Document version:** v1.0
 **Status:** Approved for build (parallel-agent ready)
 **Foundation contract:** This BRD inherits and does not redefine the canonical entities, roles, conventions, and technical defaults in `/Users/n15318/hrms/docs/brd/SHARED_FOUNDATION.md`. Shared entities (`employees`, `users`, `org_units`, `roles`, `audit_log`, `documents`, `notifications`, `service_register_events`, `workflow_instances`/`workflow_tasks`) are referenced, not redefined.

@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 
 async function loginEmployee(page: import("@playwright/test").Page) {
   await page.goto("/");
-  await page.getByLabel("Employee ID", { exact: true }).fill("GOV-100246");
+  await page.getByLabel("Employee ID", { exact: true }).fill("PS-100246");
   await page.getByLabel("Password", { exact: true }).fill("Welcome@123");
   await page.getByRole("button", { name: "Sign in securely" }).click();
   await expect(page.getByRole("heading", { name: "Workflow inbox" })).toBeVisible();
@@ -12,7 +12,7 @@ async function loginEmployee(page: import("@playwright/test").Page) {
 async function installAdminSession(page: import("@playwright/test").Page) {
   await page.addInitScript(() => {
     const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-    const permissions = ["workspace.me", "workspace.team", "workspace.admin", "p01.workflow.read", "p01.workflow.config.review", "g01.employee.read", "g04.relay.read", "g10.payroll.read", "g10.payroll.run.create", "g10.payroll.input.lock", "g10.payroll.compute", "g10.payroll.reconcile", "g10.payroll.approve", "g10.payroll.lock", "g10.payroll.disburse", "g11.pension.read", "g14.analytics.read"];
+    const permissions = ["workspace.me", "workspace.team", "workspace.admin", "p01.workflow.read", "p01.workflow.config.review", "ps01.employee.read", "ps04.relay.read", "ps10.payroll.read", "ps10.payroll.run.create", "ps10.payroll.input.lock", "ps10.payroll.compute", "ps10.payroll.reconcile", "ps10.payroll.approve", "ps10.payroll.lock", "ps10.payroll.disburse", "ps11.pension.read", "ps14.analytics.read"];
     sessionStorage.setItem("hrms.session.token", `${encode({ alg: "none" })}.${encode({ sub: "admin-fixture", name: "Admin Fixture", roles: ["hr_admin"], permissions })}.local`);
   });
 }

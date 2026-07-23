@@ -342,7 +342,7 @@ System-enforced restrictions subject to PII protection ceilings (see §1). Excep
 | Data Category | Permitted Access | Restricted From | Notes |
 | Salary / CTC | Employee (own) · HR Admin · Finance Admin (view only for budgeting) | All manager tiers · HOD · UAG Head · HRBP · Recruiter · Recruitment Admin · Office Admin | HOD and UAG Head compensation visibility can be enabled per user by Org Admin — off by default |
 | Bank account details | Employee (own, masked) · HR Admin · Office Admin (entry only — see §3.4) · Payroll processing at runtime | All other roles | Masked to last 4 digits for all display contexts |
-| Government IDs / National ID | Employee (own, masked) · HR Admin · Office Admin (view and upload — see §3.4) | All other roles | Platform-level grant for Office Admin covers PAN, Aadhaar, Passport Number, and Driving Licence. Changes require HR Admin approval via workflow. |
+| Enterprise IDs / National ID | Employee (own, masked) · HR Admin · Office Admin (view and upload — see §3.4) | All other roles | Platform-level grant for Office Admin covers PAN, Aadhaar, Passport Number, and Driving Licence. Changes require HR Admin approval via workflow. |
 | Date of Birth | Employee (own) · HR Admin · Office Admin (view only — see §3.4) | All other roles | Platform-level grant for Office Admin |
 | Performance ratings — draft | Reviewer only | All other roles including HR Admin | No entitlement grant can expose draft ratings prior to publish event |
 | Performance ratings — published | Employee (own) · Manager (own team) · HR Admin · Skip-level (full subtree, retained post-calibration) · HOD / UAG Head (own dept/group — off by default) | Peers · Finance Admin · HRBP | HOD and UAG Head published rating visibility configurable per user by Org Admin |
@@ -469,7 +469,7 @@ All AI calls made from the backend — API key never exposed to the client.
 | Rule | Detail |
 | Access | All active employees |
 | Fields visible | Name · Designation · Department · Reporting Manager |
-| Fields not visible | CTC · Salary · Bank details · Government IDs · Personal contact · Performance ratings · Leave balances · Attendance records |
+| Fields not visible | CTC · Salary · Bank details · Enterprise IDs · Personal contact · Performance ratings · Leave balances · Attendance records |
 | Scope | All entities within the tenant (Group Company scope included) |
 | Restrictions | Separated, absconded, and pre-joining employees not shown |
 
@@ -478,7 +478,7 @@ All AI calls made from the backend — API key never exposed to the client.
 | Rule | Detail |
 | Access | All active employees |
 | Fields visible | Name · Profile photo · Designation · Department · Official email · Official phone · Office location · Reporting Manager |
-| Fields not visible | Personal email · Personal mobile · Home address · CTC · Bank details · Government IDs · Date of birth · Performance ratings · Leave or attendance data · Any PII-classified field |
+| Fields not visible | Personal email · Personal mobile · Home address · CTC · Bank details · Enterprise IDs · Date of birth · Performance ratings · Leave or attendance data · Any PII-classified field |
 | Scope | All active employees across all entities within the tenant |
 | Profile photo | Displayed by default · employees can opt out — replaced with initials avatar |
 | Configurable | Org Admin can suppress specific non-PII fields (e.g. hide phone number) |
@@ -494,7 +494,7 @@ PII-classified fields are excluded from both org chart and directory views for a
 View and edit own profile (limited fields) · apply for leave · view leave balance and history · view own attendance and submit regularisation · view and download own payslips and tax documents · submit expense claims (Phase 3) · self-review in performance appraisal · access Chat Agent (policy queries only) · view employee directory and org chart · view own analytics. Cannot view any other employee’s compensation, payslip, leave, or attendance data. Leave type selector shows only types with available balance — zero-balance types are hidden. SPL has zero quota by default and does not appear in the selector until Leave Admin or HR Admin credits a balance.
 
 ## 12.2 Manager (L1)
-View personal and employment details of direct and indirect reports · approve/reject leave and attendance requests · edit team attendance and assign shifts · view team timesheets and schedules · review team performance · view team-level analytics. Cannot view salary, CTC, payslips, bank details, compensation bands, or government IDs of any employee.
+View personal and employment details of direct and indirect reports · approve/reject leave and attendance requests · edit team attendance and assign shifts · view team timesheets and schedules · review team performance · view team-level analytics. Cannot view salary, CTC, payslips, bank details, compensation bands, or enterprise IDs of any employee.
 
 ## 12.3 HOD
 Read-only view of all employees in their department · view attendance (no edit or approval actions) · view workflow lifecycle tab · view analytics scoped to department with toggle between reporting chain view and entire department view. Team leave not shown on calendar — HOD uses the team leave dashboard. Dashboard fields: employee name · leave type · from/to dates · status · reporting chain position. Compensation and published ratings visibility off by default — see §6. Workflow approval authority off by default — Org Admin can enable per workflow type per individual HOD user.
@@ -707,7 +707,7 @@ The following categories are explicitly excluded from both Manager (L1) and HOD 
 | Category | Reason |
 | Salary / CTC / Compensation | PII ceiling — §6 |
 | Payslips | PII ceiling — §6 |
-| Bank details / Government IDs | PII ceiling — §6 |
+| Bank details / Enterprise IDs | PII ceiling — §6 |
 | Draft performance ratings | PII ceiling — §6 |
 | Compensation bands | PII ceiling — hike recommendation is not a feature |
 | Recruitment pipeline | No recruitment access — §8 |

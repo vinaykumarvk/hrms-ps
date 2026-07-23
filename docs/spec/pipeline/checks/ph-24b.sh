@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-24B oracle: G06 FR-018 correction lineage + recompute cascade — correction_events with an
+# PH-24B oracle: PS06 FR-018 correction lineage + recompute cascade — correction_events with an
 # UNDER_CORRECTION marker and a re-rank/re-snapshot cascade over affected seniority.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g06 apps/api/src/routes/g06.routes.ts"; T=apps/api/test
-echo "== PH-24B exit-criteria (G06 correction cascade) =="
+S="apps/api/src/modules/ps06 apps/api/src/routes/ps06.routes.ts"; T=apps/api/test
+echo "== PH-24B exit-criteria (PS06 correction cascade) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "correction events consumed (correction_events)::correction_events|correctionEvent" \

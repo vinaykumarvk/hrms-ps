@@ -1,7 +1,7 @@
 # Retirement and Pension Management — HRMS Module BRD (v2.0)
 
 **Module code:** M11-PEN
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government / Public-Sector context
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise / Public-Sector context
 **Authoring standard:** World-class global HCM (Workday / SAP SuccessFactors / Oracle HCM bar) honouring Indian public-sector statutory pension rules (CCS Pension Rules-style framework, NPS, **UPS (eff. 01-Apr-2025)**, GPF, Jeevan Pramaan/DLC, DoPPW *Bhavishya*/DigiLocker benchmarks)
 **Source of truth:** `docs/brd/SHARED_FOUNDATION.md` (canonical shared entities, conventions, RBAC, technical defaults). This BRD references and extends — it does not redefine — those shared elements.
 **Document version:** v2.0 (supersedes v1.0)
@@ -59,7 +59,7 @@ This table maps every adopted improvement (and its source risk) to where and how
 |---|---|---|---|
 | 1 | Split enhanced family-pension window by path (R1, **Critical**) | §5.2 `family_pension_records` (new `enhanced_basis` + split window fields); FR-08 (AC2/AC2a, BR1a); §5.5 enum `enhanced_basis`; §10.6; §16.7 | IN_SERVICE → 10 yrs no age cap; AFTER_RETIREMENT → 7 yrs / age-67 / would-be-superannuation, whichever earlier; both step-downs tested |
 | 2 | Replace proportionate pension; add Service Gratuity (R2, **Critical**) | FR-05 (rewritten AC1, AC1a), FR-07 (SERVICE_GRATUITY branch); §5.5 enum `gratuity_type`; §16.5 | ≥10 yrs = flat 50%; <10 yrs = no pension, one-time service gratuity; proportionate fraction deprecated |
-| 3 | Add UPS + government-NPS death/invalidation defaults (R3, **Critical**) | §5.2 `pension_calculations` (UPS/NPS-default fields); FR-05 (AC4 rewritten, AC4a/AC4b); §5.5 enum `pension_scheme` adds UPS; §16.6 | UPS assured payout (~50% of last-12-mo avg) + opt-in flag; CCS-NPS Rules 2021 OPS-equivalent family/invalid default |
+| 3 | Add UPS + enterprise-NPS death/invalidation defaults (R3, **Critical**) | §5.2 `pension_calculations` (UPS/NPS-default fields); FR-05 (AC4 rewritten, AC4a/AC4b); §5.5 enum `pension_scheme` adds UPS; §16.6 | UPS assured payout (~50% of last-12-mo avg) + opt-in flag; CCS-NPS Rules 2021 OPS-equivalent family/invalid default |
 | 4 | Separate family-members register from nominees (R4, **Critical**) | New entity E26 `family_members`; FR-08 (family-eligibility now driven by E26); `nominees_beneficiaries` restricted to gratuity/GPF/leave-encashment; IR8, IR14, relationship map | Form 3/Form 14 statutory family register drives family-pension hierarchy; nomination ≠ family-pension eligibility |
 | 5 | e-SR completeness & discrepancy-resolution stage (R5, **Critical**) | New entities E27 `service_verifications`, E28 `service_discrepancies`, E29 `condonation_orders`; new FR-18; FR-04 gated on FR-18; §10.1 guard; IR2a | Discrepancy ledger, per-spell reason-code attestation, condonation register (orders not free text), multi-point sign-off gate CALCULATION |
 | 6 | Record paymaster-vs-authoriser model (R6, **Critical**) | New entity E37 `pension_disbursing_authorities` (`pda_disbursement_model`); new FR-21; FR-13 & FR-14 branch on model; §9 NFR batch sizing | M11_COMPUTES_FULL vs PDA_APPLIES_RELIEF; FR-13 recompute-and-instruct vs notify-relief-order-and-reconcile |
@@ -136,7 +136,7 @@ All M11 features inherit: UUID PKs + human business keys; standard audit fields;
 
 ### 3.4 Assumptions and Constraints
 
-- Pension/commutation/gratuity rules, DA rates for pensioners, commutation factors by age, family-pension rates, and gratuity ceilings are **first-class, effective-dated rule-table entities** (E30–E36), version-controlled and approved (FR-19), sourced from government notifications. `rule_version_ref` is a **foreign key** to a concrete rule-version row, not free text.
+- Pension/commutation/gratuity rules, DA rates for pensioners, commutation factors by age, family-pension rates, and gratuity ceilings are **first-class, effective-dated rule-table entities** (E30–E36), version-controlled and approved (FR-19), sourced from enterprise notifications. `rule_version_ref` is a **foreign key** to a concrete rule-version row, not free text.
 - The OPS/NPS/UPS cutover dates (date-of-joining boundaries and the UPS opt-in window) are configurable; scheme is derived from `employees.date_of_joining` and recorded contribution history, overridable with justification and audit. **UPS** applies to opted-in NPS employees from 01-Apr-2025.
 - A single legal entity per deployment; the data model is entity-aware (`legal_entity_id`) for future multi-entity.
 - All money math uses fixed-point decimal (`NUMERIC`); rounding rules per statutory prescription are explicit and configurable via E36 (`rounding_rules`).
@@ -364,7 +364,7 @@ Carried-forward entities E04–E21 retain their v1 field tables; only the **chan
 | `enhanced_window_rule` | TEXT | N | **(new)** which window rule was applied (audit) |
 | `current_family_member_id` | UUID FK→family_members | Y | **(changed: FK to E26, not nominees)** active recipient |
 | `beneficiary_hierarchy` | JSONB | Y | ordered eligible-family chain snapshot from E26 |
-| `dual_family_pension` | BOOL | N | **(new)** both spouses govt servants → two family pensions (with cap) |
+| `dual_family_pension` | BOOL | N | **(new)** both spouses enterprise servants → two family pensions (with cap) |
 | `dual_cap_applied` | BOOL | N | **(new)** statutory dual-FP cap applied |
 | `eligibility_review_date` | DATE | Y | next review (minor majority, remarriage, disability) |
 | `calc_trace` | JSONB | N | |
@@ -435,7 +435,7 @@ Carries v1 fields plus: `aadhaar_masked` TEXT Y **(new)** (encrypted, for DBT/de
 | Field | Type | Null | Notes |
 |---|---|---|---|
 | `family_member_id` | UUID PK | N | |
-| `employee_id` | UUID FK→employees | N | the government servant |
+| `employee_id` | UUID FK→employees | N | the employee |
 | `name` | TEXT | N | |
 | `relationship` | ENUM | N | SPOUSE, SON, DAUGHTER, FATHER, MOTHER, DISABLED_CHILD, WIDOWED_DAUGHTER, DEPENDENT_SIBLING, OTHER |
 | `dob` | DATE | Y | minority/majority, age-25 cutoff, age tracking |
@@ -1188,7 +1188,7 @@ All v1 enums not listed here are carried forward unchanged.
 - **Module:** M11-F08
 - **Primary Role(s):** Pension Officer (maker), Sanctioning Authority (checker), HR Admin
 - **User Story:** As a Pension Officer, I want family pension computed at the correct path-specific rate to the statutorily-eligible family member(s) so that bereaved families are paid accurately, including dual and twin cases.
-- **Description:** Compute family pension at the normal rate (e.g. 30% of emoluments, E32) and, where eligible, the enhanced rate (e.g. 50%) for a **path-specific window driven by `enhanced_basis`**: **death-in-service → enhanced for 10 years with no age cap**; **death-after-retirement → enhanced for 7 years or up to age 67 / the date the deceased would have superannuated, whichever earlier**. Eligibility and hierarchy derive from the **statutory family-members register `family_members` (E26)** by `statutory_rank` — never from nominees. Supports **dual family pension** (both spouses government servants, subject to the E32 cap) and **simultaneous twin/multiple eligible children** shares (`concurrent_share_pct`). Maintains eligibility review dates and transfer to the next eligible member on cessation.
+- **Description:** Compute family pension at the normal rate (e.g. 30% of emoluments, E32) and, where eligible, the enhanced rate (e.g. 50%) for a **path-specific window driven by `enhanced_basis`**: **death-in-service → enhanced for 10 years with no age cap**; **death-after-retirement → enhanced for 7 years or up to age 67 / the date the deceased would have superannuated, whichever earlier**. Eligibility and hierarchy derive from the **statutory family-members register `family_members` (E26)** by `statutory_rank` — never from nominees. Supports **dual family pension** (both spouses employees, subject to the E32 cap) and **simultaneous twin/multiple eligible children** shares (`concurrent_share_pct`). Maintains eligibility review dates and transfer to the next eligible member on cessation.
 - **Acceptance Criteria:**
   - AC1: Normal and enhanced amounts compute from emoluments × E32 rates.
   - AC2: **(rewritten)** Enhanced window is computed from `enhanced_basis`: IN_SERVICE = +10 yrs, no age cap; AFTER_RETIREMENT = min(+7 yrs, age-67, would-be-superannuation date). Then steps down to normal automatically (scheduled).
@@ -1196,7 +1196,7 @@ All v1 enums not listed here are carried forward unchanged.
   - AC3: **(rewritten)** The active recipient and hierarchy come from `family_members` (E26) by `statutory_rank`; on cessation, pension transfers to the next eligible member (not stops) unless none remain.
   - AC4: Disabled-dependent members receive lifelong family pension per rule.
   - AC5: Both death-in-service and conversion-on-pensioner-death paths produce a family-pension record and a FAMILY_PENSION PPO.
-  - AC6: **(new)** Dual family pension is permitted (both spouses govt servants) subject to the E32 dual cap; twins/multiple eligible children draw simultaneously per `concurrent_share_pct` summing to 100%.
+  - AC6: **(new)** Dual family pension is permitted (both spouses enterprise servants) subject to the E32 dual cap; twins/multiple eligible children draw simultaneously per `concurrent_share_pct` summing to 100%.
 - **Business Rules:** BR1: Enhanced rate = min(enhanced formula, would-be pension) per rule. BR1a: **(new)** Window selection is mandatory and path-driven (IR8a). BR2: **(replaced)** The absolute "only one beneficiary at a time" is removed; dual family pension and simultaneous twin/eligible-children shares are allowed per rule (IR14). BR3: Remarriage/employment may cease eligibility except for disabled children/widow per rule. BR4: **(new)** Family-pension recipient is the rule-defined family member (E26); nomination (E21) does not confer family-pension eligibility.
 - **Data Model References:** `family_pension_records`, `family_members` (E26), `family_pension_rates` (E32), `pension_calculations` (read), `pensioners` (source on conversion).
 - **API References:**
@@ -1208,7 +1208,7 @@ All v1 enums not listed here are carried forward unchanged.
 | POST | `/api/v1/pension/family-pension/{id}:transfer` | transfer to next eligible family member |
 
 - **UI Behavior Notes:** Family-pension panel with normal/enhanced amounts, the **path-specific** enhanced-window timeline (labelled IN_SERVICE 10y / AFTER_RETIREMENT 7y-age67), an ordered **family-members** list (E26) with eligibility-review dates and ranks, dual-FP indicator, twin/multiple-children concurrent-share grid, and a transfer action with reason capture.
-- **Edge Cases:** Multiple eligible children sequencing/twins (concurrent shares); disabled child lifelong; remarriage of widow (rule-dependent); after-retirement window shorter due to age-67; both spouses govt servants (dual FP cap); simultaneous death of employee and spouse; nominee present but not a family member (must not receive family pension).
+- **Edge Cases:** Multiple eligible children sequencing/twins (concurrent shares); disabled child lifelong; remarriage of widow (rule-dependent); after-retirement window shorter due to age-67; both spouses enterprise servants (dual FP cap); simultaneous death of employee and spouse; nominee present but not a family member (must not receive family pension).
 - **LLD:**
 
 | Aspect | Detail |
@@ -1656,7 +1656,7 @@ All v1 enums not listed here are carried forward unchanged.
   - AC3: Benefit engines resolve the EFFECTIVE row for the relevant date and capture its id as `rule_version_ref` (FK); SUPERSEDED rows remain referenced by historic calcs (immutability, IR17).
   - AC4: The gratuity ceiling (E33) auto-computes `current_effective_ceiling` by stepping +25% (`auto_step_pct`) each time DA (E30) crosses each 50% threshold (`da_threshold_pct`) — no manual ceiling edit.
   - AC5: Missing/inactive rule rows for a required date raise `RULE_NOT_EFFECTIVE` to the calling engine.
-- **Business Rules:** BR1: SysAdmin maintains; a distinct approver approves (SoD); SysAdmin cannot approve their own change. BR2: Government-notification reference is captured per row. BR3: No row may be deleted once referenced by any calc; it is SUPERSEDED.
+- **Business Rules:** BR1: SysAdmin maintains; a distinct approver approves (SoD); SysAdmin cannot approve their own change. BR2: Enterprise-notification reference is captured per row. BR3: No row may be deleted once referenced by any calc; it is SUPERSEDED.
 - **Data Model References:** `da_relief_rates`, `commutation_factors`, `family_pension_rates`, `gratuity_ceilings`, `retirement_age_rules`, `pension_limit_rules`, `rounding_rules` (E30–E36).
 - **API References:**
 
@@ -2375,7 +2375,7 @@ All analytics are read-only, org-unit scoped, reconcile to source records, and f
 | Provisional pension (Rule 9) | Pension paid to a retiree with pending departmental/judicial proceedings, with DCRG fully withheld until conclusion |
 | Enhanced-family-pension basis | IN_SERVICE (10 yrs, no age cap) vs AFTER_RETIREMENT (7 yrs / age-67 / would-be-superannuation) |
 | Family-members register (Form 3/14) | The statutory list of rule-defined family members that determines family-pension eligibility (distinct from nominees) |
-| Dual family pension | Two family pensions where both spouses were government servants, subject to a cap |
+| Dual family pension | Two family pensions where both spouses were employees, subject to a cap |
 | Reduction-effective date | Date the monthly pension is reduced on commutation (= commuted-value receipt date); restoration = this date + 15 yrs |
 | Disbursement model | Whether M11 computes the full monthly amount (M11_COMPUTES_FULL) or the PDA/CPPC applies Dearness Relief (PDA_APPLIES_RELIEF) |
 | Penny-drop | Pre-credit bank-account verification (name-IFSC / NPCI mapper) before the first payment |
@@ -2404,7 +2404,7 @@ All analytics are read-only, org-unit scoped, reconcile to source records, and f
 
 ### 16.3 Recovery Priority & Net Protection
 
-Statutory dues → court attachment → disciplinary recovery (M09) → government over-payment (incl. **post-death overpayment E38**) → outstanding loans/advances (M10) → other. Breaching the protected floor defers lower-priority recoveries (`RECOVERY_EXCEEDS_PROTECTION`); spillover recovered from future pension/estate where rules allow.
+Statutory dues → court attachment → disciplinary recovery (M09) → enterprise over-payment (incl. **post-death overpayment E38**) → outstanding loans/advances (M10) → other. Breaching the protected floor defers lower-priority recoveries (`RECOVERY_EXCEEDS_PROTECTION`); spillover recovered from future pension/estate where rules allow.
 
 ### 16.4 Immutability & Correction Policy
 
@@ -2438,7 +2438,7 @@ Both windows are computed from `family_pension_rates` (E32) and recorded in `enh
 | Component | Exemption treatment | Notes |
 |---|---|---|
 | Gratuity (DCRG) | Exempt up to the ₹20,00,000 cap; excess taxable | `gratuity_exempt_amount` / `gratuity_taxable_amount` |
-| Commuted pension | Exempt per rule (govt employees fully exempt) | `commutation_exempt_amount` |
+| Commuted pension | Exempt per rule (enterprise employees fully exempt) | `commutation_exempt_amount` |
 | Leave encashment | Exempt per the applicable cap | `leave_encashment_exempt_amount` |
 | Arrears (revision/89(1)) | Section 89(1) relief computed | `section_89_relief` |
 | TDS | Deducted on the net taxable total | `tds_amount`; `net_settlement = gross − recoveries − TDS` |

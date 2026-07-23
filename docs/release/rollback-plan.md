@@ -2,7 +2,7 @@
 
 Marker: `ROLLBACK_PLAN`
 
-The rollback plan preserves operational HRMS first. G14 analytics is isolated enough to disable independently if marts, dashboards, or data-health checks misbehave.
+The rollback plan preserves operational HRMS first. PS14 analytics is isolated enough to disable independently if marts, dashboards, or data-health checks misbehave.
 
 ## Rollback Triggers
 
@@ -17,10 +17,10 @@ The rollback plan preserves operational HRMS first. G14 analytics is isolated en
 ## Recovery Steps
 
 1. Announce incident bridge and assign incident commander.
-2. Disable analytics routes or feature flag G14 if the incident is analytics-only.
+2. Disable analytics routes or feature flag PS14 if the incident is analytics-only.
 3. Revert application artifact if operational modules are impacted.
 4. Restore from verified backup only after human operations approval.
-5. Re-run `npm run check`, `npm run web:check`, migration reconciliation, and G14 mart refresh.
+5. Re-run `npm run check`, `npm run web:check`, migration reconciliation, and PS14 mart refresh.
 6. Record residual risk with owner/date before resuming cutover.
 
 Rollback execution is a human-controlled operation. Development evidence only confirms the plan exists and is test-referenced.

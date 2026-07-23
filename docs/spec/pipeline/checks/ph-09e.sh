@@ -7,8 +7,8 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-W10=apps/web/src/modules/g10
-W11=apps/web/src/modules/g11
+W10=apps/web/src/modules/ps10
+W11=apps/web/src/modules/ps11
 WAPI=apps/web/src/api
 WT=apps/web/test
 T=apps/api/test
@@ -18,10 +18,10 @@ echo "== PH-09E exit-criteria (compensation UI + conformance; human gate) =="
 
 [ -d node_modules ] || red "node_modules absent — toolchain oracle cannot run; refusing GREEN without it"
 
-# 1) anti-skeleton, fail-closed: the audited stub marker card must be gone from G10/G11 web modules
+# 1) anti-skeleton, fail-closed: the audited stub marker card must be gone from PS10/PS11 web modules
 if grep -rq "evidence-line" "$W10" "$W11" 2>/dev/null; then
-  red "stub marker card (evidence-line) still present in g10/g11 web modules — UI not rebuilt"
-else grn "stub marker cards removed from g10/g11 web modules"; fi
+  red "stub marker card (evidence-line) still present in ps10/ps11 web modules — UI not rebuilt"
+else grn "stub marker cards removed from ps10/ps11 web modules"; fi
 
 # 2) real UI behavior in web source
 for spec in \
@@ -56,7 +56,7 @@ do must "$spec" "$WT"; done
 
 # 4) honest verdict delta (content-checked, not existence-checked)
 must "verdict references the audit baseline::brd-coverage-audit-20260702" "$V"
-must "verdict tabulates G10 and G11::G10" "$V"
+must "verdict tabulates PS10 and PS11::PS10" "$V"
 must "verdict names remaining gaps (no 100% claim)::NOT_FOUND|remaining|still open|open gap" "$V"
 
 # 5) full suites — api AND web, RED on any failure

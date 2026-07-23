@@ -96,7 +96,7 @@ export class HrmsWorkflowService {
 
   runSyntheticHrmsFlow(scope: TenantScope, subjectEmployeeId: string): { instance: WorkflowInstance; task: WorkflowTask; action: WorkflowAction } {
     const started = this.start(scope, {
-      workflowCode: "WF-PH03-SYNTHETIC-G03-LEAVE",
+      workflowCode: "WF-PH03-SYNTHETIC-PS03-LEAVE",
       subjectRef: `employees:${subjectEmployeeId}`,
       stage: "PENDING_MANAGER",
       resolverRule: { mechanism: "REPORTING_CHAIN", subjectEmployeeId },

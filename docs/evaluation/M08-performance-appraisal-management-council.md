@@ -14,7 +14,7 @@
 
 This is a genuinely strong BRD and, on most axes, ahead of a default Workday/SuccessFactors statutory implementation. Three things deserve credit.
 
-First, **confidentiality by construction.** The tier-aware, server-side field projection (FR-M08-15, Appendix B) is the correct architecture — most government HRMS builds leak APAR content by hiding fields only in the UI. Returning fields as *absent* (not greyed) for unauthorised tiers, plus appending `ACCESS_DENIED` to an append-only `apar_disclosure_log`, is exactly how you survive an audit and a confidentiality-breach inquiry.
+First, **confidentiality by construction.** The tier-aware, server-side field projection (FR-M08-15, Appendix B) is the correct architecture — most PrimeSoft HRMS builds leak APAR content by hiding fields only in the UI. Returning fields as *absent* (not greyed) for unauthorised tiers, plus appending `ACCESS_DENIED` to an append-only `apar_disclosure_log`, is exactly how you survive an audit and a confidentiality-breach inquiry.
 
 Second, **statutory integrity is modelled, not bolted on.** Append-only certification, `pre_calibration_grade` provenance, immutability after FINALISED except through a controlled representation/expunction path, idempotent outbox posting to M12 with corrective-event semantics (FR-M08-14 BR2) rather than destructive edits — this respects that a Service Register entry is a legal record. The separation-of-duties rule (appraisee ∉ {RO, RvO, AA}, all four distinct, enforced at the API layer) is correctly placed below the UI.
 
@@ -28,7 +28,7 @@ The spine is sound, which is why the failure modes that remain are the dangerous
 
 **1. The calibration committee silently overrides the Accepting Authority — and that may be ultra vires.** In FR-M08-09, certified forms enter calibration and a committee *applies* a new `final_grade` after the AA has already certified. In a statutory APAR, the Accepting Authority is the final grading authority by service rule. A moderation committee mutating a certified grade is a legal authority problem, not a math problem: the officer can challenge "who downgraded me, under what power?" Calibration must be a *recommendation the competent authority ratifies*, or must run *before* certification. As written, this is the single biggest litigation exposure in the document, and the author treats it as a routine workflow.
 
-**2. Forced distribution / bell-curve against an absolute statutory scale is gameable and possibly unlawful.** APAR grading is absolute (an officer earns "Outstanding" on merit), not relative. `FORCED_DISTRIBUTION` with a `target_distribution` invites ROs and committees to grade to the curve — the exact bias the analytics claim to detect. Government grading jurisprudence frowns on quota-driven downgrades.
+**2. Forced distribution / bell-curve against an absolute statutory scale is gameable and possibly unlawful.** APAR grading is absolute (an officer earns "Outstanding" on merit), not relative. `FORCED_DISTRIBUTION` with a `target_distribution` invites ROs and committees to grade to the curve — the exact bias the analytics claim to detect. Enterprise grading jurisprudence frowns on quota-driven downgrades.
 
 **3. The author missed the Sealed Cover Procedure.** When an officer is under charge/disciplinary proceeding (M09) or whose promotion is sub judice, their APAR finalisation and the eligibility feed to M06 must be kept in a *sealed cover* and not acted upon until the proceeding concludes. The BRD has only a vague `hold` flag (FR-M08-01 BR4) and otherwise feeds M06 freely. This is a hard public-sector requirement and its absence will produce wrong promotion decisions.
 
@@ -64,7 +64,7 @@ Also: the officer who never clicks "acknowledge." The spec says "deemed-disclose
 
 Feasibility-wise this is 18 entities, 16 FRs, five state machines, an outbox, a tier-projection library, a grade engine, and live integrations to M01/M05/M06/M07/M09/M12/M13/M14. That is a year of work for a strong squad, and the wave plan (Section 14.3) is mostly right but front-loads risk badly.
 
-**Sequencing problem:** the wave plan builds calibration (W5) and 360/continuous (W2–W3) before it has proven the statutory core end-to-end. The thing that *must* work on day one for a government customer is: configure cycle → goals → self → RO/RvO/AA → disclose → represent → post to SR. Continuous feedback, 360, forced distribution and even calibration are *Phase 2* differentiators. I would feature-flag them (the BRD already lists feature flags in 13.4 — good) and cut them from the first cycle so the pilot department in 13.3 exercises the legally-required path under real deadlines.
+**Sequencing problem:** the wave plan builds calibration (W5) and 360/continuous (W2–W3) before it has proven the statutory core end-to-end. The thing that *must* work on day one for a enterprise customer is: configure cycle → goals → self → RO/RvO/AA → disclose → represent → post to SR. Continuous feedback, 360, forced distribution and even calibration are *Phase 2* differentiators. I would feature-flag them (the BRD already lists feature flags in 13.4 — good) and cut them from the first cycle so the pilot department in 13.3 exercises the legally-required path under real deadlines.
 
 **Monday step:** lock the grade-derivation contract and the tier-projection contract as standalone libraries with their own test suites *before any FR agent starts* — Section 14.3 says this but it must be a hard gate, because every assessment FR and the analytics FR depend on them; drift here corrupts everything.
 
@@ -84,11 +84,11 @@ Feasibility-wise this is 18 entities, 16 FRs, five state machines, an outbox, a 
 **Reviewer A**
 - *Strongest:* The calibration-overrides-AA authority argument. It reframes a "workflow stage" as a *legal-power* defect, which is the kind of finding that changes the design rather than patching it. Highest leverage in the room.
 - *Biggest blind spot (in another voice):* The Proponent treats "0 unresolved gaps" as substantive; it only means "0 gaps against the scope the BRD set itself." That's circular and lulls the reader.
-- *All five missed:* **Bias-disparity analytics by protected attribute.** Everyone discussed rating bias as statistical skew per RO; nobody required adverse-rate / low-grade disparity analysis by gender/cadre/region (DPDP-safe aggregates). World-class HCM ships this; it's also the government's own equity obligation.
+- *All five missed:* **Bias-disparity analytics by protected attribute.** Everyone discussed rating bias as statistical skew per RO; nobody required adverse-rate / low-grade disparity analysis by gender/cadre/region (DPDP-safe aggregates). World-class HCM ships this; it's also the enterprise's own equity obligation.
 
 **Reviewer B**
 - *Strongest:* The first-principles "two subsystems fused on one row" insight, with the concrete `goals.form_id NOT NULL` evidence. It explains *multiple* downstream symptoms from one root cause — the mark of a real diagnosis.
-- *Biggest blind spot:* The Executor's "cut calibration to Phase 2" understates that calibration is partly *why* government buys this over paper. Cut *forced distribution* and *bell-curve*, keep *committee normalisation* as ratified recommendation — don't cut the whole capability.
+- *Biggest blind spot:* The Executor's "cut calibration to Phase 2" understates that calibration is partly *why* enterprise buys this over paper. Cut *forced distribution* and *bell-curve*, keep *committee normalisation* as ratified recommendation — don't cut the whole capability.
 - *All five missed:* **Digital signature / non-repudiation.** MFA step-up authenticates the session; it does not produce a legally-binding signed record. Statutory APARs need DSC/eSign per officer per tier. Nobody named it.
 
 **Reviewer C**

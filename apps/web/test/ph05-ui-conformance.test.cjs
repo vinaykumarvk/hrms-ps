@@ -11,9 +11,9 @@ const requiredFiles = [
   "apps/web/src/workflow/TaskDetail.tsx",
   "apps/web/src/workflow/TaskActionPanel.tsx",
   "apps/web/src/workflow/WorkflowConfigConsole.tsx",
-  "apps/web/src/modules/g01/EmployeeProfile.tsx",
-  "apps/web/src/modules/g12/ServiceRegisterTimeline.tsx",
-  "apps/web/src/modules/g13/DocumentVaultView.tsx",
+  "apps/web/src/modules/ps01/EmployeeProfile.tsx",
+  "apps/web/src/modules/ps12/ServiceRegisterTimeline.tsx",
+  "apps/web/src/modules/ps13/DocumentVaultView.tsx",
   "apps/web/src/api/hrmsClient.ts",
   "apps/web/src/api/fixtureHrmsClient.ts",
 ];
@@ -21,20 +21,20 @@ const requiredFiles = [
 // PH-05E: every module workspace must implement the canonical loading/error/empty
 // OperationalState branches (re-baselined after docs/reviews/brd-coverage-audit-20260702.md).
 const moduleStateSurfaces = [
-  "apps/web/src/modules/g01/EmployeeProfile.tsx",
-  "apps/web/src/modules/g02/PersonalDetailsWorkspace.tsx",
-  "apps/web/src/modules/g03/LeaveWorkspace.tsx",
-  "apps/web/src/modules/g04/LeaveSrRelayWorkspace.tsx",
-  "apps/web/src/modules/g05/TransferWorkspace.tsx",
-  "apps/web/src/modules/g06/PromotionWorkspace.tsx",
-  "apps/web/src/modules/g07/TrainingWorkspace.tsx",
-  "apps/web/src/modules/g08/AparWorkspace.tsx",
-  "apps/web/src/modules/g09/DisciplinaryWorkspace.tsx",
-  "apps/web/src/modules/g10/PayrollWorkspace.tsx",
-  "apps/web/src/modules/g11/PensionWorkspace.tsx",
-  "apps/web/src/modules/g12/ServiceRegisterTimeline.tsx",
-  "apps/web/src/modules/g13/DocumentVaultView.tsx",
-  "apps/web/src/modules/g14/AnalyticsWorkspace.tsx",
+  "apps/web/src/modules/ps01/EmployeeProfile.tsx",
+  "apps/web/src/modules/ps02/PersonalDetailsWorkspace.tsx",
+  "apps/web/src/modules/ps03/LeaveWorkspace.tsx",
+  "apps/web/src/modules/ps04/LeaveSrRelayWorkspace.tsx",
+  "apps/web/src/modules/ps05/TransferWorkspace.tsx",
+  "apps/web/src/modules/ps06/PromotionWorkspace.tsx",
+  "apps/web/src/modules/ps07/TrainingWorkspace.tsx",
+  "apps/web/src/modules/ps08/AparWorkspace.tsx",
+  "apps/web/src/modules/ps09/DisciplinaryWorkspace.tsx",
+  "apps/web/src/modules/ps10/PayrollWorkspace.tsx",
+  "apps/web/src/modules/ps11/PensionWorkspace.tsx",
+  "apps/web/src/modules/ps12/ServiceRegisterTimeline.tsx",
+  "apps/web/src/modules/ps13/DocumentVaultView.tsx",
+  "apps/web/src/modules/ps14/AnalyticsWorkspace.tsx",
 ];
 
 const source = requiredFiles.map((path) => fs.readFileSync(path, "utf8")).join("\n");

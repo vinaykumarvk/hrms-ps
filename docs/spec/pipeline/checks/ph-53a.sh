@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-53A oracle: raise measured contract coverage by exposing G09 suspension review + show-cause response +
+# PH-53A oracle: raise measured contract coverage by exposing PS09 suspension review + show-cause response +
 # consultation close/waive + hearing minutes + case reads (real, service-tested backing) as kernel routes.
 # Checks routes registered + dispatched, and the ratchet advanced to >= 504 / 38.1%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g09.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-53A exit-criteria (G09 disciplinary route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps09.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-53A exit-criteria (PS09 disciplinary route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in reviewSuspension respondToShowCause closeConsultation waiveConsultation recordPersonalHearingMinutes listCaseTimeline listIccAppointments listPersonalHearings getPenaltyOrder; do
   have "$R" "$m" "route wires backing method: $m"

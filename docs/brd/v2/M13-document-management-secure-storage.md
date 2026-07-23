@@ -1,6 +1,6 @@
 # Document Management and Secure Storage — HRMS Module BRD (v2.0)
 
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government/Public-Sector HCM
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise/Public-Sector HCM
 **Module:** M13 — Document Management and Secure Storage (M13-DMS)
 **BRD code:** M13-DMS
 **Owner of canonical `documents` entity:** This module (referenced by M01–M12, M14)
@@ -41,7 +41,7 @@ litigation. Today these records are paper or scattered across drives with no ver
 encryption, no access trail, and no retention governance. A breach, a lost original, or an unauthorised
 alteration carries legal and audit consequences. M13-DMS centralises content under **defence-in-depth**
 controls aligned to OWASP ASVS, the India DPDP Act 2023, the IT Act 2000 §3A (electronic signatures),
-and government records-management practice, delivering the convenience (drag-drop, mobile capture,
+and enterprise records-management practice, delivering the convenience (drag-drop, mobile capture,
 instant preview, OCR search, e-signature) that world-class HCM users expect — without compromising
 statutory custody.
 
@@ -265,7 +265,7 @@ maker-checker action.
 Inherits `docs/brd/SHARED_FOUNDATION.md` §5 wholesale:
 
 - **Architecture:** React + TypeScript (Tailwind + shadcn/ui) frontend; REST `/api/v1`; PostgreSQL for
-  metadata; **object storage** (S3-compatible / government cloud blob) for binaries, **encrypted at rest**;
+  metadata; **object storage** (S3-compatible / enterprise cloud blob) for binaries, **encrypted at rest**;
   KMS for envelope keys; deployed at CGG Data Centre.
 - **Auth:** OIDC/SSO + MFA; JWT access tokens; RBAC + row-level scoping by `org_unit_id`.
 - **Canonical error envelope:** `{ "error": { "code": "...", "message": "...", "field": "..." }, "requestId": "..." }`.
@@ -1043,9 +1043,9 @@ implementations are the default at CGG, with COTS adapters permitted where resid
 
 | share_id | document_id | share_type | recipient_email | rights | failed_attempt_count | expires_at | status |
 |---|---|---|---|---|---|---|---|
-| sh-01 | doc-0001 | EXTERNAL_LINK | bank@example.gov | {VIEW} | 0 | 2026-04-20T00:00Z | ACTIVE |
+| sh-01 | doc-0001 | EXTERNAL_LINK | bank@example.com | {VIEW} | 0 | 2026-04-20T00:00Z | ACTIVE |
 | sh-02 | doc-0003 | INTERNAL_USER | null | {VIEW,DOWNLOAD} | 0 | 2026-05-01T00:00Z | ACTIVE |
-| sh-03 | doc-0002 | EXTERNAL_LINK | ext@x.gov | {VIEW} | 5 | 2026-04-18T00:00Z | LOCKED |
+| sh-03 | doc-0002 | EXTERNAL_LINK | ext@x.enterprise | {VIEW} | 5 | 2026-04-18T00:00Z | LOCKED |
 
 **`checkout_locks`**
 
@@ -1139,8 +1139,8 @@ implementations are the default at CGG, with COTS adapters permitted where resid
 
 | ltv_artifact_id | signature_id | tsa_authority | ltv_level | captured_at |
 |---|---|---|---|---|
-| ltv-01 | sg-01 | CGG-TSA-Gov | LTV_ENABLED | 2026-04-12T12:00Z |
-| ltv-02 | sg-02 | CGG-TSA-Gov | TIMESTAMPED | 2026-04-13T09:00Z |
+| ltv-01 | sg-01 | CGG-TSA-Enterprise | LTV_ENABLED | 2026-04-12T12:00Z |
+| ltv-02 | sg-02 | CGG-TSA-Enterprise | TIMESTAMPED | 2026-04-13T09:00Z |
 
 ---
 
@@ -2767,7 +2767,7 @@ Authorization: Bearer <jwt>
 {
   "documentId": "doc-0001", "title": "Aadhaar – EMP-3001", "classification": "CONFIDENTIAL",
   "status": "ACTIVE", "currentVersionNo": 1, "mimeType": "application/pdf",
-  "renderUrl": "https://dms.gov/api/v1/proxy/render/ot_9f1a...?bind=sess_44ab",
+  "renderUrl": "https://dms.enterprise/api/v1/proxy/render/ot_9f1a...?bind=sess_44ab",
   "renderUrlMode": "STREAM_WATERMARKED", "oneTimeUse": true,
   "boundSession": "sess_44ab", "renderUrlExpiresAt": "2026-04-12T10:10:00Z",
   "downloadAvailable": false,
@@ -2780,7 +2780,7 @@ Authorization: Bearer <jwt>
 ```json
 {
   "documentId": "doc-0001", "classification": "CONFIDENTIAL", "currentVersionNo": 1,
-  "downloadUrl": "https://dms.gov/api/v1/proxy/download/dl_77be...?bind=sess_44ab",
+  "downloadUrl": "https://dms.enterprise/api/v1/proxy/download/dl_77be...?bind=sess_44ab",
   "downloadUrlMode": "FILE_AUDITED", "oneTimeUse": true,
   "downloadUrlExpiresAt": "2026-04-12T10:10:00Z",
   "requestId": "req_d7e8f9"

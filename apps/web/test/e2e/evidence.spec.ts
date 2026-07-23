@@ -7,7 +7,7 @@ const viewports = [
 ];
 
 async function login(page: import("@playwright/test").Page) {
-  await page.getByLabel("Employee ID", { exact: true }).fill("GOV-100246");
+  await page.getByLabel("Employee ID", { exact: true }).fill("PS-100246");
   await page.getByLabel("Password", { exact: true }).fill("Welcome@123");
   await page.getByRole("button", { name: "Sign in securely" }).click();
   await expect(page.getByRole("heading", { name: "Workflow inbox" })).toBeVisible();

@@ -6,8 +6,8 @@ set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g10.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-56A exit-criteria (G10 engine-run route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps10.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-56A exit-criteria (PS10 engine-run route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in createEngineRun snapshotRunInputs computeEngineRun approveEngineRun lockEngineRun getEngineRun listRunPayslips; do
   have "$R" "$m" "route wires backing method: $m"

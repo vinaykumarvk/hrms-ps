@@ -46,12 +46,12 @@ export function LoginPanel({ message, onSignIn }: LoginPanelProps) {
 
   return (
     <main className="employee-login" aria-label="Employee sign in">
-      <section className="employee-login__hero" aria-label="Government HRMS employee portal">
+      <section className="employee-login__hero" aria-label="PrimeSoft HRMS employee portal">
         <div className="employee-login__brand">
           <span className="employee-login__emblem" aria-hidden="true">
             <svg viewBox="0 0 48 48"><path d="M24 4 7 11v11c0 10.4 6.8 18.6 17 22 10.2-3.4 17-11.6 17-22V11L24 4Z"/><path d="M16 22h16M24 14v17"/></svg>
           </span>
-          <span><strong>Government HRMS</strong><small>Employee Self-Service Portal</small></span>
+          <span><strong>PrimeSoft HRMS</strong><small>Employee Self-Service Portal</small></span>
         </div>
 
         <div className="employee-login__message">
@@ -66,12 +66,12 @@ export function LoginPanel({ message, onSignIn }: LoginPanelProps) {
           <span><b>03</b> Payroll & service book</span>
         </div>
 
-        <p className="employee-login__security">Protected by role-based access and auditable government workflows</p>
+        <p className="employee-login__security">Protected by role-based access and auditable enterprise workflows</p>
       </section>
 
       <section className="employee-login__panel" id="login-form-section">
         <div className="employee-login__card">
-          <div className="employee-login__mobile-brand">Government HRMS</div>
+          <div className="employee-login__mobile-brand">PrimeSoft HRMS</div>
           <p className="employee-login__eyebrow">Employee access</p>
           <h2>Welcome back</h2>
           <p className="employee-login__intro">Sign in with your employee credentials to continue.</p>
@@ -81,7 +81,7 @@ export function LoginPanel({ message, onSignIn }: LoginPanelProps) {
             <label htmlFor="employee-id">Employee ID</label>
             <div className="employee-login__input-wrap">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-              <input aria-describedby={rejected ? "login-error" : serviceFailed ? "login-service-error" : undefined} aria-invalid={rejected || serviceFailed} autoComplete="username" autoFocus id="employee-id" name="employeeId" onChange={(event) => { setEmployeeId(event.target.value); setRejected(false); setServiceFailed(false); }} placeholder="e.g. GOV-100246" required value={employeeId} />
+              <input aria-describedby={rejected ? "login-error" : serviceFailed ? "login-service-error" : undefined} aria-invalid={rejected || serviceFailed} autoComplete="username" autoFocus id="employee-id" name="employeeId" onChange={(event) => { setEmployeeId(event.target.value); setRejected(false); setServiceFailed(false); }} placeholder="e.g. PS-100246" required value={employeeId} />
             </div>
 
             <div className="employee-login__label-row"><label htmlFor="employee-password">Password</label></div>

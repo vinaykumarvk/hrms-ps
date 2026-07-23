@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-22C oracle: G14 FR-15 NL query — nl_query maps a question to a whitelisted metric with a
+# PH-22C oracle: PS14 FR-15 NL query — nl_query maps a question to a whitelisted metric with a
 # confidence gate (low confidence -> no execution), a nl_query_log, and PII stripping.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g14 apps/api/src/routes/g14.routes.ts"; T=apps/api/test
-echo "== PH-22C exit-criteria (G14 NL query) =="
+S="apps/api/src/modules/ps14 apps/api/src/routes/ps14.routes.ts"; T=apps/api/test
+echo "== PH-22C exit-criteria (PS14 NL query) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "nl query surface::nl_query|nlQuery|naturalLanguage" \

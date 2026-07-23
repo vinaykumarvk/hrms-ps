@@ -31,15 +31,15 @@ operations" as **unmeasured prose**. Tranche 24 replaces it with a **measured, e
 
 **Measured coverage: 392 / 1,323 = 29.6%** total (the exact contract count is **1,323**; the ~1,306 quoted
 in prior verdicts was an earlier approximation). Per-module coverage ranges from **P01 87.5%** down to
-**G08 15.8%**. The gate now fails closed if coverage drops below **29.6% / 392 routes**, so it can only ratchet up.
+**PS08 15.8%**. The gate now fails closed if coverage drops below **29.6% / 392 routes**, so it can only ratchet up.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 - **Contract-op coverage is now 29.6%** — measured, not eliminated. ~931 of the 1,323 contracted operations
   remain unimplemented (per-field CRUD, admin/config, report variants). The metric is **count-based**, not
   per-operation path matching; per-path reconciliation (which exact ops are missing) is the natural follow-on.
-- **Deep engine depth (remaining):** G10 tax is substantially complete against FR-07 (regime, 87A, marginal
-  relief, cess, Ch-VI-A, Form-12B, Form-10E/§89(1) all present); G09 POSH conciliation closed in tranche 23.
+- **Deep engine depth (remaining):** PS10 tax is substantially complete against FR-07 (regime, 87A, marginal
+  relief, cess, Ch-VI-A, Form-12B, Form-10E/§89(1) all present); PS09 POSH conciliation closed in tranche 23.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-37 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

@@ -7,37 +7,37 @@ import { ReactNode, useCallback, useEffect, useState } from "react";
 import { primaryNavigation, workspaceForPath, WorkspaceId } from "./app/navigation";
 import { WorkflowWorkspace } from "./workflow/WorkflowWorkspace";
 import { WorkflowConfigConsole } from "./workflow/WorkflowConfigConsole";
-import { EmployeeProfile } from "./modules/g01/EmployeeProfile";
-import { EmployeeContactsPanel } from "./modules/g01/EmployeeContactsPanel";
-import { EmployeeDependentsPanel } from "./modules/g01/EmployeeDependentsPanel";
-import { PrivacyConsole } from "./modules/g01/PrivacyConsole";
-import { PersonalDetailsWorkspace } from "./modules/g02/PersonalDetailsWorkspace";
-import { ChangeRequestEditor } from "./modules/g02/ChangeRequestEditor";
-import { ChangeRequestApproverQueue } from "./modules/g02/ChangeRequestApproverQueue";
-import { LeaveWorkspace } from "./modules/g03/LeaveWorkspace";
-import { SelfServiceSummary } from "./modules/g03/SelfServiceSummary";
-import { LeaveSrRelayWorkspace } from "./modules/g04/LeaveSrRelayWorkspace";
-import { TransferWorkspace } from "./modules/g05/TransferWorkspace";
-import { CounsellingConsole } from "./modules/g05/CounsellingConsole";
-import { PromotionWorkspace } from "./modules/g06/PromotionWorkspace";
-import { DpcConvenePanel } from "./modules/g06/DpcConvenePanel";
-import { SealedCoverReview } from "./modules/g06/SealedCoverReview";
-import { TrainingWorkspace } from "./modules/g07/TrainingWorkspace";
-import { TrainingNominationForm } from "./modules/g07/TrainingNominationForm";
-import { AparWorkspace } from "./modules/g08/AparWorkspace";
-import { AparTierForms } from "./modules/g08/AparTierForms";
-import { DisciplinaryWorkspace } from "./modules/g09/DisciplinaryWorkspace";
-import { DisciplinaryCaseWorkbench } from "./modules/g09/DisciplinaryCaseWorkbench";
-import { EvidenceVaultList } from "./modules/g09/EvidenceVaultList";
-import { PayrollWorkspace } from "./modules/g10/PayrollWorkspace";
-import { PayrollRunConsole } from "./modules/g10/PayrollRunConsole";
-import { PensionWorkspace } from "./modules/g11/PensionWorkspace";
-import { PensionCaseConsole } from "./modules/g11/PensionCaseConsole";
-import { AnalyticsWorkspace } from "./modules/g14/AnalyticsWorkspace";
-import { EmbeddedBiDashboard } from "./modules/g14/EmbeddedBiDashboard";
-import { ServiceRegisterTimeline } from "./modules/g12/ServiceRegisterTimeline";
-import { DocumentVaultView } from "./modules/g13/DocumentVaultView";
-import { DataSubjectRequestConsole } from "./modules/g13/DataSubjectRequestConsole";
+import { EmployeeProfile } from "./modules/ps01/EmployeeProfile";
+import { EmployeeContactsPanel } from "./modules/ps01/EmployeeContactsPanel";
+import { EmployeeDependentsPanel } from "./modules/ps01/EmployeeDependentsPanel";
+import { PrivacyConsole } from "./modules/ps01/PrivacyConsole";
+import { PersonalDetailsWorkspace } from "./modules/ps02/PersonalDetailsWorkspace";
+import { ChangeRequestEditor } from "./modules/ps02/ChangeRequestEditor";
+import { ChangeRequestApproverQueue } from "./modules/ps02/ChangeRequestApproverQueue";
+import { LeaveWorkspace } from "./modules/ps03/LeaveWorkspace";
+import { SelfServiceSummary } from "./modules/ps03/SelfServiceSummary";
+import { LeaveSrRelayWorkspace } from "./modules/ps04/LeaveSrRelayWorkspace";
+import { TransferWorkspace } from "./modules/ps05/TransferWorkspace";
+import { CounsellingConsole } from "./modules/ps05/CounsellingConsole";
+import { PromotionWorkspace } from "./modules/ps06/PromotionWorkspace";
+import { DpcConvenePanel } from "./modules/ps06/DpcConvenePanel";
+import { SealedCoverReview } from "./modules/ps06/SealedCoverReview";
+import { TrainingWorkspace } from "./modules/ps07/TrainingWorkspace";
+import { TrainingNominationForm } from "./modules/ps07/TrainingNominationForm";
+import { AparWorkspace } from "./modules/ps08/AparWorkspace";
+import { AparTierForms } from "./modules/ps08/AparTierForms";
+import { DisciplinaryWorkspace } from "./modules/ps09/DisciplinaryWorkspace";
+import { DisciplinaryCaseWorkbench } from "./modules/ps09/DisciplinaryCaseWorkbench";
+import { EvidenceVaultList } from "./modules/ps09/EvidenceVaultList";
+import { PayrollWorkspace } from "./modules/ps10/PayrollWorkspace";
+import { PayrollRunConsole } from "./modules/ps10/PayrollRunConsole";
+import { PensionWorkspace } from "./modules/ps11/PensionWorkspace";
+import { PensionCaseConsole } from "./modules/ps11/PensionCaseConsole";
+import { AnalyticsWorkspace } from "./modules/ps14/AnalyticsWorkspace";
+import { EmbeddedBiDashboard } from "./modules/ps14/EmbeddedBiDashboard";
+import { ServiceRegisterTimeline } from "./modules/ps12/ServiceRegisterTimeline";
+import { DocumentVaultView } from "./modules/ps13/DocumentVaultView";
+import { DataSubjectRequestConsole } from "./modules/ps13/DataSubjectRequestConsole";
 
 // Composition root: the real fetch client. Base URL comes from Vite env
 // configuration (empty string = same-origin). The token provider reads the
@@ -55,10 +55,10 @@ export function App() {
   const [session, setSession] = useState<HrmsSession | null>(() => readStoredSession(window.sessionStorage));
   const [loginMessage, setLoginMessage] = useState<string | null>(() => readSessionMessage(window.sessionStorage));
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
-  // PH-07E: the G02 editor and approver queue share a refresh token so a newly
+  // PH-07E: the PS02 editor and approver queue share a refresh token so a newly
   // created change request appears in the queue without a full reload.
-  const [g02QueueRefresh, setG02QueueRefresh] = useState(0);
-  const bumpG02Queue = useCallback(() => setG02QueueRefresh((token) => token + 1), []);
+  const [ps02QueueRefresh, setPS02QueueRefresh] = useState(0);
+  const bumpPS02Queue = useCallback(() => setPS02QueueRefresh((token) => token + 1), []);
 
   const handleSignIn = useCallback((employeeId: string, password: string): boolean => {
     const nextSession = startEmployeeSession(window.sessionStorage, employeeId, password);
@@ -134,7 +134,7 @@ export function App() {
       permissions={permissions}
       sessionUser={session.displayName}
     >
-      {renderRoute(effectivePath, permissions, g02QueueRefresh, bumpG02Queue, navigate)}
+      {renderRoute(effectivePath, permissions, ps02QueueRefresh, bumpPS02Queue, navigate)}
     </AppShell>
   );
 }
@@ -162,20 +162,20 @@ function renderRoute(path: string, permissions: readonly string[], refresh: numb
   }
   switch (path) {
     case "/me/inbox": return routePage("Workflow inbox", "p01.workflow.read", permissions, <WorkflowWorkspace client={client} />);
-    case "/me/employees": return routePage("Employees", "g01.employee.read", permissions, <><EmployeeProfile client={client} /><PrivacyConsole client={client} /><EmployeeContactsPanel client={client} /><EmployeeDependentsPanel client={client} /></>);
-    case "/me/personal-details": return routePage("Personal Details", "g02.change.read", permissions, <><PersonalDetailsWorkspace client={client} /><ChangeRequestEditor client={client} onCreated={bump} /><ChangeRequestApproverQueue client={client} refreshToken={refresh} onDecided={bump} /></>);
-    case "/me/attendance-leave": return routePage("Attendance & Leave", "g03.leave.read", permissions, <><LeaveWorkspace client={client} /><SelfServiceSummary client={client} /></>);
-    case "/me/service-register": return routePage("Service Register", "g12.sr.read", permissions, <ServiceRegisterTimeline client={client} />);
-    case "/me/documents": return routePage("Documents", "g13.document.read", permissions, <><DocumentVaultView client={client} /><DataSubjectRequestConsole client={client} /></>);
-    case "/team/transfers": return routePage("Transfers", "g05.transfer.read", permissions, <><TransferWorkspace client={client} /><CounsellingConsole client={client} /></>);
-    case "/team/promotions": return routePage("Promotions", "g06.promotion.read", permissions, <><PromotionWorkspace client={client} /><DpcConvenePanel client={client} /><SealedCoverReview client={client} /></>);
-    case "/team/training": return routePage("Training", "g07.training.read", permissions, <><TrainingWorkspace client={client} /><TrainingNominationForm client={client} /></>);
-    case "/team/apar": return routePage("APAR", "g08.apar.read", permissions, <><AparWorkspace client={client} /><AparTierForms client={client} permissions={permissions} /></>);
-    case "/team/disciplinary": return routePage("Disciplinary", "g09.case.read", permissions, <><DisciplinaryWorkspace client={client} /><DisciplinaryCaseWorkbench client={client} /><EvidenceVaultList client={client} /></>);
-    case "/admin/leave-sr-relay": return routePage("Leave-SR Relay", "g04.relay.read", permissions, <LeaveSrRelayWorkspace client={client} />);
-    case "/admin/payroll": return routePage("Payroll", "g10.payroll.read", permissions, <><PayrollWorkspace client={client} /><PayrollRunConsole client={client} permissions={permissions} /></>);
-    case "/admin/pension-retirement": return routePage("Pension & Retirement", "g11.pension.read", permissions, <><PensionWorkspace client={client} /><PensionCaseConsole client={client} permissions={permissions} /></>);
-    case "/admin/analytics": return routePage("Analytics", "g14.analytics.read", permissions, <><AnalyticsWorkspace client={client} /><EmbeddedBiDashboard client={client} /></>);
+    case "/me/employees": return routePage("Employees", "ps01.employee.read", permissions, <><EmployeeProfile client={client} /><PrivacyConsole client={client} /><EmployeeContactsPanel client={client} /><EmployeeDependentsPanel client={client} /></>);
+    case "/me/personal-details": return routePage("Personal Details", "ps02.change.read", permissions, <><PersonalDetailsWorkspace client={client} /><ChangeRequestEditor client={client} onCreated={bump} /><ChangeRequestApproverQueue client={client} refreshToken={refresh} onDecided={bump} /></>);
+    case "/me/attendance-leave": return routePage("Attendance & Leave", "ps03.leave.read", permissions, <><LeaveWorkspace client={client} /><SelfServiceSummary client={client} /></>);
+    case "/me/service-register": return routePage("Service Register", "ps12.sr.read", permissions, <ServiceRegisterTimeline client={client} />);
+    case "/me/documents": return routePage("Documents", "ps13.document.read", permissions, <><DocumentVaultView client={client} /><DataSubjectRequestConsole client={client} /></>);
+    case "/team/transfers": return routePage("Transfers", "ps05.transfer.read", permissions, <><TransferWorkspace client={client} /><CounsellingConsole client={client} /></>);
+    case "/team/promotions": return routePage("Promotions", "ps06.promotion.read", permissions, <><PromotionWorkspace client={client} /><DpcConvenePanel client={client} /><SealedCoverReview client={client} /></>);
+    case "/team/training": return routePage("Training", "ps07.training.read", permissions, <><TrainingWorkspace client={client} /><TrainingNominationForm client={client} /></>);
+    case "/team/apar": return routePage("APAR", "ps08.apar.read", permissions, <><AparWorkspace client={client} /><AparTierForms client={client} permissions={permissions} /></>);
+    case "/team/disciplinary": return routePage("Disciplinary", "ps09.case.read", permissions, <><DisciplinaryWorkspace client={client} /><DisciplinaryCaseWorkbench client={client} /><EvidenceVaultList client={client} /></>);
+    case "/admin/leave-sr-relay": return routePage("Leave-SR Relay", "ps04.relay.read", permissions, <LeaveSrRelayWorkspace client={client} />);
+    case "/admin/payroll": return routePage("Payroll", "ps10.payroll.read", permissions, <><PayrollWorkspace client={client} /><PayrollRunConsole client={client} permissions={permissions} /></>);
+    case "/admin/pension-retirement": return routePage("Pension & Retirement", "ps11.pension.read", permissions, <><PensionWorkspace client={client} /><PensionCaseConsole client={client} permissions={permissions} /></>);
+    case "/admin/analytics": return routePage("Analytics", "ps14.analytics.read", permissions, <><AnalyticsWorkspace client={client} /><EmbeddedBiDashboard client={client} /></>);
     case "/admin/workflow-config": return routePage("Workflow Config", "p01.workflow.config.review", permissions, <WorkflowConfigConsole />);
     default:
       return <section className="not-found" aria-labelledby="route-heading"><h2 id="route-heading" tabIndex={-1}>Page not found</h2><p>The requested HRMS destination does not exist.</p><button type="button" onClick={() => navigate(defaultPath(permissions))}>Go to your workspace</button></section>;

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# PH-07E oracle (human gate support): employee wave UI + conformance — G01 contacts/dependents edit
-# forms, G02 change-request editor + approver queue + diff view, G03 self-service summary, all four
+# PH-07E oracle (human gate support): employee wave UI + conformance — PS01 contacts/dependents edit
+# forms, PS02 change-request editor + approver queue + diff view, PS03 self-service summary, all four
 # suites green, re-greps of PH-07A..D closures, and an honest coverage-delta verdict at
 # docs/spec/ph-07-verdict.md. Fail-closed negatives: skeleton forms (no onSubmit) and the hardcoded
 # empty /employees/changes feed regressing are RED. No plan-file or marker assertions.
@@ -10,26 +10,26 @@ fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 echo "== PH-07E exit-criteria (employee wave UI + conformance) =="
 
 [ -d node_modules ] || red "node_modules absent — typecheck/test oracle cannot run (npm install required)"
-W1=apps/web/src/modules/g01
-W2=apps/web/src/modules/g02
-W3=apps/web/src/modules/g03
+W1=apps/web/src/modules/ps01
+W2=apps/web/src/modules/ps02
+W3=apps/web/src/modules/ps03
 
 # 1) interactive employee-wave surfaces ("label::pattern::path" indexed list, BSD-grep safe)
 for spec in \
-  "g01 edit form::<form::$W1" \
-  "g01 submit handler::onSubmit::$W1" \
-  "g01 contacts surface::contact::$W1" \
-  "g01 dependents surface::dependent::$W1" \
-  "g01 uses shared client::from \"\.\./\.\./api|hrmsClient::$W1" \
-  "g02 change-request form::<form::$W2" \
-  "g02 submit handler::onSubmit::$W2" \
-  "g02 approver actions::approve::$W2" \
-  "g02 reject action::reject::$W2" \
-  "g02 send-back action::sendBack|send_?back|send back::$W2" \
-  "g02 diff view::diff::$W2" \
-  "g02 uses shared client::from \"\.\./\.\./api|hrmsClient::$W2" \
-  "g03 self-service summary surface::self-?service|SelfService::$W3" \
-  "g03 uses shared client::from \"\.\./\.\./api|hrmsClient::$W3" \
+  "ps01 edit form::<form::$W1" \
+  "ps01 submit handler::onSubmit::$W1" \
+  "ps01 contacts surface::contact::$W1" \
+  "ps01 dependents surface::dependent::$W1" \
+  "ps01 uses shared client::from \"\.\./\.\./api|hrmsClient::$W1" \
+  "ps02 change-request form::<form::$W2" \
+  "ps02 submit handler::onSubmit::$W2" \
+  "ps02 approver actions::approve::$W2" \
+  "ps02 reject action::reject::$W2" \
+  "ps02 send-back action::sendBack|send_?back|send back::$W2" \
+  "ps02 diff view::diff::$W2" \
+  "ps02 uses shared client::from \"\.\./\.\./api|hrmsClient::$W2" \
+  "ps03 self-service summary surface::self-?service|SelfService::$W3" \
+  "ps03 uses shared client::from \"\.\./\.\./api|hrmsClient::$W3" \
 ; do
   label="${spec%%::*}"; rest="${spec#*::}"; pat="${rest%%::*}"; path="${rest#*::}"
   grep -rqiE "$pat" "$path" 2>/dev/null && grn "$label" || red "missing: $label"
@@ -46,21 +46,21 @@ for d in "$W1" "$W2"; do
   fi
 done
 grn "negative skeleton-form detector evaluated"
-grep -qF 'items: [], limit' apps/api/src/routes/g01.routes.ts 2>/dev/null \
+grep -qF 'items: [], limit' apps/api/src/routes/ps01.routes.ts 2>/dev/null \
   && red "NEGATIVE: hardcoded empty /employees/changes feed regressed" || grn "negative ok: changes feed still real"
-grep -rqF '? "LOW" : "HIGH"' apps/api/src/modules/g02 2>/dev/null \
-  && red "NEGATIVE: hardcoded G02 sensitivity ternary regressed" || grn "negative ok: catalog-driven sensitivity retained"
+grep -rqF '? "LOW" : "HIGH"' apps/api/src/modules/ps02 2>/dev/null \
+  && red "NEGATIVE: hardcoded PS02 sensitivity ternary regressed" || grn "negative ok: catalog-driven sensitivity retained"
 
 # 3) re-greps of PH-07A..D closures
 for spec in \
-  "G01 attribute history::attribute_?history|attributeHistory::apps/api/src/modules/g01" \
-  "G01 outbox backbone::outbox::apps/api/src/modules/g01" \
-  "G04 lineage::leave_?spell_?lineage|leaveSpellLineage::apps/api/src/modules/g04" \
-  "G04 signature error::ERR-G04-SIGNATURE-INVALID::apps/api/src/modules/g04" \
-  "G02 SoD code::ERR-G02-SOD::apps/api/src/modules/g02" \
-  "G02 reason code::ERR-REASON-REQ::apps/api/src/modules/g02" \
-  "G03 feed lock code::PERIOD_ALREADY_LOCKED::apps/api/src/modules/g03" \
-  "G03 day status ON_LEAVE::\"ON_LEAVE\"::apps/api/src/modules/g03" \
+  "PS01 attribute history::attribute_?history|attributeHistory::apps/api/src/modules/ps01" \
+  "PS01 outbox backbone::outbox::apps/api/src/modules/ps01" \
+  "PS04 lineage::leave_?spell_?lineage|leaveSpellLineage::apps/api/src/modules/ps04" \
+  "PS04 signature error::ERR-PS04-SIGNATURE-INVALID::apps/api/src/modules/ps04" \
+  "PS02 SoD code::ERR-PS02-SOD::apps/api/src/modules/ps02" \
+  "PS02 reason code::ERR-REASON-REQ::apps/api/src/modules/ps02" \
+  "PS03 feed lock code::PERIOD_ALREADY_LOCKED::apps/api/src/modules/ps03" \
+  "PS03 day status ON_LEAVE::\"ON_LEAVE\"::apps/api/src/modules/ps03" \
 ; do
   label="${spec%%::*}"; rest="${spec#*::}"; pat="${rest%%::*}"; path="${rest#*::}"
   grep -rqiE "$pat" "$path" 2>/dev/null && grn "$label" || red "regressed/missing: $label"
@@ -83,8 +83,8 @@ if [ ! -s "$V" ] || [ "$(wc -c < "$V")" -lt 1500 ]; then
 else
   grn "verdict present: $V"
   grep -q 'brd-coverage-audit-20260702' "$V" && grn "verdict references the baseline audit" || red "verdict does not reference brd-coverage-audit-20260702"
-  grep -qE '\|.*G01' "$V" && grep -qE '\|.*G02' "$V" && grep -qE '\|.*G0(3|4)' "$V" \
-    && grn "verdict has per-module delta rows (G01/G02/G03-G04)" || red "verdict lacks per-module delta table rows"
+  grep -qE '\|.*PS01' "$V" && grep -qE '\|.*PS02' "$V" && grep -qE '\|.*G0(3|4)' "$V" \
+    && grn "verdict has per-module delta rows (PS01/PS02/PS03-PS04)" || red "verdict lacks per-module delta table rows"
   grep -qiE 'NOT_FOUND|remaining' "$V" && grn "verdict accounts for remaining gaps" || red "verdict hides remaining gaps (no NOT_FOUND/remaining accounting)"
   grep -qiE 'apps/(api|web)/src[^ ]*' "$V" && grn "verdict cites implementing files as evidence" || red "verdict cites no file evidence"
 fi

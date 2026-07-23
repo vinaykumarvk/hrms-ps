@@ -7,16 +7,16 @@ These scripts prepare UAT execution. They are not UAT sign-off.
 ## Script 1: Executive Analytics
 
 1. Sign in as analytics viewer.
-2. Open G14 dashboard.
-3. Confirm `G14_READ_ONLY`, `MART_REFRESH_IDEMPOTENT`, and `P02_SCOPE_FILTER`.
+2. Open PS14 dashboard.
+3. Confirm `PS14_READ_ONLY`, `MART_REFRESH_IDEMPOTENT`, and `P02_SCOPE_FILTER`.
 4. Confirm no PAN, Aadhaar, token, or password appears.
 5. Drill through employee headcount and confirm `DRILL_THROUGH_AUTHZ`.
 
 ## Script 2: Compensation Readiness
 
-1. Verify G10 payroll run has `RULE_VERSION_SNAPSHOT` and `PAYROLL_TRACE`.
-2. Verify G11 pension case has `SR_VERIFICATION_GATE`, `QUALIFYING_SERVICE_LOCKED`, and `PENSION_CALC_TRACE`.
-3. Confirm PPO events appear through G12 as `PPO_ISSUED`.
+1. Verify PS10 payroll run has `RULE_VERSION_SNAPSHOT` and `PAYROLL_TRACE`.
+2. Verify PS11 pension case has `SR_VERIFICATION_GATE`, `QUALIFYING_SERVICE_LOCKED`, and `PENSION_CALC_TRACE`.
+3. Confirm PPO events appear through PS12 as `PPO_ISSUED`.
 
 ## Script 3: Migration and Coexistence
 

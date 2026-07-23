@@ -10,7 +10,7 @@ info:
   contact:
     name: HRMS Platform Architecture
   license:
-    name: Proprietary - Government HRMS Programme
+    name: Proprietary - PrimeSoft HRMS Programme
 
 servers:
   - url: /api/v1

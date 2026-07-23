@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-61A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Second-pass deepening tranche, into G12 + G13. Built by hand — subagents credit-exhausted until 2026-07-08.
+GREEN. Second-pass deepening tranche, into PS12 + PS13. Built by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
 
@@ -20,11 +20,11 @@ GREEN. Second-pass deepening tranche, into G12 + G13. Built by hand — subagent
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G12** | SR admissibility/integrity reads (`GET /sr/subscriptions`, `GET /sr/employees/{employeeId}/attestations`, `GET /sr/attestations/{attestationId}`) | existing `srAdmissibilityService` + `srIntegrityService`, service-tested | `ph61a-g12-g13-admissibility-ocr-route.test.cjs` |
-| **G13** | OCR index management (`POST /documents:ocr-index`, `GET /documents:ocr-index-list`) | existing `ocrSearchService` (index-from-payload extracts + persists), service-tested | same |
+| **PS12** | SR admissibility/integrity reads (`GET /sr/subscriptions`, `GET /sr/employees/{employeeId}/attestations`, `GET /sr/attestations/{attestationId}`) | existing `srAdmissibilityService` + `srIntegrityService`, service-tested | `ph61a-ps12-ps13-admissibility-ocr-route.test.cjs` |
+| **PS13** | OCR index management (`POST /documents:ocr-index`, `GET /documents:ocr-index-list`) | existing `ocrSearchService` (index-from-payload extracts + persists), service-tested | same |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**547 / 41.3% → 552 / 41.7%** (G12 **53.8% → 58.5%**, G13 **31.6% → 33.3%**), and the PH-37 gate floor was
+**547 / 41.3% → 552 / 41.7%** (PS12 **53.8% → 58.5%**, PS13 **31.6% → 33.3%**), and the PH-37 gate floor was
 raised in lockstep so the gain is locked. (A `/documents/{id}` path collision on the OCR index list was caught
 and fixed to the `:ocr-index-list` action convention — the router invariant was respected, not weakened.)
 

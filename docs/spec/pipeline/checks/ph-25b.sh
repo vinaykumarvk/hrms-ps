@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# PH-25B oracle: G02 FR-022 retro-impact fan-out — retro_impact_events per downstream target
-# (G10/G11/G06) with idempotent dispatch (SENT->ACKED), DEAD_LETTER on exhaustion.
+# PH-25B oracle: PS02 FR-022 retro-impact fan-out — retro_impact_events per downstream target
+# (PS10/PS11/PS06) with idempotent dispatch (SENT->ACKED), DEAD_LETTER on exhaustion.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g02 apps/api/src/routes/g02.routes.ts"; T=apps/api/test
-echo "== PH-25B exit-criteria (G02 retro-impact fan-out) =="
+S="apps/api/src/modules/ps02 apps/api/src/routes/ps02.routes.ts"; T=apps/api/test
+echo "== PH-25B exit-criteria (PS02 retro-impact fan-out) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "retro events consumed (retro_impact_events)::retro_impact_events|retroImpact" \
-  "downstream targets (G10/G11/G06)::G10|G11|G06|target" \
+  "downstream targets (PS10/PS11/PS06)::PS10|PS11|PS06|target" \
   "dispatch status machine (SENT/ACKED)::SENT|ACKED|ACK" \
   "dead-letter on exhaustion (DEAD_LETTER)::DEAD_LETTER|deadLetter"
 do must "$spec" $S; done

@@ -1,7 +1,7 @@
 # Digital Employee Service Register (Digital SR) — HRMS Module BRD
 
 **Module code:** M12-SR
-**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (government / public-sector context, hosted at CGG Data Centre)
+**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (enterprise / public-sector context, hosted at CGG Data Centre)
 **Document version:** v1.0
 **Status:** Draft for review
 **Author persona:** Global HR/HCM domain expert (Workday / SAP SuccessFactors / Oracle HCM bar) honouring the public-sector statutory context
@@ -15,7 +15,7 @@
 
 ### 1.1 Purpose
 
-In a government HR context the **Service Register (Service Book)** is a legal instrument. Pension, gratuity, seniority, qualifying-service computation, increment dates, disciplinary record, and audit by statutory bodies (Accountant General / Audit) all depend on it being **complete, accurate, chronologically ordered, append-only, and tamper-evident**. The traditional paper Service Book is fragile: pages are lost, entries are back-dated, corrections are made by overwriting, attestation signatures are forged, and reconstruction after loss is impossible. The **Digital Employee Service Register (Digital SR)** replaces it with a cryptographically verifiable, append-only digital ledger that captures **every service life event** from appointment to retirement (and post-retirement archival), with provenance, attestation, and certified-extract generation.
+In a enterprise HR context the **Service Register (Service Book)** is a legal instrument. Pension, gratuity, seniority, qualifying-service computation, increment dates, disciplinary record, and audit by statutory bodies (Accountant General / Audit) all depend on it being **complete, accurate, chronologically ordered, append-only, and tamper-evident**. The traditional paper Service Book is fragile: pages are lost, entries are back-dated, corrections are made by overwriting, attestation signatures are forged, and reconstruction after loss is impossible. The **Digital Employee Service Register (Digital SR)** replaces it with a cryptographically verifiable, append-only digital ledger that captures **every service life event** from appointment to retirement (and post-retirement archival), with provenance, attestation, and certified-extract generation.
 
 ### 1.2 Business problem
 
@@ -125,7 +125,7 @@ M12-SR delivers:
 - Source modules authenticate with a service principal scoped to `sr.ingest.write` and emit events through the ingestion contract (FR-02) with a deterministic `Idempotency-Key`.
 - M01 is the authoritative source for `employee_id` ↔ `service_no`; M12 denormalises `service_no` onto each ledger entry for resilience but treats M01 as golden.
 - M13 provides durable, encrypted object storage for scans, signed PDFs, and order copies, returning `document_id` references.
-- A government PKI / HSM is available for digital signing of certified extracts and attestations (qualified electronic signatures); if PKI is unavailable at launch, signing degrades to server-side signing with an upgrade path recorded.
+- A enterprise PKI / HSM is available for digital signing of certified extracts and attestations (qualified electronic signatures); if PKI is unavailable at launch, signing degrades to server-side signing with an upgrade path recorded.
 - A reliable scheduler exists for integrity-verification sweeps, verification-cycle generation, and subscription delivery.
 - NTP clock sync across services for ledger timestamps and hash determinism.
 
@@ -182,7 +182,7 @@ This module **inherits** the Shared Foundation §5 technical defaults verbatim a
 - **Architecture:** React + TypeScript (Tailwind + shadcn/ui) for the SR timeline, custodian console, verification UI, and forensics view; REST API under `/api/v1/sr`; the ingestion contract is a versioned API (`/api/v1/sr/ingest`); PostgreSQL primary datastore for the ledger and sub-ledgers; M13 object storage for scans/signed PDFs. A background scheduler runs integrity sweeps, verification-cycle generation, and subscription delivery.
 - **Auth:** OIDC/SSO + MFA for human roles; mutual-TLS + service JWT for source-module principals; RBAC + row-level scoping by `org_unit_id`. The ingestion principal holds only `sr.ingest.write`; it cannot read other employees' SR or issue extracts.
 - **Cryptographic integrity:** ledger entries are hash-chained with **SHA-256** over a canonical, field-ordered serialization that includes `prev_event_hash`. The algorithm identifier and `ledger_version` are stored per row to allow future algorithm migration without rewriting history. Optional periodic **anchor**: the latest chain head per employee (or a Merkle root over all heads) may be timestamped/notarised to an external append-only store for independent verification.
-- **Digital signing:** certified extracts, custodian attestations, and verification confirmations are signed via government PKI/HSM (qualified e-signature) where available; signature metadata (signer, certificate serial, timestamp, algorithm) is stored. Signed PDFs carry an embedded signature and a QR code resolving to the verification endpoint (FR-11).
+- **Digital signing:** certified extracts, custodian attestations, and verification confirmations are signed via enterprise PKI/HSM (qualified e-signature) where available; signature metadata (signer, certificate serial, timestamp, algorithm) is stored. Signed PDFs carry an embedded signature and a QR code resolving to the verification endpoint (FR-11).
 - **Canonical error envelope:** `{ "error": { "code": "...", "message": "...", "field": "..." }, "requestId": "..." }`.
 - **Inherited error codes:** VALIDATION_ERROR(400), AUTH_REQUIRED(401), FORBIDDEN(403), NOT_FOUND(404), CONFLICT(409), RATE_LIMITED(429), INTERNAL_ERROR(500), UPSTREAM_UNAVAILABLE(503). M12-specific codes are cataloged in Section 9.
 - **Idempotency:** all ingestion writes carry a deterministic `Idempotency-Key`; the ledger dedupes on `(source_module, source_reference_id, source_event_version)`.
@@ -192,7 +192,7 @@ This module **inherits** the Shared Foundation §5 technical defaults verbatim a
 
 ### 4.1 Alignment with the PrimeSoft HRMS platform deliverables
 
-This BRD is authored against the program's **build contract** (`SHARED_FOUNDATION.md`, government 14-module scheme where M12 = Digital SR) but is **harmonised with the delivered PrimeSoft HRMS platform** (Product Vision v2.6, Platform Specification v1.6, Foundation FS v1.7, RBAC Design v1.7, Document Management FS v1.3). Digital SR is a *consumer* of the platform's horizontal services (P01–P06, X.1–X.3); it does not re-implement them. Reconciliation note: PrimeSoft's commercial module numbering differs (no "M12" there); the SR is the statutory system-of-record layer that sits on the same platform, and where a name differs the platform's term governs build detail while this BRD owns SR requirements, rules, data model, and state machines.
+This BRD is authored against the program's **build contract** (`SHARED_FOUNDATION.md`, enterprise 14-module scheme where M12 = Digital SR) but is **harmonised with the delivered PrimeSoft HRMS platform** (Product Vision v2.6, Platform Specification v1.6, Foundation FS v1.7, RBAC Design v1.7, Document Management FS v1.3). Digital SR is a *consumer* of the platform's horizontal services (P01–P06, X.1–X.3); it does not re-implement them. Reconciliation note: PrimeSoft's commercial module numbering differs (no "M12" there); the SR is the statutory system-of-record layer that sits on the same platform, and where a name differs the platform's term governs build detail while this BRD owns SR requirements, rules, data model, and state machines.
 
 **Multi-tenancy.** The platform is multi-tenant (`tenants`, with segment/geography defaults and per-tenant isolation; Platform Spec P04). Every SR entity carries `tenant_id`; all queries, jobs (X.1), and notifications (X.2) execute per-tenant in isolation. Cross-tenant operations are reserved to **Platform Super Admin** (provisioning + migration tooling only — never SR content). Segment/geography are immutable post-provisioning.
 
@@ -261,7 +261,7 @@ This BRD is authored against the program's **build contract** (`SHARED_FOUNDATIO
 | `source_module` | varchar(16) | N | Provenance: M01..M14, or `M12_MANUAL`, `M12_LEGACY` |
 | `source_reference_id` | varchar(64) | Y | Originating order/transaction id in the source module |
 | `source_event_version` | int | N | Source event schema/version (default 1) |
-| `order_no` | varchar(64) | Y | Government order / notification number authorising the event |
+| `order_no` | varchar(64) | Y | Enterprise order / notification number authorising the event |
 | `order_date` | date | Y | Date of the order |
 | `sanctioning_authority` | varchar(160) | Y | Authority that sanctioned the event |
 | `payload` | jsonb | N | Structured, schema-validated event data (designation, pay scale, location, days, etc.) |
@@ -289,9 +289,9 @@ Sample data:
 
 | sr_event_id | service_no | sequence_no | event_type_code | event_date | source_module | entry_status | attestation_status | qualifying_service_impact |
 |---|---|---|---|---|---|---|---|---|
-| sr…0001 | GOV-100245 | 1 | APPOINTMENT | 2008-07-14 | M01 | ACTIVE | EMPLOYEE_VERIFIED | QUALIFYING |
-| sr…0042 | GOV-100245 | 42 | PROMOTION | 2019-06-01 | M06 | SUPERSEDED | ATTESTED | QUALIFYING |
-| sr…0043 | GOV-100245 | 43 | PROMOTION_CORRIGENDUM | 2019-06-01 | M12_MANUAL | ACTIVE | ATTESTED | QUALIFYING |
+| sr…0001 | PS-100245 | 1 | APPOINTMENT | 2008-07-14 | M01 | ACTIVE | EMPLOYEE_VERIFIED | QUALIFYING |
+| sr…0042 | PS-100245 | 42 | PROMOTION | 2019-06-01 | M06 | SUPERSEDED | ATTESTED | QUALIFYING |
+| sr…0043 | PS-100245 | 43 | PROMOTION_CORRIGENDUM | 2019-06-01 | M12_MANUAL | ACTIVE | ATTESTED | QUALIFYING |
 
 #### E9 — `sr_event_type` (taxonomy catalog — versioned)
 
@@ -337,7 +337,7 @@ Sample data:
 | `decision` | enum | N | PENDING / APPROVED / REJECTED |
 | `decided_by` | varchar(64) | Y | Checker (SR Custodian) |
 | `decided_at` | timestamptz | Y | |
-| `supporting_document_ids` | uuid[] | Y | Court order, revised govt order, etc. |
+| `supporting_document_ids` | uuid[] | Y | Court order, revised enterprise order, etc. |
 | `created_at`/`created_by` | std | | Append-only (no soft delete) |
 
 Sample data:
@@ -555,9 +555,9 @@ Sample data:
 
 | record_id | batch_id | service_no | event_type_code | match_status | verification_status |
 |---|---|---|---|---|---|
-| lr…01 | lb…01 | GOV-088120 | APPOINTMENT | MATCHED | VERIFIED |
-| lr…02 | lb…01 | GOV-088120 | PROMOTION | MATCHED | VERIFIED |
-| lr…03 | lb…02 | GOV-077431 | INCREMENT | AMBIGUOUS | DISCREPANCY |
+| lr…01 | lb…01 | PS-088120 | APPOINTMENT | MATCHED | VERIFIED |
+| lr…02 | lb…01 | PS-088120 | PROMOTION | MATCHED | VERIFIED |
+| lr…03 | lb…02 | PS-077431 | INCREMENT | AMBIGUOUS | DISCREPANCY |
 
 ### 5.3 Relationship map
 
@@ -906,7 +906,7 @@ The **hash chain** is a self-referential structure on E8: per `employee_id`, ord
 
 **Business Rules.**
 - BR-05.1 An entry may be superseded at most once; further correction supersedes the latest ACTIVE entry in the chain.
-- BR-05.2 DOB/name corrigenda (IDENTITY) require dual custodian sign-off and a govt order/court reference; values are validated with the platform validation library (`VAL-DOB` for DOB, `VAL-AADHAAR`/`VAL-PAN` for national-ID linkage) and are subject to the PII Protection Ceiling (P02). Routed through `WF-M12-IDENTITY-CHANGE`.
+- BR-05.2 DOB/name corrigenda (IDENTITY) require dual custodian sign-off and a enterprise order/court reference; values are validated with the platform validation library (`VAL-DOB` for DOB, `VAL-AADHAAR`/`VAL-PAN` for national-ID linkage) and are subject to the PII Protection Ceiling (P02). Routed through `WF-M12-IDENTITY-CHANGE`.
 - BR-05.3 Correcting a qualifying-service impact re-emits the event to subscribers (FR-13) so pension (M11) re-reads.
 
 **Data Model References.**
@@ -2080,7 +2080,7 @@ FR-01 (taxonomy) → FR-02 (ingestion) → FR-03 (append/hash)
 
 ### 16.4 Appendix D — Open assumptions
 
-- Government PKI/HSM availability for qualified signatures; server-signed fallback recorded with upgrade path.
+- Enterprise PKI/HSM availability for qualified signatures; server-signed fallback recorded with upgrade path.
 - Statutory verification cadence default 5 years; configurable per service rules.
 - External anchoring store optional at launch; internal hash-chain verification is mandatory.
 - Future-date tolerance for `event_date` configurable (default 0 days).

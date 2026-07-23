@@ -1,23 +1,23 @@
 /goal
-  objective: PH-07A — employee wave substrate: G01 satellite persistence and the transactional outbox
-    backbone. The audit (docs/reviews/brd-coverage-audit-20260702.md) scored G01 at ~12/180 CONFIRMED and
+  objective: PH-07A — employee wave substrate: PS01 satellite persistence and the transactional outbox
+    backbone. The audit (docs/reviews/brd-coverage-audit-20260702.md) scored PS01 at ~12/180 CONFIRMED and
     flagged cross-cutting gaps this phase owns: the employee record has no contacts/addresses/dependents
     satellites and no attribute-history spine, outbox_events is absent from runtime, and the
     /api/v1/employees/changes feed is hardcoded to return an empty items array.
   audit_gaps_closed:
     - employee_attribute_history spine: every governed employee attribute mutation appends an append-only
       history row (attribute, old/new value, actor, effective date) persisted via the repository layer.
-    - Satellite entities persisted and exposed through G01 service + routes: employee_contacts,
-      employee_addresses, employee_dependents (frozen names from docs/data-model/01-G01-employee-profile.sql).
+    - Satellite entities persisted and exposed through PS01 service + routes: employee_contacts,
+      employee_addresses, employee_dependents (frozen names from docs/data-model/01-PS01-employee-profile.sql).
     - Transactional outbox backbone: outbox_events written in the SAME transaction as the mutating write
       (employee mutations, satellite changes), with a monotonically ordered cursor.
     - Real change feed: GET /api/v1/employees/changes reads outbox_events with an ordered cursor
       (?cursor=... / next_cursor) instead of the hardcoded `items: []`; same for the per-employee
       governed-changes route.
   context:
-    - docs/brd/v3/G01-employee-profile-management.md       # satellite + history + outbox requirements
-    - docs/data-model/01-G01-employee-profile.sql          # employee_contacts, employee_addresses, employee_attribute_history, outbox_events (E33)
-    - apps/api/src/modules/g01/employeeMasterService.ts , apps/api/src/routes/g01.routes.ts  # hardcoded [] at the changes handlers
+    - docs/brd/v3/PS01-employee-profile-management.md       # satellite + history + outbox requirements
+    - docs/data-model/01-PS01-employee-profile.sql          # employee_contacts, employee_addresses, employee_attribute_history, outbox_events (E33)
+    - apps/api/src/modules/ps01/employeeMasterService.ts , apps/api/src/routes/ps01.routes.ts  # hardcoded [] at the changes handlers
     - apps/api/src/db/** , apps/api/db/migrations/**       # PH-06A persistence substrate to extend
     - apps/api/src/platform/foundationServices.ts
   constraints:
@@ -33,8 +33,8 @@
       max_iterations: 5
       repeat_until: employee_contacts / employee_addresses / employee_dependents CRUD and the
         employee_attribute_history append path are implemented through the repository + migrations and
-        surfaced on g01 routes; masked fields stay masked.
-      steps: [migrations for satellite tables, g01 repository methods, service + route wiring]
+        surfaced on ps01 routes; masked fields stay masked.
+      steps: [migrations for satellite tables, ps01 repository methods, service + route wiring]
     - name: transactional outbox + feed
       max_iterations: 5
       repeat_until: outbox_events rows are written in the same transaction as employee/satellite mutations;
@@ -53,7 +53,7 @@
     - Whether satellites reuse one generic repository or per-entity repositories is your choice.
     - History granularity for non-governed attributes may be deferred if recorded in the evidence notes.
   evidence_required:
-    - apps/api/src/modules/g01/** diffs, g01.routes.ts real changes feed, outbox migration + repository
+    - apps/api/src/modules/ps01/** diffs, ps01.routes.ts real changes feed, outbox migration + repository
     - apps/api/test outbox/cursor feed test
     - `npm run typecheck` + `npm test` green; ph-07a.sh GREEN
   escalate_when:

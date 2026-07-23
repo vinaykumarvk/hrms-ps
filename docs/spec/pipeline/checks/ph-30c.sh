@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-30C oracle: G08 e-signature + feedback routes — real kernel route(s) registered + dispatched in an API test.
+# PH-30C oracle: PS08 e-signature + feedback routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g08.routes.ts"; T=apps/api/test
-echo "== PH-30C exit-criteria (G08 e-signature + feedback routes) =="
+R="apps/api/src/routes/ps08.routes.ts"; T=apps/api/test
+echo "== PH-30C exit-criteria (PS08 e-signature + feedback routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" 'e-signature' "route path registered: e-signature"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

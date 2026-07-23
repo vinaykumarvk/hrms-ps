@@ -23,27 +23,27 @@ subagents remain credit-exhausted until 2026-07-08.
 
 | Module | Closed in PH-24 | Evidence |
 |---|---|---|
-| **G11** | proactive death detection + overpayment recovery — death-registry reconciliation suspends disbursement, overpayment_recoveries with bounded estate/family recovery (over-recovery barred) | `ph24a-g11-death-recovery.test.cjs` |
-| **G06** | correction lineage + recompute cascade — correction_events, UNDER_CORRECTION marker, deterministic re-rank into a new versioned snapshot, non-FINALISED guard | `ph24b-g06-correction-cascade.test.cjs` |
-| **G12** | offline-QR independent verification — bundle binds entry hash + anchor ref under SHA-256, tamper detection without the live ledger | `ph24c-g12-offline-qr.test.cjs` |
+| **PS11** | proactive death detection + overpayment recovery — death-registry reconciliation suspends disbursement, overpayment_recoveries with bounded estate/family recovery (over-recovery barred) | `ph24a-ps11-death-recovery.test.cjs` |
+| **PS06** | correction lineage + recompute cascade — correction_events, UNDER_CORRECTION marker, deterministic re-rank into a new versioned snapshot, non-FINALISED guard | `ph24b-ps06-correction-cascade.test.cjs` |
+| **PS12** | offline-QR independent verification — bundle binds entry hash + anchor ref under SHA-256, tamper detection without the live ledger | `ph24c-ps12-offline-qr.test.cjs` |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 Tranche 11 did not close, and these remain `NOT_FOUND` / open for a later tranche:
 
-- **G01**: dedup ML matcher depth, privacy/DPDP console UI.
-- **G02**: extra fraud detectors, retro-impact fan-out.
-- **G03**: backdated-leave team-calendar conflict threshold, punch anomaly review depth.
-- **G04**: CI port-conformance gate in the build pipeline.
-- **G05**: interactive counselling UI, proof-of-service deeming automation.
-- **G06**: sealed-cover full workflow (partial), career-path projections.
-- **G07**: content/assessment-item bank.
-- **G08**: calibration analytics depth.
-- **G09**: POSH conciliation depth, evidence-vault UI listing.
-- **G10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
-- **G13**: real AV/OCR engine binding.
-- **G14**: embedded BI, predictive+fairness, mobile briefing.
-- **G12**: real RFC-3161 TSA binding (Merkle anchor exists; the timestamp authority is stubbed).
+- **PS01**: dedup ML matcher depth, privacy/DPDP console UI.
+- **PS02**: extra fraud detectors, retro-impact fan-out.
+- **PS03**: backdated-leave team-calendar conflict threshold, punch anomaly review depth.
+- **PS04**: CI port-conformance gate in the build pipeline.
+- **PS05**: interactive counselling UI, proof-of-service deeming automation.
+- **PS06**: sealed-cover full workflow (partial), career-path projections.
+- **PS07**: content/assessment-item bank.
+- **PS08**: calibration analytics depth.
+- **PS09**: POSH conciliation depth, evidence-vault UI listing.
+- **PS10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
+- **PS13**: real AV/OCR engine binding.
+- **PS14**: embedded BI, predictive+fairness, mobile briefing.
+- **PS12**: real RFC-3161 TSA binding (Merkle anchor exists; the timestamp authority is stubbed).
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**
 OpenAPI operations frozen in `docs/contracts/openapi/*.yaml`. "All oracles GREEN" reflects the tranche's

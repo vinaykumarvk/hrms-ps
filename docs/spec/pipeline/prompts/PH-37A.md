@@ -8,7 +8,7 @@ ratchet gate so coverage can only go up.
 ## Context
 - Contract: `docs/contracts/openapi/*.yaml` (per-module OpenAPI, ~1,323 operations counted exactly).
 - Live routes: `createFoundationApi(createFoundationServices()).listRoutes()` — each carries an `operationId`
-  whose prefix (`g06.` …) attributes it to a module.
+  whose prefix (`ps06.` …) attributes it to a module.
 
 ## Constraints
 - Automate measurement, not judgment: the oracle must independently recompute and tie the implemented total

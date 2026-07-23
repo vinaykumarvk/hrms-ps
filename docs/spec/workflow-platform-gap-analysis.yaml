@@ -64,7 +64,7 @@ capabilities:
       - audit hook
       - Service Register hook
     deferred:
-      - adapters backed by G01/G12/G13/X.2/P05 runtime services
+      - adapters backed by PS01/PS12/PS13/X.2/P05 runtime services
     evidence:
       - /Users/n15318/workflow-platform/packages/adapters-hrms/src
 

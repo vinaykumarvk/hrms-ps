@@ -55,7 +55,7 @@ CONDITIONAL after repair — all implementation-eligible CRITICAL/HIGH findings 
 | Application router | `apps/web/src/App.tsx` | path, session, permissions | composed clients | one substantive workspace per route | substantive; security fixes required |
 | Login | `apps/web/src/app/LoginPanel.tsx` | employee ID, password | local demo exchange | errors/loading/session message | substantive; production auth blocker |
 | Workflow configuration | `apps/web/src/workflow/WorkflowConfigConsole.tsx` | version/action controls | client-side contract only | outcomes and confirmation | substantive within approved no-new-API disposition |
-| Payroll run console | `apps/web/src/modules/g10/PayrollRunConsole.tsx` | run/actions | HRMS client | run state and terminal confirmations | substantive |
+| Payroll run console | `apps/web/src/modules/ps10/PayrollRunConsole.tsx` | run/actions | HRMS client | run state and terminal confirmations | substantive |
 | UI primitives | `apps/web/src/components/ui` | typed component props | not applicable | reusable controls/feedback | substantive; Field association defect |
 
 No newly claimed user-facing component is a skeleton.

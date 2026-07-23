@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-23A oracle: G04 FR-16 X.3 outbound framework — an outbound connector with circuit-breaker,
+# PH-23A oracle: PS04 FR-16 X.3 outbound framework — an outbound connector with circuit-breaker,
 # retry/backoff, payload versioning, and error classification; a conformance self-test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g04 apps/api/src/routes/g04.routes.ts"; T=apps/api/test
-echo "== PH-23A exit-criteria (G04 X.3 outbound framework) =="
+S="apps/api/src/modules/ps04 apps/api/src/routes/ps04.routes.ts"; T=apps/api/test
+echo "== PH-23A exit-criteria (PS04 X.3 outbound framework) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "outbound connector::outbound|Outbound|x3|X3" \

@@ -1,25 +1,25 @@
 -- =====================================================================================
--- GOVERNMENT HRMS — SHARED PLATFORM CORE SCHEMA (00-platform-core.sql)
+-- PrimeSoft HRMS — SHARED PLATFORM CORE SCHEMA (00-platform-core.sql)
 -- =====================================================================================
--- Canonical, authoritative DDL for the tables every module (01-G01 .. 14-G14) FKs to.
+-- Canonical, authoritative DDL for the tables every module (01-PS01 .. 14-PS14) FKs to.
 -- PostgreSQL 14+. Single source of truth for tenancy, identity/RBAC, the employee
 -- golden record, the workflow engine (P01), the dual audit log (P05), the document
--- vault (G13/P13), the Service Register ledger (G12), and the cross-cutting
+-- vault (PS13/P13), the Service Register ledger (PS12), and the cross-cutting
 -- infrastructure tables (notifications X.2, jobs X.1, integration_credentials P04/X.3,
 -- migration_runs P06).
 --
 -- Grounded in:
 --   docs/brd/PLATFORM_FOUNDATION.md        (tenancy, RBAC v1.7, P01-P06, audit, NFR)
 --   docs/platform-grounding/extracts/*     (platform spec §4.14, foundation FS)
---   docs/brd/v3/G01-employee-profile-management.md   (employees E1, employee_dependents E4)
---   docs/brd/v3/G12-digital-service-register.md      (service_register_events E8)
---   docs/brd/v3/G13-document-management-secure-storage.md (documents E1, document_versions E2)
+--   docs/brd/v3/PS01-employee-profile-management.md   (employees E1, employee_dependents E4)
+--   docs/brd/v3/PS12-digital-service-register.md      (service_register_events E8)
+--   docs/brd/v3/PS13-document-management-secure-storage.md (documents E1, document_versions E2)
 --   docs/brd/MODULE_RECONCILIATION.md §C/§D (platform-provided vs net-new entities)
 --
 -- =====================================================================================
 -- BUILD NOTES (read before running or referencing from a module schema)
 -- =====================================================================================
--- ORDERING. Run this file first; every module schema (01-G01 .. 14-G14) depends on it.
+-- ORDERING. Run this file first; every module schema (01-PS01 .. 14-PS14) depends on it.
 --   Sections are ordered so a referenced table is always created before its referrers:
 --     0  Extensions
 --     1  Enum types (CREATE TYPE ... AS ENUM)
@@ -27,13 +27,13 @@
 --        grades/pay_scales -> geography/segment masters)
 --     3  Identity & RBAC (users, roles, permissions, role_permissions, user_roles,
 --        capability_flags, user_capability_flags, individual_entitlements, pii_tiers)
---     4  Employee golden record (employees, employee_dependents)        [G01 owner]
+--     4  Employee golden record (employees, employee_dependents)        [PS01 owner]
 --     5  Workflow engine (workflows, workflow_instances, workflow_actions,
 --        durable task/wait/fork/reference/resolution snapshots,
 --        skip_settings, sla_settings)                                   [P01]
 --     6  Audit & consent (audit_log, security_audit_log, consent_records) [P05/DPDPA]
---     7  Documents (documents, document_versions)                       [G13/P13 owner]
---     8  Service Register ledger (service_register_events)              [G12 owner]
+--     7  Documents (documents, document_versions)                       [PS13/P13 owner]
+--     8  Service Register ledger (service_register_events)              [PS12 owner]
 --     9  Cross-cutting infra (notifications, jobs, integration_credentials, migration_runs)
 --     10 Deferred cross-section FKs (forward references resolved via ALTER)
 --     11 Row-Level Security (P02 data-scope mechanism) — enable + tenant policy template
@@ -46,12 +46,12 @@
 --     (MODULE_RECONCILIATION §C/§D). They reference; they never fork.
 --   * Module schemas inherit the conventions fixed in the header below and summarised in
 --     docs/data-model/CONVENTIONS.md.
---   * G01 OWNS the employee satellites (here we define only employees + employee_dependents,
---     the two other modules FK to). G12 OWNS service_register_events and its sub-ledgers
+--   * PS01 OWNS the employee satellites (here we define only employees + employee_dependents,
+--     the two other modules FK to). PS12 OWNS service_register_events and its sub-ledgers
 --     (here we define only the core ledger columns other writers reference; sr_status_events,
---     sr_anchors, sr_event_type, etc. live in 12-G12). G13 OWNS the full document model
+--     sr_anchors, sr_event_type, etc. live in 12-PS12). PS13 OWNS the full document model
 --     (here we define documents + document_versions core columns; storage_objects, folders,
---     retention, legal holds, clearances live in 13-G13).
+--     retention, legal holds, clearances live in 13-PS13).
 --
 -- =====================================================================================
 -- CONVENTIONS (authoritative — module schemas inherit these; see CONVENTIONS.md)
@@ -108,7 +108,7 @@
 --   * RLS + deferred employee/self FKs for the above (Sections 10 & 11)
 -- Value lists (528 designations, 57 separation reasons, …) are NOT inlined — the CSVs
 -- are the migration seed source; only 2-3 sample rows appear in Section 12.
--- Excluded here: National_ID (owned by G01), Profile_View_settings (UI/masking config),
+-- Excluded here: National_ID (owned by PS01), Profile_View_settings (UI/masking config),
 -- Assignment One/Two/Three (custom grouping configs, not platform-core org masters).
 -- =====================================================================================
 
@@ -165,7 +165,7 @@ CREATE TYPE security_event_type AS ENUM ('LOGIN','LOGOUT','LOGIN_FAILED','MFA_CH
                                           'PERMISSION_DENIED','IMPERSONATION','BREAK_GLASS','TOKEN_ROTATION','SESSION_REVOKED');
 CREATE TYPE consent_status      AS ENUM ('GRANTED','WITHDRAWN','SUPERSEDED');
 
--- Documents (G13/P13) -----------------------------------------------------------------
+-- Documents (PS13/P13) -----------------------------------------------------------------
 CREATE TYPE classification_level AS ENUM ('PUBLIC','INTERNAL','CONFIDENTIAL','SECRET','TOP_SECRET');
 CREATE TYPE document_status      AS ENUM ('DRAFT','ACTIVE','SUPERSEDED','ORPHANED','DISPOSED','QUARANTINED');
 CREATE TYPE scan_status          AS ENUM ('PENDING','CLEAN','INFECTED','QUARANTINED','SKIPPED');
@@ -174,7 +174,7 @@ CREATE TYPE erasure_method       AS ENUM ('NONE','REDACTED','CRYPTO_SHRED','ANON
 CREATE TYPE version_kind         AS ENUM ('ORIGINAL','NEW_VERSION','SUPERSEDE','CERTIFIED_COPY','REDACTED','SIGNED');
 CREATE TYPE ocr_status           AS ENUM ('PENDING','DONE','FAILED','NOT_APPLICABLE');
 
--- Service Register ledger (G12) -------------------------------------------------------
+-- Service Register ledger (PS12) -------------------------------------------------------
 CREATE TYPE sr_event_category      AS ENUM ('APPOINTMENT','CONFIRMATION','PROMOTION','TRANSFER','POSTING','PAY','INCREMENT',
                                             'LEAVE','TRAINING','AWARD','PUNISHMENT','SUSPENSION','DEPUTATION','IDENTITY',
                                             'QUALIFICATION','APPRAISAL','SEPARATION','OTHER');  -- 18 categories (§5.5)
@@ -197,11 +197,11 @@ CREATE TYPE migration_run_status  AS ENUM ('CREATED','EXTRACTING','VALIDATING','
 -- =====================================================================================
 
 -- tenants -----------------------------------------------------------------------------
--- The tenant is the root scope. The government deployment is typically one tenant; each
+-- The tenant is the root scope. The enterprise deployment is typically one tenant; each
 -- department/directorate is an `entity`. (Platform §0.1; PLATFORM_FOUNDATION §2)
 CREATE TABLE tenants (
     id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_code        text NOT NULL,                 -- business key, e.g. 'GOV-KA'
+    tenant_code        text NOT NULL,                 -- business key, e.g. 'PS-KA'
     legal_name         text NOT NULL,
     display_name       text NOT NULL,
     tenancy_model      tenancy_model NOT NULL DEFAULT 'STANDALONE',
@@ -337,7 +337,7 @@ CREATE TABLE grades (
     grade_code   text NOT NULL,
     name         text NOT NULL,
     level_order  smallint NOT NULL,                   -- seniority ordering within tenant
-    pay_band     text,                                -- e.g. 'PB-3' (govt pay-band label; distinct from Band master)
+    pay_band     text,                                -- e.g. 'PB-3' (enterprise pay-band label; distinct from Band master)
     band_id      uuid,                                -- RECON: Grade "Band Name" -> bands.id (FK added below, after bands)
     band_code    text,                                -- RECON: Grade "Band Code" (denormalised)
     is_active    boolean NOT NULL DEFAULT true,
@@ -624,7 +624,7 @@ COMMENT ON TABLE pii_tiers IS 'Platform-global PII tier reference (RBAC §7). No
 CREATE TABLE permissions (
     id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     permission_code  text NOT NULL UNIQUE,            -- e.g. 'document.view', 'leave.approve'
-    module_code      text NOT NULL,                   -- G01..G14 / platform
+    module_code      text NOT NULL,                   -- PS01..PS14 / platform
     action           text NOT NULL,                   -- VIEW/EDIT/APPROVE/DOWNLOAD/ADMIN
     description      text,
     pii_tier_id      uuid REFERENCES pii_tiers(id) ON DELETE RESTRICT,  -- field-access tier hint
@@ -640,7 +640,7 @@ CREATE TABLE users (
     tenant_id          uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     entity_id          uuid REFERENCES entities(id) ON DELETE RESTRICT,
     username           text NOT NULL,
-    official_email     text,                          -- tenant-unique, immutable (G01 note)
+    official_email     text,                          -- tenant-unique, immutable (PS01 note)
     password_hash      text,                          -- one-way hashed; null for SSO/service
     auth_method        auth_method NOT NULL DEFAULT 'PASSWORD',
     status             user_status NOT NULL DEFAULT 'PENDING',
@@ -656,14 +656,14 @@ CREATE TABLE users (
     is_deleted         boolean NOT NULL DEFAULT false,
     CONSTRAINT uq_users_username UNIQUE (tenant_id, username)
 );
--- Tenant-unique official email across non-deleted rows (G01 §5.6 r17).
+-- Tenant-unique official email across non-deleted rows (PS01 §5.6 r17).
 CREATE UNIQUE INDEX uq_users_email ON users(tenant_id, lower(official_email)) WHERE is_deleted = false AND official_email IS NOT NULL;
 CREATE INDEX ix_users_tenant ON users(tenant_id);
 CREATE INDEX ix_users_entity ON users(entity_id);
 CREATE INDEX ix_users_status ON users(status);
 
 -- roles -------------------------------------------------------------------------------
--- RBAC v1.7 role taxonomy (platform + entity-scoped operational + gov additions).
+-- RBAC v1.7 role taxonomy (platform + entity-scoped operational + enterprise additions).
 CREATE TABLE roles (
     id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id     uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
@@ -791,16 +791,16 @@ CREATE INDEX ix_individual_entitlements_expiry  ON individual_entitlements(expir
 
 
 -- =====================================================================================
--- SECTION 4 — EMPLOYEE GOLDEN RECORD (owned by G01; reconciled with G01 E1/E4)
+-- SECTION 4 — EMPLOYEE GOLDEN RECORD (owned by PS01; reconciled with PS01 E1/E4)
 -- =====================================================================================
--- Core master only. G01 module schema (01-G01) ADDS the governance satellites
+-- Core master only. PS01 module schema (01-PS01) ADDS the governance satellites
 -- (attribute-history spine, aadhaar_vault, identity docs, bank, education, positions,
 -- job assignments, nominees, etc.). Master FKs are NULLABLE to support the PROVISIONAL
--- migration profile (G01 improvement #11): constraints harden as a row is remediated to
+-- migration profile (PS01 improvement #11): constraints harden as a row is remediated to
 -- record_state = ACTIVE.
 
 CREATE TABLE employees (
-    id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == G01 employee_id
+    id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == PS01 employee_id
     tenant_id             uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     entity_id             uuid REFERENCES entities(id) ON DELETE RESTRICT,
     service_no            varchar(20) NOT NULL,                  -- human business key (golden)
@@ -838,7 +838,7 @@ CREATE TABLE employees (
     record_state          record_state NOT NULL DEFAULT 'ACTIVE',  -- PROVISIONAL/ACTIVE/ARCHIVED/PURGE_PENDING
     reporting_manager_id  uuid REFERENCES employees(id) ON DELETE SET NULL,  -- row-scope anchor
     previous_employee_id  uuid REFERENCES employees(id) ON DELETE SET NULL,  -- rehire link
-    primary_photo_id      uuid,                                   -- FK to G01 employee_photos (module schema)
+    primary_photo_id      uuid,                                   -- FK to PS01 employee_photos (module schema)
     profile_completeness_pct numeric(5,2) DEFAULT 0,              -- advisory
     data_quality_flag     varchar(16) DEFAULT 'CLEAN',            -- advisory; no pay gate
     separation_date       date,
@@ -870,9 +870,9 @@ CREATE INDEX ix_employees_status        ON employees(employment_status);
 CREATE INDEX ix_employees_record_state  ON employees(record_state);
 CREATE INDEX ix_employees_legacy_id     ON employees(legacy_id);
 
--- employee_dependents (G01-owned satellite; G03/G11 reference read-only — D5) ----------
+-- employee_dependents (PS01-owned satellite; PS03/PS11 reference read-only — D5) ----------
 CREATE TABLE employee_dependents (
-    id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == G01 dependent_id
+    id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == PS01 dependent_id
     tenant_id           uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     entity_id           uuid REFERENCES entities(id) ON DELETE RESTRICT,
     employee_id         uuid NOT NULL REFERENCES employees(id) ON DELETE RESTRICT,
@@ -907,7 +907,7 @@ CREATE TABLE workflows (
     id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id          uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     entity_id          uuid REFERENCES entities(id) ON DELETE RESTRICT,
-    workflow_code      text NOT NULL,                  -- e.g. 'WF-G12-CORRIGENDUM'
+    workflow_code      text NOT NULL,                  -- e.g. 'WF-PS12-CORRIGENDUM'
     version            integer NOT NULL DEFAULT 1,
     name               text NOT NULL,
     pattern            workflow_pattern NOT NULL DEFAULT 'SEQUENTIAL',
@@ -1285,37 +1285,37 @@ CREATE INDEX ix_consent_records_status   ON consent_records(consent_status);
 
 
 -- =====================================================================================
--- SECTION 7 — DOCUMENTS (G13/P13 owner) — core vault columns other modules FK to
+-- SECTION 7 — DOCUMENTS (PS13/P13 owner) — core vault columns other modules FK to
 -- =====================================================================================
--- Core columns only. The full G13 model (storage_objects, folders, retention_policies,
+-- Core columns only. The full PS13 model (storage_objects, folders, retention_policies,
 -- legal_holds, security_clearances, signatures, dlp_findings, audit anchors) lives in
--- 13-G13. Other modules attach via document_id and store only the reference.
+-- 13-PS13. Other modules attach via document_id and store only the reference.
 
 CREATE TABLE documents (
-    id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == G13 document_id
+    id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == PS13 document_id
     tenant_id              uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     entity_id              uuid REFERENCES entities(id) ON DELETE RESTRICT,
     doc_no                 varchar(40) NOT NULL,                  -- human key DOC/2026/0001234
     title                  varchar(255) NOT NULL,
     description            text,
-    document_type_id       uuid,                                  -- FK -> G13 document_types (module schema)
-    folder_id              uuid,                                  -- FK -> G13 folders (module schema)
+    document_type_id       uuid,                                  -- FK -> PS13 document_types (module schema)
+    folder_id              uuid,                                  -- FK -> PS13 folders (module schema)
     owner_employee_id      uuid REFERENCES employees(id) ON DELETE SET NULL,
     owning_org_unit_id     uuid REFERENCES org_units(id) ON DELETE RESTRICT,
     current_version_id     uuid,                                  -- FK -> document_versions (added Section 10)
     current_version_no     integer NOT NULL DEFAULT 1,
-    classification         classification_level NOT NULL DEFAULT 'INTERNAL',  -- gov EXTENSION
+    classification         classification_level NOT NULL DEFAULT 'INTERNAL',  -- enterprise EXTENSION
     security_domain        varchar(40) NOT NULL DEFAULT 'DEFAULT',            -- key/dedup boundary
     status                 document_status NOT NULL DEFAULT 'ACTIVE',
     link_count             integer NOT NULL DEFAULT 0,            -- 0 -> orphan candidate
     mime_type              varchar(120),
     size_bytes             bigint,
     content_hash           char(64),                             -- SHA-256 of current version
-    is_sealed              boolean NOT NULL DEFAULT false,        -- hidden from subject (gov)
-    is_worm                boolean NOT NULL DEFAULT false,        -- immutable statutory storage (gov)
+    is_sealed              boolean NOT NULL DEFAULT false,        -- hidden from subject (enterprise)
+    is_worm                boolean NOT NULL DEFAULT false,        -- immutable statutory storage (enterprise)
     is_record_declared     boolean NOT NULL DEFAULT false,
     legal_hold_count       integer NOT NULL DEFAULT 0,            -- >0 -> disposition blocked
-    retention_assignment_id uuid,                                 -- FK -> G13 retention (module schema)
+    retention_assignment_id uuid,                                 -- FK -> PS13 retention (module schema)
     disposition_due_date   date,
     anchor_confirmed       boolean NOT NULL DEFAULT false,
     source_channel         source_channel NOT NULL DEFAULT 'WEB_UPLOAD',
@@ -1339,11 +1339,11 @@ CREATE INDEX ix_documents_classification ON documents(classification);
 CREATE INDEX ix_documents_content_hash ON documents(security_domain, content_hash);  -- domain-scoped dedup
 
 CREATE TABLE document_versions (
-    id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == G13 version_id
+    id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- == PS13 version_id
     tenant_id              uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     document_id            uuid NOT NULL REFERENCES documents(id) ON DELETE RESTRICT,
     version_no             integer NOT NULL,                      -- 1-based, monotonic
-    storage_object_id      uuid,                                  -- FK -> G13 storage_objects (module schema)
+    storage_object_id      uuid,                                  -- FK -> PS13 storage_objects (module schema)
     mime_type              varchar(120),
     size_bytes             bigint,
     content_hash           char(64),                              -- SHA-256 of this version
@@ -1363,17 +1363,17 @@ CREATE INDEX ix_document_versions_storage  ON document_versions(storage_object_i
 
 
 -- =====================================================================================
--- SECTION 8 — SERVICE REGISTER LEDGER (G12 owner) — APPEND-ONLY, HASH-CHAINED
+-- SECTION 8 — SERVICE REGISTER LEDGER (PS12 owner) — APPEND-ONLY, HASH-CHAINED
 -- =====================================================================================
 -- Net-new statutory system-of-record (NOT a platform primitive). Built on the P05
 -- substrate. Core ledger columns only — the sub-ledgers (sr_status_events, sr_anchors,
--- sr_event_type, sr_corrections, sr_certified_extracts, ...) live in 12-G12. The
--- canonical writer set (G01/G04/G05/G06/G08/G09/G10/G11) posts via G12's ingestion
+-- sr_event_type, sr_corrections, sr_certified_extracts, ...) live in 12-PS12. The
+-- canonical writer set (PS01/PS04/PS05/PS06/PS08/PS09/PS10/PS11) posts via PS12's ingestion
 -- contract; no module mutates this table directly.
 --
 -- APPEND-ONLY: no UPDATE of content fields, no DELETE, no is_deleted, no updated_at.
 -- Status-bearing fields (entry_status, attestation_status, superseded_by_event_id) are
--- DERIVED PROJECTIONS materialised from sr_status_events (12-G12) in the same transaction;
+-- DERIVED PROJECTIONS materialised from sr_status_events (12-PS12) in the same transaction;
 -- entry_hash EXCLUDES them so status changes never break the content chain.
 
 CREATE TABLE service_register_events (
@@ -1381,9 +1381,9 @@ CREATE TABLE service_register_events (
     tenant_id               uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
     entity_id               uuid NOT NULL REFERENCES entities(id) ON DELETE RESTRICT,
     employee_id             uuid NOT NULL REFERENCES employees(id) ON DELETE RESTRICT,
-    service_no              varchar(32) NOT NULL,                  -- denormalised (golden in G01)
+    service_no              varchar(32) NOT NULL,                  -- denormalised (golden in PS01)
     sequence_no             bigint NOT NULL,                       -- monotonic per (tenant,employee)
-    event_type_code         varchar(48) NOT NULL,                  -- FK -> G12 sr_event_type (module schema)
+    event_type_code         varchar(48) NOT NULL,                  -- FK -> PS12 sr_event_type (module schema)
     event_category          sr_event_category NOT NULL,
     event_title             varchar(200) NOT NULL,
     event_description       text,
@@ -1392,7 +1392,7 @@ CREATE TABLE service_register_events (
     tsa_timestamp_token     bytea,                                 -- RFC 3161 token over entry_hash
     tsa_authority           varchar(120),                          -- TSA identity / policy OID
     fact_key                varchar(96),                           -- semantic per-fact correlation key
-    source_module           varchar(16) NOT NULL,                  -- G01..G14 / G12_MANUAL / G12_LEGACY
+    source_module           varchar(16) NOT NULL,                  -- PS01..PS14 / PS12_MANUAL / PS12_LEGACY
     source_reference_id     varchar(64),                           -- originating order/transaction id
     source_event_version    integer NOT NULL DEFAULT 1,
     reverses_event_id       uuid REFERENCES service_register_events(id) ON DELETE RESTRICT,
@@ -1412,10 +1412,10 @@ CREATE TABLE service_register_events (
     entry_hash              char(64) NOT NULL,                     -- SHA-256(content || prev_event_hash)
     hash_algorithm          varchar(16) NOT NULL DEFAULT 'SHA-256',
     ledger_version          integer NOT NULL DEFAULT 1,
-    document_ids            uuid[],                                -- supporting docs (G13)
-    ingestion_request_id    uuid,                                  -- FK -> G12 sr_ingestion_requests (module)
+    document_ids            uuid[],                                -- supporting docs (PS13)
+    ingestion_request_id    uuid,                                  -- FK -> PS12 sr_ingestion_requests (module)
     is_legacy               boolean NOT NULL DEFAULT false,
-    legacy_batch_id         uuid,                                  -- FK -> G12 sr_legacy_digitisation_batch
+    legacy_batch_id         uuid,                                  -- FK -> PS12 sr_legacy_digitisation_batch
     legacy_source_id        varchar(80),                           -- permanent migration traceability/dedup
     posted_by               varchar(64) NOT NULL,                  -- service principal or custodian
     created_at              timestamptz NOT NULL DEFAULT now(),    -- append timestamp; NO updated_at/is_deleted
@@ -1442,7 +1442,7 @@ CREATE INDEX ix_sr_events_entry_status ON service_register_events(entry_status);
 CREATE UNIQUE INDEX uq_sr_fact_key_qualifying
     ON service_register_events(tenant_id, employee_id, fact_key)
     WHERE fact_key IS NOT NULL AND qualifying_service_impact IN ('QUALIFYING','PARTIAL') AND entry_status = 'ACTIVE';
-COMMENT ON TABLE service_register_events IS 'G12 statutory SR ledger. Append-only, hash-chained per (tenant_id, employee_id). No UPDATE of content / no DELETE — enforce via DB grants + trigger in 12-G12.';
+COMMENT ON TABLE service_register_events IS 'PS12 statutory SR ledger. Append-only, hash-chained per (tenant_id, employee_id). No UPDATE of content / no DELETE — enforce via DB grants + trigger in 12-PS12.';
 
 
 -- =====================================================================================
@@ -1487,7 +1487,7 @@ CREATE INDEX ix_notifications_unread    ON notifications(recipient_user_id) WHER
 CREATE TABLE jobs (
     id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id          uuid NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
-    job_id             text NOT NULL,                   -- registered id, e.g. 'JOB-G12-ANCHOR'
+    job_id             text NOT NULL,                   -- registered id, e.g. 'JOB-PS12-ANCHOR'
     run_key            text NOT NULL,                   -- per-period idempotency key
     schedule_cron      text,
     status             job_run_status NOT NULL DEFAULT 'SCHEDULED',
@@ -1623,7 +1623,7 @@ ALTER TABLE documents
 -- ------------------------------------------------------------------------------------
 -- COMMENTED EXAMPLE — the canonical per-table tenant-isolation policy template that the
 -- DO-block below applies to every tenant-scoped business table. Module-schema authors
--- (01-G01 .. 14-G14) MUST apply this same template to every new tenant-scoped table:
+-- (01-PS01 .. 14-PS14) MUST apply this same template to every new tenant-scoped table:
 --
 --   ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;
 --   ALTER TABLE <table> FORCE ROW LEVEL SECURITY;
@@ -1700,8 +1700,8 @@ SET app.current_tenant_id = '11111111-1111-1111-1111-111111111111';
 -- tenants -----------------------------------------------------------------------------
 INSERT INTO tenants (id, tenant_code, legal_name, display_name, tenancy_model, status, segment_code, default_locale, default_timezone, provisioned_at)
 VALUES
- ('11111111-1111-1111-1111-111111111111','GOV-STATE','State Government HRMS','State Government','GROUP_COMPANY','ACTIVE','GOVERNMENT','en-IN','Asia/Kolkata', now()),
- ('11111111-1111-1111-1111-111111111112','GOV-DEMO','Demo Directorate Sandbox','Demo Sandbox','STANDALONE','PROVISIONING','GOVERNMENT','en-IN','Asia/Kolkata', now());
+ ('11111111-1111-1111-1111-111111111111','PS-STATE','PrimeSoft HRMS','PrimeSoft','GROUP_COMPANY','ACTIVE','ENTERPRISE','en-IN','Asia/Kolkata', now()),
+ ('11111111-1111-1111-1111-111111111112','PS-DEMO','Demo Directorate Sandbox','Demo Sandbox','STANDALONE','PROVISIONING','ENTERPRISE','en-IN','Asia/Kolkata', now());
 
 -- entities ----------------------------------------------------------------------------
 INSERT INTO entities (id, tenant_id, entity_code, legal_name, display_name, entity_type, status)
@@ -1728,7 +1728,7 @@ VALUES ('66666666-6666-6666-6666-666666666601','11111111-1111-1111-1111-11111111
 INSERT INTO designations (id, tenant_id, designation_code, name, cadre_id, grade_id)
 VALUES ('77777777-7777-7777-7777-777777777701','11111111-1111-1111-1111-111111111111','DC','Deputy Commissioner','44444444-4444-4444-4444-444444444401','55555555-5555-5555-5555-555555555501');
 
--- roles (RBAC v1.7 + gov additions) ----------------------------------------------------
+-- roles (RBAC v1.7 + enterprise additions) ----------------------------------------------------
 INSERT INTO roles (id, tenant_id, role_code, name, is_platform_role, is_system_seeded, scope_default)
 VALUES
  ('88888888-8888-8888-8888-888888888801','11111111-1111-1111-1111-111111111111','org_admin','Organisation Admin', true, true, 'ENTITY'),
@@ -1738,8 +1738,8 @@ VALUES
 -- employees (golden record) ------------------------------------------------------------
 INSERT INTO employees (id, tenant_id, entity_id, service_no, first_name, last_name, display_name, dob, gender, category, date_of_joining, cadre_id, designation_id, grade_id, pay_scale_id, org_unit_id, employment_type, employment_status, record_state)
 VALUES
- ('99999999-9999-9999-9999-999999999901','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','GOV-100245','Anjali','Rao','Anjali Rao','1985-03-12','FEMALE','GEN','2008-07-14','44444444-4444-4444-4444-444444444401','77777777-7777-7777-7777-777777777701','55555555-5555-5555-5555-555555555501','66666666-6666-6666-6666-666666666601','33333333-3333-3333-3333-333333333301','PERMANENT','ACTIVE','ACTIVE'),
- ('99999999-9999-9999-9999-999999999902','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','GOV-088120','Mohan','Kumar','Mohan Kumar','1972-11-30','MALE','OBC','1996-06-01','44444444-4444-4444-4444-444444444401','77777777-7777-7777-7777-777777777701','55555555-5555-5555-5555-555555555501','66666666-6666-6666-6666-666666666601','33333333-3333-3333-3333-333333333302','PERMANENT','ACTIVE','ACTIVE');
+ ('99999999-9999-9999-9999-999999999901','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','PS-100245','Anjali','Rao','Anjali Rao','1985-03-12','FEMALE','GEN','2008-07-14','44444444-4444-4444-4444-444444444401','77777777-7777-7777-7777-777777777701','55555555-5555-5555-5555-555555555501','66666666-6666-6666-6666-666666666601','33333333-3333-3333-3333-333333333301','PERMANENT','ACTIVE','ACTIVE'),
+ ('99999999-9999-9999-9999-999999999902','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','PS-088120','Mohan','Kumar','Mohan Kumar','1972-11-30','MALE','OBC','1996-06-01','44444444-4444-4444-4444-444444444401','77777777-7777-7777-7777-777777777701','55555555-5555-5555-5555-555555555501','66666666-6666-6666-6666-666666666601','33333333-3333-3333-3333-333333333302','PERMANENT','ACTIVE','ACTIVE');
 
 -- service_register_events (append-only, hash-chained per employee) ----------------------
 -- Genesis entry (sequence_no = 1) uses prev_event_hash = literal 'GENESIS' padded to 64 chars.
@@ -1748,14 +1748,14 @@ INSERT INTO service_register_events
   event_date, source_module, source_reference_id, source_event_version, payload, qualifying_service_impact,
   confidence_status, entry_status, attestation_status, chain_origin, prev_event_hash, entry_hash, posted_by, created_by)
 VALUES
- ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','99999999-9999-9999-9999-999999999901','GOV-100245',1,'APPOINTMENT','APPOINTMENT','Initial appointment as Deputy Commissioner',
-  '2008-07-14','G01','G01-APPT-100245',1,'{"order_no":"REV/APPT/2008/4421","designation":"Deputy Commissioner"}','QUALIFYING',
+ ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','99999999-9999-9999-9999-999999999901','PS-100245',1,'APPOINTMENT','APPOINTMENT','Initial appointment as Deputy Commissioner',
+  '2008-07-14','PS01','PS01-APPT-100245',1,'{"order_no":"REV/APPT/2008/4421","designation":"Deputy Commissioner"}','QUALIFYING',
   'VERIFIED','ACTIVE','EMPLOYEE_VERIFIED','GENESIS','GENESIS000000000000000000000000000000000000000000000000000000000',
-  '0a1b2c3d4e5f60718293a4b5c6d7e8f900112233445566778899aabbccddeeff','svc:G01','svc:G01'),
- ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','99999999-9999-9999-9999-999999999901','GOV-100245',2,'PROMOTION','PROMOTION','Promotion w.e.f. 2019-06-01',
-  '2019-06-01','G06','G06-PROMO-77120',1,'{"order_no":"REV/PROMO/2019/881","from":"L9","to":"L10"}','QUALIFYING',
+  '0a1b2c3d4e5f60718293a4b5c6d7e8f900112233445566778899aabbccddeeff','svc:PS01','svc:PS01'),
+ ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02','11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222201','99999999-9999-9999-9999-999999999901','PS-100245',2,'PROMOTION','PROMOTION','Promotion w.e.f. 2019-06-01',
+  '2019-06-01','PS06','PS06-PROMO-77120',1,'{"order_no":"REV/PROMO/2019/881","from":"L9","to":"L10"}','QUALIFYING',
   'VERIFIED','ACTIVE','ATTESTED','GENESIS','0a1b2c3d4e5f60718293a4b5c6d7e8f900112233445566778899aabbccddeeff',
-  '1f2e3d4c5b6a70819f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a3928','svc:G06','svc:G06');
+  '1f2e3d4c5b6a70819f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a3928','svc:PS06','svc:PS06');
 
 -- consent_records (DPDPA) -------------------------------------------------------------
 INSERT INTO consent_records (id, tenant_id, entity_id, employee_id, purpose_code, consent_status, legal_basis, granted_at)

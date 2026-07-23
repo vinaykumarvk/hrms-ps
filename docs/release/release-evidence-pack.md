@@ -6,7 +6,7 @@ Marker: `REQUIREMENT_TRACEABILITY`
 
 | Requirement | Evidence | Owner | Date |
 |---|---|---|---|
-| G14 read-only dashboards and marts | `apps/api/src/modules/g14/analyticsService.ts`, `apps/api/test/ph10-g14-analytics.test.cjs` | analytics-lead | 2026-07-02 |
+| PS14 read-only dashboards and marts | `apps/api/src/modules/ps14/analyticsService.ts`, `apps/api/test/ph10-ps14-analytics.test.cjs` | analytics-lead | 2026-07-02 |
 | Role-scoped analytics | `P02_SCOPE_FILTER`, out-of-entity scope-leak test | security-lead | 2026-07-02 |
 | PII suppression | `PII_SUPPRESSION` dashboard/drill-through tests | privacy-lead | 2026-07-02 |
 | Mart idempotency | `MART_REFRESH_IDEMPOTENT` test | analytics-lead | 2026-07-02 |

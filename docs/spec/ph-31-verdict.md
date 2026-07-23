@@ -20,18 +20,18 @@ route-exposure pass. Built by hand — subagents credit-exhausted until 2026-07-
 
 | Module | Route added | Backing service |
 |---|---|---|
-| **G02** | `POST /api/v1/change-requests/{id}/retro-impact:fan-out` | `retroImpact` (PH-25B) |
-| **G05** | `POST /api/v1/transfers/joining-sequence` | `joiningSequence` (PH-18C) |
-| **G07** | `POST /api/v1/training/vendor-empanelments` | `vendorEmpanelment` (PH-20A) |
+| **PS02** | `POST /api/v1/change-requests/{id}/retro-impact:fan-out` | `retroImpact` (PH-25B) |
+| **PS05** | `POST /api/v1/transfers/joining-sequence` | `joiningSequence` (PH-18C) |
+| **PS07** | `POST /api/v1/training/vendor-empanelments` | `vendorEmpanelment` (PH-20A) |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
-- **Route exposure still to wire:** G02 changeEsignStepUp/changeRequestTemplate, G03 punchAnomaly, G06
-  careerSuccession/correctionCascade, G07 lmsIntegration, G08 feedback360, G11 pensionTreasury grievances/
-  objections, G12 timestampAuthority/offlineVerification, G13 certifiedCopy/ocrSearch, G14 predictive fairness.
-- **Remaining UI surfaces:** G01 privacy/DPDP console, G06 sealed-cover UI, G14 embedded BI/mobile.
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A matching depth; G09 POSH conciliation
-  depth; G04 CI port-conformance gate.
+- **Route exposure still to wire:** PS02 changeEsignStepUp/changeRequestTemplate, PS03 punchAnomaly, PS06
+  careerSuccession/correctionCascade, PS07 lmsIntegration, PS08 feedback360, PS11 pensionTreasury grievances/
+  objections, PS12 timestampAuthority/offlineVerification, PS13 certifiedCopy/ocrSearch, PS14 predictive fairness.
+- **Remaining UI surfaces:** PS01 privacy/DPDP console, PS06 sealed-cover UI, PS14 embedded BI/mobile.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A matching depth; PS09 POSH conciliation
+  depth; PS04 CI port-conformance gate.
 
 **Contract-op coverage caveat:** implemented routes still cover only a fraction of the **1,306** OpenAPI
 operations; the route-exposure workstream moves this number tranche by tranche.

@@ -23,7 +23,7 @@ Criminal record
 Discrepancy
 Document
 Education
-Govt ID match
+Enterprise ID match
 Identity (Aadhaar / PAN)
 In progress
 Insufficient

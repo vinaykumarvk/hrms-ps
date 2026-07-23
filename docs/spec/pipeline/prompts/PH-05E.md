@@ -20,7 +20,7 @@
     - HONESTY IS THE DELIVERABLE. Run `bash docs/spec/pipeline/checks/ph-05e.sh` and copy ITS
       `state_coverage: N/14` count into the verdict verbatim; list per-module which state branches exist
       and which are missing. Do not claim a state the oracle did not find.
-    - The verdict must contain: (1) a per-module row for G01..G14 (states implemented, API-backed or not,
+    - The verdict must contain: (1) a per-module row for PS01..PS14 (states implemented, API-backed or not,
       guarded or not), (2) the `state_coverage: N/14` line matching the oracle, (3) workflow inbox status,
       (4) an accessibility section reporting real keyboard/focus/contrast findings (name what was checked,
       not aspirations), (5) named remaining gaps (read-only surfaces, missing forms), and (6) a
@@ -35,7 +35,7 @@
   work_loops:
     - name: close canonical state-branch gaps in shipped views
       max_iterations: 6
-      repeat_until: every module surface under apps/web/src/modules/g01..g14 and the workflow inbox
+      repeat_until: every module surface under apps/web/src/modules/ps01..ps14 and the workflow inbox
         implements loading, error, and empty branches (canonical OperationalState kinds), and
         ph05-ui-conformance.test.cjs asserts them.
       steps: [run the oracle to list missing branches, add branches per module view, extend the
@@ -47,7 +47,7 @@
       steps: [run all four commands, fix regressions inside PH-05 scope, capture output]
     - name: write the honest review packet
       max_iterations: 4
-      repeat_until: docs/spec/ph-05-verdict.md (>=1500 bytes) contains the per-module table for G01..G14,
+      repeat_until: docs/spec/ph-05-verdict.md (>=1500 bytes) contains the per-module table for PS01..PS14,
         the oracle's `state_coverage: N/14` line, the accessibility findings, the named remaining gaps,
         and the gate recommendation — and `bash docs/spec/pipeline/checks/ph-05e.sh` prints GREEN.
       steps: [capture oracle stdout, draft table + gaps from it and the audit, record accessibility

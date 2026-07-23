@@ -6,7 +6,7 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-W14=apps/web/src/modules/g14
+W14=apps/web/src/modules/ps14
 WAPI=apps/web/src/api
 WT=apps/web/test
 V=docs/spec/ph-10-verdict.md
@@ -16,9 +16,9 @@ echo "== PH-10E exit-criteria (analytics UI + release conformance; human gate) =
 [ -d node_modules ] || red "node_modules absent — toolchain oracle cannot run; refusing GREEN without it"
 
 # 1) anti-skeleton, fail-closed: the audited static marker card must be gone
-if grep -rqE "evidence-line|G14_READ_ONLY" "$W14" 2>/dev/null; then
-  red "static marker card (evidence-line/G14_READ_ONLY) still present in g14 web module — UI not rebuilt"
-else grn "static marker card removed from g14 web module"; fi
+if grep -rqE "evidence-line|PS14_READ_ONLY" "$W14" 2>/dev/null; then
+  red "static marker card (evidence-line/PS14_READ_ONLY) still present in ps14 web module — UI not rebuilt"
+else grn "static marker card removed from ps14 web module"; fi
 
 # 2) live-bound dashboard behavior in web source
 for spec in \
@@ -43,9 +43,9 @@ do must "$spec" "$WT"; done
 
 # 4) honest verdict delta (content-checked)
 must "verdict references the audit baseline::brd-coverage-audit-20260702" "$V"
-must "verdict covers G12::G12" "$V"
-must "verdict covers G13::G13" "$V"
-must "verdict covers G14::G14" "$V"
+must "verdict covers PS12::PS12" "$V"
+must "verdict covers PS13::PS13" "$V"
+must "verdict covers PS14::PS14" "$V"
 must "verdict names remaining gaps (no 100% claim)::NOT_FOUND|remaining|still open|open gap" "$V"
 
 # 5) full suites — api AND web, RED on any failure

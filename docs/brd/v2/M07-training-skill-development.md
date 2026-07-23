@@ -1,7 +1,7 @@
 # Training and Skill Development Management — HRMS Module BRD (v2.0)
 
 **Module code:** M07-TSD
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — government/public-sector HCM, hosted at CGG Data Centre
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — enterprise/public-sector HCM, hosted at CGG Data Centre
 **Document version:** v2.0 (revised after adversarial council review of v1.0)
 **Status:** Approved for build, conditional on v2 amendments (parallel-agent ready)
 **Supersedes:** v1.0 (`/Users/n15318/hrms/docs/brd/v1/M07-training-skill-development.md`)
@@ -793,7 +793,7 @@ Gap Contract v1 (read view) projected from skill_gap_analyses+items —> consume
 | learning_record_store_id | code | connector_type | is_primary | endpoint_url | supported_standards | status |
 |---|---|---|---|---|---|---|
 | lrs-01 | PRIMARY-LRS | LRS_XAPI | true | https://lrs.internal/xapi | XAPI | ACTIVE |
-| lrs-02 | LEGACY-LMS | LMS_REPORTING_API | false | https://lms.gov/api | SCORM_12,SCORM_2004 | ACTIVE |
+| lrs-02 | LEGACY-LMS | LMS_REPORTING_API | false | https://lms.enterprise/api | SCORM_12,SCORM_2004 | ACTIVE |
 
 ---
 

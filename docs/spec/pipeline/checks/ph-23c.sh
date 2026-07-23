@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-23C oracle: G01 FR-EPM-025 phonetic + transliteration search — a Soundex-style phonetic index
+# PH-23C oracle: PS01 FR-EPM-025 phonetic + transliteration search — a Soundex-style phonetic index
 # so near-homophone names match; a phonetic=true search returns homophone hits.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g01 apps/api/src/routes/g01.routes.ts"; T=apps/api/test
-echo "== PH-23C exit-criteria (G01 phonetic / transliteration search) =="
+S="apps/api/src/modules/ps01 apps/api/src/routes/ps01.routes.ts"; T=apps/api/test
+echo "== PH-23C exit-criteria (PS01 phonetic / transliteration search) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "phonetic search::phonetic|Phonetic" \

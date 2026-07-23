@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-44A oracle: raise measured contract coverage by exposing the G13 checkout-lock lifecycle + rescan +
+# PH-44A oracle: raise measured contract coverage by exposing the PS13 checkout-lock lifecycle + rescan +
 # access-audit/scan-result/module-ref reads (real, service-tested backing) as kernel routes. Checks routes
 # registered + dispatched, and the ratchet advanced to >= 443 / 33.5%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g13.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-44A exit-criteria (G13 checkout/read route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps13.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-44A exit-criteria (PS13 checkout/read route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in checkout releaseCheckout getCheckoutLock rescan listAccessAudit listScanResults listByModuleRef; do
   have "$R" "$m" "route wires backing method: $m"

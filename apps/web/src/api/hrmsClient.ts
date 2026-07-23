@@ -61,8 +61,8 @@ export interface PageQuery {
   cursor?: string;
 }
 
-/** G13 DPDP data-subject request row (PH-15E engine; PH-27A console). */
-/** G01 data-principal rights request row (DPDP self-service; PH-34C privacy console). */
+/** PS13 DPDP data-subject request row (PH-15E engine; PH-27A console). */
+/** PS01 data-principal rights request row (DPDP self-service; PH-34C privacy console). */
 export interface MyRightsRequest {
   id: string;
   rightType: "ACCESS" | "CORRECTION" | "ERASURE" | "PORTABILITY";
@@ -75,7 +75,7 @@ export interface RaiseRightsRequestInput {
   detail: string;
 }
 
-/** G06 sealed-cover case row (PH-08C engine; PH-34B review UI). */
+/** PS06 sealed-cover case row (PH-08C engine; PH-34B review UI). */
 export interface SealedCoverCase {
   id: string;
   employeeId: string;
@@ -87,7 +87,7 @@ export interface SealedCoverReleaseInput {
   reason: string;
 }
 
-/** G14 embedded-BI KPI tile (PH-10D analytics engine; PH-34A dashboard). */
+/** PS14 embedded-BI KPI tile (PH-10D analytics engine; PH-34A dashboard). */
 export interface BiKpiTile {
   kpiCode: string;
   label: string;
@@ -95,7 +95,7 @@ export interface BiKpiTile {
   trend: "UP" | "DOWN" | "FLAT";
 }
 
-/** G09 case evidence-vault row (WORM + legal-hold flags) for the evidence listing (PH-27C). */
+/** PS09 case evidence-vault row (WORM + legal-hold flags) for the evidence listing (PH-27C). */
 export interface CaseEvidenceItem {
   documentId: string;
   artefactType: string;
@@ -104,7 +104,7 @@ export interface CaseEvidenceItem {
   isServed: boolean;
 }
 
-/** G05 counselling session + a vacancy choice (PH-16D engine; PH-27B console). */
+/** PS05 counselling session + a vacancy choice (PH-16D engine; PH-27B console). */
 export interface CounsellingSessionView {
   id: string;
   currentTurnEmployeeId: string | null;
@@ -169,7 +169,7 @@ export interface EmployeeProfileView {
   rowVersion: number;
 }
 
-/** One G12 ledger entry from GET /api/v1/sr/employees/{id}/timeline (append-only, hash-chained). */
+/** One PS12 ledger entry from GET /api/v1/sr/employees/{id}/timeline (append-only, hash-chained). */
 export interface SrTimelineEntry {
   id: string;
   sequenceNo: number;
@@ -199,9 +199,9 @@ export interface LeaveSliceSummary {
   resolver: "REPORTING_CHAIN";
   action: "DELEGATE" | "APPROVE";
   balanceAvailable: number;
-  g04OutboxStatus: "READY" | "POSTED";
+  ps04OutboxStatus: "READY" | "POSTED";
   srEventType: "LEAVE_APPROVED";
-  payrollSignalStatus?: "READY_FOR_G10";
+  payrollSignalStatus?: "READY_FOR_PS10";
   payrollSignalsReady?: number;
 }
 
@@ -210,7 +210,7 @@ export interface PersonalDetailsSliceSummary {
   fieldCode: "displayName" | "pan" | "aadhaarMasked";
   status: "IN_REVIEW" | "APPROVED" | "COMMITTED" | "REVERSED";
   sensitivity: "LOW" | "HIGH";
-  ownerModule: "G01";
+  ownerModule: "PS01";
   documentCount: number;
 }
 
@@ -219,7 +219,7 @@ export interface LeaveSrRelaySliceSummary {
   posted: number;
   deadLettered: number;
   discarded: number;
-  relayOwner: "G04";
+  relayOwner: "PS04";
 }
 
 export interface ClearanceSummary {
@@ -252,7 +252,7 @@ export interface TrainingSliceSummary {
   approved: number;
   completed: number;
   srPosted: number;
-  workflowCode: "WF-G07-NOMINATION";
+  workflowCode: "WF-PS07-NOMINATION";
   srEventType: "TRAINING_CERTIFICATION_POSTED";
 }
 
@@ -260,10 +260,10 @@ export interface AparSliceSummary {
   forms: number;
   posted: number;
   sealedCover: number;
-  g06FeedSuppressed: number;
+  ps06FeedSuppressed: number;
   srEventType: "APAR_FINAL_GRADE";
   sealedMarker: "SEALED_COVER";
-  feedMarker: "G08_G06_FEED_SUPPRESSED";
+  feedMarker: "PS08_PS06_FEED_SUPPRESSED";
 }
 
 export interface DisciplinarySliceSummary {
@@ -271,7 +271,7 @@ export interface DisciplinarySliceSummary {
   penalties: number;
   confidential: number;
   impactSignals: number;
-  competenceMarker: "G09_AUTHORITY_COMPETENCE";
+  competenceMarker: "PS09_AUTHORITY_COMPETENCE";
   penaltyEventType: "MAJOR_PENALTY";
   appealMarker: "APPEAL_DECIDED";
 }
@@ -299,12 +299,12 @@ export interface PensionSliceSummary {
   qualifyingServiceMarker: "QUALIFYING_SERVICE_LOCKED";
   calculationMarker: "PENSION_CALC_TRACE";
   ppoMarker: "PPO_ISSUED";
-  srMarker: "G11_SR_POSTED";
+  srMarker: "PS11_SR_POSTED";
 }
 
-// ---- PH-09E: G10 payroll run lifecycle + payslip projection ----
+// ---- PH-09E: PS10 payroll run lifecycle + payslip projection ----
 
-/** g10_payroll_runs status machine the run console mirrors (invalid verbs stay hidden). */
+/** ps10_payroll_runs status machine the run console mirrors (invalid verbs stay hidden). */
 export type PayrollRunStatus = "OPEN" | "INPUT_LOCKED" | "COMPUTED" | "RECONCILED" | "APPROVED" | "LOCKED" | "DISBURSED" | "CLOSED";
 
 /** Lifecycle verbs on POST /api/v1/payroll/runs/{id}:{verb} (PH-09 routes). */
@@ -336,7 +336,7 @@ export interface PayrollRunLineView {
   trace: PayslipComponentLine[];
 }
 
-/** The payroll run as the g10 lifecycle routes return it (201 create, 202 verbs). */
+/** The payroll run as the ps10 lifecycle routes return it (201 create, 202 verbs). */
 export interface PayrollRunView {
   id: string;
   period: string;
@@ -356,12 +356,12 @@ export interface PayrollRunView {
   };
 }
 
-/** 201/202 body of the g10 run routes. */
+/** 201/202 body of the ps10 run routes. */
 export interface PayrollRunActionResult {
   payrollRun: PayrollRunView;
 }
 
-/** Request body for POST /api/v1/payroll/salary-structures (g10.createSalaryStructure). */
+/** Request body for POST /api/v1/payroll/salary-structures (ps10.createSalaryStructure). */
 export interface SalaryStructureCreateInput {
   employeeId: string;
   effectiveFrom: string;
@@ -384,7 +384,7 @@ export interface SalaryStructureCreateResult {
   };
 }
 
-// ---- PH-09E: G11 pension case lifecycle + benefit estimator ----
+// ---- PH-09E: PS11 pension case lifecycle + benefit estimator ----
 
 export type PensionScheme = "OPS" | "NPS" | "UPS";
 export type PensionCaseStatus =
@@ -398,7 +398,7 @@ export type PensionCaseStatus =
   | "CLOSED"
   | "ON_HOLD";
 
-/** NPS benefit event branch for the estimator (FR-G11-05 AC4/AC4a). */
+/** NPS benefit event branch for the estimator (FR-PS11-05 AC4/AC4a). */
 export type PensionNpsEvent = "SUPERANNUATION" | "DEATH_IN_SERVICE" | "INVALIDATION";
 
 /** The scheme-branched calculation the estimator round-trips — figures are SERVER-computed only. */
@@ -416,7 +416,7 @@ export interface PensionCalculationView {
   };
 }
 
-/** The pension case as the g11 routes return it. */
+/** The pension case as the ps11 routes return it. */
 export interface PensionCaseView {
   id: string;
   caseNo: string;
@@ -434,7 +434,7 @@ export interface PensionCaseView {
   calculation?: PensionCalculationView;
 }
 
-/** Request body for POST /api/v1/pension/cases (g11.createCase). */
+/** Request body for POST /api/v1/pension/cases (ps11.createCase). */
 export interface PensionCaseCreateInput {
   employeeId: string;
   separationDate: string;
@@ -460,12 +460,12 @@ export interface PensionEstimateInput {
   npsEvent?: PensionNpsEvent;
 }
 
-/** 201/202 body of the g11 case routes. */
+/** 201/202 body of the ps11 case routes. */
 export interface PensionCaseActionResult {
   pensionCase: PensionCaseView;
 }
 
-// ---- PH-10E: G14 dashboard bound to the PH-10D analytics engine ----
+// ---- PH-10E: PS14 dashboard bound to the PH-10D analytics engine ----
 
 /** One governed E03 kpi_definitions row as GET /api/v1/analytics/kpis returns it. */
 export interface AnalyticsKpiDefinitionView {
@@ -493,7 +493,7 @@ export interface AnalyticsAggregateCell {
   key: string;
   value: number | null;
   suppressed: boolean;
-  suppressionReason?: "ERR-G14-SMALL-CELL" | "ERR-G14-COMP-SUPPRESS";
+  suppressionReason?: "ERR-PS14-SMALL-CELL" | "ERR-PS14-COMP-SUPPRESS";
 }
 
 /** GET /api/v1/analytics/aggregate result with suppression applied server-side. */
@@ -525,7 +525,7 @@ export interface AnalyticsSliceSummary {
   cards: number;
   sourceModules: number;
   martRefreshes: number;
-  readOnlyMarker: "G14_READ_ONLY";
+  readOnlyMarker: "PS14_READ_ONLY";
   martMarker: "MART_REFRESH_IDEMPOTENT";
   scopeMarker: "P02_SCOPE_FILTER";
   drillMarker: "DRILL_THROUGH_AUTHZ";
@@ -547,7 +547,7 @@ export interface EmployeeContactRecord {
   rowVersion: number;
 }
 
-/** Request body for POST /api/v1/employees/{id}/contacts (g01.addEmployeeContact). */
+/** Request body for POST /api/v1/employees/{id}/contacts (ps01.addEmployeeContact). */
 export interface EmployeeContactAddInput {
   contactType: EmployeeContactRecord["contactType"];
   contactValue: string;
@@ -576,7 +576,7 @@ export interface EmployeeDependentRecord {
   nationalIdMasked?: string;
 }
 
-/** Request body for POST /api/v1/employees/{id}/dependents (g01.addEmployeeDependent). */
+/** Request body for POST /api/v1/employees/{id}/dependents (ps01.addEmployeeDependent). */
 export interface EmployeeDependentAddInput {
   fullName: string;
   relationship: EmployeeDependentRecord["relationship"];
@@ -590,7 +590,7 @@ export interface EmployeeDependentAddResult {
   dependent: EmployeeDependentRecord;
 }
 
-/** One row of GET /api/v1/personal-details/change-requests as the G02 routes project it. */
+/** One row of GET /api/v1/personal-details/change-requests as the PS02 routes project it. */
 export interface PersonalDetailChangeRecord {
   id: string;
   requestNo: string;
@@ -605,7 +605,7 @@ export interface PersonalDetailChangeRecord {
   documentIds: string[];
 }
 
-/** Request body for POST /api/v1/personal-details/change-requests (g02.createPersonalDetailChangeRequest). */
+/** Request body for POST /api/v1/personal-details/change-requests (ps02.createPersonalDetailChangeRequest). */
 export interface PersonalDetailChangeCreateInput {
   employeeId: string;
   fieldCode: PersonalDetailChangeRecord["fieldCode"];
@@ -622,13 +622,13 @@ export interface PersonalDetailChangeCreateResult {
 /** Approver verbs on POST /api/v1/personal-details/change-requests/{id}:{verb} (PH-07C lifecycle). */
 export type PersonalDetailDecisionVerb = "approve" | "reject" | "send-back";
 
-/** 202 body of the G02 approve / reject / send-back decision routes. */
+/** 202 body of the PS02 approve / reject / send-back decision routes. */
 export interface PersonalDetailDecisionResult {
   request: PersonalDetailChangeRecord;
 }
 
 /**
- * One field row of GET /api/v1/change-requests/{id}/diff (FR-G02-005). When `masked` is true the
+ * One field row of GET /api/v1/change-requests/{id}/diff (FR-PS02-005). When `masked` is true the
  * API has already replaced both values with "[HIDDEN]" per P02 field grants; the UI renders the
  * masked values exactly as returned and never reconstructs them.
  */
@@ -650,7 +650,7 @@ export interface ChangeRequestDiffResult {
   fields: ChangeRequestFieldDiff[];
 }
 
-/** `balance` object of GET /api/v1/atl/leave-balances (g03.getLeaveBalance). */
+/** `balance` object of GET /api/v1/atl/leave-balances (ps03.getLeaveBalance). */
 export interface LeaveBalanceView {
   employeeId: string;
   leaveTypeId: string;
@@ -661,7 +661,7 @@ export interface LeaveBalanceView {
   availableBalance: number;
 }
 
-/** One row of GET /api/v1/atl/leave-applications as the G03 routes project it to the web layer. */
+/** One row of GET /api/v1/atl/leave-applications as the PS03 routes project it to the web layer. */
 export interface LeaveApplicationRecord {
   id: string;
   applicationNo: string;
@@ -674,7 +674,7 @@ export interface LeaveApplicationRecord {
   resolverType: "REPORTING_CHAIN";
 }
 
-/** Request body for POST /api/v1/atl/leave-applications (g03.submitLeaveApplication). */
+/** Request body for POST /api/v1/atl/leave-applications (ps03.submitLeaveApplication). */
 export interface LeaveApplicationSubmitInput {
   employeeId: string;
   leaveTypeId: string;
@@ -689,7 +689,7 @@ export interface LeaveApplicationSubmitResult {
   balance: { availableBalance: number };
 }
 
-/** Approver verbs supported by the G03 leave-apply/inbox demo UI on POST .../{id}/decision. */
+/** Approver verbs supported by the PS03 leave-apply/inbox demo UI on POST .../{id}/decision. */
 export type LeaveDecisionVerb = "APPROVE" | "REJECT";
 
 /** 202 body of POST /api/v1/atl/leave-applications/{id}/decision for APPROVE/REJECT. */
@@ -697,7 +697,7 @@ export interface LeaveDecisionResult {
   application: LeaveApplicationRecord;
 }
 
-/** One row of GET /api/v1/atl/leave-types (g03.listLeaveTypes) the apply form offers as options. */
+/** One row of GET /api/v1/atl/leave-types (ps03.listLeaveTypes) the apply form offers as options. */
 export interface LeaveTypeOption {
   leaveTypeId: string;
   name: string;
@@ -709,7 +709,7 @@ interface LeaveOutboxApiSummary {
 }
 
 interface PayrollSignalApiSummary {
-  status: "READY_FOR_G10";
+  status: "READY_FOR_PS10";
 }
 
 interface PersonalDetailsApiSummary {
@@ -729,7 +729,7 @@ interface LeaveSrReconciliationApiSummary {
   };
 }
 
-/** One row of GET /api/v1/transfers/orders as the G05 routes project it to the web layer. */
+/** One row of GET /api/v1/transfers/orders as the PS05 routes project it to the web layer. */
 export interface TransferOrderRecord {
   id: string;
   orderNo: string;
@@ -745,7 +745,7 @@ export interface TransferOrderRecord {
   joiningDocumentId?: string;
 }
 
-/** Request body for POST /api/v1/transfers/orders (g05.initiateTransferOrder). */
+/** Request body for POST /api/v1/transfers/orders (ps05.initiateTransferOrder). */
 export interface TransferInitiateInput {
   employeeId: string;
   fromOrgUnitId: string;
@@ -761,7 +761,7 @@ export interface TransferInitiateResult {
 }
 
 /**
- * One G09 disciplinary case as the g09 routes project it. The API exposes no
+ * One PS09 disciplinary case as the ps09 routes project it. The API exposes no
  * case-list read route (PH-08B..E scope), so the workbench tracks the cases
  * returned by its own POSTs; `stage` carries the due-process position.
  */
@@ -776,7 +776,7 @@ export interface DisciplinaryCaseView {
   chargeMemoDocumentId?: string;
 }
 
-/** Request body for POST /api/v1/disciplinary/cases (g09.openCase — complaint/case intake). */
+/** Request body for POST /api/v1/disciplinary/cases (ps09.openCase — complaint/case intake). */
 export interface DisciplinaryCaseOpenInput {
   chargedEmployeeId: string;
   disciplinaryAuthorityId: string;
@@ -784,12 +784,12 @@ export interface DisciplinaryCaseOpenInput {
   confidential?: boolean;
 }
 
-/** Body of the g09 case routes: 201 on open, 202 on :charge. */
+/** Body of the ps09 case routes: 201 on open, 202 on :charge. */
 export interface DisciplinaryCaseResult {
   disciplinaryCase: DisciplinaryCaseView;
 }
 
-/** Request body for POST /api/v1/disciplinary/cases/{id}:charge (g09.serveChargeMemo). */
+/** Request body for POST /api/v1/disciplinary/cases/{id}:charge (ps09.serveChargeMemo). */
 export interface ChargeMemoInput {
   articles: string[];
   servedOn: string;
@@ -840,7 +840,7 @@ export interface DpcHoldResult {
   promotionCase: PromotionCaseView;
 }
 
-/** The G08 APAR form as the tier-action routes return it. */
+/** The PS08 APAR form as the tier-action routes return it. */
 export interface AparFormView {
   id: string;
   formNo: string;
@@ -862,30 +862,30 @@ export interface AparFormView {
   sealedCover: boolean;
 }
 
-/** Request body for POST /api/v1/apar/forms/{id}:report (g08.recordReporting — RO tier). */
+/** Request body for POST /api/v1/apar/forms/{id}:report (ps08.recordReporting — RO tier). */
 export interface AparReportingInput {
   grade: string;
   narrative: string;
 }
 
-/** Request body for POST /api/v1/apar/forms/{id}:review (g08.recordReview — RvO tier). */
+/** Request body for POST /api/v1/apar/forms/{id}:review (ps08.recordReview — RvO tier). */
 export interface AparReviewInput {
   concur: boolean;
   remarks: string;
 }
 
-/** 202 body of the g08 tier-action routes (:submit-self, :report, :review). */
+/** 202 body of the ps08 tier-action routes (:submit-self, :report, :review). */
 export interface AparFormActionResult {
   form: AparFormView;
 }
 
-/** Request body for POST /api/v1/training/nominations (g07.nominate). */
+/** Request body for POST /api/v1/training/nominations (ps07.nominate). */
 export interface TrainingNominationInput {
   sessionId: string;
   employeeId: string;
 }
 
-/** The G07 nomination as the routes return it; WAITLISTED carries capacity feedback. */
+/** The PS07 nomination as the routes return it; WAITLISTED carries capacity feedback. */
 export interface TrainingNominationView {
   id: string;
   nominationNo: string;
@@ -975,18 +975,18 @@ export interface HrmsClient {
   recordAparReview(formId: string, input: AparReviewInput, idempotencyKey: string): Promise<AparFormActionResult>;
   nominateForTraining(input: TrainingNominationInput, idempotencyKey: string): Promise<TrainingNominationResult>;
   getPayrollSlice(): Promise<PayrollSliceSummary>;
-  // PH-09E G10: salary structure + run lifecycle (create -> lock-inputs -> compute -> reconcile
+  // PH-09E PS10: salary structure + run lifecycle (create -> lock-inputs -> compute -> reconcile
   // -> approve -> lock -> disburse); the compute response carries the payslip lines.
   createSalaryStructure(input: SalaryStructureCreateInput, idempotencyKey: string): Promise<SalaryStructureCreateResult>;
   createPayrollRun(period: string, idempotencyKey: string): Promise<PayrollRunActionResult>;
   actOnPayrollRun(runId: string, verb: PayrollRunLifecycleVerb, idempotencyKey: string): Promise<PayrollRunActionResult>;
   getPensionSlice(): Promise<PensionSliceSummary>;
-  // PH-09E G11: pension case lifecycle + benefit estimator (scheme-branched server compute).
+  // PH-09E PS11: pension case lifecycle + benefit estimator (scheme-branched server compute).
   createPensionCase(input: PensionCaseCreateInput, idempotencyKey: string): Promise<PensionCaseActionResult>;
   verifyPensionService(caseId: string, input: PensionServiceVerifyInput, idempotencyKey: string): Promise<PensionCaseActionResult>;
   estimatePensionBenefits(caseId: string, input: PensionEstimateInput, idempotencyKey: string): Promise<PensionCaseActionResult>;
   getAnalyticsSlice(): Promise<AnalyticsSliceSummary>;
-  // PH-10E G14: live dashboard reads against the PH-10D analytics engine.
+  // PH-10E PS14: live dashboard reads against the PH-10D analytics engine.
   listAnalyticsKpis(kpiCode?: string): Promise<PageResult<AnalyticsKpiDefinitionView>>;
   queryKpiAggregate(martCode: string, dimension: string): Promise<AnalyticsAggregateResult>;
   listMartRefreshLogs(page?: PageQuery): Promise<PageResult<MartRefreshLogView>>;
@@ -1188,10 +1188,10 @@ export function createHrmsClient(options: HrmsClientOptions = {}): HrmsClient {
         resolver: selected.resolverType,
         action: selected.status === "APPROVED" ? "APPROVE" : "DELEGATE",
         balanceAvailable: 0,
-        g04OutboxStatus: selectedOutbox?.status ?? "READY",
+        ps04OutboxStatus: selectedOutbox?.status ?? "READY",
         srEventType: "LEAVE_APPROVED",
-        payrollSignalStatus: "READY_FOR_G10",
-        payrollSignalsReady: payrollSignals.items.filter((signal) => signal.status === "READY_FOR_G10").length,
+        payrollSignalStatus: "READY_FOR_PS10",
+        payrollSignalsReady: payrollSignals.items.filter((signal) => signal.status === "READY_FOR_PS10").length,
       };
     },
     getPersonalDetailsSlice: async () => {
@@ -1202,13 +1202,13 @@ export function createHrmsClient(options: HrmsClientOptions = {}): HrmsClient {
         fieldCode: selected.fieldCode,
         status: selected.status,
         sensitivity: selected.sensitivity,
-        ownerModule: "G01",
+        ownerModule: "PS01",
         documentCount: selected.documentIds.length,
       };
     },
     getLeaveSrRelaySlice: async () => {
       const summary = await request<LeaveSrReconciliationApiSummary>(HRMS_API_ROUTES.leaveSrReconciliation);
-      return { ...summary.report, relayOwner: "G04" };
+      return { ...summary.report, relayOwner: "PS04" };
     },
     getTransferSlice: async () => {
       const orders = await request<PageResult<TransferOrderRecord>>(HRMS_API_ROUTES.transferOrders);
@@ -1229,15 +1229,15 @@ export function createHrmsClient(options: HrmsClientOptions = {}): HrmsClient {
     },
     getTrainingSlice: async () => {
       const summary = await request<Omit<TrainingSliceSummary, "workflowCode" | "srEventType">>(HRMS_API_ROUTES.trainingSummary);
-      return { ...summary, workflowCode: "WF-G07-NOMINATION", srEventType: "TRAINING_CERTIFICATION_POSTED" };
+      return { ...summary, workflowCode: "WF-PS07-NOMINATION", srEventType: "TRAINING_CERTIFICATION_POSTED" };
     },
     getAparSlice: async () => {
       const summary = await request<Omit<AparSliceSummary, "srEventType" | "sealedMarker" | "feedMarker">>(HRMS_API_ROUTES.aparSummary);
-      return { ...summary, srEventType: "APAR_FINAL_GRADE", sealedMarker: "SEALED_COVER", feedMarker: "G08_G06_FEED_SUPPRESSED" };
+      return { ...summary, srEventType: "APAR_FINAL_GRADE", sealedMarker: "SEALED_COVER", feedMarker: "PS08_PS06_FEED_SUPPRESSED" };
     },
     getDisciplinarySlice: async () => {
       const summary = await request<Omit<DisciplinarySliceSummary, "competenceMarker" | "penaltyEventType" | "appealMarker">>(HRMS_API_ROUTES.disciplinarySummary);
-      return { ...summary, competenceMarker: "G09_AUTHORITY_COMPETENCE", penaltyEventType: "MAJOR_PENALTY", appealMarker: "APPEAL_DECIDED" };
+      return { ...summary, competenceMarker: "PS09_AUTHORITY_COMPETENCE", penaltyEventType: "MAJOR_PENALTY", appealMarker: "APPEAL_DECIDED" };
     },
     getPayrollSlice: async () => {
       const summary = await request<Omit<PayrollSliceSummary, "inputLockMarker" | "lastPayMarker">>(HRMS_API_ROUTES.payrollSummary);
@@ -1267,7 +1267,7 @@ export function createHrmsClient(options: HrmsClientOptions = {}): HrmsClient {
       ),
     getPensionSlice: async () => {
       const summary = await request<Omit<PensionSliceSummary, "qualifyingServiceMarker" | "srMarker">>(HRMS_API_ROUTES.pensionSummary);
-      return { ...summary, qualifyingServiceMarker: "QUALIFYING_SERVICE_LOCKED", srMarker: "G11_SR_POSTED" };
+      return { ...summary, qualifyingServiceMarker: "QUALIFYING_SERVICE_LOCKED", srMarker: "PS11_SR_POSTED" };
     },
     getAnalyticsSlice: async () => {
       const summary = await request<Omit<AnalyticsSliceSummary, "migrationMarker" | "uatMarker">>(HRMS_API_ROUTES.analyticsSummary);
@@ -1331,7 +1331,7 @@ function requireFirst<TItem>(items: TItem[], label: string): TItem {
 
 export class HrmsApiError extends Error {
   readonly code: string;
-  /** Module error id from error.details.messageId (e.g. ERR-REASON-REQ, ERR-G02-SOD), when present. */
+  /** Module error id from error.details.messageId (e.g. ERR-REASON-REQ, ERR-PS02-SOD), when present. */
   readonly messageId?: string;
 
   constructor(

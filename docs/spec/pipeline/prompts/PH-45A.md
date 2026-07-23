@@ -1,12 +1,12 @@
-# PH-45A — Raise contract coverage: G01 Aadhaar reveal + legal-hold route exposure
+# PH-45A — Raise contract coverage: PS01 Aadhaar reveal + legal-hold route exposure
 
 ## Objective
-Continue the coverage workstream into G01 (21.8%): expose the Aadhaar reveal (4-eyes break-glass) lifecycle,
+Continue the coverage workstream into PS01 (21.8%): expose the Aadhaar reveal (4-eyes break-glass) lifecycle,
 the employee legal-hold + blocking-obligation lifecycle, and service-no lookup as kernel routes over
 already-tested backing.
 
 ## Context
-- Backing (`apps/api/src/modules/g01/`): `aadhaarVaultService.requestReveal/approveReveal (4-eyes)/
+- Backing (`apps/api/src/modules/ps01/`): `aadhaarVaultService.requestReveal/approveReveal (4-eyes)/
   getVaultByEmployee`; `identityOpsService.placeLegalHold/releaseLegalHold/registerBlockingObligation/
   clearBlockingObligation` (wired as `services.employeeIdentityOps`); `employeeMasterService.getByServiceNo`.
 - Coverage gate: `tools/contract-coverage.mjs` + `docs/reviews/contract-coverage-20260703.md` + `ph-37a.sh`.
@@ -19,7 +19,7 @@ already-tested backing.
 - Raise the ratchet floor (report + `ph37a` test + `ph-37a.sh`) 443/33.5% → 451/34.1%.
 
 ## Evidence required
-- 8 routes in `g01.routes.ts`; `apps/api/test/ph45a-*.test.cjs` covering reveal request→approve (+ 4-eyes
+- 8 routes in `ps01.routes.ts`; `apps/api/test/ph45a-*.test.cjs` covering reveal request→approve (+ 4-eyes
   403), legal-hold place→release, obligation register→clear, and service-no lookup (+ 400 guard).
 - `bash docs/spec/pipeline/checks/ph-45a.sh` GREEN and `bash docs/spec/pipeline/checks/ph-37a.sh` GREEN at
   the raised floor; typecheck + full suite green.

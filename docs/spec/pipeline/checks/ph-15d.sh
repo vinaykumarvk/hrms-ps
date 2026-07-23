@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-15D oracle: G12 sect.65B certificates, subscriptions, LTV — sr_authenticity_certificates binding
+# PH-15D oracle: PS12 sect.65B certificates, subscriptions, LTV — sr_authenticity_certificates binding
 # content_digest + anchor + generated chain-of-custody with tamper refusal, sr_subscriptions with a
 # per-subscriber cursored pull feed (no cross-subscriber leak), sr_ltv_renewals re-anchoring over existing
 # anchors without rewriting history. Behavior + executed tests only.
@@ -8,10 +8,10 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Us
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S12="apps/api/src/modules/g12 apps/api/src/routes/g12.routes.ts"
+S12="apps/api/src/modules/ps12 apps/api/src/routes/ps12.routes.ts"
 T=apps/api/test
 
-echo "== PH-15D exit-criteria (G12 65B certificates + subscriptions + LTV to BRD depth) =="
+echo "== PH-15D exit-criteria (PS12 65B certificates + subscriptions + LTV to BRD depth) =="
 
 [ -d node_modules ] || red "node_modules absent — toolchain oracle cannot run; refusing GREEN without it"
 

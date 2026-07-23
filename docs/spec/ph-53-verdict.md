@@ -12,7 +12,7 @@
 - `npm run typecheck` / `npm run web:typecheck`: green.
 
 The PH-53A oracle (and the PH-37A gate at its raised floor) were run **externally** by the driver and are
-GREEN. Sixteenth tranche of the user-directed "raise contract coverage" workstream, moving into G09. Built
+GREEN. Sixteenth tranche of the user-directed "raise contract coverage" workstream, moving into PS09. Built
 by hand — subagents credit-exhausted until 2026-07-08.
 
 > **GREEN here is necessary, not sufficient.** Human review required before advancing.
@@ -21,14 +21,14 @@ by hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | Route exposure | Backing | Evidence |
 |---|---|---|---|
-| **G09** | suspension review (`POST /disciplinary/suspensions/{id}:review`), show-cause response (`:respond`), consultation close/waive (`/disciplinary/consultations/{id}:close`, `:waive`), personal-hearing minutes (`/disciplinary/personal-hearings/{id}:minutes`), and case reads (`GET .../case-timeline`, `/icc-appointments`, `/personal-hearings`, `GET /disciplinary/penalty-orders/{id}`) | existing `disciplinaryService` (NOT_FOUND fail-closed on unknown subjects), service-tested | `ph53a-g09-disciplinary-route.test.cjs` |
+| **PS09** | suspension review (`POST /disciplinary/suspensions/{id}:review`), show-cause response (`:respond`), consultation close/waive (`/disciplinary/consultations/{id}:close`, `:waive`), personal-hearing minutes (`/disciplinary/personal-hearings/{id}:minutes`), and case reads (`GET .../case-timeline`, `/icc-appointments`, `/personal-hearings`, `GET /disciplinary/penalty-orders/{id}`) | existing `disciplinaryService` (NOT_FOUND fail-closed on unknown subjects), service-tested | `ph53a-ps09-disciplinary-route.test.cjs` |
 
 Real behavioral routes over already-tested backing — **not** scaffolding. Measured contract coverage ratchets
-**495 / 37.4% → 504 / 38.1%** (G09 **28.1% → 38.2%**), and the PH-37 gate floor was raised in lockstep so the
+**495 / 37.4% → 504 / 38.1%** (PS09 **28.1% → 38.2%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked. The PH-04D route-metadata invariant (a GET path ending `/timeline` must be paginated) was
 honoured by naming the array read `/case-timeline` — the global check was respected, not weakened.
 
-**Milestone:** with G09 raised, **every G-module (G01–G14) has now been advanced above its baseline coverage**
+**Milestone:** with PS09 raised, **every G-module (PS01–PS14) has now been advanced above its baseline coverage**
 this workstream — the "lowest-coverage module" leapfrog pass is complete.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
@@ -36,7 +36,7 @@ this workstream — the "lowest-coverage module" leapfrog pass is complete.
 - **Contract coverage is 38.1%** — ~819 of the **1,323** contracted operations remain unimplemented. The
   coverage tool is still **count-based**, not per-operation path matching. The workstream continues by
   going **deeper into every module** (each still has unexposed backing: jurisdiction, revisions, disbursement
-  batches, mapping adjudication, etc.), plus the untouched **G05** deeper surface.
+  batches, mapping adjudication, etc.), plus the untouched **PS05** deeper surface.
 - **Persistence workstream:** the hand-built services (PH-16F..PH-53 engines) use in-memory repositories;
   Postgres-backed repos + migrations remain deferred; the `ph06-persistence` migration list froze at 0008.
 

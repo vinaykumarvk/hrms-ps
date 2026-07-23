@@ -1,12 +1,12 @@
-# PH-54A — Raise contract coverage: G05 transfer/counselling read route exposure
+# PH-54A — Raise contract coverage: PS05 transfer/counselling read route exposure
 
 ## Objective
-Deepen G05 coverage (64% → higher): expose the transfer and counselling read surface (vacancy positions,
+Deepen PS05 coverage (64% → higher): expose the transfer and counselling read surface (vacancy positions,
 reservations, preferences, mutual orders, charge-handovers, relieving/joining reports) as kernel routes over
 already-tested backing.
 
 ## Context
-- Backing (`apps/api/src/modules/g05/`): `counsellingVacancyService.getVacancyPosition/getReservation/
+- Backing (`apps/api/src/modules/ps05/`): `counsellingVacancyService.getVacancyPosition/getReservation/
   listReservations/listPreferences/getMutualOrder/listMutualOrders`; `transferService.listChargeHandovers/
   listRelievingOrders/listJoiningReports`.
 - Coverage gate: `tools/contract-coverage.mjs` + `docs/reviews/contract-coverage-20260703.md` + `ph-37a.sh`.
@@ -17,7 +17,7 @@ already-tested backing.
 - Raise the ratchet floor (report + `ph37a` test + `ph-37a.sh`) 504/38.1% → 513/38.8%.
 
 ## Evidence required
-- 9 routes in `g05.routes.ts`; `apps/api/test/ph54a-*.test.cjs` covering the list reads (200 arrays) and
+- 9 routes in `ps05.routes.ts`; `apps/api/test/ph54a-*.test.cjs` covering the list reads (200 arrays) and
   the get-by-id NOT_FOUND guards.
 - `bash docs/spec/pipeline/checks/ph-54a.sh` GREEN and `bash docs/spec/pipeline/checks/ph-37a.sh` GREEN at
   the raised floor; typecheck + full suite green.

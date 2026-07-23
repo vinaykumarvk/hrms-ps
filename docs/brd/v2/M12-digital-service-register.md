@@ -1,7 +1,7 @@
 # Digital Employee Service Register (Digital SR) — HRMS Module BRD (v2.0)
 
 **Module code:** M12-SR
-**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (government / public-sector context, hosted at CGG Data Centre)
+**Program:** Enterprise HRMS — PeopleGov / HRMS Suite (enterprise / public-sector context, hosted at CGG Data Centre)
 **Document version:** v2.0 (revised after adversarial council review of v1.0)
 **Status:** Draft for review — v2 hardening pass
 **Author persona:** Global HR/HCM domain expert (Workday / SAP SuccessFactors / Oracle HCM bar) honouring the public-sector statutory context
@@ -16,7 +16,7 @@
 
 ### 1.1 Purpose
 
-In a government HR context the **Service Register (Service Book)** is a legal instrument. Pension, gratuity, seniority, qualifying-service computation, increment dates, disciplinary record, and audit by statutory bodies (Accountant General / Audit) all depend on it being **complete, accurate, chronologically ordered, append-only, tamper-evident, and admissible in court decades later**. The traditional paper Service Book is fragile: pages are lost, entries are back-dated, corrections are made by overwriting, attestation signatures are forged, completeness is unprovable, and reconstruction after loss is impossible. The **Digital Employee Service Register (Digital SR)** replaces it with a defensible digital system-of-record that captures **every service life event** from appointment to retirement (and post-retirement archival), with provenance, completeness assurance, attestation, qualified signatures, long-term verifiability, and certified-extract generation.
+In a enterprise HR context the **Service Register (Service Book)** is a legal instrument. Pension, gratuity, seniority, qualifying-service computation, increment dates, disciplinary record, and audit by statutory bodies (Accountant General / Audit) all depend on it being **complete, accurate, chronologically ordered, append-only, tamper-evident, and admissible in court decades later**. The traditional paper Service Book is fragile: pages are lost, entries are back-dated, corrections are made by overwriting, attestation signatures are forged, completeness is unprovable, and reconstruction after loss is impossible. The **Digital Employee Service Register (Digital SR)** replaces it with a defensible digital system-of-record that captures **every service life event** from appointment to retirement (and post-retirement archival), with provenance, completeness assurance, attestation, qualified signatures, long-term verifiability, and certified-extract generation.
 
 ### 1.2 Business problem
 
@@ -183,7 +183,7 @@ Every adopted council improvement is mapped to where and how it is incorporated.
 - Source modules authenticate with a service principal scoped to `sr.ingest.write` and emit events with a deterministic `Idempotency-Key` **and a `fact_key` for semantic dedup** (FR-02).
 - M01 is the authoritative source for `employee_id` ↔ `service_no`; M12 denormalises `service_no` but treats M01 as golden.
 - M13 provides durable, encrypted, **WORM/object-lock-capable** storage for scans, signed PDFs, order copies, and the anchor export.
-- **A licensed government CA, an HSM, and an RFC 3161 Timestamp Authority (TSA) are confirmed before FR-03 is built (gated milestone §13.1).** If unavailable, this is an **escalation**, not a silent degradation to server-signing.
+- **A licensed enterprise CA, an HSM, and an RFC 3161 Timestamp Authority (TSA) are confirmed before FR-03 is built (gated milestone §13.1).** If unavailable, this is an **escalation**, not a silent degradation to server-signing.
 - A reliable scheduler exists for integrity sweeps, **anchor generation**, verification-cycle generation, **gap-scan**, **LTV renewal**, and pull-feed availability.
 - The completeness model (FR-17) can read per-cadre service rules (increment cadence, confirmation window) from M06/M10 / a service-rule master.
 
@@ -350,7 +350,7 @@ This BRD is authored against the program's **build contract** (`SHARED_FOUNDATIO
 | `source_reference_id` | varchar(64) | Y | Originating order/transaction id |
 | `source_event_version` | int | N | Source event schema/version (default 1) |
 | `reverses_event_id` | UUID FK→self | Y | **NEW v2** — for a reversal/cancellation event, the entry it reverses |
-| `order_no` | varchar(64) | Y | Government order/notification number |
+| `order_no` | varchar(64) | Y | Enterprise order/notification number |
 | `order_date` | date | Y | Date of the order |
 | `sanctioning_authority` | varchar(160) | Y | Authority that sanctioned the event |
 | `payload` | jsonb | N | Structured, schema-validated event data |
@@ -381,10 +381,10 @@ Sample data:
 
 | sr_event_id | service_no | sequence_no | event_type_code | event_date | source_module | confidence_status | entry_status | attestation_status | qualifying_service_impact |
 |---|---|---|---|---|---|---|---|---|---|
-| sr…0001 | GOV-100245 | 1 | APPOINTMENT | 2008-07-14 | M01 | VERIFIED | ACTIVE | EMPLOYEE_VERIFIED | QUALIFYING |
-| sr…0042 | GOV-100245 | 42 | PROMOTION | 2019-06-01 | M06 | VERIFIED | SUPERSEDED | ATTESTED | QUALIFYING |
-| sr…0043 | GOV-100245 | 43 | PROMOTION_CORRIGENDUM | 2019-06-01 | M12_MANUAL | VERIFIED | ACTIVE | ATTESTED | QUALIFYING |
-| sr…0119 | GOV-088120 | 7 | INCREMENT | 1996-07-01 | M12_LEGACY | RECONSTRUCTED | ACTIVE | UNATTESTED | QUALIFYING |
+| sr…0001 | PS-100245 | 1 | APPOINTMENT | 2008-07-14 | M01 | VERIFIED | ACTIVE | EMPLOYEE_VERIFIED | QUALIFYING |
+| sr…0042 | PS-100245 | 42 | PROMOTION | 2019-06-01 | M06 | VERIFIED | SUPERSEDED | ATTESTED | QUALIFYING |
+| sr…0043 | PS-100245 | 43 | PROMOTION_CORRIGENDUM | 2019-06-01 | M12_MANUAL | VERIFIED | ACTIVE | ATTESTED | QUALIFYING |
+| sr…0119 | PS-088120 | 7 | INCREMENT | 1996-07-01 | M12_LEGACY | RECONSTRUCTED | ACTIVE | UNATTESTED | QUALIFYING |
 
 #### E9–E18 field additions (amendments only; full tables in v1 §5.2)
 
@@ -932,7 +932,7 @@ The **content hash chain** is self-referential on E8 (per `(tenant_id, employee_
 
 **Business Rules.**
 - BR-05.1 An entry is superseded at most once; further correction supersedes the latest ACTIVE entry.
-- BR-05.2 DOB/name corrigenda require dual custodian sign-off + govt order/court reference (`WF-M12-IDENTITY-CHANGE`); PII ceiling applies.
+- BR-05.2 DOB/name corrigenda require dual custodian sign-off + enterprise order/court reference (`WF-M12-IDENTITY-CHANGE`); PII ceiling applies.
 - BR-05.3 Correcting a qualifying-service impact re-emits to the pull-feed (FR-13) so M11 re-reads.
 - **BR-05.4 (v2)** Separation-of-duties: maker ≠ checker ≠ second custodian for routine corrigenda (`WF-M12-CORRIGENDUM`).
 - **BR-05.5 (v2)** Cadre-wide/pay-commission corrections route to the **bulk-corrigendum** workflow (FR-20), not one-by-one.
@@ -1203,7 +1203,7 @@ The **content hash chain** is self-referential on E8 (per `(tenant_id, employee_
 - **Primary Role(s):** External verifier (public), any authorised role
 - **User Story:** *As a bank or court holding a certified extract, I want to verify it is authentic, current, and unrevoked — including offline, against a published CA chain and the embedded anchor reference — so I do not have to trust the issuer's own server's word.*
 
-**Description.** v1's online QR endpoint is retained as a *convenience*. **v2 makes the extract independently verifiable (R15):** the signed PDF/offline bundle embeds the qualified signer's certificate chain (verifiable against the **published government CA chain**), the RFC 3161 timestamp token, the `content_digest`, and the **anchor reference** (`sr_anchors` Merkle root + TSA token) — so a third party can verify the signature, the timestamp, and that the record's chain head was anchored, **without calling the issuer**. The online endpoint additionally reports VALID / REVOKED / NOT_FOUND. Rate-limited and access-logged.
+**Description.** v1's online QR endpoint is retained as a *convenience*. **v2 makes the extract independently verifiable (R15):** the signed PDF/offline bundle embeds the qualified signer's certificate chain (verifiable against the **published enterprise CA chain**), the RFC 3161 timestamp token, the `content_digest`, and the **anchor reference** (`sr_anchors` Merkle root + TSA token) — so a third party can verify the signature, the timestamp, and that the record's chain head was anchored, **without calling the issuer**. The online endpoint additionally reports VALID / REVOKED / NOT_FOUND. Rate-limited and access-logged.
 
 **Acceptance Criteria.**
 1. **v2:** the extract bundle verifies offline: signature against published CA chain, timestamp against TSA cert, and `content_digest` against the embedded value — no issuer call required.
@@ -1867,7 +1867,7 @@ GET /api/v1/sr/verify/3kQ9...tokn
   "event_count": 312,
   "content_digest": "a91f...77",
   "anchor_id": "an-02",
-  "ca_chain_published_at": "https://gov-ca.example/cgg-chain.pem",
+  "ca_chain_published_at": "https://enterprise-ca.example/cgg-chain.pem",
   "offline_verifiable": true
 }
 ```

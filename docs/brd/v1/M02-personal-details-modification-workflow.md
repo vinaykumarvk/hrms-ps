@@ -1,7 +1,7 @@
 # Employee Personal Details Modification Workflow — HRMS Module BRD
 
 **Module code:** M02-EPDM
-**Program:** Enterprise HRMS — "PeopleGov / HRMS Suite" (government / public-sector context, hosted at CGG Data Centre)
+**Program:** Enterprise HRMS — "PeopleGov / HRMS Suite" (enterprise / public-sector context, hosted at CGG Data Centre)
 **Document version:** v1.0
 **Status:** Baseline for build (parallel-agent ready)
 **Owning systems of record referenced:** M01 (Employee Profile Management — employee master), M12 (Digital Employee Service Register), M13 (Document Management)
@@ -109,7 +109,7 @@ Employees (self-service requesters), Reporting Managers (recommenders for some f
 - M12 exposes an idempotent `postServiceRegisterEvent` contract (event_type, employee_id, payload, source_ref).
 - M13 exposes upload + reference + virus-scan-status APIs.
 - All actors are authenticated via shared OIDC/SSO + MFA; M02 enforces authorization only.
-- Statutory retention: change requests and their audit retained per government records schedule (default 7 years post-separation, configurable).
+- Statutory retention: change requests and their audit retained per enterprise records schedule (default 7 years post-separation, configurable).
 
 ---
 
@@ -322,7 +322,7 @@ This module inherits, without redefinition, the Shared Foundation (`docs/brd/SHA
 | Field | Type | Null | Default | Notes |
 |---|---|:--:|---|---|
 | `matrix_id` | UUID (PK) | N | gen | |
-| `name` | VARCHAR(120) | N | | e.g. "Default Govt Matrix v2" |
+| `name` | VARCHAR(120) | N | | e.g. "Default Enterprise Matrix v2" |
 | `org_scope_id` | UUID (FK→org_units) | Y | | Null = global default |
 | `status` | ENUM | N | `DRAFT` | `DRAFT`,`ACTIVE`,`RETIRED` |
 | `version` | INT | N | 1 | |
@@ -559,7 +559,7 @@ change_request_items 1───* service_register_events (M12, on STATUTORY comm
 
 | matrix_id | name | org_scope_id | status | version | effective_from |
 |---|---|---|---|---|---|
-| mx-001 | Default Govt Matrix | null | ACTIVE | 2 | 2026-04-01 |
+| mx-001 | Default Enterprise Matrix | null | ACTIVE | 2 | 2026-04-01 |
 | mx-002 | Secretariat Override | ou-secr | DRAFT | 1 | 2026-08-01 |
 
 **approval_matrix_rules**

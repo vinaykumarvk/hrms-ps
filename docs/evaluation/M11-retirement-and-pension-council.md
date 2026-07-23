@@ -32,7 +32,7 @@ The BRD's greatest danger is that it is *deterministic and traceable* — which 
 
 **2. Proportionate pension for short service is an obsolete formula.** FR-05 AC1 and `pension_fraction` ("proportionate below the threshold") encode the pre-2006 model. Under current CCS Pension Rules, ≥10 years qualifying = a flat 50% of emoluments (no proportionate reduction); <10 years = **no pension at all, only a one-time service gratuity**. The BRD has no `SERVICE_GRATUITY` type (gratuity_type is only RETIREMENT/DEATH). So an employee with 8 years' service is either wrongly given a proportionate pension or falls through a hole. This is a missed benefit *type*, not just a parameter.
 
-**3. NPS is treated as a hollow DC scheme — but government NPS is not.** FR-05 says M11 "does not compute a defined-benefit pension" for NPS and emits only indicative annuity/lump-sum. This ignores (a) **CCS (Implementation of NPS) Rules 2021**, under which a government NPS employee's family on death-in-service or on invalidation is entitled to a *default* benefit equivalent to OPS family/invalid pension; and (b) the **Unified Pension Scheme (UPS), effective 01-Apr-2025**, giving opted-in NPS employees an assured payout (≈50% of last-12-month average pay). A 2026 government BRD that has no UPS and no NPS-death-default benefit will misroute and under-serve a growing cohort. `pension_scheme` ENUM (OPS, NPS) literally cannot represent UPS.
+**3. NPS is treated as a hollow DC scheme — but enterprise NPS is not.** FR-05 says M11 "does not compute a defined-benefit pension" for NPS and emits only indicative annuity/lump-sum. This ignores (a) **CCS (Implementation of NPS) Rules 2021**, under which a enterprise NPS employee's family on death-in-service or on invalidation is entitled to a *default* benefit equivalent to OPS family/invalid pension; and (b) the **Unified Pension Scheme (UPS), effective 01-Apr-2025**, giving opted-in NPS employees an assured payout (≈50% of last-12-month average pay). A 2026 enterprise BRD that has no UPS and no NPS-death-default benefit will misroute and under-serve a growing cohort. `pension_scheme` ENUM (OPS, NPS) literally cannot represent UPS.
 
 **4. Pensioner-death fraud has no proactive control.** LC suspension (IR10) is *passive* — it catches a missing certificate a year late, by which time 6–12 months of pension may have been drawn into a deceased pensioner's account by family. There is no death-registry / Aadhaar-DBT reconciliation, no dormancy/anomaly detection, no structured **overpayment-recovery-from-estate** entity. The "death reported late" edge case in FR-12 has no home in the data model.
 
@@ -60,7 +60,7 @@ Concrete worries an outsider sees immediately:
 
 - **The estimator (FR-15) speaks in the system's language, not the user's.** "Commuted value," "residual pension," "reckonable half-years" on a slider. A best-in-class estimator says *"If you take ₹22.4 lakh now, your monthly pension drops from ₹56,000 to ₹33,600, and it returns to ₹56,000 in October 2041."* The data exists; the framing doesn't.
 
-- **No one has told me what the pensioner actually *has to do*, and when.** The pensioner-facing surface is a set of API verbs (submit LC, report death, raise grievance). Where is the plain-language *annual calendar* — "your life certificate is due in November; here are four ways to submit it; here is what happens if you miss it"? IR10 silently suspends the pension; from the outside that looks like the government stopped paying with no warning. The notification table helps, but suspension is a financial shock to an 80-year-old.
+- **No one has told me what the pensioner actually *has to do*, and when.** The pensioner-facing surface is a set of API verbs (submit LC, report death, raise grievance). Where is the plain-language *annual calendar* — "your life certificate is due in November; here are four ways to submit it; here is what happens if you miss it"? IR10 silently suspends the pension; from the outside that looks like the enterprise stopped paying with no warning. The notification table helps, but suspension is a financial shock to an 80-year-old.
 
 - **"Family pension conversion on death" assumes the family knows to report the death and how.** The flow is built for the officer (`:report-death`), not the grieving relative. Who tells the bank? Who tells M11? What does the family do on day one? This is unowned.
 
@@ -80,7 +80,7 @@ Can this be built, in what order, and what is the Monday-morning step? Mostly ye
 
 **Sequencing reality:** Streams C (benefit engines) and the rule-table foundation must precede *everything user-visible*. FR-15's estimator "reuses FR-05/06/07 in dry-run" — good reuse, but it means the estimator cannot ship before the engines are correct, so the much-demoed self-service portal is *late* in the schedule, not early. Manage that expectation now.
 
-**The Monday step:** stand up the **effective-dated rule-table entities and load + sign-off the actual government rule values** (DA, factors, rates, ceilings, ages, min/max), and in parallel **open the PDA interface-contract workstream**. Until those two exist, the benefit engines are unbuildable and the disbursement path is undefined. Everything else can wait a week; these cannot.
+**The Monday step:** stand up the **effective-dated rule-table entities and load + sign-off the actual enterprise rule values** (DA, factors, rates, ceilings, ages, min/max), and in parallel **open the PDA interface-contract workstream**. Until those two exist, the benefit engines are unbuildable and the disbursement path is undefined. Everything else can wait a week; these cannot.
 
 ---
 
@@ -111,7 +111,7 @@ Can this be built, in what order, and what is the Monday-morning step? Mostly ye
 ### Reviewer E
 1. **Strongest:** The Proponent — but as a *baseline*, not a defence. Its value is establishing that the spine (determinism + immutability + SoD + no-break + lifecycle) is genuinely sound, so the council's job is surgical correction, not redesign. That calibration prevents over-reaction to the Contrarian's list.
 2. **Biggest blind spot:** The Proponent praises G2 ("byte-identical re-run") without noticing it is a hostage to fortune: "beneficial-of-both" emoluments, floating DA timing, and external NPS/UPS figures make literal byte-identity unachievable; the goal should be "identical *given the snapshotted rule version and inputs*," which the body already implies but the goal overclaims.
-3. **All five missed:** **Dual family pension and the two-eligible-children/twins cases.** Where both spouses are government servants, the survivor can draw **two** family pensions subject to a cap; twins/multiple eligible children can draw simultaneously per rule. The BRD asserts "only one beneficiary draws at a time" (FR-08 BR2) — which is *wrong* as an absolute and will under-pay legitimate dual/twin claimants.
+3. **All five missed:** **Dual family pension and the two-eligible-children/twins cases.** Where both spouses are employees, the survivor can draw **two** family pensions subject to a cap; twins/multiple eligible children can draw simultaneously per rule. The BRD asserts "only one beneficiary draws at a time" (FR-08 BR2) — which is *wrong* as an absolute and will under-pay legitimate dual/twin claimants.
 
 ---
 
@@ -186,7 +186,7 @@ The unresolved structural question: **does M11 compute and instruct each pension
 
 2. **Replace the obsolete proportionate-pension model and add Service Gratuity.** For ≥10 years qualifying = flat 50% of emoluments; for <10 years = no pension, only a one-time **service gratuity**. Add `SERVICE_GRATUITY` to the `gratuity_type` ENUM and the <10-year branch in FR-05/FR-07; rewrite FR-05 AC1. (R2)
 
-3. **Add UPS and government-NPS death/invalidation defaults.** Extend `pension_scheme` ENUM to **{OPS, NPS, UPS}**; add a UPS assured-payout calculation (≈50% of last-12-month average pay) with an opt-in flag; add the CCS-NPS Rules 2021 default-benefit branch giving NPS employees' families OPS-equivalent family/invalid pension on death-in-service/invalidation. Rewrite FR-05 AC4 and Appendix 16.5. (R3)
+3. **Add UPS and enterprise-NPS death/invalidation defaults.** Extend `pension_scheme` ENUM to **{OPS, NPS, UPS}**; add a UPS assured-payout calculation (≈50% of last-12-month average pay) with an opt-in flag; add the CCS-NPS Rules 2021 default-benefit branch giving NPS employees' families OPS-equivalent family/invalid pension on death-in-service/invalidation. Rewrite FR-05 AC4 and Appendix 16.5. (R3)
 
 4. **Separate the family-members register from nominees.** Add a `family_members` entity (Form 3/Form 14 family details) and drive family-pension eligibility/hierarchy from it; restrict `nominees_beneficiaries` to gratuity/GPF/leave-encashment. Update IR8, FR-08, and the relationship map. (R4)
 
@@ -194,7 +194,7 @@ The unresolved structural question: **does M11 compute and instruct each pension
 
 6. **Record the paymaster-vs-authoriser model explicitly.** Add `pda_disbursement_model` (M11_COMPUTES_FULL / PDA_APPLIES_RELIEF) to the PDA reference; branch FR-13 (recompute-and-instruct vs notify-relief-order-and-reconcile) and FR-14 accordingly; update NFR batch sizing assumptions. (R6, second pass)
 
-7. **Model the effective-dated rule-table entities.** Add first-class entities for DA/Dearness-Relief rates, commutation factors by age, family-pension rates, gratuity ceiling (with the DA-linked 25% auto-step), retirement ages by cadre, minimum/maximum pension, and rounding rules — each effective-dated and versioned — so `rule_version_ref` points to real rows. Load and sign off the actual government values. (R7)
+7. **Model the effective-dated rule-table entities.** Add first-class entities for DA/Dearness-Relief rates, commutation factors by age, family-pension rates, gratuity ceiling (with the DA-linked 25% auto-step), retirement ages by cadre, minimum/maximum pension, and rounding rules — each effective-dated and versioned — so `rule_version_ref` points to real rows. Load and sign off the actual enterprise values. (R7)
 
 8. **Define the PDA/treasury interface contract.** Specify the disbursement file/API field list, acknowledgement schema, bank/treasury-side error taxonomy, retry/re-route semantics, and a sandbox tie-out; open this as a week-1 parallel workstream. (R8)
 

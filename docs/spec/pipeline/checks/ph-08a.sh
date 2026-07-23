@@ -46,8 +46,8 @@ fi
 srcq "durable medium wired (fs/sqlite/postgres), not memory-only" 'node:fs|writeFileSync|readFileSync|sqlite|postgres' "$API"
 
 # 3) kernels consumed by services
-srcq "g06 consumes QSL (eligibility reads qualifying service)" 'qualifying.?service|[^a-zA-Z]qsl' "$API/modules/g06"
-srcq "g06 consumes sanctioned-posts vacancy position" 'sanctioned.?post|current.?vacanc' "$API/modules/g06"
+srcq "ps06 consumes QSL (eligibility reads qualifying service)" 'qualifying.?service|[^a-zA-Z]qsl' "$API/modules/ps06"
+srcq "ps06 consumes sanctioned-posts vacancy position" 'sanctioned.?post|current.?vacanc' "$API/modules/ps06"
 srcq "vacancy reconciliation behaviour present" 'reconcil' "$API"
 
 # 4) BRD domain codes thrown as real `code` values (audit: only generic codes + marker strings before)

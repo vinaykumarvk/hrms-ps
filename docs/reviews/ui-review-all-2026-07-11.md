@@ -33,8 +33,8 @@ The application is not route-based. `App.tsx:78-155` mounts all authorized surfa
 |---|---|---|---|---|---|---|
 | web | unauthenticated root | `LoginPanel` | `styles.css:18-135` | none | hardcoded English | light only |
 | web | `#inbox`, `#workflow-config` | workflow inbox/detail/actions/config | `styles.css:228-365` | `OperationalState` | hardcoded English | light only |
-| web | `#employees` | G01 profile/privacy/contacts/dependents | generic record styles | `RouteGuard`, `OperationalState` | hardcoded English | light only |
-| web | intended G02-G14 anchors | 14 module workspaces and consoles | mostly generic record/grid styles | same | hardcoded English | light only |
+| web | `#employees` | PS01 profile/privacy/contacts/dependents | generic record styles | `RouteGuard`, `OperationalState` | hardcoded English | light only |
+| web | intended PS02-PS14 anchors | 14 module workspaces and consoles | mostly generic record/grid styles | same | hardcoded English | light only |
 
 ### Navigation inventory
 
@@ -180,7 +180,7 @@ Blocking failures: navigation and workspace behavior, mobile navigation, WCAG fu
 | Loading/empty/error/no-permission/partial | module state branches; `OperationalStates.tsx` | PARTIAL | false demo gallery, weak CTAs, no global recovery |
 | P01 inbox and task actions | `WorkflowWorkspace.tsx`, `TaskActionPanel.tsx` | PARTIAL | operational but safety/focus/feedback gaps |
 | Workflow config review/publish/simulate/export | `WorkflowConfigConsole.tsx:16-52` | FAIL | three controls are no-op or not visible-result actions |
-| G01/G12/G13 foundation views | `App.tsx:140-153` | PARTIAL | present, mounted in undifferentiated long page |
+| PS01/PS12/PS13 foundation views | `App.tsx:140-153` | PARTIAL | present, mounted in undifferentiated long page |
 | Responsive shell/inbox/detail/records/config | `styles.css:485-506` | FAIL | minimal single breakpoint, no mobile nav/table strategy |
 | No skeleton UI components | 49 TSX static scan | PASS | forms and views have substantive content |
 | Accessibility/static checks | PH-05E oracle | FAIL | source oracle checks pass but required commands RED; WCAG scan missing |

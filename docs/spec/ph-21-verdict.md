@@ -23,26 +23,26 @@ subagents remain credit-exhausted until 2026-07-08.
 
 | Module | Closed in PH-21 | Evidence |
 |---|---|---|
-| **G07** | LMS/xAPI — learning_record_stores (single primary), lms_enrollments, idempotent xAPI statement ingestion (duplicate statement_id is a no-op), completion on the completed verb | `ph21a-g07-lms-xapi.test.cjs` |
-| **G08** | multi-source feedback_360 — PEER/SUBORDINATE/CUSTOMER/MANAGER raters, MIN_RATERS release gate (anonymity), anonymised aggregate summary | `ph21b-g08-feedback-360.test.cjs` |
-| **G09** | jurisdiction transfer (audited chain) + retiree Rule-9 four-year bar (ERR-G09-RETIREE-PROCEEDING-BARRED, sanction override) | `ph21c-g09-jurisdiction-retiree.test.cjs` |
+| **PS07** | LMS/xAPI — learning_record_stores (single primary), lms_enrollments, idempotent xAPI statement ingestion (duplicate statement_id is a no-op), completion on the completed verb | `ph21a-ps07-lms-xapi.test.cjs` |
+| **PS08** | multi-source feedback_360 — PEER/SUBORDINATE/CUSTOMER/MANAGER raters, MIN_RATERS release gate (anonymity), anonymised aggregate summary | `ph21b-ps08-feedback-360.test.cjs` |
+| **PS09** | jurisdiction transfer (audited chain) + retiree Rule-9 four-year bar (ERR-PS09-RETIREE-PROCEEDING-BARRED, sanction override) | `ph21c-ps09-jurisdiction-retiree.test.cjs` |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 Tranche 8 did not close, and these remain `NOT_FOUND` / open for a later tranche:
 
-- **G01**: phonetic/transliteration search, dedup ML matcher depth, privacy/DPDP console UI.
-- **G02**: extra fraud detectors, retro-impact fan-out.
-- **G03**: backdated-leave team-calendar conflict threshold, punch anomaly review depth.
-- **G04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
-- **G05**: interactive counselling UI, proof-of-service deeming automation.
-- **G06**: sealed-cover full workflow, correction cascade recompute.
-- **G07**: content/assessment-item bank.
-- **G08**: DSC/non-repudiation signing.
-- **G09**: POSH conciliation depth, evidence-vault UI listing.
-- **G10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
-- **G11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
-- **G12/G13/G14**: offline-QR verification, real TSA; OCR/secure-sharing, real AV engine;
+- **PS01**: phonetic/transliteration search, dedup ML matcher depth, privacy/DPDP console UI.
+- **PS02**: extra fraud detectors, retro-impact fan-out.
+- **PS03**: backdated-leave team-calendar conflict threshold, punch anomaly review depth.
+- **PS04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
+- **PS05**: interactive counselling UI, proof-of-service deeming automation.
+- **PS06**: sealed-cover full workflow, correction cascade recompute.
+- **PS07**: content/assessment-item bank.
+- **PS08**: DSC/non-repudiation signing.
+- **PS09**: POSH conciliation depth, evidence-vault UI listing.
+- **PS10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
+- **PS11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
+- **PS12/PS13/PS14**: offline-QR verification, real TSA; OCR/secure-sharing, real AV engine;
   NLQ, embedded BI, predictive+fairness, mobile briefing.
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**

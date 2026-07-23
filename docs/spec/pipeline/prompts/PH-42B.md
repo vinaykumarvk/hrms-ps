@@ -5,7 +5,7 @@ Write an honest `docs/spec/ph-42-verdict.md` for remediation tranche 29 (PH-42A)
 
 ## Constraints (the verdict oracle greps for these)
 - Chains from `ph-41-verdict`; cites `brd-coverage-delta-20260703`.
-- Names the coverage ratchet (430 / 32.5%) and the G07 credential/empanelment route exposure; carries a **G07** row.
+- Names the coverage ratchet (430 / 32.5%) and the PS07 credential/empanelment route exposure; carries a **PS07** row.
 - States the **exact** oracle-recomputed suite pass counts (API + web).
 - Names remaining gaps; includes "necessary … not sufficient" and the quantified contract-op caveat (1,323).
 - No approval token minted by the agent — `gate: human`.

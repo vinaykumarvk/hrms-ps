@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-30A oracle: G01 aadhaar-vault + phonetic-search routes — real kernel route(s) registered + dispatched in an API test.
+# PH-30A oracle: PS01 aadhaar-vault + phonetic-search routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g01.routes.ts"; T=apps/api/test
-echo "== PH-30A exit-criteria (G01 aadhaar-vault + phonetic-search routes) =="
+R="apps/api/src/routes/ps01.routes.ts"; T=apps/api/test
+echo "== PH-30A exit-criteria (PS01 aadhaar-vault + phonetic-search routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" 'aadhaar-vault' "route path registered: aadhaar-vault"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

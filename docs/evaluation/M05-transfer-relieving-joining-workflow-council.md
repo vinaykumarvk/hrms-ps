@@ -27,7 +27,7 @@ The headline KPI — "≥ 99% transfers with continuous pay (no break)" — is *
 
 **Disputed handover is a hostage mechanism.** FR-TRJ-007: "Disputed handover blocks relieving until resolved" — with no Authority override, no time-bound resolution, no handover-under-protest. A vindictive successor, an unreconciled imprest, or a missing asset can trap an employee at source indefinitely, breaking the relieve-by deadline and any onward joining. The same flaw exists in clearance: one non-responsive Clearance Officer blocks `CLEARED` forever; reminders exist but **no deemed-clearance or escalation-grant**.
 
-**Non-joining / stay orders are unmodelled.** Govt transfers are routinely challenged — CAT/court **stay orders**, employee **representations**, retention requests. The BRD has `LATE_JOINING_REVIEW` but no stay-hold state, no representation entity, no "abandonment → revert to source / disciplinary (M09)" path. An employee relieved then never joining sits in permanent `IN_TRANSIT` limbo with pay stopped and no posting — the worst possible outcome, completely unhandled.
+**Non-joining / stay orders are unmodelled.** Enterprise transfers are routinely challenged — CAT/court **stay orders**, employee **representations**, retention requests. The BRD has `LATE_JOINING_REVIEW` but no stay-hold state, no representation entity, no "abandonment → revert to source / disciplinary (M09)" path. An employee relieved then never joining sits in permanent `IN_TRANSIT` limbo with pay stopped and no posting — the worst possible outcome, completely unhandled.
 
 **Bulk-drive concurrency:** `vacancy_positions.filled_count`/`vacant_count` never specify *when* a post becomes vacant (order? relief? join?). In a 1,000-order drive with **cascading vacancies** (A vacates a post B is allotted to), this ambiguity causes double-allotment at join time, not just at allotment.
 
@@ -35,17 +35,17 @@ The headline KPI — "≥ 99% transfers with continuous pay (no break)" — is *
 
 Strip the module to its irreducible truth: a transfer is **the controlled transfer of accountability for a person and a post from one custodian office to another, across a gap in time.** Everything else — orders, clearance, handover, SR events — is machinery to make that custody transfer *auditable and reversible*. Judged against that frame, two framing assumptions are wrong.
 
-**First, the "one active order per employee" invariant (§5.6-1) conflates the person with the post.** A person can legitimately hold a *substantive* posting and simultaneously hold *additional/current charge* of a second vacant post; can be on deputation (one order) and be repatriated (a second order that must co-exist during overlap); can be promotion-transferred while still relieving a prior move. The real invariant isn't "one order per person" — it's "**one active *substantive* posting transition per person**," with additional-charge and deputation as distinct, co-existable order classes. As written, the rule will block valid government realities.
+**First, the "one active order per employee" invariant (§5.6-1) conflates the person with the post.** A person can legitimately hold a *substantive* posting and simultaneously hold *additional/current charge* of a second vacant post; can be on deputation (one order) and be repatriated (a second order that must co-exist during overlap); can be promotion-transferred while still relieving a prior move. The real invariant isn't "one order per person" — it's "**one active *substantive* posting transition per person**," with additional-charge and deputation as distinct, co-existable order classes. As written, the rule will block valid enterprise realities.
 
 **Second, the spec models pay as a binary stop/start switch.** First principles: pay is *continuous service with a custody handoff*, not two events. The correct primitive is a **service-continuity ledger** where LWD and joining-date are boundary markers but the transit period is *paid duty/leave*, and the SR records **no break in qualifying service**. The current design treats the gap as dead time, which is why the pay KPI is unreachable.
 
-**Hidden assumption: that allotment is a batch computation.** Real cadre transfers in government are an **interactive counselling event** — candidates called in seniority order, choosing live from *remaining* vacancies, with on-the-spot, legally-recorded choices. The BRD's `allotment_method = PREFERENCE/SENIORITY/MERIT` is an offline sort. That is a simpler *and weaker* model than reality; it cannot represent the contested, observed, real-time allotment that transfer litigation hinges on. A simpler-but-correct framing: model a **counselling session** with a vacancy lock during each candidate's turn and an immutable choice log.
+**Hidden assumption: that allotment is a batch computation.** Real cadre transfers in enterprise are an **interactive counselling event** — candidates called in seniority order, choosing live from *remaining* vacancies, with on-the-spot, legally-recorded choices. The BRD's `allotment_method = PREFERENCE/SENIORITY/MERIT` is an offline sort. That is a simpler *and weaker* model than reality; it cannot represent the contested, observed, real-time allotment that transfer litigation hinges on. A simpler-but-correct framing: model a **counselling session** with a vacancy lock during each candidate's turn and an immutable choice log.
 
 **A simplification the author missed:** `vacancy_positions` re-stores `sanctioned_strength`/`filled_count` — data M01/M06 already own. That is a second source of truth that *will* drift. M05 should read strength, not duplicate it.
 
 ### Advisor 4 — The Outsider
 
-I read this as someone who has never worked in an Indian government HR office, and large parts assume knowledge the BRD never gives. **"LPC," "no-dues," "imprest," "DDO charge," "MCC," "cadre," "officiating," "repatriation," "forenoon/afternoon relieving"** — these are thrown around as if universal. A bilingual order template is promised but the *spec itself* is monolingual jargon. If a Workday-trained implementer builds this, they will mis-model half of it because the domain weight of each term is invisible.
+I read this as someone who has never worked in an Indian enterprise HR office, and large parts assume knowledge the BRD never gives. **"LPC," "no-dues," "imprest," "DDO charge," "MCC," "cadre," "officiating," "repatriation," "forenoon/afternoon relieving"** — these are thrown around as if universal. A bilingual order template is promised but the *spec itself* is monolingual jargon. If a Workday-trained implementer builds this, they will mis-model half of it because the domain weight of each term is invisible.
 
 **"Forenoon / Afternoon" relieving (`FORENOON`/`AFTERNOON`)** appears with no explanation of *why it matters* — it determines whether the day counts as duty at source or transit, which affects pay and seniority. That load-bearing rule is hidden in an enum.
 
@@ -81,19 +81,19 @@ Feasibility is good; sequencing is mostly right (§14.2 puts eligibility and SR-
 3. *All five missed:* none addresses **inter-se seniority assignment on joining** when several transferees join the same cadre/post — joining-date order sets seniority (M06 consumes it), and the spec gives no tie-break or joining-sequence integrity, which is a frequent litigation trigger.
 
 **Reviewer 2**
-1. *Strongest:* C — reframing "one active order per employee" as "one substantive transition" dissolves a constraint that would otherwise block additional-charge and deputation overlap, which are everyday government cases.
+1. *Strongest:* C — reframing "one active order per employee" as "one substantive transition" dissolves a constraint that would otherwise block additional-charge and deputation overlap, which are everyday enterprise cases.
 2. *Biggest blind spot:* E is contract-obsessed and under-weights the *human* process — E never flags that interactive counselling (C's point) breaks E's tidy batch sequencing.
 3. *All five missed:* **proof-of-service / acknowledgement of the transfer order.** "Relieve-by" deadlines and non-compliance discipline depend on when the order was *served on and acknowledged by* the employee — there is no served-date or acknowledgement entity anywhere.
 
 **Reviewer 3**
 1. *Strongest:* B again — in-transit ownership (dual/zero posting) is the kind of defect that corrupts headcount and budget reports silently for years.
 2. *Biggest blind spot:* D dismisses the vacancy map as gold-plating but doesn't notice the deeper duplication C caught (sanctioned-strength dual source of truth) — D critiques surface complexity, C critiques structural complexity.
-3. *All five missed:* **government quarters/estate** beyond a single clearance tick — retention of official accommodation post-transfer, vacation timelines, and licence-fee recovery are statutory and money-bearing; the BRD reduces them to one `ESTATE_QUARTERS` checklist line.
+3. *All five missed:* **enterprise quarters/estate** beyond a single clearance tick — retention of official accommodation post-transfer, vacation timelines, and licence-fee recovery are statutory and money-bearing; the BRD reduces them to one `ESTATE_QUARTERS` checklist line.
 
 **Reviewer 4**
 1. *Strongest:* E — the observation that the outbox is referenced as a frozen contract but never field-specified is the highest *delivery* risk for a five-agent parallel build.
 2. *Biggest blind spot:* A's optimism: the integration discipline A praises is real at the *naming* level but, as E shows, not at the *field* level — A mistook a table of references for a contract.
-3. *All five missed:* **idempotency and gapless statutory numbering under failure.** Govt order numbers must often be gapless per office per year; "retry sequence on collision" can leave gaps or duplicates across retries — a compliance defect none of the five fully pinned down.
+3. *All five missed:* **idempotency and gapless statutory numbering under failure.** Enterprise order numbers must often be gapless per office per year; "retry sequence on collision" can leave gaps or duplicates across retries — a compliance defect none of the five fully pinned down.
 
 **Reviewer 5**
 1. *Strongest:* C's counselling-session reframing — it is the difference between a system that *records* allotments and one that can *defend* them in a tribunal.
@@ -117,12 +117,12 @@ Feasibility is good; sequencing is mostly right (§14.2 puts eligibility and SR-
 ### Blind spots the whole council shares (surfaced in peer review)
 - Inter-se **seniority on joining-date order** (R1).
 - **Proof-of-service / acknowledgement** of the transfer order (R2).
-- **Government quarters/estate** as a money-bearing sub-process, not one checklist tick (R3).
+- **Enterprise quarters/estate** as a money-bearing sub-process, not one checklist tick (R3).
 - **Gapless statutory order numbering** under retry/failure (R4).
 - **Mutual-transfer coupling** at relieve/join, not just approval (R5).
 
 ### Idea Evolution
-The proposal evolves from "a clean transfer-lifecycle recorder" to "a **custody-and-continuity engine**": (1) pay/service modelled as *continuous with a custody handoff* rather than stop/start; (2) an explicit **in-transit custody owner**; (3) an **Authority forced-action power** (deemed-relief, deemed-clearance, handover-under-protest) that unblocks the human-conflict failure modes as one mechanism; (4) a **representation/stay-order hold** state reflecting government reality; (5) counselling modelled as an **interactive session** for contestable allotment. These five shifts convert a structurally-complete BRD into a statutorily-defensible one.
+The proposal evolves from "a clean transfer-lifecycle recorder" to "a **custody-and-continuity engine**": (1) pay/service modelled as *continuous with a custody handoff* rather than stop/start; (2) an explicit **in-transit custody owner**; (3) an **Authority forced-action power** (deemed-relief, deemed-clearance, handover-under-protest) that unblocks the human-conflict failure modes as one mechanism; (4) a **representation/stay-order hold** state reflecting enterprise reality; (5) counselling modelled as an **interactive session** for contestable allotment. These five shifts convert a structurally-complete BRD into a statutorily-defensible one.
 
 ### Focused Second Pass — the one FUNDAMENTAL clash (batch vs interactive counselling)
 E's concern (sequencing/feasibility) and C's concern (legal defensibility) are reconcilable. Resolution: **keep the batch `allotment_method` for SENIORITY/MERIT/MANUAL drives** (e.g., ministerial cadres allotted purely by seniority — no live event needed), and **add an optional `COUNSELLING` session model** (already hinted by `drive_type = COUNSELLING` and `drive.status = COUNSELLING`) for cadres that require live, observed allotment. A `counselling_sessions` entity with per-candidate turn order, a vacancy lock during a candidate's turn, and an immutable choice log gives C's defensibility *without* destroying E's batch path for the cases that don't need it. The two models coexist, selected by `drive_type`. This is additive, not a rewrite.
@@ -146,7 +146,7 @@ E's concern (sequencing/feasibility) and C's concern (legal defensibility) are r
 | 13 | Gapless statutory order numbering not guaranteed under retry/failure | Medium | R4 | Reserve-then-commit numbering with gap audit; per-office/per-year sequence policy |
 | 14 | Mutual transfer coupled only at approval, not relieve/join | Medium | R5 | Couple mutual pair through relieving & joining; block asymmetric completion |
 | 15 | Sensitive medical/spouse/compassionate docs in generic M13 store | Medium | D | Ring-fence sensitive-ground documents with restricted access class (DPDP sensitive category) |
-| 16 | Government quarters/estate reduced to one checklist tick | Low/Med | R3 | Model quarter retention/vacation timeline + licence-fee recovery signal to M10 |
+| 16 | Enterprise quarters/estate reduced to one checklist tick | Low/Med | R3 | Model quarter retention/vacation timeline + licence-fee recovery signal to M10 |
 | 17 | Enum redundancy (REQUEST vs TRANSFER_ON_REQUEST; type/ground/priority overlap) | Low | D / R-consensus | Collapse/clarify into orthogonal classification; one canonical taxonomy |
 | 18 | Vacancy map (FR-014) prioritised over more central representation flow | Low | D | Re-prioritise: map is enhancement; representation is baseline |
 
@@ -198,7 +198,7 @@ E's concern (sequencing/feasibility) and C's concern (legal defensibility) are r
 
 19. **Ring-fence sensitive-ground documents.** Classify medical/spouse/compassionate supporting documents as a DPDP sensitive category in M13 with restricted access and explicit access logging; note in §9 Privacy. (Risk 15)
 
-20. **Model government quarters/estate as a sub-process,** not one checklist line: retention-allowed flag, vacation-by date, and a licence-fee-recovery signal to M10 when accommodation is retained post-transfer. (Risk 16)
+20. **Model enterprise quarters/estate as a sub-process,** not one checklist line: retention-allowed flag, vacation-by date, and a licence-fee-recovery signal to M10 when accommodation is retained post-transfer. (Risk 16)
 
 21. **Rationalise the enum taxonomy.** Collapse `REQUEST`/`TRANSFER_ON_REQUEST` duplication, and define orthogonal axes: `transfer_type` (mechanism), `ground` (justification), `priority_category` (protection) with a clear catalog note so the five agents capture data consistently. (Risk 17)
 

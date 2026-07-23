@@ -1,11 +1,11 @@
 meta:
   plan_id: HRMS-DEV-PLAN-v1
-  title: Government HRMS Development, Testing, and Implementation Plan
+  title: PrimeSoft HRMS Development, Testing, and Implementation Plan
   status: final_after_adversarial_evaluation
   generated_on: "2026-07-01"
   classification: standard
   objective: >
-    Build the Government HRMS as a modular monolith on a reusable workflow
+    Build the PrimeSoft HRMS as a modular monolith on a reusable workflow
     platform extracted from the PUDA workflow engine, then implement the 14 HRMS
     modules in dependency order using the existing BRDs, data model, contracts,
     and PUDA workflow assets.
@@ -24,7 +24,7 @@ meta:
       - add workflow platform ownership, semver, compatibility, and security policy
       - make immutable authority-resolution evidence a platform requirement
       - start legacy migration/coexistence planning before release hardening
-      - clarify that PH-02 is contract/schema/fixture preparation, not full G01 implementation
+      - clarify that PH-02 is contract/schema/fixture preparation, not full PS01 implementation
       - defer advanced workflow configuration UI until after backend proof slices
   source_artifacts:
     hrms:
@@ -35,24 +35,24 @@ meta:
       - docs/contracts/dependency-register.yaml
       - docs/contracts/state-machines.yaml
       - docs/contracts/auth-matrix.yaml
-      - docs/contracts/openapi/G01.yaml
-      - docs/contracts/openapi/G02.yaml
-      - docs/contracts/openapi/G03.yaml
-      - docs/contracts/openapi/G04.yaml
-      - docs/contracts/openapi/G05.yaml
-      - docs/contracts/openapi/G06.yaml
-      - docs/contracts/openapi/G07.yaml
-      - docs/contracts/openapi/G08.yaml
-      - docs/contracts/openapi/G09.yaml
-      - docs/contracts/openapi/G10.yaml
-      - docs/contracts/openapi/G11.yaml
-      - docs/contracts/openapi/G12.yaml
-      - docs/contracts/openapi/G13.yaml
-      - docs/contracts/openapi/G14.yaml
+      - docs/contracts/openapi/PS01.yaml
+      - docs/contracts/openapi/PS02.yaml
+      - docs/contracts/openapi/PS03.yaml
+      - docs/contracts/openapi/PS04.yaml
+      - docs/contracts/openapi/PS05.yaml
+      - docs/contracts/openapi/PS06.yaml
+      - docs/contracts/openapi/PS07.yaml
+      - docs/contracts/openapi/PS08.yaml
+      - docs/contracts/openapi/PS09.yaml
+      - docs/contracts/openapi/PS10.yaml
+      - docs/contracts/openapi/PS11.yaml
+      - docs/contracts/openapi/PS12.yaml
+      - docs/contracts/openapi/PS13.yaml
+      - docs/contracts/openapi/PS14.yaml
       - docs/data-model/00-platform-core.sql
-      - docs/data-model/01-G01-employee-profile.sql
-      - docs/data-model/12-G12-digital-service-register.sql
-      - docs/data-model/13-G13-document-management.sql
+      - docs/data-model/01-PS01-employee-profile.sql
+      - docs/data-model/12-PS12-digital-service-register.sql
+      - docs/data-model/13-PS13-document-management.sql
     puda:
       repo: /Users/n15318/PUDA_workflow_engine
       # Expanded from the PH-00 candidate-set reconciliation (docs/spec/ph-00-candidate-set-reconciliation.md).
@@ -171,11 +171,11 @@ read_this_first:
     P02: Authorization, role, field-scope, and row-scope enforcement.
     P05: Tamper-evident audit evidence for mutations and security events.
     W1: Versioned workflow configuration and publish governance.
-    G01: Employee master and position/person identity source.
-    G03: Leave and attendance.
-    G05: Transfer, relieving, and joining.
-    G12: Digital service register ledger.
-    G13: Document vault and attachment metadata.
+    PS01: Employee master and position/person identity source.
+    PS03: Leave and attendance.
+    PS05: Transfer, relieving, and joining.
+    PS12: Digital service register ledger.
+    PS13: Document vault and attachment metadata.
     SR: Service Register, the authoritative employee service-history ledger.
     SoD: Segregation of duties, including no-self-approval.
     RLS: PostgreSQL row-level security.
@@ -208,9 +208,9 @@ architecture_decisions:
       reporting chain, position authority, org-unit heads, committees, acting
       charge, delegation, and SoD.
   - id: ADR-HRMS-004
-    decision: Use G03 leave and G05 transfer as workflow-platform exit slices.
+    decision: Use PS03 leave and PS05 transfer as workflow-platform exit slices.
     rationale: >
-      G03 proves simple reporting-chain approval; G05 proves hierarchy,
+      PS03 proves simple reporting-chain approval; PS05 proves hierarchy,
       parallel clearances, deemed outcomes, document output, and SR side effects.
 
 workflow_platform_governance:
@@ -267,7 +267,7 @@ delivery_controls:
       - A RED gate requires explicit risk acceptance after repair attempts.
   rule: >
     Do not start broad module implementation until gate_3_vertical_slice_exit
-    passes. G03 and G05 are the proof that the workflow platform, hierarchy,
+    passes. PS03 and PS05 are the proof that the workflow platform, hierarchy,
     audit, documents, notifications, and SR ledger work together.
   initial_team:
     - role: platform architect
@@ -279,14 +279,14 @@ delivery_controls:
     - role: database engineer
       focus: P01 schema amendments, RLS, migration staging, SR conformance
     - role: QA automation engineer
-      focus: golden tests, conformance suite, G03/G05 e2e evidence
+      focus: golden tests, conformance suite, PS03/PS05 e2e evidence
     - role: frontend engineer
       focus: inbox/task UI first; advanced workflow config UI only after backend proof
   fixture_packs:
     puda_golden_workflows: simple workflow, wait workflow, fork/join workflow, reference workflow
     hrms_authority_hierarchy: tenant, entity, org units, positions, employee assignments, delegations, acting charge
-    g03_leave_slice: employee, manager, leave type, balance ledger, delegation, SR outbox
-    g05_transfer_slice: authority matrix, transfer order, clearances, relieving, joining, document, SR event
+    ps03_leave_slice: employee, manager, leave type, balance ledger, delegation, SR outbox
+    ps05_transfer_slice: authority matrix, transfer order, clearances, relieving, joining, document, SR event
     sr_conformance: idempotency, semantic deduplication, reversal, corrigendum, audit evidence
     migration_coexistence: historical employee, service-history, document, pending-case, and audit samples
   ci_command_contracts:
@@ -316,11 +316,11 @@ phase_ownership_and_duration:
   PH-03:
     owner: backend foundation lead
     target_duration: 4-6 weeks
-    what_ships: P01, P02 integration, P05 audit, G01, G12, G13, notification/job foundations.
+    what_ships: P01, P02 integration, P05 audit, PS01, PS12, PS13, notification/job foundations.
   PH-04:
     owner: API lead
     target_duration: 2-3 weeks
-    what_ships: validated P01/G01/G12/G13 APIs.
+    what_ships: validated P01/PS01/PS12/PS13 APIs.
   PH-05:
     owner: frontend lead
     target_duration: 3-4 weeks
@@ -328,23 +328,23 @@ phase_ownership_and_duration:
   PH-06:
     owner: vertical-slice lead
     target_duration: 4-6 weeks
-    what_ships: G03 and G05 end-to-end evidence.
+    what_ships: PS03 and PS05 end-to-end evidence.
   PH-07:
     owner: employee transactions lead
     target_duration: 6-8 weeks
-    what_ships: G02, full G03, and G04.
+    what_ships: PS02, full PS03, and PS04.
   PH-08:
     owner: statutory administration lead
     target_duration: 10-14 weeks
-    what_ships: G05 full scope, G06, G07, G08, and G09.
+    what_ships: PS05 full scope, PS06, PS07, PS08, and PS09.
   PH-09:
     owner: compensation lead
     target_duration: 8-12 weeks
-    what_ships: G10 payroll and G11 pension with deterministic calculation evidence.
+    what_ships: PS10 payroll and PS11 pension with deterministic calculation evidence.
   PH-10:
     owner: release lead
     target_duration: 6-8 weeks
-    what_ships: G14 analytics, migration dry runs, hardening, deployment, and UAT evidence.
+    what_ships: PS14 analytics, migration dry runs, hardening, deployment, and UAT evidence.
 
 global_constraints:
   security:
@@ -379,25 +379,25 @@ parallelizable_groups:
     sync_gate: Workflow platform adapter boundary approved.
   group_B_foundation_records:
     can_run_in_parallel:
-      - G01 employee master
-      - G12 SR ledger write-port
-      - G13 document vault
-    sync_gate: G01 identity event posts to G12 and can attach G13 documents.
+      - PS01 employee master
+      - PS12 SR ledger write-port
+      - PS13 document vault
+    sync_gate: PS01 identity event posts to PS12 and can attach PS13 documents.
   group_C_statutory_modules:
     can_run_in_parallel:
-      - G04 leave to SR
-      - G05 transfer/relieving/joining
-      - G06 promotion/seniority
-      - G07 training
-      - G08 APAR
-      - G09 disciplinary
-    sync_gate: Each writer passes G12 SR ingestion conformance.
+      - PS04 leave to SR
+      - PS05 transfer/relieving/joining
+      - PS06 promotion/seniority
+      - PS07 training
+      - PS08 APAR
+      - PS09 disciplinary
+    sync_gate: Each writer passes PS12 SR ingestion conformance.
   group_D_money_and_analytics:
     can_run_in_parallel:
-      - G10 payroll rule scaffolding
-      - G11 pension rule-table scaffolding
-      - G14 stub marts
-    sync_gate: G11 input provenance gate receives live G03/G04/G09/G10/G12 facts.
+      - PS10 payroll rule scaffolding
+      - PS11 pension rule-table scaffolding
+      - PS14 stub marts
+    sync_gate: PS11 input provenance gate receives live PS03/PS04/PS09/PS10/PS12 facts.
 
 phases:
   - id: PH-00
@@ -570,7 +570,7 @@ phases:
     review_criteria:
       - No contradiction remains between PLATFORM_FOUNDATION, architecture, data model, and P01 OpenAPI.
       - Workflow runtime tables are tenant-scoped and RLS-protected where applicable.
-      - G14 can read pending workflow/SLA facts without inventing a parallel task model.
+      - PS14 can read pending workflow/SLA facts without inventing a parallel task model.
       - A past workflow decision can be explained without re-evaluating against today's hierarchy.
     rollback_retry_policy:
       rollback: Keep PH-00 extracted runtime behind adapter stubs; do not mutate module schemas until P01 amendment is approved.
@@ -589,11 +589,11 @@ phases:
       Prepare the HRMS contract, schema, and fixture substrate needed by workflow
       resolution: employees, positions, org units, reporting relationships,
       authority matrices, delegation, acting charge, committees, and seeded
-      statutory roles. This phase does not implement full operational G01, G12,
-      or G13 services; it gives the workflow platform reliable facts to resolve
-      G03 and G05.
+      statutory roles. This phase does not implement full operational PS01, PS12,
+      or PS13 services; it gives the workflow platform reliable facts to resolve
+      PS03 and PS05.
     requirements:
-      - G01 employee master, positions, position_history, and employee_job_assignments.
+      - PS01 employee master, positions, position_history, and employee_job_assignments.
       - Reporting manager and reports_to_position hierarchy.
       - Statutory authority matrices for appointing, transfer, disciplinary, appellate, reviewing, accepting, pension, payroll, and SR custodian roles.
       - Delegation and acting-charge windows with effective dates.
@@ -606,15 +606,15 @@ phases:
         - docs/spec/hrms-seed-data-plan.yaml
         - docs/tests/authority-resolution-tests.md
       modify:
-        - docs/data-model/01-G01-employee-profile.sql
-        - docs/data-model/06-G06-promotion-posting-progression.sql
-        - docs/data-model/09-G09-disciplinary-punishment.sql
+        - docs/data-model/01-PS01-employee-profile.sql
+        - docs/data-model/06-PS06-promotion-posting-progression.sql
+        - docs/data-model/09-PS09-disciplinary-punishment.sql
         - docs/contracts/auth-matrix.yaml
     implementation_steps:
       - Map every state-machine trigger in docs/contracts/state-machines.yaml to a resolver type.
       - Define authority matrix tables or confirm existing module tables cover them.
-      - Seed sample tenant/entity/org/position hierarchy sufficient for G03 and G05 vertical slices.
-      - Define committee membership, quorum, recusal, and voting result semantics as contracts and fixtures; full committee workflows can wait for G06/G09.
+      - Seed sample tenant/entity/org/position hierarchy sufficient for PS03 and PS05 vertical slices.
+      - Define committee membership, quorum, recusal, and voting result semantics as contracts and fixtures; full committee workflows can wait for PS06/PS09.
       - Add test fixtures for vacant manager, delegated manager, acting charge, conflict of interest, and cross-entity authority.
       - Add fixture cases for historical approvals where later employee, position, or hierarchy corrections must not rewrite the original resolver result.
     generated_tests:
@@ -632,15 +632,15 @@ phases:
       - Every resolver output is explainable and auditable.
       - Ambiguous authority is blocked, never guessed.
       - Effective-dated lookup rules are deterministic.
-      - HRMS seed data can drive G03 and G05 without ad hoc test-only bypasses.
+      - HRMS seed data can drive PS03 and PS05 without ad hoc test-only bypasses.
       - Operational implementation remains scoped to facts and fixtures; broad employee-master workflows stay in PH-03 and PH-07.
     rollback_retry_policy:
       rollback: Revert seed additions independently of schema additions; no destructive data changes without approval.
       retry: If statutory authority tables are under-specified, add a temporary read-only fixture adapter and quarantine affected flows.
       quarantine: Committee workflows can be deferred behind resolver stubs while reporting-chain and position-authority continue.
     exit_criteria:
-      - Authority resolver fixtures cover G03 leave and G05 transfer.
-      - G01 employee/position hierarchy loads with RLS enabled.
+      - Authority resolver fixtures cover PS03 leave and PS05 transfer.
+      - PS01 employee/position hierarchy loads with RLS enabled.
       - Auth matrix includes all workflow actors needed for Phase 4 vertical slices.
 
   - id: PH-03
@@ -649,15 +649,15 @@ phases:
     status: planned
     goal: >
       Implement reusable services that all modules consume: embedded P01,
-      P02 authorization integration, P05 audit hooks, G01 employee master, G12
-      SR ingestion, G13 document vault, X.1 jobs, X.2 notifications, and X.3
+      P02 authorization integration, P05 audit hooks, PS01 employee master, PS12
+      SR ingestion, PS13 document vault, X.1 jobs, X.2 notifications, and X.3
       integration adapters.
     requirements:
       - P01 embedded workflow service from extracted platform.
       - Authority Resolution Service with HRMS adapter.
-      - G01 employee master service.
-      - G12 append-only SR ingestion service.
-      - G13 document metadata/vault service.
+      - PS01 employee master service.
+      - PS12 append-only SR ingestion service.
+      - PS13 document metadata/vault service.
       - P05 mutation audit and security audit.
       - X.1/X.2/X.3 service boundaries.
       - Migration staging and reconciliation services for historical employee, SR, document, and workflow facts.
@@ -667,9 +667,9 @@ phases:
         - apps/api/src/platform/workflow/**
         - apps/api/src/platform/authority-resolution/**
         - apps/api/src/platform/audit/**
-        - apps/api/src/modules/g01/**
-        - apps/api/src/modules/g12/**
-        - apps/api/src/modules/g13/**
+        - apps/api/src/modules/ps01/**
+        - apps/api/src/modules/ps12/**
+        - apps/api/src/modules/ps13/**
         - apps/api/src/jobs/**
         - apps/api/src/notifications/**
         - apps/api/src/migration/staging/**
@@ -681,9 +681,9 @@ phases:
       - Add workflow-platform dependency as workspace/path dependency.
       - Implement HRMS workflow adapter repositories and transaction boundary.
       - Implement AuthorityResolver.resolve with REPORTING_CHAIN, POSITION_AUTHORITY, ORG_UNIT_HEAD, NAMED_ROLE, NAMED_USER, WORK_QUEUE, COMMITTEE, and DELEGATION_OR_ACTING_CHARGE.
-      - Implement G12 sr_ingest with idempotency, semantic dedup, provenance, source-driven reversal, and append-only persistence.
-      - Implement G13 document metadata and storage adapter with legal hold and retention hooks.
-      - Implement G01 service APIs for read-only master lookup and governed changes.
+      - Implement PS12 sr_ingest with idempotency, semantic dedup, provenance, source-driven reversal, and append-only persistence.
+      - Implement PS13 document metadata and storage adapter with legal hold and retention hooks.
+      - Implement PS01 service APIs for read-only master lookup and governed changes.
       - Implement read-only migration staging loaders and reconciliation reports for employee identity, SR history, documents, and legacy workflow cases.
       - Persist authority-resolution evidence with each workflow assignment and action.
     generated_tests:
@@ -694,7 +694,7 @@ phases:
         - P02 field masking serialization
       integration:
         - workflow start -> task -> approve -> action/audit row
-        - G01 identity event -> G12 SR ingest
+        - PS01 identity event -> PS12 SR ingest
         - document attach by module reference
         - RLS tenant isolation on all foundation services
         - migration staging import -> reconciliation report without mutating production records
@@ -710,10 +710,10 @@ phases:
     rollback_retry_policy:
       rollback: Disable new service routes behind feature flags; preserve schema migrations if non-destructive and unused.
       retry: Re-run focused service tests with synthetic data before enabling module code.
-      quarantine: If G12 append-only semantics fail, block all SR writers but allow non-SR services to continue.
+      quarantine: If PS12 append-only semantics fail, block all SR writers but allow non-SR services to continue.
     exit_criteria:
       - Foundation services pass unit, integration, RLS, and security checks.
-      - G01, G12, G13 can be exercised with seeded data.
+      - PS01, PS12, PS13 can be exercised with seeded data.
       - P01 can execute synthetic HRMS flows through the HRMS adapter.
 
   - id: PH-04
@@ -721,7 +721,7 @@ phases:
     planner_stage: API
     status: planned
     goal: >
-      Expose stable API surfaces for P01, G01, G12, and G13 before broad module
+      Expose stable API surfaces for P01, PS01, PS12, and PS13 before broad module
       development, using existing OpenAPI conventions and HRMS error taxonomy.
     requirements:
       - All endpoints under /api/v1.
@@ -733,21 +733,21 @@ phases:
     expected_files:
       create:
         - apps/api/src/routes/p01-workflow.routes.ts
-        - apps/api/src/routes/g01.routes.ts
-        - apps/api/src/routes/g12.routes.ts
-        - apps/api/src/routes/g13.routes.ts
+        - apps/api/src/routes/ps01.routes.ts
+        - apps/api/src/routes/ps12.routes.ts
+        - apps/api/src/routes/ps13.routes.ts
         - apps/api/src/openapi/**
       modify:
         - docs/contracts/openapi/P01-workflow.yaml
-        - docs/contracts/openapi/G01.yaml
-        - docs/contracts/openapi/G12.yaml
-        - docs/contracts/openapi/G13.yaml
+        - docs/contracts/openapi/PS01.yaml
+        - docs/contracts/openapi/PS12.yaml
+        - docs/contracts/openapi/PS13.yaml
         - docs/contracts/error-taxonomy.yaml
     implementation_steps:
       - "Implement P01 workflow endpoints: start, act, delegate, cancel, query, inbox, task detail."
-      - Implement G01 employee read/detail/governed-change entry points.
-      - Implement G12 SR ingest/read/corrigendum/dispute endpoints.
-      - Implement G13 document upload/version/attach/hold/retention endpoints.
+      - Implement PS01 employee read/detail/governed-change entry points.
+      - Implement PS12 SR ingest/read/corrigendum/dispute endpoints.
+      - Implement PS13 document upload/version/attach/hold/retention endpoints.
       - Add OpenAPI request/response validation and error envelope conformance.
     generated_tests:
       api:
@@ -757,8 +757,8 @@ phases:
         - cursor pagination bound tests
       integration:
         - P01 action from API writes workflow action and P05 audit
-        - G12 duplicate ingest returns original result
-        - G13 legal hold forbids disposal
+        - PS12 duplicate ingest returns original result
+        - PS13 legal hold forbids disposal
     review_criteria:
       - API contracts match docs and code.
       - No endpoint bypasses P02.
@@ -767,9 +767,9 @@ phases:
     rollback_retry_policy:
       rollback: Disable route registration per module behind configuration.
       retry: Regenerate OpenAPI and rerun contract tests after each route correction.
-      quarantine: A failed module route blocks that module only; P01/G01/G12/G13 route sets can ship independently.
+      quarantine: A failed module route blocks that module only; P01/PS01/PS12/PS13 route sets can ship independently.
     exit_criteria:
-      - P01, G01, G12, and G13 API smoke tests pass.
+      - P01, PS01, PS12, and PS13 API smoke tests pass.
       - OpenAPI validation passes.
       - Contract tests verify auth, idempotency, pagination, and error envelope.
 
@@ -780,7 +780,7 @@ phases:
     goal: >
       Build the operational HRMS UI shell, officer/employee workspaces, inbox,
       workflow task surfaces, and the minimum workflow configuration operations
-      needed to validate, review, publish, and simulate G03/G05 workflows. The
+      needed to validate, review, publish, and simulate PS03/PS05 workflows. The
       advanced PUDA workflow configuration UI is ported only after the backend
       proof slices are stable.
     requirements:
@@ -795,9 +795,9 @@ phases:
       create:
         - apps/web/src/app/**
         - apps/web/src/workflow/**
-        - apps/web/src/modules/g01/**
-        - apps/web/src/modules/g12/**
-        - apps/web/src/modules/g13/**
+        - apps/web/src/modules/ps01/**
+        - apps/web/src/modules/ps12/**
+        - apps/web/src/modules/ps13/**
         - apps/web/src/locales/**
       source_from_puda:
         - /Users/n15318/PUDA_workflow_engine/apps/officer/src/WorkflowConfigConsole.tsx
@@ -810,7 +810,7 @@ phases:
       - Build the minimum workflow config review/publish surface against P01, using YAML-backed configs if the visual editor is not ready.
       - Inventory and selectively port PUDA workflow config UI as platform UI only after removing PUDA authorities/service-pack assumptions.
       - Build inbox, task detail, action panel, comments, send-back, delegation, and audit history surfaces.
-      - Build G01 employee profile read views, G12 SR ledger views, and G13 document attachment views.
+      - Build PS01 employee profile read views, PS12 SR ledger views, and PS13 document attachment views.
       - Add responsive and accessibility states for loading, empty, error, no-permission, and partial-data.
     generated_tests:
       unit:
@@ -822,7 +822,7 @@ phases:
         - start workflow and approve task
         - sendBack with mandatory reason
         - workflow config validate/review/publish/simulate through YAML-backed or UI surface
-        - G01 employee detail with masked PII
+        - PS01 employee detail with masked PII
       accessibility:
         - WCAG 2.1 AA checks on core workflow screens
     review_criteria:
@@ -840,7 +840,7 @@ phases:
       - Workflow configuration can validate, review, publish, and simulate HRMS workflows through at least the minimum YAML-backed surface.
 
   - id: PH-06
-    name: Prove Workflow Platform with G03 Leave and G05 Transfer Vertical Slices
+    name: Prove Workflow Platform with PS03 Leave and PS05 Transfer Vertical Slices
     planner_stage: integration
     status: planned
     goal: >
@@ -848,25 +848,25 @@ phases:
       UI, audit, notification, documents, and SR integration can drive real HRMS
       flows before mass-building all modules.
     requirements:
-      - G03 leave application uses REPORTING_CHAIN and delegation.
-      - G05 transfer/relieving/joining uses POSITION_AUTHORITY, parallel clearance, deemed clearance, document generation, and SR posting.
-      - Every slice uses real P01, P02, P05, G01, G12, G13, X.1, and X.2.
+      - PS03 leave application uses REPORTING_CHAIN and delegation.
+      - PS05 transfer/relieving/joining uses POSITION_AUTHORITY, parallel clearance, deemed clearance, document generation, and SR posting.
+      - Every slice uses real P01, P02, P05, PS01, PS12, PS13, X.1, and X.2.
     dependencies: [PH-05]
     expected_files:
       create:
-        - apps/api/src/modules/g03/**
-        - apps/api/src/modules/g05/**
-        - apps/web/src/modules/g03/**
-        - apps/web/src/modules/g05/**
-        - docs/spec/vertical-slice-g03-leave.yaml
-        - docs/spec/vertical-slice-g05-transfer.yaml
+        - apps/api/src/modules/ps03/**
+        - apps/api/src/modules/ps05/**
+        - apps/web/src/modules/ps03/**
+        - apps/web/src/modules/ps05/**
+        - docs/spec/vertical-slice-ps03-leave.yaml
+        - docs/spec/vertical-slice-ps05-transfer.yaml
       modify:
-        - docs/contracts/openapi/G03.yaml
-        - docs/contracts/openapi/G05.yaml
+        - docs/contracts/openapi/PS03.yaml
+        - docs/contracts/openapi/PS05.yaml
         - docs/contracts/state-machines.yaml
     implementation_steps:
-      - Implement minimal G03 leave type, leave balance, leave application, approval, ledger debit, and G04-ready outbox event.
-      - Implement minimal G05 transfer order, clearance checklist, relieving, joining, document generation hook, and SR event.
+      - Implement minimal PS03 leave type, leave balance, leave application, approval, ledger debit, and PS04-ready outbox event.
+      - Implement minimal PS05 transfer order, clearance checklist, relieving, joining, document generation hook, and SR event.
       - Configure workflows in W.1 rather than hardcoding approval paths.
       - Run both slices through UI and API paths.
       - Capture audit, notification, and SR evidence.
@@ -876,8 +876,8 @@ phases:
         - transfer date consistency
         - deemed clearance SLA outcome
       integration:
-        - G03 submit -> manager approve -> ledger -> SR outbox
-        - G05 initiate -> authority approve -> parallel clearance -> relieving -> joining -> SR ingest
+        - PS03 submit -> manager approve -> ledger -> SR outbox
+        - PS05 initiate -> authority approve -> parallel clearance -> relieving -> joining -> SR ingest
         - delegated approver cannot self-approve
       e2e:
         - employee leave request
@@ -891,14 +891,14 @@ phases:
     review_criteria:
       - No approval path is hardcoded outside workflow config.
       - Resolver snapshots explain every assignee.
-      - SR writes pass G12 conformance.
+      - SR writes pass PS12 conformance.
       - Slice can be demoed without manual DB edits.
     rollback_retry_policy:
-      rollback: Disable G03/G05 feature flags; keep platform services online.
-      retry: If G05 is too broad, reduce to transfer-order approval plus one clearance branch, then expand.
-      quarantine: Failure in G05 does not block G03; failure in P01/P02/P05/G12 blocks both.
+      rollback: Disable PS03/PS05 feature flags; keep platform services online.
+      retry: If PS05 is too broad, reduce to transfer-order approval plus one clearance branch, then expand.
+      quarantine: Failure in PS05 does not block PS03; failure in P01/P02/P05/PS12 blocks both.
     exit_criteria:
-      - G03 and G05 slices pass unit, integration, e2e, and evidence checks.
+      - PS03 and PS05 slices pass unit, integration, e2e, and evidence checks.
       - Architecture decision to scale module build is confirmed.
 
   - id: PH-07
@@ -909,50 +909,50 @@ phases:
       Build the employee-facing transactional base once workflow platform and
       vertical slices are proven.
     requirements:
-      - G02 personal details workflow.
-      - Full G03 attendance and leave.
-      - G04 leave to SR integration.
+      - PS02 personal details workflow.
+      - Full PS03 attendance and leave.
+      - PS04 leave to SR integration.
     dependencies: [PH-06]
     expected_files:
       create:
-        - apps/api/src/modules/g02/**
-        - apps/api/src/modules/g04/**
-        - apps/web/src/modules/g02/**
-        - apps/web/src/modules/g04/**
+        - apps/api/src/modules/ps02/**
+        - apps/api/src/modules/ps04/**
+        - apps/web/src/modules/ps02/**
+        - apps/web/src/modules/ps04/**
       modify:
-        - apps/api/src/modules/g03/**
-        - apps/web/src/modules/g03/**
-        - docs/contracts/openapi/G02.yaml
-        - docs/contracts/openapi/G03.yaml
-        - docs/contracts/openapi/G04.yaml
+        - apps/api/src/modules/ps03/**
+        - apps/web/src/modules/ps03/**
+        - docs/contracts/openapi/PS02.yaml
+        - docs/contracts/openapi/PS03.yaml
+        - docs/contracts/openapi/PS04.yaml
     implementation_steps:
-      - Implement G02 change request, sensitive field routing, evidence docs, status, commit, reversal, and G01-owned SR posting.
-      - Complete G03 leave policies, balances, attendance capture, regularisation, overtime, anomaly review, and jobs.
-      - Implement G04 outbox, relay, reconciliation, DLQ, replay/discard, and audit evidence.
+      - Implement PS02 change request, sensitive field routing, evidence docs, status, commit, reversal, and PS01-owned SR posting.
+      - Complete PS03 leave policies, balances, attendance capture, regularisation, overtime, anomaly review, and jobs.
+      - Implement PS04 outbox, relay, reconciliation, DLQ, replay/discard, and audit evidence.
     generated_tests:
       unit:
-        - G02 sensitivity routing
-        - G03 leave accrual and balance ledger
-        - G04 idempotent relay and DLQ
+        - PS02 sensitivity routing
+        - PS03 leave accrual and balance ledger
+        - PS04 idempotent relay and DLQ
       integration:
-        - G02 approved change commits through G01 and posts SR through G01
-        - G03 approved leave triggers G04 and G12
+        - PS02 approved change commits through PS01 and posts SR through PS01
+        - PS03 approved leave triggers PS04 and PS12
         - attendance regularisation recompute job
       e2e:
         - employee personal detail change
         - leave application and cancellation
         - DLQ replay by authorized custodian
     review_criteria:
-      - G02 does not directly write SR identity events.
-      - G04 is the reference SR writer for downstream phases.
-      - Attendance/leave payroll signals are contract-ready for G10.
+      - PS02 does not directly write SR identity events.
+      - PS04 is the reference SR writer for downstream phases.
+      - Attendance/leave payroll signals are contract-ready for PS10.
     rollback_retry_policy:
       rollback: Module-level feature flags; DLQ replay is reversible only through source-driven reversal events.
-      retry: Re-run SR conformance suite for every G04 relay fix.
-      quarantine: G04 failure blocks leave-to-SR posting but not basic leave approval if contractually accepted for staged rollout.
+      retry: Re-run SR conformance suite for every PS04 relay fix.
+      quarantine: PS04 failure blocks leave-to-SR posting but not basic leave approval if contractually accepted for staged rollout.
     exit_criteria:
-      - G02/G03/G04 pass module tests and SR conformance.
-      - G03 produces stable payroll input signals.
+      - PS02/PS03/PS04 pass module tests and SR conformance.
+      - PS03 produces stable payroll input signals.
 
   - id: PH-08
     name: Build Statutory Administration Wave
@@ -962,36 +962,36 @@ phases:
       Build the main statutory HR administration modules on the proven workflow,
       authority, SR, document, and audit foundation.
     requirements:
-      - G05 transfer/relieving/joining full scope.
-      - G06 promotion, seniority, DPC, MACP.
-      - G07 training and skill development.
-      - G08 APAR/performance appraisal.
-      - G09 disciplinary cases and punishment.
+      - PS05 transfer/relieving/joining full scope.
+      - PS06 promotion, seniority, DPC, MACP.
+      - PS07 training and skill development.
+      - PS08 APAR/performance appraisal.
+      - PS09 disciplinary cases and punishment.
     dependencies: [PH-07]
     expected_files:
       create:
-        - apps/api/src/modules/g06/**
-        - apps/api/src/modules/g07/**
-        - apps/api/src/modules/g08/**
-        - apps/api/src/modules/g09/**
-        - apps/web/src/modules/g06/**
-        - apps/web/src/modules/g07/**
-        - apps/web/src/modules/g08/**
-        - apps/web/src/modules/g09/**
+        - apps/api/src/modules/ps06/**
+        - apps/api/src/modules/ps07/**
+        - apps/api/src/modules/ps08/**
+        - apps/api/src/modules/ps09/**
+        - apps/web/src/modules/ps06/**
+        - apps/web/src/modules/ps07/**
+        - apps/web/src/modules/ps08/**
+        - apps/web/src/modules/ps09/**
       modify:
-        - apps/api/src/modules/g05/**
-        - apps/web/src/modules/g05/**
-        - docs/contracts/openapi/G05.yaml
-        - docs/contracts/openapi/G06.yaml
-        - docs/contracts/openapi/G07.yaml
-        - docs/contracts/openapi/G08.yaml
-        - docs/contracts/openapi/G09.yaml
+        - apps/api/src/modules/ps05/**
+        - apps/web/src/modules/ps05/**
+        - docs/contracts/openapi/PS05.yaml
+        - docs/contracts/openapi/PS06.yaml
+        - docs/contracts/openapi/PS07.yaml
+        - docs/contracts/openapi/PS08.yaml
+        - docs/contracts/openapi/PS09.yaml
     implementation_steps:
-      - Complete G05 advanced transfer, relieving, joining, retention, representation, and cancellation.
-      - Implement G06 seniority list, promotion case, DPC committee, MACP, sanctioned-post integration, and SR events.
-      - Implement G07 competency, training calendar, nomination approvals, certifications, and optional SR postings.
-      - Implement G08 APAR form, reporting/reviewing/accepting chain, calibration, representation, and sealed-cover rules.
-      - Implement G09 charge memo, inquiry, penalty, appeal, sealed/confidential routing, and authority competence checks.
+      - Complete PS05 advanced transfer, relieving, joining, retention, representation, and cancellation.
+      - Implement PS06 seniority list, promotion case, DPC committee, MACP, sanctioned-post integration, and SR events.
+      - Implement PS07 competency, training calendar, nomination approvals, certifications, and optional SR postings.
+      - Implement PS08 APAR form, reporting/reviewing/accepting chain, calibration, representation, and sealed-cover rules.
+      - Implement PS09 charge memo, inquiry, penalty, appeal, sealed/confidential routing, and authority competence checks.
     generated_tests:
       unit:
         - seniority tie-breaks
@@ -1000,9 +1000,9 @@ phases:
         - disciplinary authority competence
         - transfer retention/deemed relief
       integration:
-        - every statutory SR writer posts via G12
-        - G06 consumes G08/G09/G05 fixtures then live facts
-        - G09 penalty affects G06 and G11 fixtures
+        - every statutory SR writer posts via PS12
+        - PS06 consumes PS08/PS09/PS05 fixtures then live facts
+        - PS09 penalty affects PS06 and PS11 fixtures
       e2e:
         - transfer cycle
         - DPC promotion cycle
@@ -1011,14 +1011,14 @@ phases:
     review_criteria:
       - All module workflows are W.1 configured.
       - SoD and authority competence are centrally enforced.
-      - G06 and G09 receive extra review due to XL statutory complexity.
-      - SR event semantics are consistent across G05/G06/G08/G09.
+      - PS06 and PS09 receive extra review due to XL statutory complexity.
+      - SR event semantics are consistent across PS05/PS06/PS08/PS09.
     rollback_retry_policy:
       rollback: Feature flags by module and workflow code; corrections via SR corrigenda, not ledger edits.
       retry: Retry failed module with recorded fixture inputs and SR conformance harness before live integration.
-      quarantine: G06 or G09 can be quarantined without blocking G07/G08 if their shared contracts are fixture-backed.
+      quarantine: PS06 or PS09 can be quarantined without blocking PS07/PS08 if their shared contracts are fixture-backed.
     exit_criteria:
-      - G05/G06/G07/G08/G09 pass focused tests, e2e flows, SR conformance, and security review.
+      - PS05/PS06/PS07/PS08/PS09 pass focused tests, e2e flows, SR conformance, and security review.
       - Live cross-module feeds replace fixtures for promotion and disciplinary impacts.
 
   - id: PH-09
@@ -1030,24 +1030,24 @@ phases:
       disciplinary, transfer, and promotion facts are stable enough for money
       calculations.
     requirements:
-      - G10 payroll and benefits extends PrimeSoft M06/M07.
-      - G11 retirement and pension consumes G01, G03, G04, G09, G10, and G12.
+      - PS10 payroll and benefits extends PrimeSoft M06/M07.
+      - PS11 retirement and pension consumes PS01, PS03, PS04, PS09, PS10, and PS12.
       - Deterministic calculation traces and provenance gates.
     dependencies: [PH-08]
     expected_files:
       create:
-        - apps/api/src/modules/g10/**
-        - apps/api/src/modules/g11/**
-        - apps/web/src/modules/g10/**
-        - apps/web/src/modules/g11/**
+        - apps/api/src/modules/ps10/**
+        - apps/api/src/modules/ps11/**
+        - apps/web/src/modules/ps10/**
+        - apps/web/src/modules/ps11/**
       modify:
-        - docs/contracts/openapi/G10.yaml
-        - docs/contracts/openapi/G11.yaml
+        - docs/contracts/openapi/PS10.yaml
+        - docs/contracts/openapi/PS11.yaml
         - docs/contracts/error-taxonomy.yaml
     implementation_steps:
-      - Implement G10 salary structures, payroll runs, deductions, loans, benefits, FnF, and public-sector pay rules.
-      - Implement G10 locked payroll periods and adjustment feeds from G03/G05/G06/G09.
-      - Implement G11 service-verification gate against G12, qualifying-service calculation, pension/gratuity/commutation, PPO, and pensioner lifecycle.
+      - Implement PS10 salary structures, payroll runs, deductions, loans, benefits, FnF, and public-sector pay rules.
+      - Implement PS10 locked payroll periods and adjustment feeds from PS03/PS05/PS06/PS09.
+      - Implement PS11 service-verification gate against PS12, qualifying-service calculation, pension/gratuity/commutation, PPO, and pensioner lifecycle.
       - Persist calculation trace and rule version snapshots.
       - Integrate X.3 sandbox stubs for bank, treasury, pension disbursement, and identity verification.
     generated_tests:
@@ -1057,10 +1057,10 @@ phases:
         - qualifying-service calculation
         - pension/gratuity/commutation deterministic calculation
       integration:
-        - G03 LOP affects payroll
-        - G09 penalty affects qualifying service
-        - G10 last-pay-drawn feeds G11
-        - G11 writes separation/PPO SR events
+        - PS03 LOP affects payroll
+        - PS09 penalty affects qualifying service
+        - PS10 last-pay-drawn feeds PS11
+        - PS11 writes separation/PPO SR events
       financial_controls:
         - maker-checker for payroll lock and pension sanction
         - reproducibility tests for same inputs/rule versions
@@ -1072,9 +1072,9 @@ phases:
     rollback_retry_policy:
       rollback: Disable payroll/pension execution routes; keep read-only previews available if safe.
       retry: Re-run deterministic calculation suite after every rule change.
-      quarantine: G11 calculation can remain in preview mode until all upstream provenance gaps are resolved.
+      quarantine: PS11 calculation can remain in preview mode until all upstream provenance gaps are resolved.
     exit_criteria:
-      - G10/G11 pass deterministic, integration, and SoD tests.
+      - PS10/PS11 pass deterministic, integration, and SoD tests.
       - Pension case cannot pass gate with incomplete SR/service facts.
 
   - id: PH-10
@@ -1082,27 +1082,27 @@ phases:
     planner_stage: integration
     status: planned
     goal: >
-      Build G14 analytics and complete enterprise-grade security, observability,
+      Build PS14 analytics and complete enterprise-grade security, observability,
       performance, migration, deployment, and release evidence for HRMS.
     requirements:
-      - G14 read-only dashboards and marts.
+      - PS14 read-only dashboards and marts.
       - Role-scoped analytics with P02/RLS enforcement.
       - NFR validation for API p95, dashboard LCP, audit, backup, DR, accessibility, and security.
       - P06 migration dry runs, reconciliation certification, coexistence handling, and production cutover plan.
     dependencies: [PH-09]
     expected_files:
       create:
-        - apps/api/src/modules/g14/**
-        - apps/web/src/modules/g14/**
+        - apps/api/src/modules/ps14/**
+        - apps/web/src/modules/ps14/**
         - apps/api/src/migration/**
         - ops/**
         - docs/release/**
       modify:
-        - docs/contracts/openapi/G14.yaml
+        - docs/contracts/openapi/PS14.yaml
         - docs/architecture.md
         - docs/phased-plan.md
     implementation_steps:
-      - Build G14 marts for employee, workflow SLA, SR completeness, pension pipeline, disciplinary aging, payroll, and compliance.
+      - Build PS14 marts for employee, workflow SLA, SR completeness, pension pipeline, disciplinary aging, payroll, and compliance.
       - Add dashboard APIs with cache/read-replica strategy.
       - "Run full security review: authz, RLS, PII masking, audit, secrets, dependency policy."
       - Run performance tests for workflow-heavy paths, list pagination, dashboard queries, payroll/pension batch jobs.
@@ -1131,7 +1131,7 @@ phases:
         - migration reconciliation and certification evidence
         - UAT acceptance pack
     review_criteria:
-      - G14 never mutates source modules.
+      - PS14 never mutates source modules.
       - Dashboards cannot show out-of-scope rows or masked PII.
       - Release evidence maps requirements to code, tests, logs, and screenshots.
       - Migration exceptions have explicit owners, disposition, and legal/business acceptance.
@@ -1502,7 +1502,7 @@ ui_remediation_2026_07_11:
       requirements:
         - Decide the authoritative design-system contract: Tailwind plus shadcn, or an approved architecture amendment for equivalent local primitives.
         - Approve any new routing, component, i18n, or browser-test production/development dependencies through dependency policy.
-        - Freeze route and destination ownership for Inbox and G01 through G14.
+        - Freeze route and destination ownership for Inbox and PS01 through PS14.
         - Freeze Me, My Team, and Admin data-scope behavior with server-enforced authorization expectations.
         - Freeze supported login, password-reset, session-expiry, workflow-config, evidence-export, error-reference, and sensitive-action confirmation behavior.
         - Classify each UI-01 through UI-28 row as fix, merge, defer, or reject with rationale.
@@ -1830,7 +1830,7 @@ ui_remediation_2026_07_11:
             - Disabled actions explain prerequisites accessibly.
             - Lifecycle status and errors remain contract-faithful and user-safe.
           expected_files:
-            - apps/web/src/modules/g10/**
+            - apps/web/src/modules/ps10/**
           generated_tests:
             - irreversible/finalizing action confirmation and cancellation
             - permission and lifecycle denial matrices
@@ -1864,19 +1864,19 @@ ui_remediation_2026_07_11:
       finding_coverage: [UI-13, UI-19, UI-20, UI-21, UI-22, UI-23, UI-27, UI-28]
       expected_files:
         inspect_then_modify:
-          - apps/web/src/modules/g01/**
-          - apps/web/src/modules/g02/**
-          - apps/web/src/modules/g03/**
-          - apps/web/src/modules/g04/**
-          - apps/web/src/modules/g05/**
-          - apps/web/src/modules/g06/**
-          - apps/web/src/modules/g07/**
-          - apps/web/src/modules/g08/**
-          - apps/web/src/modules/g09/**
-          - apps/web/src/modules/g11/**
-          - apps/web/src/modules/g12/**
-          - apps/web/src/modules/g13/**
-          - apps/web/src/modules/g14/**
+          - apps/web/src/modules/ps01/**
+          - apps/web/src/modules/ps02/**
+          - apps/web/src/modules/ps03/**
+          - apps/web/src/modules/ps04/**
+          - apps/web/src/modules/ps05/**
+          - apps/web/src/modules/ps06/**
+          - apps/web/src/modules/ps07/**
+          - apps/web/src/modules/ps08/**
+          - apps/web/src/modules/ps09/**
+          - apps/web/src/modules/ps11/**
+          - apps/web/src/modules/ps12/**
+          - apps/web/src/modules/ps13/**
+          - apps/web/src/modules/ps14/**
           - apps/web/src/locales/**
           - apps/web/src/styles/**
       generated_tests:
@@ -2016,7 +2016,7 @@ phase_gates:
     after: PH-06
     gate: agentic
     pass_when:
-      - G03 and G05 flows run from UI through API to workflow, audit, notification, document, and SR evidence.
+      - PS03 and PS05 flows run from UI through API to workflow, audit, notification, document, and SR evidence.
       - No hardcoded approval path remains.
     blocks:
       - PH-07

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-22A oracle: G08 FR-20 DSC / non-repudiation signing — digital_signatures (SHA-256 payload,
+# PH-22A oracle: PS08 FR-20 DSC / non-repudiation signing — digital_signatures (SHA-256 payload,
 # method policy, signer identity), signing gate on certify/ratify actions.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g08 apps/api/src/routes/g08.routes.ts"; T=apps/api/test
-echo "== PH-22A exit-criteria (G08 DSC / non-repudiation) =="
+S="apps/api/src/modules/ps08 apps/api/src/routes/ps08.routes.ts"; T=apps/api/test
+echo "== PH-22A exit-criteria (PS08 DSC / non-repudiation) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "signatures entity consumed (digital_signatures)::digital_signatures|digitalSignature" \

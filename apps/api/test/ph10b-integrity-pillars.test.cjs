@@ -1,8 +1,8 @@
-// PH-10B: G12 integrity pillars on the PH-10A SHA-256 substrate (BRD G12 FR-04/07/10/17) —
-// integrity verify endpoint + JOB-G12-INTEGRITY on the same code path with a NEGATIVE
+// PH-10B: PS12 integrity pillars on the PH-10A SHA-256 substrate (BRD PS12 FR-04/07/10/17) —
+// integrity verify endpoint + JOB-PS12-INTEGRITY on the same code path with a NEGATIVE
 // tamper test (mutated chain copy -> verify FAILs at the offending sequence number), a
 // REAL Merkle root over per-employee chain heads behind an injectable RFC 3161 TSA fake
-// (recompute + sensitivity asserted), the completeness gap register (JOB-G12-GAPSCAN ->
+// (recompute + sensitivity asserted), the completeness gap register (JOB-PS12-GAPSCAN ->
 // GAP_FLAGGED, lifecycle without deletes), custodian attestation, and certified extracts
 // with P02 fail-closed redaction. Executed against the compiled dist under `npm test`.
 "use strict";
@@ -51,7 +51,7 @@ function fakeTsa() {
 
 function ingest(services, scope, employeeId, seq, eventTypeCode = "IDENTITY_CHANGE", payload = undefined) {
   return services.serviceRegister.ingest(scope, `idem-ph10b-${employeeId}-${seq}`, {
-    sourceModule: "G01",
+    sourceModule: "PS01",
     sourceReferenceId: `employee:ph10b:${employeeId}:${seq}`,
     sourceEventVersion: 1,
     employeeId,
@@ -63,7 +63,7 @@ function ingest(services, scope, employeeId, seq, eventTypeCode = "IDENTITY_CHAN
   }).event;
 }
 
-test("PH-10B FR-04 verify endpoint recomputes both chains and reports OK; JOB-G12-INTEGRITY drives the same path", () => {
+test("PH-10B FR-04 verify endpoint recomputes both chains and reports OK; JOB-PS12-INTEGRITY drives the same path", () => {
   const services = createFoundationServices();
   const scope = actor("user-ph10b-verify");
   const api = createFoundationApi(services);
@@ -84,10 +84,10 @@ test("PH-10B FR-04 verify endpoint recomputes both chains and reports OK; JOB-G1
   assert.equal(response.body.entryChain.linksChecked, 3);
   assert.equal(response.body.statusChain.result, "OK");
 
-  // JOB-G12-INTEGRITY: the scheduled recompute job registers by that literal id and
+  // JOB-PS12-INTEGRITY: the scheduled recompute job registers by that literal id and
   // reuses the same verify code path over every employee chain.
   const jobResult = services.srIntegrity.runIntegrityJob(scope, "run-ph10b-integrity-1");
-  assert.equal(jobResult.run.jobId, "JOB-G12-INTEGRITY");
+  assert.equal(jobResult.run.jobId, "JOB-PS12-INTEGRITY");
   assert.equal(jobResult.run.status, "SUCCEEDED");
   assert.equal(jobResult.result, "OK");
   assert.equal(jobResult.employeesChecked >= 1, true);
@@ -155,16 +155,16 @@ test("PH-10B Merkle root is real pairwise SHA-256 with odd-node promotion: recom
   assert.equal(computeMerkleRoot([]), GENESIS_HASH);
 });
 
-test("PH-10B JOB-G12-ANCHOR persists a real Merkle anchor over per-employee chain heads behind the TSA seam", () => {
+test("PH-10B JOB-PS12-ANCHOR persists a real Merkle anchor over per-employee chain heads behind the TSA seam", () => {
   const tsa = fakeTsa();
-  const services = createFoundationServices({ g12TimestampAuthority: tsa });
+  const services = createFoundationServices({ ps12TimestampAuthority: tsa });
   const scope = actor("user-ph10b-anchor");
   ingest(services, scope, "emp-ph10b-0003", 1);
   ingest(services, scope, "emp-ph10b-0003", 2);
   ingest(services, scope, "emp-ph10b-0004", 1);
 
   const first = services.srIntegrity.runAnchorJob(scope, "run-ph10b-anchor-1", { periodFrom: "2026-01-01T00:00:00.000Z", periodTo: "2026-06-30T23:59:59.000Z" });
-  assert.equal(first.run.jobId, "JOB-G12-ANCHOR");
+  assert.equal(first.run.jobId, "JOB-PS12-ANCHOR");
   assert.equal(first.anchor.leafCount, 2);
   assert.equal(first.anchor.prevAnchorHash, GENESIS_HASH);
 
@@ -194,7 +194,7 @@ test("PH-10B JOB-G12-ANCHOR persists a real Merkle anchor over per-employee chai
   assert.equal(services.srIntegrity.listAnchors(scope).length, 2);
 });
 
-test("PH-10B JOB-G12-GAPSCAN reconciles expected-event rules and appends GAP_FLAGGED rows; lifecycle never deletes", () => {
+test("PH-10B JOB-PS12-GAPSCAN reconciles expected-event rules and appends GAP_FLAGGED rows; lifecycle never deletes", () => {
   const services = createFoundationServices();
   const scope = actor("user-ph10b-gapscan");
   // emp-A misses the expected increment; emp-B recorded it; emp-C has a legitimate suppressor.
@@ -210,11 +210,11 @@ test("PH-10B JOB-G12-GAPSCAN reconciles expected-event rules and appends GAP_FLA
     severity: "CRITICAL",
     status: "PUBLISHED",
     effectiveFrom: "2020-01-01",
-    sourceRuleRef: "G10:INCREMENT-CADENCE",
+    sourceRuleRef: "PS10:INCREMENT-CADENCE",
   });
 
   const scan = services.srIntegrity.runGapScan(scope, "run-ph10b-gapscan-1", { periodFrom: "2026-01-01", periodTo: "2026-12-31" });
-  assert.equal(scan.run.jobId, "JOB-G12-GAPSCAN");
+  assert.equal(scan.run.jobId, "JOB-PS12-GAPSCAN");
   assert.equal(scan.flagged.length, 1);
   assert.equal(scan.flagged[0].employeeId, "emp-ph10b-gap-a");
   assert.equal(scan.flagged[0].gapStatus, "GAP_FLAGGED");
@@ -250,7 +250,7 @@ test("PH-10B JOB-G12-GAPSCAN reconciles expected-event rules and appends GAP_FLA
 
 test("PH-10B custodian attestation signs the chain head; SERVER_SIGNED is banned for statutory attestations", () => {
   const tsa = fakeTsa();
-  const services = createFoundationServices({ g12TimestampAuthority: tsa });
+  const services = createFoundationServices({ ps12TimestampAuthority: tsa });
   const scope = actor("user-ph10b-custodian");
   ingest(services, scope, "emp-ph10b-0005", 1);
   const head = ingest(services, scope, "emp-ph10b-0005", 2);
@@ -268,7 +268,7 @@ test("PH-10B custodian attestation signs the chain head; SERVER_SIGNED is banned
   assert.equal(attestation.tsaTimestampToken, `fake-tsa-token:${head.entryHash}`);
   assert.equal(services.srIntegrity.listAttestations(scope, "emp-ph10b-0005").length, 1);
 
-  // BRD G12 §5.6 r.11: server-signed statutory outputs are rejected.
+  // BRD PS12 §5.6 r.11: server-signed statutory outputs are rejected.
   assert.throws(
     () =>
       services.srIntegrity.attestChainHead(scope, {
@@ -329,7 +329,7 @@ test("PH-10B integrity routes are protected and drive the pillars end-to-end", (
   const scope = actor("user-ph10b-routes");
   ingest(services, scope, "emp-ph10b-0007", 1);
 
-  // JOB-G12-INTEGRITY over the API surface.
+  // JOB-PS12-INTEGRITY over the API surface.
   const runResponse = api.dispatch({
     method: "POST",
     path: "/api/v1/sr/integrity/run",
@@ -338,7 +338,7 @@ test("PH-10B integrity routes are protected and drive the pillars end-to-end", (
     actor: actor("user-ph10b-routes"),
   });
   assert.equal(runResponse.status, 202);
-  assert.equal(runResponse.body.run.jobId, "JOB-G12-INTEGRITY");
+  assert.equal(runResponse.body.run.jobId, "JOB-PS12-INTEGRITY");
   assert.equal(runResponse.body.result, "OK");
 
   // Certified extract issue over the API surface applies the same redaction path.
@@ -357,7 +357,7 @@ test("PH-10B integrity routes are protected and drive the pillars end-to-end", (
     method: "GET",
     path: "/api/v1/sr/employees/emp-ph10b-0007/integrity/verify",
     headers: { "X-Correlation-Id": "corr-ph10b" },
-    actor: actor("user-ph10b-routes", { permissions: ["g12.sr.read"] }),
+    actor: actor("user-ph10b-routes", { permissions: ["ps12.sr.read"] }),
   });
   assert.equal(denied.status, 403);
 });

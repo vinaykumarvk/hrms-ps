@@ -211,7 +211,7 @@ Phase 1 delivers ten functional modules and six platform modules. All modules ar
 
 
 ### 2.1.3 Indian Statutory Compliance (Phase 1 elements only)
-Full statutory deduction calculation and government filing outputs (PF/EPF, ESI, TDS, PT, LWF, Gratuity payout) are Phase 2 (M06 Payroll + M07 Statutory Compliance) and out of scope for Phase 1. Two statutory obligations are embedded in Phase 1 modules:
+Full statutory deduction calculation and enterprise filing outputs (PF/EPF, ESI, TDS, PT, LWF, Gratuity payout) are Phase 2 (M06 Payroll + M07 Statutory Compliance) and out of scope for Phase 1. Two statutory obligations are embedded in Phase 1 modules:
 POSH Act 2013 — Mandatory policy publication and acknowledgement · Complaint intake via M01 Grievance Register (anonymous opt-in) · ICC routing for POSH-category grievances · Training completion tracking via M11.
 DPDPA 2023 — Consent capture at onboarding · Right of access (employee can export their own record with PII unmasked) · Right of correction (via sensitive-field change workflow) · Right of erasure (non-statutory data only, statutory data has legally mandated retention) · Data principal request register · Data fiduciary obligations · Audit log redaction marker for erased PII.
 Shops & Establishments Act — State-wise leave entitlements and working hour rules · Location-based policy overrides.
@@ -233,7 +233,7 @@ Shops & Establishments Act — State-wise leave entitlements and working hour ru
 | Multi-currency support | Future — Phase 1 is INR-only |
 | Multi-language support (Hindi, regional Indian languages, Arabic, French) | Future — Phase 1 is English-only |
 | Geographies beyond India | Future — Phase 1 covers India only (all states and UTs) |
-| Direct API filing with government portals (EPFO, ESIC, Income Tax) | Future — Phase 2 generates portal-upload files only; direct API filing depends on portal availability |
+| Direct API filing with enterprise portals (EPFO, ESIC, Income Tax) | Future — Phase 2 generates portal-upload files only; direct API filing depends on portal availability |
 | Competency framework · Normalisation · Custom scoring (M09) | Phase 2 |
 | Interview Guides (M08 §D.2) | Out of Phase 1 scope — empty source register |
 | Assessments (M08 §D.3) | Out of Phase 1 scope — empty source register |
@@ -661,7 +661,7 @@ System-enforced restrictions subject to PII protection ceilings. Exceptions are 
 | Data category | Permitted access | Restricted from |
 | Salary / CTC | Employee (own) · HR Admin · Finance Admin (view only for budgeting) | All manager tiers · HOD · UAG Head · HRBP · Recruiter · Recruitment Admin · Office Admin. HOD and UAG Head compensation visibility configurable per user by Org Admin — off by default. |
 | Bank account details | Employee (own, masked) · HR Admin · Office Admin (entry only) · Payroll processing at runtime (Phase 2) | All other roles. Masked to last 4 digits for all display contexts. |
-| Government IDs (PAN, Aadhaar, Passport, Driving Licence) | Employee (own, masked) · HR Admin · Office Admin (view and upload) | All other roles. Office Admin grant is platform-level and fixed — not configurable upward or downward. Changes require HR Admin approval via workflow. |
+| Enterprise IDs (PAN, Aadhaar, Passport, Driving Licence) | Employee (own, masked) · HR Admin · Office Admin (view and upload) | All other roles. Office Admin grant is platform-level and fixed — not configurable upward or downward. Changes require HR Admin approval via workflow. |
 | Date of Birth | Employee (own) · HR Admin · Office Admin (view only) | All other roles. Office Admin grant is platform-level and fixed. |
 | Performance ratings — draft | Reviewer only | All other roles including HR Admin. No entitlement grant can expose draft ratings prior to publish event. |
 | Performance ratings — published | Employee (own) · Manager (own team) · HR Admin · Skip-level (full subtree, retained post-calibration) · HOD/UAG Head (own dept/group — off by default) | Peers · Finance Admin · HRBP. HOD and UAG Head published rating visibility configurable per user by Org Admin. |
@@ -983,7 +983,7 @@ Sample patterns (representative — actual values per tenant):
 
 
 ### 4.2.13 geo_master
-Country / State / City pick-list master. Replaces free-text address fields with validated geo data. Sourced from authoritative government / ISO data and refreshed per release.
+Country / State / City pick-list master. Replaces free-text address fields with validated geo data. Sourced from authoritative enterprise / ISO data and refreshed per release.
 | Field | Type | Required | Validation / Description | Default |
 | geo_id | uuid | Y | Primary key. | auto |
 | geo_type | enum | Y | COUNTRY · STATE · CITY. | — |
@@ -1046,7 +1046,7 @@ Generic storage for custom field values. One row per (entity instance × custom_
 Relationships: Composite unique index on (custom_field_id, target_entity_id). Soft-delete via standard audit columns.
 
 ### 4.2.16 national_id_configurations
-Meta-configuration for which government / statutory IDs are enabled per country / tenant assignment, with per-field display rules. Replaces hardcoded country-specific ID columns in statutory_identities.
+Meta-configuration for which enterprise / statutory IDs are enabled per country / tenant assignment, with per-field display rules. Replaces hardcoded country-specific ID columns in statutory_identities.
 | Field | Type | Required | Validation / Description | Default |
 | national_id_config_id | uuid | Y | Primary key. | auto |
 | id_type_code | string(40) | Y | Catalogue code: AADHAAR · PAN · PASSPORT · DRIVING_LICENCE · VOTER_ID · UAN · ESIC_NO · MYKAD · EMIRATES_CARD · SSN · NIN · NRIC · IQAMA · NSSF · BPJS · NPWP · TIN · etc. | — |

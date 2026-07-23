@@ -13,20 +13,20 @@ attributed to a module by `operationId` prefix.
 
 | Module | Contract ops | Implemented routes | Coverage |
 |---|---:|---:|---:|
-| G01 | 165 | 68 | 41.2% |
-| G02 | 65 | 31 | 47.7% |
-| G03 | 92 | 48 | 52.2% |
-| G04 | 45 | 21 | 46.7% |
-| G05 | 75 | 57 | 76% |
-| G06 | 86 | 38 | 44.2% |
-| G07 | 111 | 37 | 33.3% |
-| G08 | 133 | 40 | 30.1% |
-| G09 | 89 | 34 | 38.2% |
-| G10 | 87 | 43 | 49.4% |
-| G11 | 90 | 37 | 41.1% |
-| G12 | 65 | 38 | 58.5% |
-| G13 | 114 | 38 | 33.3% |
-| G14 | 90 | 26 | 28.9% |
+| PS01 | 165 | 68 | 41.2% |
+| PS02 | 65 | 31 | 47.7% |
+| PS03 | 92 | 48 | 52.2% |
+| PS04 | 45 | 21 | 46.7% |
+| PS05 | 75 | 57 | 76% |
+| PS06 | 86 | 38 | 44.2% |
+| PS07 | 111 | 37 | 33.3% |
+| PS08 | 133 | 40 | 30.1% |
+| PS09 | 89 | 34 | 38.2% |
+| PS10 | 87 | 43 | 49.4% |
+| PS11 | 90 | 37 | 41.1% |
+| PS12 | 65 | 38 | 58.5% |
+| PS13 | 114 | 38 | 33.3% |
+| PS14 | 90 | 26 | 28.9% |
 | P01 | 16 | 14 | 87.5% |
 | **Total** | **1323** | **570** | **43.1%** |
 
@@ -42,37 +42,37 @@ existing engines. PH-62A added the FR-EPM-004 nominee register (new `NomineeServ
 
 **Ratchet history:** 392 / 29.6% (PH-37A baseline) → 397 / 30% (PH-38A: APAR calibration lifecycle) →
 404 / 30.5% (PH-39A: APAR PIP lifecycle + probation-confirmation + reads) → 411 / 31.1% (PH-40A:
-continuous-feedback + 360-feedback + signature reads) → 421 / 31.8% (PH-41A: FR-G07-020 training-
-sponsorship + service-bond lifecycle) → 430 / 32.5% (PH-42A: FR-G07-018 external-credential lifecycle +
-vendor-empanelment decisions) → **436 / 33%** (PH-43A: G14 analytics-engine reads + KPI target-setting +
-predictive-score reads) → **443 / 33.5%** (PH-44A: G13 checkout-lock lifecycle + rescan + access-audit/
-scan-result/module-ref reads) → **451 / 34.1%** (PH-45A: G01 Aadhaar reveal 4-eyes lifecycle + employee
-legal-hold/blocking-obligation + service-no lookup) → **456 / 34.5%** (PH-46A: FR-G10-08 loan lifecycle
+continuous-feedback + 360-feedback + signature reads) → 421 / 31.8% (PH-41A: FR-PS07-020 training-
+sponsorship + service-bond lifecycle) → 430 / 32.5% (PH-42A: FR-PS07-018 external-credential lifecycle +
+vendor-empanelment decisions) → **436 / 33%** (PH-43A: PS14 analytics-engine reads + KPI target-setting +
+predictive-score reads) → **443 / 33.5%** (PH-44A: PS13 checkout-lock lifecycle + rescan + access-audit/
+scan-result/module-ref reads) → **451 / 34.1%** (PH-45A: PS01 Aadhaar reveal 4-eyes lifecycle + employee
+legal-hold/blocking-obligation + service-no lookup) → **456 / 34.5%** (PH-46A: FR-PS10-08 loan lifecycle
 (instalment recovery + foreclosure) + Rule-3 concessional perquisite valuation + reads) → **462 / 34.9%**
-(PH-47A: G11 PDA go-live lifecycle + grievance close + pensioner bank-account verification) → **469 / 35.4%**
-(PH-48A: G12 SR-ledger chain reads + RFC-3161 timestamp/offline-bundle verification) → **475 / 35.9%**
-(PH-49A: G02 step-up MFA lifecycle + change-request template management) → **482 / 36.4%** (PH-50A: G03
+(PH-47A: PS11 PDA go-live lifecycle + grievance close + pensioner bank-account verification) → **469 / 35.4%**
+(PH-48A: PS12 SR-ledger chain reads + RFC-3161 timestamp/offline-bundle verification) → **475 / 35.9%**
+(PH-49A: PS02 step-up MFA lifecycle + change-request template management) → **482 / 36.4%** (PH-50A: PS03
 leave year-close simulate + encashment + mass-leave + punch-review/exception reads) → **489 / 37%** (PH-51A:
-G04 X.3 outbound-integration connector lifecycle + leave→SR relay enqueue/dead-letter reads) → **495 / 37.4%**
-(PH-52A: G06 FR-015 sanctioned-posts establishment lifecycle (register/revise/reconcile + reads + vacancy)) →
-**504 / 38.1%** (PH-53A: G09 suspension review + show-cause response + consultation close/waive + hearing
-minutes + case reads) → **513 / 38.8%** (PH-54A: G05 transfer/counselling reads — vacancy positions,
+PS04 X.3 outbound-integration connector lifecycle + leave→SR relay enqueue/dead-letter reads) → **495 / 37.4%**
+(PH-52A: PS06 FR-015 sanctioned-posts establishment lifecycle (register/revise/reconcile + reads + vacancy)) →
+**504 / 38.1%** (PH-53A: PS09 suspension review + show-cause response + consultation close/waive + hearing
+minutes + case reads) → **513 / 38.8%** (PH-54A: PS05 transfer/counselling reads — vacancy positions,
 reservations, preferences, mutual orders, charge-handovers, relieving/joining reports) → **519 / 39.2%**
-(PH-55A: G01 governed write-ports (identity change / transfer posting / probation confirmation) + live-record
-/count reads) → **526 / 39.8%** (PH-56A: G10 FR-16 payroll engine-run lifecycle (create → snapshot → compute
-→ approve (SoD) → lock) + reads) → **532 / 40.2%** (PH-57A: G10 FR-20 full-and-final settlement
-(settle → approve SoD) + recovery/loan/hold reads) → **536 / 40.5%** (PH-58A: G11 pension disbursement
-(transmit + list) + pensioner lifecycle reads) → **543 / 41%** (PH-59A: G06 succession-planning + qualifying-
-service route exposure) → **547 / 41.3%** (PH-60A: G03 attendance-policy config + leave-ledger/attendance/
-comp-off-balance reads) → **552 / 41.7%** (PH-61A: G12 SR admissibility/integrity reads + G13 OCR index
-management — 5 real, service-tested operations wired to the kernel) → **556 / 42%** (PH-62A: G01 FR-EPM-004
+(PH-55A: PS01 governed write-ports (identity change / transfer posting / probation confirmation) + live-record
+/count reads) → **526 / 39.8%** (PH-56A: PS10 FR-16 payroll engine-run lifecycle (create → snapshot → compute
+→ approve (SoD) → lock) + reads) → **532 / 40.2%** (PH-57A: PS10 FR-20 full-and-final settlement
+(settle → approve SoD) + recovery/loan/hold reads) → **536 / 40.5%** (PH-58A: PS11 pension disbursement
+(transmit + list) + pensioner lifecycle reads) → **543 / 41%** (PH-59A: PS06 succession-planning + qualifying-
+service route exposure) → **547 / 41.3%** (PH-60A: PS03 attendance-policy config + leave-ledger/attendance/
+comp-off-balance reads) → **552 / 41.7%** (PH-61A: PS12 SR admissibility/integrity reads + PS13 OCR index
+management — 5 real, service-tested operations wired to the kernel) → **556 / 42%** (PH-62A: PS01 FR-EPM-004
 nominee register — NET-NEW `NomineeService` (list/add/update/soft-delete; VAL-NOMINEE share invariant;
 row_version optimistic lock), 4 contracted operations implemented end-to-end) → **560 / 42.3%** (PH-63A:
-G01 FR-EPM-005 emergency-contact register — NET-NEW `EmergencyContactService` (unique call-order priority
+PS01 FR-EPM-005 emergency-contact register — NET-NEW `EmergencyContactService` (unique call-order priority
 invariant; row_version optimistic lock; soft-delete), 4 contracted operations implemented end-to-end) →
-**564 / 42.6%** (PH-64A: G01 FR-EPM-006 education register — NET-NEW `EducationService` (single-highest
+**564 / 42.6%** (PH-64A: PS01 FR-EPM-006 education register — NET-NEW `EducationService` (single-highest
 invariant with auto-demotion; year-of-passing validation; row_version lock; soft-delete), 4 operations) →
-**570 / 43.1%** (PH-65A: G01 FR-EPM-008 bank-account register — NET-NEW `BankAccountService` (VAL-IFSC format;
+**570 / 43.1%** (PH-65A: PS01 FR-EPM-008 bank-account register — NET-NEW `BankAccountService` (VAL-IFSC format;
 single primary-salary invariant; PENDING→APPROVED maker-checker; penny-drop tri-state; detail change re-enters
 PENDING; row_version lock; soft-delete), 6 operations).
 

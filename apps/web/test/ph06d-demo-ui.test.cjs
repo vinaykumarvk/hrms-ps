@@ -4,14 +4,14 @@ const fs = require("node:fs");
 
 const clientSource = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixtureSource = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
-const leaveWorkspaceSource = fs.readFileSync("apps/web/src/modules/g03/LeaveWorkspace.tsx", "utf8");
-const leaveFormSource = fs.readFileSync("apps/web/src/modules/g03/LeaveApplyForm.tsx", "utf8");
-const leaveInboxSource = fs.readFileSync("apps/web/src/modules/g03/LeaveApproverInbox.tsx", "utf8");
-const transferWorkspaceSource = fs.readFileSync("apps/web/src/modules/g05/TransferWorkspace.tsx", "utf8");
-const transferFormSource = fs.readFileSync("apps/web/src/modules/g05/TransferInitiateForm.tsx", "utf8");
-const transferOrdersSource = fs.readFileSync("apps/web/src/modules/g05/TransferOrdersList.tsx", "utf8");
+const leaveWorkspaceSource = fs.readFileSync("apps/web/src/modules/ps03/LeaveWorkspace.tsx", "utf8");
+const leaveFormSource = fs.readFileSync("apps/web/src/modules/ps03/LeaveApplyForm.tsx", "utf8");
+const leaveInboxSource = fs.readFileSync("apps/web/src/modules/ps03/LeaveApproverInbox.tsx", "utf8");
+const transferWorkspaceSource = fs.readFileSync("apps/web/src/modules/ps05/TransferWorkspace.tsx", "utf8");
+const transferFormSource = fs.readFileSync("apps/web/src/modules/ps05/TransferInitiateForm.tsx", "utf8");
+const transferOrdersSource = fs.readFileSync("apps/web/src/modules/ps05/TransferOrdersList.tsx", "utf8");
 
-test("PH-06D G03 leave-apply form is a real controlled form submitting through the client", () => {
+test("PH-06D PS03 leave-apply form is a real controlled form submitting through the client", () => {
   for (const marker of [
     "<form",
     "onSubmit={handleSubmit}",
@@ -28,14 +28,14 @@ test("PH-06D G03 leave-apply form is a real controlled form submitting through t
   }
 });
 
-test("PH-06D G03 approver inbox wires Approve/Reject buttons to the decision route", () => {
+test("PH-06D PS03 approver inbox wires Approve/Reject buttons to the decision route", () => {
   for (const marker of ["listLeaveApplications", "decideLeaveApplication", '"APPROVE"', '"REJECT"', "<button", "onClick"]) {
     assert.equal(leaveInboxSource.includes(marker), true, `LeaveApproverInbox missing ${marker}`);
   }
   assert.equal(clientSource.includes("/decision"), true, "client missing the leave decision route");
 });
 
-test("PH-06D G05 initiate-transfer form posts /api/v1/transfers/orders through the client", () => {
+test("PH-06D PS05 initiate-transfer form posts /api/v1/transfers/orders through the client", () => {
   for (const marker of [
     "<form",
     "onSubmit={handleSubmit}",
@@ -52,7 +52,7 @@ test("PH-06D G05 initiate-transfer form posts /api/v1/transfers/orders through t
   }
 });
 
-test("PH-06D client binds the interactive G03/G05 routes", () => {
+test("PH-06D client binds the interactive PS03/PS05 routes", () => {
   for (const marker of ["/api/v1/atl/leave-applications", "/api/v1/atl/leave-types", "/api/v1/transfers/orders"]) {
     assert.equal(clientSource.includes(marker), true, marker);
   }
@@ -78,10 +78,10 @@ test("PH-06D interactive surfaces render canonical loading/error/empty states", 
 });
 
 test("PH-06D workspaces mount the interactive surfaces next to the evidence panels", () => {
-  for (const marker of ["LeaveApplyForm", "LeaveApproverInbox", "G03 leave vertical slice"]) {
+  for (const marker of ["LeaveApplyForm", "LeaveApproverInbox", "PS03 leave vertical slice"]) {
     assert.equal(leaveWorkspaceSource.includes(marker), true, `LeaveWorkspace missing ${marker}`);
   }
-  for (const marker of ["TransferInitiateForm", "TransferOrdersList", "G05 transfer vertical slice"]) {
+  for (const marker of ["TransferInitiateForm", "TransferOrdersList", "PS05 transfer vertical slice"]) {
     assert.equal(transferWorkspaceSource.includes(marker), true, `TransferWorkspace missing ${marker}`);
   }
 });

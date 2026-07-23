@@ -21,7 +21,7 @@
       max_iterations: 2
       repeat_until: A traceability table maps every generated_tests item + every PH-02 review_criterion to a test,
         with 0 gaps, ready for human sign-off.
-      steps: [build the trace matrix, confirm G03/G05 drivable without bypasses, note residual risks]
+      steps: [build the trace matrix, confirm PS03/PS05 drivable without bypasses, note residual risks]
   evidence_required:
     - docs/tests/authority-resolution-tests.md    # every resolver behaviour + data invariant, 0 coverage gaps
     - docs/spec/ph-02-verdict.md                  # review packet: coverage, explainability, ambiguity-blocked, residual risks

@@ -1,4 +1,4 @@
-import { EmployeeMasterService } from "../../modules/g01/employeeMasterService";
+import { EmployeeMasterService } from "../../modules/ps01/employeeMasterService";
 import { FoundationError, TenantScope, nextId, requireTenantScope } from "../../platform/types";
 
 export interface StagedEmployeeIdentity {

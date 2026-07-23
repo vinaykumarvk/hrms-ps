@@ -20,17 +20,17 @@ route-exposure pass. Built by hand — subagents credit-exhausted until 2026-07-
 
 | Module | Routes added | Backing service |
 |---|---|---|
-| **G06** | `POST /api/v1/promotions/career-paths`, `POST /api/v1/promotions/seniority-lists:finalise` | `careerSuccession` (PH-19C), `correctionCascade` (PH-24B) |
-| **G12** | `POST /api/v1/sr/timestamp`, `POST /api/v1/sr/verification-bundle` | `timestampAuthority` (PH-26B), `offlineVerification` (PH-24C) |
-| **G13** | `POST /api/v1/documents/{id}/certified-copies`, `GET /api/v1/documents:ocr-search` | `certifiedCopy` (PH-20B), `ocrSearch` (PH-22B) |
+| **PS06** | `POST /api/v1/promotions/career-paths`, `POST /api/v1/promotions/seniority-lists:finalise` | `careerSuccession` (PH-19C), `correctionCascade` (PH-24B) |
+| **PS12** | `POST /api/v1/sr/timestamp`, `POST /api/v1/sr/verification-bundle` | `timestampAuthority` (PH-26B), `offlineVerification` (PH-24C) |
+| **PS13** | `POST /api/v1/documents/{id}/certified-copies`, `GET /api/v1/documents:ocr-search` | `certifiedCopy` (PH-20B), `ocrSearch` (PH-22B) |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
-- **Route exposure still to wire:** G02 changeEsignStepUp/changeRequestTemplate, G03 punchAnomaly,
-  G07 lmsIntegration, G08 feedback360, G11 pensionTreasury grievances/objections, G14 predictive fairness.
-- **Remaining UI surfaces:** G01 privacy/DPDP console, G06 sealed-cover UI, G14 embedded BI/mobile.
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A matching depth; G09 POSH conciliation
-  depth; G04 CI port-conformance gate.
+- **Route exposure still to wire:** PS02 changeEsignStepUp/changeRequestTemplate, PS03 punchAnomaly,
+  PS07 lmsIntegration, PS08 feedback360, PS11 pensionTreasury grievances/objections, PS14 predictive fairness.
+- **Remaining UI surfaces:** PS01 privacy/DPDP console, PS06 sealed-cover UI, PS14 embedded BI/mobile.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A matching depth; PS09 POSH conciliation
+  depth; PS04 CI port-conformance gate.
 
 **Contract-op coverage caveat:** implemented routes still cover only a fraction of the **1,306** OpenAPI
 operations; the route-exposure workstream moves this number tranche by tranche.

@@ -1,7 +1,7 @@
 # Retirement and Pension Management — HRMS Module BRD
 
 **Module code:** M11-PEN
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government / Public-Sector context
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise / Public-Sector context
 **Authoring standard:** World-class global HCM (Workday / SAP SuccessFactors / Oracle HCM bar) honouring Indian public-sector statutory pension rules (CCS Pension Rules-style framework, NPS, GPF, Jeevan Pramaan/DLC)
 **Source of truth:** `docs/brd/SHARED_FOUNDATION.md` (canonical shared entities, conventions, RBAC, technical defaults). This BRD references and extends — it does not redefine — those shared elements.
 **Document version:** v1.0
@@ -94,7 +94,7 @@ All M11 features inherit: UUID PKs + human business keys; standard audit fields;
 
 ### 2.4 Assumptions and Constraints
 
-- Pension/commutation/gratuity rules, DA rates for pensioners, commutation factors by age, family-pension rates, and gratuity ceilings are **configurable, effective-dated master data**, sourced from government notifications and version-controlled.
+- Pension/commutation/gratuity rules, DA rates for pensioners, commutation factors by age, family-pension rates, and gratuity ceilings are **configurable, effective-dated master data**, sourced from enterprise notifications and version-controlled.
 - The OPS/NPS cutover date (date of joining boundary) is configurable; scheme is derived from `employees.date_of_joining` and recorded contribution history, overridable with justification and audit.
 - A single legal entity per deployment; the data model is entity-aware (`legal_entity_id`) for future multi-entity.
 - All money math uses fixed-point decimal (`NUMERIC`); rounding rules per statutory prescription are explicit and configurable (default benefit rounding to the next higher rupee where rules so require).
@@ -1801,7 +1801,7 @@ All analytics are read-only, org-unit scoped, reconcile to source records, and f
 
 ### 16.3 Recovery Priority & Net Protection
 
-Statutory dues → court attachment → disciplinary recovery (M09) → government over-payment → outstanding loans/advances (M10) → other. If recoveries would breach the protected floor, lower-priority recoveries are deferred and flagged (`RECOVERY_EXCEEDS_PROTECTION`); spillover may be recovered from future pension where rules allow.
+Statutory dues → court attachment → disciplinary recovery (M09) → enterprise over-payment → outstanding loans/advances (M10) → other. If recoveries would breach the protected floor, lower-priority recoveries are deferred and flagged (`RECOVERY_EXCEEDS_PROTECTION`); spillover may be recovered from future pension where rules allow.
 
 ### 16.4 Immutability & Correction Policy
 

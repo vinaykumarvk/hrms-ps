@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-29B oracle: G11 PDA and death-recovery routes — real kernel route(s) registered + dispatched in an API test.
+# PH-29B oracle: PS11 PDA and death-recovery routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g11.routes.ts"; T=apps/api/test
-echo "== PH-29B exit-criteria (G11 PDA and death-recovery routes) =="
+R="apps/api/src/routes/ps11.routes.ts"; T=apps/api/test
+echo "== PH-29B exit-criteria (PS11 PDA and death-recovery routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" '/api/v1/pension/pdas' "route path registered: /api/v1/pension/pdas"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

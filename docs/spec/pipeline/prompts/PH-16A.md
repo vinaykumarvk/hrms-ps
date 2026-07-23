@@ -1,10 +1,10 @@
 /goal
-  objective: Build G01 alias-based dedup/merge, PROVISIONAL bulk import, and profile lifecycle at BRD depth.
+  objective: Build PS01 alias-based dedup/merge, PROVISIONAL bulk import, and profile lifecycle at BRD depth.
     The tranche-2 verdict (docs/spec/ph-15-verdict.md, "Remaining backlog") and the coverage delta
-    (docs/reviews/brd-coverage-delta-20260703.md) name G01 "dedup/merge, bulk import, lifecycle
+    (docs/reviews/brd-coverage-delta-20260703.md) name PS01 "dedup/merge, bulk import, lifecycle
     separate/reactivate" as still NOT_FOUND. Implement per FR-EPM-015: deterministic + fuzzy matching queues
     `dedup_candidates` (exact statutory-ID match scores HIGH >= 90; fuzzy composite scored 0-100 with matched
-    attributes); a 4-eyes merge consolidates ONLY G01 satellites under the survivor, soft-deletes the loser,
+    attributes); a 4-eyes merge consolidates ONLY PS01 satellites under the survivor, soft-deletes the loser,
     writes one `employee_id_aliases(loser_id -> survivor_id)` row with a `merge_snapshot`, and emits
     RECORDS_MERGED{survivor_id, loser_id} — never re-pointing another module's FKs; undo within the
     configurable window (default 7 days) restores the snapshot and sets is_reversed. Per FR-EPM-017: bulk
@@ -16,19 +16,19 @@
     separation approval, SEPARATION/DEATH/REACTIVATION outbox events, DECEASED handoff, and archive blocked
     under an ACTIVE legal hold.
   context:
-    - docs/spec/ph-15-verdict.md , docs/reviews/brd-coverage-delta-20260703.md   # G01 backlog rows
-    - docs/brd/v3/G01-employee-profile-management.md   # FR-EPM-015 (dedup_candidates, employee_id_aliases,
+    - docs/spec/ph-15-verdict.md , docs/reviews/brd-coverage-delta-20260703.md   # PS01 backlog rows
+    - docs/brd/v3/PS01-employee-profile-management.md   # FR-EPM-015 (dedup_candidates, employee_id_aliases,
                                                        #   merge_snapshot, RECORDS_MERGED, MERGE_CONFLICT 409,
                                                        #   UNDO_EXPIRED 409, SOD_VIOLATION 403), FR-EPM-017
                                                        #   (E20a/E20b import batches + staging, PROVISIONAL,
                                                        #   remediation queue, promote-active), FR-EPM-018
                                                        #   (INVALID_STATE 409, LEGAL_HOLD_ACTIVE 409,
                                                        #   BLOCKING_OBLIGATIONS 409, record_state ARCHIVED)
-    - docs/data-model/01-G01-employee-profile.sql      # authoritative table/column names (E19/E20/E21)
-    - apps/api/src/modules/g01/** , apps/api/src/routes/g01.routes.ts   # PH-04B/PH-07A employee core to build on
-    - apps/api/test/ph07a-g01-satellites-history-feed.test.cjs          # outbox/change-feed conventions
+    - docs/data-model/01-PS01-employee-profile.sql      # authoritative table/column names (E19/E20/E21)
+    - apps/api/src/modules/ps01/** , apps/api/src/routes/ps01.routes.ts   # PH-04B/PH-07A employee core to build on
+    - apps/api/test/ph07a-ps01-satellites-history-feed.test.cjs          # outbox/change-feed conventions
   constraints:
-    - A merge NEVER writes to non-G01 tables: consolidate G01 satellites, soft-delete the loser, INSERT the
+    - A merge NEVER writes to non-PS01 tables: consolidate PS01 satellites, soft-delete the loser, INSERT the
       alias row, emit RECORDS_MERGED via the existing outbox. Consumers resolve loser_id -> survivor_id through
       `employee_id_aliases` (chained aliases collapse to the ultimate survivor).
     - Merge is 4-eyes: maker = checker throws error.code === 'SOD_VIOLATION' (403); conflicting ACTIVE
@@ -48,7 +48,7 @@
   work_loops:
     - name: Dedup candidates + alias merge + undo
       max_iterations: 8
-      repeat_until: apps/api/src/modules/g01/** queues dedup_candidates with scores, merges with 4-eyes into
+      repeat_until: apps/api/src/modules/ps01/** queues dedup_candidates with scores, merges with 4-eyes into
         employee_id_aliases + merge_snapshot + RECORDS_MERGED outbox event, resolves identity through the alias
         (chained collapse), and supports windowed undo; SOD_VIOLATION / MERGE_CONFLICT / UNDO_EXPIRED enforced.
       steps: [matcher + candidate queue, 4-eyes merge tx + alias + outbox, resolve endpoint, windowed undo]
@@ -71,7 +71,7 @@
         `bash docs/spec/pipeline/checks/ph-16a.sh` RED items all closed.
       steps: [lifecycle service + guards, write executed tests, run typecheck/test, run oracle, fix]
   evidence_required:
-    - apps/api/src/modules/g01/** naming dedup_candidates, employee_id_aliases, merge_snapshot, RECORDS_MERGED,
+    - apps/api/src/modules/ps01/** naming dedup_candidates, employee_id_aliases, merge_snapshot, RECORDS_MERGED,
       employee_import_batches, import_staging_rows, PROVISIONAL, remediation_state, INVALID_STATE, LEGAL_HOLD_ACTIVE
     - apps/api/test/*.test.cjs: the alias/import/lifecycle tests + the four fail-closed negatives above
     - `bash docs/spec/pipeline/checks/ph-16a.sh` GREEN (external oracle; not self-certified)

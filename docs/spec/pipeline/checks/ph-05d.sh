@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# PH-05D oracle: G01/G12/G13 foundation record views — asserts REAL build outcomes.
+# PH-05D oracle: PS01/PS12/PS13 foundation record views — asserts REAL build outcomes.
 # Re-baselined 2026-07-02 after docs/reviews/brd-coverage-audit-20260702.md found the record
 # views render fixture props with zero API calls (DocumentVaultView has no fetch/useEffect).
 # This oracle asserts: each view fetches through the API client, renders the BRD field lists,
-# shows masked PII for G01 (aadhaar XXXX-XXXX-1234 style), G12 timeline exposes cursor paging,
-# G13 renders documents with legal-hold/retention, all with loading/error branches, and green
+# shows masked PII for PS01 (aadhaar XXXX-XXXX-1234 style), PS12 timeline exposes cursor paging,
+# PS13 renders documents with legal-hold/retention, all with loading/error branches, and green
 # toolchains. bash 3.2 / BSD grep compatible.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
-echo "== PH-05D exit-criteria (G01/G12/G13 record views) =="
+echo "== PH-05D exit-criteria (PS01/PS12/PS13 record views) =="
 
 # --- 1. Every foundation view fetches from the API (FAIL-CLOSED on fixture-only rendering) ---------
-for m in g01 g12 g13; do
+for m in ps01 ps12 ps13; do
   d="apps/web/src/modules/$m"
   if grep -rn 'from "../../api/\|from "\.\./\.\./api/' "$d" 2>/dev/null | grep -q .; then
     grn "$m view imports the API client"
@@ -23,26 +23,26 @@ for m in g01 g12 g13; do
   done
 done
 
-# --- 2. G01: rendered field list + masked PII display ------------------------------------------------
-g01=apps/web/src/modules/g01
-grep -rq 'serviceNo' "$g01" 2>/dev/null && grn "G01 renders service number" || red "G01 view does not render serviceNo"
-grep -rq 'displayName' "$g01" 2>/dev/null && grn "G01 renders display name" || red "G01 view does not render displayName"
-grep -rqiE 'designation|org' "$g01" 2>/dev/null && grn "G01 renders designation/org placement" || red "G01 view does not render designation/org fields"
-grep -rqi 'aadhaar' "$g01" 2>/dev/null && grn "G01 surfaces Aadhaar as a governed field" || red "G01 view does not surface Aadhaar"
-grep -rqiE 'XXXX|masked' "$g01" 2>/dev/null && grn "G01 shows masked PII display (P02)" || red "G01 view has no masked-PII display"
-grep -rq 'fieldGrants' "$g01" 2>/dev/null && grn "G01 masking driven by fieldGrants" || red "G01 masking not driven by fieldGrants"
+# --- 2. PS01: rendered field list + masked PII display ------------------------------------------------
+ps01=apps/web/src/modules/ps01
+grep -rq 'serviceNo' "$ps01" 2>/dev/null && grn "PS01 renders service number" || red "PS01 view does not render serviceNo"
+grep -rq 'displayName' "$ps01" 2>/dev/null && grn "PS01 renders display name" || red "PS01 view does not render displayName"
+grep -rqiE 'designation|org' "$ps01" 2>/dev/null && grn "PS01 renders designation/org placement" || red "PS01 view does not render designation/org fields"
+grep -rqi 'aadhaar' "$ps01" 2>/dev/null && grn "PS01 surfaces Aadhaar as a governed field" || red "PS01 view does not surface Aadhaar"
+grep -rqiE 'XXXX|masked' "$ps01" 2>/dev/null && grn "PS01 shows masked PII display (P02)" || red "PS01 view has no masked-PII display"
+grep -rq 'fieldGrants' "$ps01" 2>/dev/null && grn "PS01 masking driven by fieldGrants" || red "PS01 masking not driven by fieldGrants"
 
-# --- 3. G12: timeline with cursor paging --------------------------------------------------------------
-g12=apps/web/src/modules/g12
-grep -rqiE 'cursor|load more|loadMore' "$g12" 2>/dev/null && grn "G12 timeline pages by cursor" || red "G12 timeline has no cursor paging affordance"
-grep -rq 'entryHash' "$g12" 2>/dev/null && grn "G12 timeline renders hash-chain evidence" || red "G12 timeline missing hash-chain fields"
-grep -rqiE 'append-only|reversal|corrigendum' "$g12" 2>/dev/null && grn "G12 timeline reflects ledger semantics" || red "G12 timeline lacks ledger semantics"
+# --- 3. PS12: timeline with cursor paging --------------------------------------------------------------
+ps12=apps/web/src/modules/ps12
+grep -rqiE 'cursor|load more|loadMore' "$ps12" 2>/dev/null && grn "PS12 timeline pages by cursor" || red "PS12 timeline has no cursor paging affordance"
+grep -rq 'entryHash' "$ps12" 2>/dev/null && grn "PS12 timeline renders hash-chain evidence" || red "PS12 timeline missing hash-chain fields"
+grep -rqiE 'append-only|reversal|corrigendum' "$ps12" 2>/dev/null && grn "PS12 timeline reflects ledger semantics" || red "PS12 timeline lacks ledger semantics"
 
-# --- 4. G13: document vault backed by the API ----------------------------------------------------------
-g13=apps/web/src/modules/g13
-grep -rqiE 'legalHold|legal_hold' "$g13" 2>/dev/null && grn "G13 renders legal-hold state" || red "G13 view missing legal-hold state"
-grep -rqi 'retention' "$g13" 2>/dev/null && grn "G13 renders retention state" || red "G13 view missing retention state"
-grep -rqiE 'version' "$g13" 2>/dev/null && grn "G13 renders document versions" || red "G13 view missing versions"
+# --- 4. PS13: document vault backed by the API ----------------------------------------------------------
+ps13=apps/web/src/modules/ps13
+grep -rqiE 'legalHold|legal_hold' "$ps13" 2>/dev/null && grn "PS13 renders legal-hold state" || red "PS13 view missing legal-hold state"
+grep -rqi 'retention' "$ps13" 2>/dev/null && grn "PS13 renders retention state" || red "PS13 view missing retention state"
+grep -rqiE 'version' "$ps13" 2>/dev/null && grn "PS13 renders document versions" || red "PS13 view missing versions"
 
 # --- 5. Behavioural records test exists AND suites pass -------------------------------------------------
 t=apps/web/test/ph05-records.test.cjs

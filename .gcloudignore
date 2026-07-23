@@ -1,0 +1,13 @@
+.git
+node_modules
+dist
+docs
+doc
+ops
+**/*.log
+**/.DS_Store
+apps/web/test
+apps/api/test
+apps/web/playwright.config.ts
+playwright-report
+test-results

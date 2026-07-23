@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# PH-33C oracle: G11 grievances + G14 fairness routes — real kernel route(s) registered + dispatched in an API test.
+# PH-33C oracle: PS11 grievances + PS14 fairness routes — real kernel route(s) registered + dispatched in an API test.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g11.routes.ts"; T=apps/api/test
-echo "== PH-33C exit-criteria (G11 grievances + G14 fairness routes) =="
+R="apps/api/src/routes/ps11.routes.ts"; T=apps/api/test
+echo "== PH-33C exit-criteria (PS11 grievances + PS14 fairness routes) =="
 [ -d node_modules ] || red "node_modules absent"
 have "$R" 'grievances' "route path registered: grievances"
 have "$R" 'kernel.register|routes.forEach' "route uses the kernel"

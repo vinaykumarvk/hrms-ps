@@ -23,26 +23,26 @@ built **by hand** — the authoring/execution subagents remain credit-exhausted 
 
 | Module | Closed in PH-18 | Evidence |
 |---|---|---|
-| **G01** | aadhaar_vault — Verhoeff checksum validation, one-way salted-SHA-256 tokenisation (token + last-4 only, never the raw number), 4-eyes reveal (requester cannot self-approve) | `ph18a-g01-aadhaar-vault.test.cjs` |
-| **G03** | attendance_exceptions (WFH, ON_DUTY/TOUR) with EXCEPTION_OVERLAP, WFH_CAP_EXCEEDED, DOCUMENT_REQUIRED (tour order-doc) | `ph18b-g03-attendance-exceptions.test.cjs` |
-| **G05** | joining_sequence + inter-se seniority — deterministic sequence_no via a stable tie-break (order date, then service_no), duplicate-joiner guard, G06-consumable order | `ph18c-g05-joining-sequence.test.cjs` |
+| **PS01** | aadhaar_vault — Verhoeff checksum validation, one-way salted-SHA-256 tokenisation (token + last-4 only, never the raw number), 4-eyes reveal (requester cannot self-approve) | `ph18a-ps01-aadhaar-vault.test.cjs` |
+| **PS03** | attendance_exceptions (WFH, ON_DUTY/TOUR) with EXCEPTION_OVERLAP, WFH_CAP_EXCEEDED, DOCUMENT_REQUIRED (tour order-doc) | `ph18b-ps03-attendance-exceptions.test.cjs` |
+| **PS05** | joining_sequence + inter-se seniority — deterministic sequence_no via a stable tie-break (order date, then service_no), duplicate-joiner guard, PS06-consumable order | `ph18c-ps05-joining-sequence.test.cjs` |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 Tranche 5 did not close, and these remain `NOT_FOUND` / open for a later tranche:
 
-- **G01**: phonetic/transliteration search, dedup ML matcher depth, privacy/DPDP console UI.
-- **G02**: extra fraud detectors, grievance/objection window, retro-impact fan-out, templates.
-- **G03**: mass-leave/blackout windows, backdated-leave team-calendar conflict threshold.
-- **G04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
-- **G05**: interactive counselling UI, proof-of-service deeming automation.
-- **G06**: sealed-cover full workflow, correction cascade recompute, career-path/succession.
-- **G07**: LMS/xAPI integration, content/assessment-item bank, vendor empanelment.
-- **G08**: continuous feedback/check-ins, multi-source 360, DSC/non-repudiation signing.
-- **G09**: POSH conciliation depth, jurisdiction transfer/retiree bar, evidence-vault UI.
-- **G10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
-- **G11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
-- **G12/G13/G14**: offline-QR verification, real TSA; OCR/watermark/secure-sharing, real AV engine;
+- **PS01**: phonetic/transliteration search, dedup ML matcher depth, privacy/DPDP console UI.
+- **PS02**: extra fraud detectors, grievance/objection window, retro-impact fan-out, templates.
+- **PS03**: mass-leave/blackout windows, backdated-leave team-calendar conflict threshold.
+- **PS04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
+- **PS05**: interactive counselling UI, proof-of-service deeming automation.
+- **PS06**: sealed-cover full workflow, correction cascade recompute, career-path/succession.
+- **PS07**: LMS/xAPI integration, content/assessment-item bank, vendor empanelment.
+- **PS08**: continuous feedback/check-ins, multi-source 360, DSC/non-repudiation signing.
+- **PS09**: POSH conciliation depth, jurisdiction transfer/retiree bar, evidence-vault UI.
+- **PS10**: full TDS edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
+- **PS11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
+- **PS12/PS13/PS14**: offline-QR verification, real TSA; OCR/watermark/secure-sharing, real AV engine;
   NLQ, embedded BI, predictive+fairness, mobile briefing.
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**

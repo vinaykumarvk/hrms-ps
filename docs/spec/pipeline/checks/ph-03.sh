@@ -16,9 +16,9 @@ need_file package.json 400
 need_file tsconfig.json 200
 need_file apps/api/src/platform/foundationServices.ts 500
 need_file apps/api/src/platform/authority-resolution/authorityResolutionService.ts 2000
-need_file apps/api/src/modules/g01/employeeMasterService.ts 1000
-need_file apps/api/src/modules/g12/serviceRegisterService.ts 1500
-need_file apps/api/src/modules/g13/documentVaultService.ts 1000
+need_file apps/api/src/modules/ps01/employeeMasterService.ts 1000
+need_file apps/api/src/modules/ps12/serviceRegisterService.ts 1500
+need_file apps/api/src/modules/ps13/documentVaultService.ts 1000
 need_file apps/api/src/platform/workflow/hrmsWorkflowService.ts 1000
 need_file apps/api/src/jobs/jobService.ts 500
 need_file apps/api/src/notifications/notificationService.ts 500
@@ -62,7 +62,7 @@ shared = data.get("shared_contracts", {})
 record = shared.get("ph03_foundation_services")
 if not record:
     sys.exit(1)
-for key in ["g01_employee_master", "g12_sr_ingestion", "g13_document_vault", "p01_workflow_adapter"]:
+for key in ["ps01_employee_master", "ps12_sr_ingestion", "ps13_document_vault", "p01_workflow_adapter"]:
     if key not in record.get("service_boundaries", {}):
         sys.exit(1)
 PY
@@ -86,9 +86,9 @@ else
   red "PH-03 npm check failed"
 fi
 
-python3 - <<'PY' && echo "  ok   G01/G12/G13 OpenAPI contracts parse" || { echo "  RED  G01/G12/G13 OpenAPI contracts invalid"; fail=1; }
+python3 - <<'PY' && echo "  ok   PS01/PS12/PS13 OpenAPI contracts parse" || { echo "  RED  PS01/PS12/PS13 OpenAPI contracts invalid"; fail=1; }
 import yaml
-for path in ["docs/contracts/openapi/G01.yaml", "docs/contracts/openapi/G12.yaml", "docs/contracts/openapi/G13.yaml"]:
+for path in ["docs/contracts/openapi/PS01.yaml", "docs/contracts/openapi/PS12.yaml", "docs/contracts/openapi/PS13.yaml"]:
     yaml.safe_load(open(path))
 PY
 

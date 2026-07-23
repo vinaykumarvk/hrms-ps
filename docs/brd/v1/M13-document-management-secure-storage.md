@@ -1,6 +1,6 @@
 # Document Management and Secure Storage — HRMS Module BRD
 
-**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Government/Public-Sector HCM
+**Program:** Enterprise HRMS ("PeopleGov / HRMS Suite") — Enterprise/Public-Sector HCM
 **Module:** M13 — Document Management and Secure Storage (M13-DMS)
 **BRD code:** M13-DMS
 **Owner of canonical `documents` entity:** This module (referenced by M01–M12, M14)
@@ -36,7 +36,7 @@ permanently), disposed of only under an approved disposition schedule, and froze
 litigation. Today these records are paper or scattered across drives with no version control, no
 encryption, no access trail, and no retention governance. A breach, a lost original, or an unauthorised
 alteration carries legal and audit consequences. M13-DMS centralises content under **defence-in-depth**
-controls aligned to OWASP ASVS, the India DPDP Act 2023, and government records-management practice,
+controls aligned to OWASP ASVS, the India DPDP Act 2023, and enterprise records-management practice,
 delivering the convenience (drag-drop, mobile capture, instant preview, OCR search, e-signature) that
 world-class HCM users expect — without compromising statutory custody.
 
@@ -190,7 +190,7 @@ in M01–M12), payroll/pension calculation, and end-user identity management (sh
 Inherits `docs/brd/SHARED_FOUNDATION.md` §5 wholesale:
 
 - **Architecture:** React + TypeScript (Tailwind + shadcn/ui) frontend; REST `/api/v1`; PostgreSQL for
-  metadata; **object storage** (S3-compatible / government cloud blob) for binaries, **encrypted at rest**;
+  metadata; **object storage** (S3-compatible / enterprise cloud blob) for binaries, **encrypted at rest**;
   KMS for envelope keys; deployed at CGG Data Centre.
 - **Auth:** OIDC/SSO + MFA; JWT access tokens; RBAC + row-level scoping by `org_unit_id`.
 - **Canonical error envelope:** `{ "error": { "code": "...", "message": "...", "field": "..." }, "requestId": "..." }`.
@@ -758,7 +758,7 @@ thumbnail/preview renderer, and PKI/e-signature provider.
 
 | share_id | document_id | share_type | recipient_email | rights | expires_at | status |
 |---|---|---|---|---|---|---|
-| sh-01 | doc-0001 | EXTERNAL_LINK | bank@example.gov | {VIEW} | 2026-04-20T00:00Z | ACTIVE |
+| sh-01 | doc-0001 | EXTERNAL_LINK | bank@example.com | {VIEW} | 2026-04-20T00:00Z | ACTIVE |
 | sh-02 | doc-0003 | INTERNAL_USER | null | {VIEW,DOWNLOAD} | 2026-05-01T00:00Z | ACTIVE |
 
 **`checkout_locks`**
@@ -1826,7 +1826,7 @@ through one clean interface.
 **Description:** Runs DLP content inspection (Aadhaar/PAN/bank/PII patterns) producing `dlp_findings` that drive
 auto-classification, tagging, redaction prompts, and share blocking; manages content lifecycle states (draft →
 active → superseded → disposition-due → disposed/archived); and exposes the **storage abstraction** so binaries
-sit behind a provider-agnostic interface (S3-compatible/government blob) with tiering (HOT/WARM/COLD/WORM). This
+sit behind a provider-agnostic interface (S3-compatible/enterprise blob) with tiering (HOT/WARM/COLD/WORM). This
 FR also defines the **canonical attach/fetch contract** consumed by all other modules.
 
 **Acceptance Criteria:**
@@ -1996,7 +1996,7 @@ Idempotency-Key: 7c1f...e2
 {
   "documentId": "doc-0001", "title": "Aadhaar – EMP-3001", "classification": "CONFIDENTIAL",
   "status": "ACTIVE", "currentVersionNo": 1, "mimeType": "application/pdf",
-  "contentUrl": "https://blob.gov/hrms/doc-0001?sig=...&exp=1714000000",
+  "contentUrl": "https://blob.enterprise/hrms/doc-0001?sig=...&exp=1714000000",
   "contentUrlExpiresAt": "2026-04-12T10:10:00Z", "requestId": "req_d4e5f6"
 }
 ```

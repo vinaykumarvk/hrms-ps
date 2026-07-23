@@ -20,9 +20,9 @@ UI surfaces. Built by hand — subagents credit-exhausted until 2026-07-08.
 
 | Module | UI surface | Evidence |
 |---|---|---|
-| **G14** | embedded BI dashboard — KPI board with a mobile/desktop viewport toggle | `ph34a-g14-embedded-bi.test.cjs` |
-| **G06** | sealed-cover review console — list + release form (mandatory reason) | `ph34b-g06-sealed-cover.test.cjs` |
-| **G01** | privacy / DPDP self-service console — rights-request list + raise form | `ph34c-g01-privacy-console.test.cjs` |
+| **PS14** | embedded BI dashboard — KPI board with a mobile/desktop viewport toggle | `ph34a-ps14-embedded-bi.test.cjs` |
+| **PS06** | sealed-cover review console — list + release form (mandatory reason) | `ph34b-ps06-sealed-cover.test.cjs` |
+| **PS01** | privacy / DPDP self-service console — rights-request list + raise form | `ph34c-ps01-privacy-console.test.cjs` |
 
 Each is a real controlled surface using the injected `HrmsClient` with canonical loading/error/empty
 states, mounted in `App.tsx`, and tested. As with the earlier UI tranches, the web suite exercises them
@@ -35,8 +35,8 @@ whose backend route exposure is a paired follow-on (recorded below).
 The residual is now down to a short, specific list:
 
 - **Route exposure for the three new UI surfaces** (BI-KPIs, sealed-cover release, self-service rights).
-- **Deep engine depth:** G10 remaining TDS edge cases + Form-16 Part-A remittance matching depth;
-  G09 POSH conciliation depth; G04 CI port-conformance gate in the build pipeline.
+- **Deep engine depth:** PS10 remaining TDS edge cases + Form-16 Part-A remittance matching depth;
+  PS09 POSH conciliation depth; PS04 CI port-conformance gate in the build pipeline.
 - **Persistence workstream:** the newest hand-built services (PH-16F..PH-34 engines) use in-memory
   repositories; Postgres-backed repos + migrations for these remain deferred, and the `ph06-persistence`
   migration-list assertion froze at 0008.

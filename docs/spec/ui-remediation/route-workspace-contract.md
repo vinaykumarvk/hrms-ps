@@ -16,20 +16,20 @@ Date: 2026-07-11
 | Destination | Route | Permission | Primary workspace |
 |---|---|---|---|
 | Inbox | `/me/inbox` | `p01.workflow.read` | Me |
-| Employees | `/me/employees` | `g01.employee.read` | Me |
-| Personal Details | `/me/personal-details` | `g02.change.read` | Me |
-| Attendance & Leave | `/me/attendance-leave` | `g03.leave.read` | Me |
-| Leave-SR Relay | `/admin/leave-sr-relay` | `g04.relay.read` | Admin |
-| Transfers | `/team/transfers` | `g05.transfer.read` | My Team |
-| Promotions | `/team/promotions` | `g06.promotion.read` | My Team |
-| Training | `/team/training` | `g07.training.read` | My Team |
-| APAR | `/team/apar` | `g08.apar.read` | My Team |
-| Disciplinary | `/team/disciplinary` | `g09.case.read` | My Team |
-| Payroll | `/admin/payroll` | `g10.payroll.read` | Admin |
-| Pension & Retirement | `/admin/pension-retirement` | `g11.pension.read` | Admin |
-| Service Register | `/me/service-register` | `g12.sr.read` | Me |
-| Documents | `/me/documents` | `g13.document.read` | Me |
-| Analytics | `/admin/analytics` | `g14.analytics.read` | Admin |
+| Employees | `/me/employees` | `ps01.employee.read` | Me |
+| Personal Details | `/me/personal-details` | `ps02.change.read` | Me |
+| Attendance & Leave | `/me/attendance-leave` | `ps03.leave.read` | Me |
+| Leave-SR Relay | `/admin/leave-sr-relay` | `ps04.relay.read` | Admin |
+| Transfers | `/team/transfers` | `ps05.transfer.read` | My Team |
+| Promotions | `/team/promotions` | `ps06.promotion.read` | My Team |
+| Training | `/team/training` | `ps07.training.read` | My Team |
+| APAR | `/team/apar` | `ps08.apar.read` | My Team |
+| Disciplinary | `/team/disciplinary` | `ps09.case.read` | My Team |
+| Payroll | `/admin/payroll` | `ps10.payroll.read` | Admin |
+| Pension & Retirement | `/admin/pension-retirement` | `ps11.pension.read` | Admin |
+| Service Register | `/me/service-register` | `ps12.sr.read` | Me |
+| Documents | `/me/documents` | `ps13.document.read` | Me |
+| Analytics | `/admin/analytics` | `ps14.analytics.read` | Admin |
 | Workflow Config | `/admin/workflow-config` | `p01.workflow.config.review` | Admin |
 
 “Primary workspace” is information architecture, not data authority. A user may see a destination only when both the workspace grant and destination permission exist. Unauthorized routes render the existing no-permission state without mounting or retaining protected content.

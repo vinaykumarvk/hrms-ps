@@ -1,11 +1,11 @@
-# PH-48A — Raise contract coverage: G12 chain-read + verify route exposure
+# PH-48A — Raise contract coverage: PS12 chain-read + verify route exposure
 
 ## Objective
-Continue the coverage workstream into G12 (43.1%): expose the SR-ledger chain reads and the RFC-3161
+Continue the coverage workstream into PS12 (43.1%): expose the SR-ledger chain reads and the RFC-3161
 timestamp / offline-bundle verification counterparts as kernel routes over already-tested backing.
 
 ## Context
-- Backing (`apps/api/src/modules/g12/`): `serviceRegisterService.getEntryChain/getStatusChain/getStatusEvents/
+- Backing (`apps/api/src/modules/ps12/`): `serviceRegisterService.getEntryChain/getStatusChain/getStatusEvents/
   listChainEmployees/listFeedEvents`; `timestampAuthorityService.verifyTimestamp`;
   `offlineVerificationService.verifyBundle`.
 - Coverage gate: `tools/contract-coverage.mjs` + `docs/reviews/contract-coverage-20260703.md` + `ph-37a.sh`.
@@ -17,7 +17,7 @@ timestamp / offline-bundle verification counterparts as kernel routes over alrea
 - Raise the ratchet floor (report + `ph37a` test + `ph-37a.sh`) 462/34.9% → 469/35.4%.
 
 ## Evidence required
-- 7 routes in `g12.routes.ts`; `apps/api/test/ph48a-*.test.cjs` covering the chain reads (after seeding an
+- 7 routes in `ps12.routes.ts`; `apps/api/test/ph48a-*.test.cjs` covering the chain reads (after seeding an
   SR event), the timestamp verify round-trip (+ tamper → invalid), and the bundle verify round-trip.
 - `bash docs/spec/pipeline/checks/ph-48a.sh` GREEN and `bash docs/spec/pipeline/checks/ph-37a.sh` GREEN at
   the raised floor; typecheck + full suite green.

@@ -63,7 +63,7 @@ test("PH-05A client injects Authorization bearer token, correlation id, and conf
   const { createHrmsClient } = loadHrmsClientModule();
   const calls = [];
   const client = createHrmsClient({
-    baseUrl: "https://hrms.example.gov/",
+    baseUrl: "https://hrms.example.com/",
     correlationId: "corr-test-001",
     tokenProvider: () => "session-token-123",
     fetcher: async (url, init) => {
@@ -75,7 +75,7 @@ test("PH-05A client injects Authorization bearer token, correlation id, and conf
   const page = await client.listEmployees();
   assert.equal(page.next_cursor, null);
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].url, "https://hrms.example.gov/api/v1/employees");
+  assert.equal(calls[0].url, "https://hrms.example.com/api/v1/employees");
   assert.equal(calls[0].headers.get("Authorization"), "Bearer session-token-123");
   assert.equal(calls[0].headers.get("X-Correlation-Id"), "corr-test-001");
 });
@@ -128,7 +128,7 @@ test("PH-05A client sends Idempotency-Key on unsafe calls", async () => {
 
   await client.ingestServiceRegister(
     {
-      sourceModule: "G03",
+      sourceModule: "PS03",
       sourceReferenceId: "ref-1",
       sourceEventVersion: 1,
       employeeId: "emp-1",

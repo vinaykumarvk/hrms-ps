@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-25A oracle: G10 FR-19 GL->ERP posting — gl_export_batches post to an ERP with idempotency
+# PH-25A oracle: PS10 FR-19 GL->ERP posting — gl_export_batches post to an ERP with idempotency
 # (duplicate batch is a no-op) and an ACK reconciliation (POSTED->ACKNOWLEDGED, mismatch flagged).
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g10 apps/api/src/routes/g10.routes.ts"; T=apps/api/test
-echo "== PH-25A exit-criteria (G10 GL->ERP posting) =="
+S="apps/api/src/modules/ps10 apps/api/src/routes/ps10.routes.ts"; T=apps/api/test
+echo "== PH-25A exit-criteria (PS10 GL->ERP posting) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "export batch consumed (gl_export_batches)::gl_export_batches|glExportBatch" \

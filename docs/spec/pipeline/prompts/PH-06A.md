@@ -1,18 +1,18 @@
 /goal
-  objective: PH-06A — THE PERSISTENCE SUBSTRATE. Replace the in-memory arrays behind the G03 and G05
+  objective: PH-06A — THE PERSISTENCE SUBSTRATE. Replace the in-memory arrays behind the PS03 and PS05
     owned entities with Postgres-backed repositories consuming the frozen data model. This is the #1
     cross-cutting gap from docs/reviews/brd-coverage-audit-20260702.md: every module service runs on
     `private readonly xs: T[] = []` and docs/data-model/*.sql is entirely unconsumed by runtime.
   audit_gaps_closed:
     - "Persistence: services use in-memory arrays; the SQL data model is largely unconsumed" (audit, cross-cutting #1)
-    - G03 owned entities with no repository: leave_types, leave_accrual_policies, leave_ledger(_entries), leave_reservations
-    - G05 owned entities with no repository: transfer_requests, transfer_orders, clearance_checklists, clearance_items
+    - PS03 owned entities with no repository: leave_types, leave_accrual_policies, leave_ledger(_entries), leave_reservations
+    - PS05 owned entities with no repository: transfer_requests, transfer_orders, clearance_checklists, clearance_items
   context:
     - docs/reviews/brd-coverage-audit-20260702.md          # what "done" must now mean
-    - docs/data-model/03-G03-attendance-leave.sql          # frozen DDL: leave_types, leave_accrual_policies, leave_ledger_entries, leave_reservations, leave_balances(version)
-    - docs/data-model/05-G05-transfer-relieving-joining.sql # frozen DDL: transfer_requests, transfer_orders, order_number_sequences, clearance_checklists, clearance_items
+    - docs/data-model/03-PS03-attendance-leave.sql          # frozen DDL: leave_types, leave_accrual_policies, leave_ledger_entries, leave_reservations, leave_balances(version)
+    - docs/data-model/05-PS05-transfer-relieving-joining.sql # frozen DDL: transfer_requests, transfer_orders, order_number_sequences, clearance_checklists, clearance_items
     - docs/data-model/00-platform-core.sql                 # shared core the module DDL references
-    - apps/api/src/modules/g03/leaveService.ts , apps/api/src/modules/g05/transferService.ts
+    - apps/api/src/modules/ps03/leaveService.ts , apps/api/src/modules/ps05/transferService.ts
     - apps/api/src/platform/foundationServices.ts          # constructor wiring to extend
     - docs/spec/pipeline/checks/ph-02b.sh                  # throwaway initdb/pg_ctl cluster pattern (reused by the oracle)
   deliverables:
@@ -21,8 +21,8 @@
     - Materialise the consumed DDL as ordered SQL migrations under apps/api/db/migrations/*.sql
       (a faithful subset of docs/data-model covering the eight tables above plus their core prerequisites)
       with a runner (apps/api/src/db/migrate.ts) that applies them idempotently.
-    - Repository layer: apps/api/src/modules/g03/leaveRepository.ts and
-      apps/api/src/modules/g05/transferRepository.ts exposing typed CRUD/query methods over those tables.
+    - Repository layer: apps/api/src/modules/ps03/leaveRepository.ts and
+      apps/api/src/modules/ps05/transferRepository.ts exposing typed CRUD/query methods over those tables.
       leaveService.ts and transferService.ts must import and route their entity state through the
       repositories (an injectable in-memory *implementation of the same repository interface* may remain
       for unit tests, but the bare private arrays for these entities must be gone from the services).
@@ -58,7 +58,7 @@
         postgres (initdb/pg_ctl) and skips cleanly without DATABASE_URL; `bash docs/spec/pipeline/checks/ph-06a.sh` is GREEN.
       steps: [write integration test, run against throwaway cluster, fix, run oracle]
   evidence_required:
-    - apps/api/src/db/** , apps/api/db/migrations/*.sql , apps/api/src/modules/g03/leaveRepository.ts , apps/api/src/modules/g05/transferRepository.ts
+    - apps/api/src/db/** , apps/api/db/migrations/*.sql , apps/api/src/modules/ps03/leaveRepository.ts , apps/api/src/modules/ps05/transferRepository.ts
     - apps/api/test/ph06-persistence.test.cjs run output (pass>=3, skipped=0 with DATABASE_URL)
     - `npm run typecheck` + `npm test` green; `bash docs/spec/pipeline/checks/ph-06a.sh` GREEN
   escalate_when:

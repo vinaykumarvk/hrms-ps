@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# PH-42A oracle: raise measured contract coverage by exposing the FR-G07-018 external-credential
+# PH-42A oracle: raise measured contract coverage by exposing the FR-PS07-018 external-credential
 # lifecycle + vendor-empanelment decisions (real, service-tested backing) as kernel routes. Checks
 # routes registered + dispatched, and the ratchet advanced to >= 430 / 32.5%.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 have(){ grep -qE "$2" "$1" 2>/dev/null && grn "$3" || red "$3"; }
-R="apps/api/src/routes/g07.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
-echo "== PH-42A exit-criteria (G07 credential/empanelment route exposure; coverage ratchet) =="
+R="apps/api/src/routes/ps07.routes.ts"; T=apps/api/test; TOOL=tools/contract-coverage.mjs
+echo "== PH-42A exit-criteria (PS07 credential/empanelment route exposure; coverage ratchet) =="
 [ -d node_modules ] || red "node_modules absent"
 for m in captureExternalCredential reviewCredentialEvidence verifyExternalCredential rejectExternalCredential getExternalCredential listCredentialVerifications reviewEmpanelment decideEmpanelment getEmpanelment; do
   have "$R" "$m" "route wires backing method: $m"
 done
 have "$T"/ph42a-*.test.cjs 'api.dispatch|createFoundationApi' "API test dispatches through the kernel"
 have "$T"/ph42a-*.test.cjs 'external-credentials' "API test exercises the credential routes"
-have "$T"/ph42a-*.test.cjs 'VAL-G07-CREDREF' "API test asserts the duplicate-reference guard"
+have "$T"/ph42a-*.test.cjs 'VAL-PS07-CREDREF' "API test asserts the duplicate-reference guard"
 have "$T"/ph42a-*.test.cjs 'vendor-empanelments' "API test exercises the empanelment routes"
 if [ -d node_modules ]; then
   npm run -s build >/dev/null 2>&1 || red "build failed"

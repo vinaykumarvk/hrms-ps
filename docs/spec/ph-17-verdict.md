@@ -23,26 +23,26 @@ were built **by hand** — the authoring/execution subagents remain credit-exhau
 
 | Module | Closed in PH-17 | Evidence |
 |---|---|---|
-| **G03** | leave_year_close (simulate→commit, carry-forward/lapse/HPL-conversion), PENDING_LEAVE_BLOCKS_CLOSE + YEAR_ALREADY_CLOSED guards; leave_encashment with ENCASHMENT_CAP_EXCEEDED + NOT_ENCASHABLE | `ph17a-g03-yearclose-encashment.test.cjs` |
-| **G02** | esignatures with SHA-256 payload hash-chain, apply/commit gate ERR-G02-ESIGN, method policy ERR-G02-ESIGN-METHOD; cr_step_up_events with ERR-G02-STEPUP on HIGH/STATUTORY self-service | `ph17b-g02-esign-stepup.test.cjs` |
-| **G09** | vigilance_records (clearance_status transitions, integrity_grade, sealed_cover), fail-closed clearance lookup consumed by promotion/pension (NOT_CLEARED/sealed-cover blocks clearance) | `ph17c-g09-vigilance-register.test.cjs` |
+| **PS03** | leave_year_close (simulate→commit, carry-forward/lapse/HPL-conversion), PENDING_LEAVE_BLOCKS_CLOSE + YEAR_ALREADY_CLOSED guards; leave_encashment with ENCASHMENT_CAP_EXCEEDED + NOT_ENCASHABLE | `ph17a-ps03-yearclose-encashment.test.cjs` |
+| **PS02** | esignatures with SHA-256 payload hash-chain, apply/commit gate ERR-PS02-ESIGN, method policy ERR-PS02-ESIGN-METHOD; cr_step_up_events with ERR-PS02-STEPUP on HIGH/STATUTORY self-service | `ph17b-ps02-esign-stepup.test.cjs` |
+| **PS09** | vigilance_records (clearance_status transitions, integrity_grade, sealed_cover), fail-closed clearance lookup consumed by promotion/pension (NOT_CLEARED/sealed-cover blocks clearance) | `ph17c-ps09-vigilance-register.test.cjs` |
 
 ## Remaining gaps (still open — this is NOT a 100% claim)
 
 Tranche 4 did not close, and these remain `NOT_FOUND` / open for a later tranche:
 
-- **G01**: Aadhaar vault tokenisation, phonetic/transliteration search, privacy/DPDP console.
-- **G02**: fraud/velocity extra detectors, grievance/objection window, retro-impact fan-out, templates.
-- **G03**: mass-leave/blackout, WFH/on-duty exceptions, backdated-leave team-calendar conflicts.
-- **G04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
-- **G05**: interactive counselling UI, proof-of-service deeming, inter-se seniority sequencing.
-- **G06**: sealed-cover full workflow, correction cascade recompute, career-path/succession.
-- **G07**: LMS/xAPI integration, content/assessment-item bank, vendor empanelment.
-- **G08**: continuous feedback/check-ins, multi-source 360, DSC/non-repudiation signing.
-- **G09**: POSH conciliation depth, jurisdiction transfer/retiree bar, evidence-vault UI listing.
-- **G10**: full TDS engine edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
-- **G11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
-- **G12/G13/G14**: offline-QR verification, real TSA; OCR/watermark/secure-sharing, real AV engine;
+- **PS01**: Aadhaar vault tokenisation, phonetic/transliteration search, privacy/DPDP console.
+- **PS02**: fraud/velocity extra detectors, grievance/objection window, retro-impact fan-out, templates.
+- **PS03**: mass-leave/blackout, WFH/on-duty exceptions, backdated-leave team-calendar conflicts.
+- **PS04**: X.3 outbound framework (circuit-breaker/credentials), CI port-conformance gate.
+- **PS05**: interactive counselling UI, proof-of-service deeming, inter-se seniority sequencing.
+- **PS06**: sealed-cover full workflow, correction cascade recompute, career-path/succession.
+- **PS07**: LMS/xAPI integration, content/assessment-item bank, vendor empanelment.
+- **PS08**: continuous feedback/check-ins, multi-source 360, DSC/non-repudiation signing.
+- **PS09**: POSH conciliation depth, jurisdiction transfer/retiree bar, evidence-vault UI listing.
+- **PS10**: full TDS engine edge cases, Form-16 Part-A remittance matching depth, GL→ERP posting.
+- **PS11**: treasury/PDA X.3 wire integration, DigiLocker/DBT delivery, death-detection recovery.
+- **PS12/PS13/PS14**: offline-QR verification, real TSA; OCR/watermark/secure-sharing, real AV engine;
   NLQ, embedded BI, predictive+fairness, mobile briefing.
 
 **Contract-op coverage caveat:** implemented routes still cover only a small fraction of the **1,306**

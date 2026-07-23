@@ -20,11 +20,11 @@ GREEN. Third net-new tranche. Built by hand — subagents credit-exhausted until
 
 | Module | Net-new operation cluster | Backing | Evidence |
 |---|---|---|---|
-| **G01** | FR-EPM-006 education register (`GET/POST /employees/{id}/education`, `PATCH /employees/{id}/education/{educationId}`, `POST .../{educationId}:remove`) | **new** `EducationService` + `InMemoryEducationRepository` (built this tranche): single-highest invariant with auto-demotion (at most one ACTIVE is_highest per employee), year-of-passing validation (1950–2100), row_version optimistic locking (409), soft-delete that clears is_highest, per-mutation audit | `ph64a-g01-education-route.test.cjs` |
+| **PS01** | FR-EPM-006 education register (`GET/POST /employees/{id}/education`, `PATCH /employees/{id}/education/{educationId}`, `POST .../{educationId}:remove`) | **new** `EducationService` + `InMemoryEducationRepository` (built this tranche): single-highest invariant with auto-demotion (at most one ACTIVE is_highest per employee), year-of-passing validation (1950–2100), row_version optimistic locking (409), soft-delete that clears is_highest, per-mutation audit | `ph64a-ps01-education-route.test.cjs` |
 
 Genuinely new implementation — a new service module + repository with real, tested business logic (promoting
 a record auto-demotes the prior highest; optimistic lock; soft-delete). Measured contract coverage ratchets
-**560 / 42.3% → 564 / 42.6%** (G01 **35.2% → 37.6%**), and the PH-37 gate floor was raised in lockstep so the
+**560 / 42.3% → 564 / 42.6%** (PS01 **35.2% → 37.6%**), and the PH-37 gate floor was raised in lockstep so the
 gain is locked.
 
 ## Remaining gaps (still open — this is NOT a 100% claim)

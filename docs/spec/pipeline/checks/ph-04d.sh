@@ -87,7 +87,7 @@ else red "verdict does not state the oracle-computed coverage ${cov}% — run th
 if [ -n "$unmatched" ] && grep -q "unmatched_implemented: ${unmatched}" "$v" 2>/dev/null; then
   grn "verdict states the oracle-computed drift count (unmatched_implemented: ${unmatched})"
 else red "verdict missing 'unmatched_implemented: ${unmatched}' drift line"; fi
-for mod in P01 G01 G02 G03 G04 G05 G06 G07 G08 G09 G10 G11 G12 G13 G14; do
+for mod in P01 PS01 PS02 PS03 PS04 PS05 PS06 PS07 PS08 PS09 PS10 PS11 PS12 PS13 PS14; do
   grep -q "$mod" "$v" 2>/dev/null && grn "verdict covers $mod" || red "verdict coverage table missing $mod"
 done
 grep -q '|' "$v" 2>/dev/null && grn "verdict contains a coverage table" || red "verdict has no coverage table"

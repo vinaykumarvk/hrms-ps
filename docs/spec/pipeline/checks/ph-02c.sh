@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PH-02C oracle: seed-data plan + authority fixtures for G03/G05, incl. the six hard resolver cases.
+# PH-02C oracle: seed-data plan + authority fixtures for PS03/PS05, incl. the six hard resolver cases.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
@@ -10,8 +10,8 @@ python3 - <<'PY' || red "seed-data plan invalid or fixtures table wrong"
 import yaml,sys
 s=yaml.safe_load(open("docs/spec/hrms-seed-data-plan.yaml"))
 tbl=(((s.get("fixtures") or {}).get("statutory_authority") or {}).get("table"))
-if tbl!="g01_authority_assignments":
-    print(f"  RED  fixtures.statutory_authority.table={tbl!r}, expected g01_authority_assignments"); sys.exit(1)
+if tbl!="ps01_authority_assignments":
+    print(f"  RED  fixtures.statutory_authority.table={tbl!r}, expected ps01_authority_assignments"); sys.exit(1)
 print("  ok   seed plan parses; statutory_authority fixture table correct"); sys.exit(0)
 PY
 blob="$(cat docs/spec/hrms-seed-data-plan.yaml docs/tests/authority-resolution-tests.md 2>/dev/null | tr '[:lower:]' '[:upper:]')"

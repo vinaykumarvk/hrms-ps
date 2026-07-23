@@ -51,4 +51,4 @@ Rebuilding would discard tested engine behavior and repeat risks that can be iso
 8. Golden-suite stabilization on clean PUDA checkout and isolated DB.
 9. License/provenance approval for shared package extraction.
 
-Program decision: **Proceed to PH-00B facade design. Do not start HRMS module feature implementation until PH-00B proves G03 leave and G05 transfer/clearance through the facade.**
+Program decision: **Proceed to PH-00B facade design. Do not start HRMS module feature implementation until PH-00B proves PS03 leave and PS05 transfer/clearance through the facade.**

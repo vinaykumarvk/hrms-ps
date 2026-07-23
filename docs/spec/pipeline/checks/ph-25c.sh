@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# PH-25C oracle: G03 FR-20 punch anomaly review — punch_anomaly_reviews flag impossible-travel /
+# PH-25C oracle: PS03 FR-20 punch anomaly review — punch_anomaly_reviews flag impossible-travel /
 # duplicate punches, a review lifecycle (FLAGGED -> CONFIRMED_FRAUD / VALID), self-review block.
 set -uo pipefail
 cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || echo /Users/n15318/hrms)"
 fail=0; red(){ echo "  RED  $*"; fail=1; }; grn(){ echo "  ok   $*"; }
 must(){ local spec="$1"; shift; local label="${spec%%::*}"; local pat="${spec#*::}"
   if grep -rqE "$pat" "$@" 2>/dev/null; then grn "$label"; else red "missing: $label"; fi; }
-S="apps/api/src/modules/g03 apps/api/src/routes/g03.routes.ts"; T=apps/api/test
-echo "== PH-25C exit-criteria (G03 punch anomaly review) =="
+S="apps/api/src/modules/ps03 apps/api/src/routes/ps03.routes.ts"; T=apps/api/test
+echo "== PH-25C exit-criteria (PS03 punch anomaly review) =="
 [ -d node_modules ] || red "node_modules absent"
 for spec in \
   "anomaly reviews consumed (punch_anomaly_reviews)::punch_anomaly_reviews|punchAnomaly" \
