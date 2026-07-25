@@ -46,17 +46,25 @@ export function KpiCard({
           </p>
           <div className="mt-2 flex items-baseline gap-1.5">
             {suppressed ? (
-              <span className="text-sm font-medium text-amber-600">
-                Suppressed
+              // URF-00R: `data-suppressed` is the hook the k-anonymity no-leakage test asserts on.
+              <span data-suppressed="true" className="text-sm font-medium text-amber-600">
+                {suppressionReason ? `Suppressed — ${suppressionReason}` : "Suppressed"}
               </span>
             ) : (
               <>
-                <span className="text-3xl font-bold tracking-tight text-gray-900 tabular-nums">
+                <span aria-hidden="true" className="text-3xl font-bold tracking-tight text-gray-900 tabular-nums">
                   {value?.toLocaleString() ?? "—"}
                 </span>
                 {unit && (
-                  <span className="text-sm font-medium text-gray-400">{unit}</span>
+                  <span aria-hidden="true" className="text-sm font-medium text-gray-400">{unit}</span>
                 )}
+                {/* URF-00R: the visible number and unit are separate elements for layout, which
+                    splits the accessible name into "16" / "applications". This renders the pair
+                    once, contiguously, for assistive tech — and is what the dashboard-render
+                    test asserts ("16 applications"). */}
+                <span className="sr-only">
+                  {unit ? `${value?.toLocaleString() ?? "—"} ${unit}` : value?.toLocaleString() ?? "—"}
+                </span>
               </>
             )}
           </div>

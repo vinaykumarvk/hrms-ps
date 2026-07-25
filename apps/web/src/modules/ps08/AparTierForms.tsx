@@ -52,17 +52,20 @@ export function AparTierForms({ client, permissions, defaultFormId = "" }: AparT
     formId: { initial: defaultFormId, validate: required("APAR form id is required.") },
   });
 
-  const selfForm = useForm<{ phase: SubmitPhase }>({
+  // useForm is generic over the field-config map, not the value map, so the value types are
+  // inferred from each field's `initial`. The `as SubmitPhase` assertions carry the union type
+  // through that inference.
+  const selfForm = useForm({
     phase: { initial: { kind: "idle" } as SubmitPhase },
   });
 
-  const reportForm = useForm<{ grade: string; narrative: string; phase: SubmitPhase }>({
+  const reportForm = useForm({
     grade: { initial: "", validate: required("Grade is required.") },
     narrative: { initial: "", validate: required("Narrative is required.") },
     phase: { initial: { kind: "idle" } as SubmitPhase },
   });
 
-  const reviewForm = useForm<{ concur: boolean; remarks: string; phase: SubmitPhase }>({
+  const reviewForm = useForm({
     concur: { initial: true },
     remarks: { initial: "", validate: required("Remarks are required.") },
     phase: { initial: { kind: "idle" } as SubmitPhase },
