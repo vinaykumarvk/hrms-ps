@@ -60,11 +60,12 @@ Retiring the branch is not free. The following work exists only on `archive/feat
 ### Five defect fixes, all verified ABSENT from `main` at `7a5682a`
 
 These are **re-opened as live defects on `main`** and must be re-fixed against `ps*` paths. They
-are not resolved by this decision — only relocated to the backlog.
+are not resolved by this decision — only relocated to the backlog. **CC-003 has since been fixed
+(2026-07-26); the remaining four are outstanding.**
 
 | ID | Defect | Status on `main` |
 |---|---|---|
-| **CC-003** | PS03 leave-approve atomicity — the PS04 relay must run *before* the balance/status mutation | **OPEN.** `apps/api/src/modules/ps03/leaveService.ts` debits the balance and sets `status = "APPROVED"` (~:325-329) *before* enqueueing and relaying (~:337-345). A relay failure leaves a debited balance and an approved application with no rollback. |
+| **CC-003** | PS03 leave-approve atomicity — the PS04 relay must run *before* the balance/status mutation | **FIXED on main, 2026-07-26.** The relay now runs before any balance, ledger or status mutation in `leaveService.approve`. Regression tests in `apps/api/test/cc003-ps03-leave-approve-atomicity.test.cjs`, verified to fail against the previous ordering. |
 | **CC-007** | Manager hierarchy: `resolveReportingSubtree`, `resolveDottedLineManager`, `resolveSkipLevelManagers` on `AuthorityResolutionService` | **OPEN.** None of the three symbols exist anywhere in `apps/api/src`. |
 | **CC-019** | PS07 duplicate-nomination guard — `UNIQUE(training_session_id, employee_id)` | **OPEN.** No such constraint in `apps/api/db`. |
 | **CC-021** | PS13 `grantSecurityClearance` service-level idempotency — `ck_clearance_unique_active` | **OPEN.** Constraint absent. |

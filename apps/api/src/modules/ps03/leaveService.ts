@@ -313,20 +313,19 @@ export class LeaveService {
     const balance = this.getOrCreateBalance(actor, application.employeeId, application.leaveTypeId, yearOf(application.fromDate));
     this.assertBalanceVersion(balance, expectedVersion);
     const action = this.workflow.actOnInstance(actor, { instanceId: application.workflowInstanceId, action: "APPROVE" });
-    balance.reserved -= application.totalDays;
-    balance.debited += application.totalDays;
-    balance.availableBalance = balance.currentBalance - balance.reserved - balance.debited;
-    balance.version += 1;
-    this.repository.saveBalance(balance);
-    this.repository.appendLedgerEntry({
-      id: nextId("leave-ledger", this.repository.countLedgerEntries()),
-      employeeId: application.employeeId,
-      leaveApplicationId: application.id,
-      entryType: "DEBIT",
-      units: application.totalDays,
-      balanceAfter: balance.availableBalance,
-    });
-    application.status = "APPROVED";
+
+    // CC-003: the PS04 relay runs BEFORE any balance, ledger, or status mutation.
+    //
+    // It used to run after. Because repository.findApplication returns a live reference into the
+    // store, `application.status = "APPROVED"` was visible the instant it executed — so a relay
+    // failure left the balance debited, a DEBIT ledger entry appended, and the application marked
+    // APPROVED with no ps04OutboxEventId. Retrying then failed the `status !== "SUBMITTED"` guard
+    // above and threw PRECONDITION_FAILED, stranding the application permanently with the
+    // employee's balance already spent.
+    //
+    // There is no transaction to roll back here, so ordering is the control: the relay is the
+    // cross-module call most likely to fail, and running it first means a failure leaves local
+    // state untouched and the approve safely retryable.
     const payload = {
       applicationNo: application.applicationNo,
       leaveTypeId: application.leaveTypeId,
@@ -342,6 +341,22 @@ export class LeaveService {
       leaveSpellLineageId: application.leaveSpellLineageId,
     });
     const postedOutbox = this.leaveSrRelay.relayEvent(actor, readyOutbox.id);
+
+    // The relay is durable from here; only now is local state mutated.
+    balance.reserved -= application.totalDays;
+    balance.debited += application.totalDays;
+    balance.availableBalance = balance.currentBalance - balance.reserved - balance.debited;
+    balance.version += 1;
+    this.repository.saveBalance(balance);
+    this.repository.appendLedgerEntry({
+      id: nextId("leave-ledger", this.repository.countLedgerEntries()),
+      employeeId: application.employeeId,
+      leaveApplicationId: application.id,
+      entryType: "DEBIT",
+      units: application.totalDays,
+      balanceAfter: balance.availableBalance,
+    });
+    application.status = "APPROVED";
     application.srEventId = postedOutbox.srEventId;
     application.ps04OutboxEventId = postedOutbox.id;
     this.repository.updateApplication(application);
