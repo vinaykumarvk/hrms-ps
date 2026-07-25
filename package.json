@@ -11,7 +11,7 @@
     "web:typecheck": "npx tsc -p apps/web/tsconfig.json --noEmit",
     "web:build": "node node_modules/vite/bin/vite.js build --config apps/web/vite.config.ts",
     "web:test": "node --test apps/web/test/*.test.cjs",
-    "web:test:e2e": "playwright test --config apps/web/playwright.config.ts",
+    "web:test:e2e": "node tools/e2e-preflight.mjs && playwright test --config apps/web/playwright.config.ts",
     "web:check": "npm run web:typecheck && npm run web:build && npm run web:test",
     "web:dev": "node node_modules/vite/bin/vite.js --config apps/web/vite.config.ts --host 127.0.0.1"
   },
