@@ -27,8 +27,16 @@ So the 26 failures were not new breakage — they are `feature/dev`'s already-so
 reappearing on the branch that skipped it. A clean cherry-pick is not possible: every path was
 renamed by the rebrand, and the polish commits landed after.
 
-**Recommendation:** reconcile `origin/feature/dev` into the mainline as a deliberate merge rather
-than letting the two lines keep diverging. This phase reproduced its fixes where they were needed,
+**RESOLVED 2026-07-26 — see `docs/spec/adr-005-retire-feature-dev.md`.** The reconciliation was
+attempted and abandoned: 221 of 372 touched files conflicted, because the branches made opposite
+decisions on primary keys (uuid vs text), enumerations (PG enums vs text), money
+(`numeric(x,2)` vs `bigint` paise) and kernel dispatch (sync vs async). `main` is authoritative;
+`feature/dev` is tagged `archive/feature-dev` and deleted. Note that the decision re-opens five
+defect fixes (CC-003, CC-007, CC-019, CC-021, DEF-1) that exist only on the archived branch —
+the ADR lists them.
+
+The original recommendation, retained for context: reconcile `origin/feature/dev` into the
+mainline as a deliberate merge rather than letting the two lines keep diverging. This phase reproduced its fixes where they were needed,
 and deliberately adopted its public API (`loadAnalyticsDashboard`, `isMartStale`,
 `MART_DRILL_DIMENSIONS`, `MART_FRESHNESS_SLA_MINUTES`) and its wording so the branches converge
 rather than conflict. `feature/dev` also carries `f53f706` (Cloud Run demo fixes) which this branch
