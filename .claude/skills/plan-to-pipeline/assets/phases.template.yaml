@@ -1,0 +1,32 @@
+# Pipeline manifest — consumed by run.sh (the external driver).
+# The driver automates SEQUENCING; exit_criteria is verified OUTSIDE the model; gates are hard stops.
+#
+# Per phase:
+#   id            : stable id (also the state/approval key)
+#   name          : human label
+#   prompt        : the /goal prompt file fed to a fresh agent session (path relative to repo root)
+#   exit_criteria : a shell command returning 0 (GREEN) / non-zero (RED), run by the DRIVER, not the agent.
+#                   Use a REAL oracle (tests/build/schema-load/contract-parse/artifact) for gate:auto.
+#                   If success is human judgement, use "true" + gate: human (the driver parks for approval).
+#   gate          : auto  -> advance automatically on GREEN
+#                   human -> after GREEN, PARK until approvals/<id>.approved exists
+#   depends_on    : ids that must be `done` first
+
+version: 1
+defaults:
+  phase_timeout_seconds: 3600        # per-phase wall-clock cap (blast-radius limiter)
+
+phases:
+  - id: PH-01
+    name: <phase name from the plan>
+    prompt: docs/spec/pipeline/prompts/PH-01.md
+    exit_criteria: bash docs/spec/pipeline/checks/ph-01.sh   # a REAL command; RED until the phase truly passes
+    gate: auto                                               # or human, for a review gate
+    depends_on: []
+
+  - id: PH-02
+    name: <phase name>
+    prompt: docs/spec/pipeline/prompts/PH-02.md
+    exit_criteria: "true"          # human-verified stub: trivially green -> parks at gate:human until a real check exists
+    gate: human
+    depends_on: [PH-01]

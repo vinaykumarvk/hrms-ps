@@ -1,0 +1,83 @@
+# project.config.yaml — machine-readable project configuration.
+# Read by feature-life-cycle, the guard hooks (db_change_guard.py, secrets_guard.py,
+# validate_sql.py, run_tests_if_changed.py, lint_changed.py), and the
+# deploy/local-deployment skills. This file + CLAUDE.md keep the pipeline portable.
+
+project:
+  name: primesoft-hrms
+  type: existing
+
+stack:
+  runtime: Node.js modular monolith (TypeScript) — apps/api (services) + apps/web (React/Vite SPA)
+  api_style: REST
+  api_port: 8080
+  frontend: React 19 (Vite)
+  database: PostgreSQL (via node-postgres `pg`) with SQL migrations
+  auth: Session-token (app/session.ts) + RBAC permission families; RouteGuard on the web
+  observability: none yet
+
+stack_profile:
+  pack: none
+  backend: node
+  frontend: react
+  database: postgres
+  test_runner: node:test (+ playwright for web e2e)
+  deployment: cloud-run
+
+domain_pack: multi-tenant-saas   # public-sector / government HRMS; tenant_id + entity_id on every table (see docs/brd/MODULE_RECONCILIATION.md)
+
+source:
+  globs: ["apps/api/src/", "apps/web/src/"]   # what the test/lint hooks treat as source
+
+database:
+  change_policy: migrations            # migrations | schema-direct
+  schema_file: docs/data-model/        # canonical SQL model (00-platform-core.sql .. 14-PS14-*.sql)
+  introspect_cmd: null
+  migration_dirs: ["apps/api/db/migrations"]
+  # Any write/DDL touching these tables is blocked without approval:
+  sensitive_tables:
+    - employees
+    - employee_personal_details
+    - statutory_id_documents
+    - aadhaar_vault
+    - bank_accounts
+    - payroll_runs
+    - pension_calculation
+    - service_register_events
+    - audit_log
+    - security_audit_log
+  forbidden_commands: []
+
+layering:
+  db_access: apps/api/src/modules/**/*Repository.ts
+  business_logic: apps/api/src/modules/**/*Service.ts
+  path_aliases: ["@/*"]
+
+commands:
+  dev: npm run web:dev
+  build: npm run build && npm run web:build
+  test: npm test
+  test_smoke: npm test
+  test_touched: npm test
+  typecheck: npm run typecheck && npm run web:typecheck
+  lint: npm run typecheck
+  e2e: npm run web:test:e2e
+
+coordination:
+  announce_channel: none
+  announce_for: [DROP, ALTER, large UPDATE, changes to sensitive tables]
+
+escalation:
+  max_gate_remediation_cycles: 3
+  max_fr_retries: 2
+
+decision_policies:
+  pagination:        { default_page_size: 25, max_page_size: 100, human_required: false }
+  delete_behavior:   { default: soft_delete, hard_delete_requires_human: true }
+  external_api_failure: { default: retry_with_backoff_then_domain_error, human_required_if_money_movement: true }
+  auth_default:      { default: deny, public_endpoint_requires_explicit_contract: true }
+  schema_change:     { additive_change: auto, destructive_change: human_required }
+
+ci_gates:
+  block: [build, typecheck, unit_tests, migration_dry_run, secret_scan]
+  warn:  [e2e_touched_flows, accessibility_scan, api_contract_drift]
