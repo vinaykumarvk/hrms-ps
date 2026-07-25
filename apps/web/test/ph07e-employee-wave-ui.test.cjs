@@ -17,9 +17,20 @@ test("PH-07E PS01 contact and dependent panels are real controlled forms with su
     ["EmployeeContactsPanel", contactsSource, "addEmployeeContact"],
     ["EmployeeDependentsPanel", dependentsSource, "addEmployeeDependent"],
   ]) {
-    for (const marker of ["<form", "onSubmit={handleSubmit}", "event.preventDefault()", "<input", "useState", method, "crypto.randomUUID()"]) {
+    for (const marker of ["<form", "<input", method, "crypto.randomUUID()"]) {
       assert.equal(source.includes(marker), true, `${name} missing ${marker}`);
     }
+    // URF-00R: these two panels now use different idioms — EmployeeContactsPanel is still on
+    // useState + an explicit preventDefault, EmployeeDependentsPanel was migrated to useForm,
+    // whose handleSubmit calls preventDefault internally. Assert the property both must hold
+    // (a bound submit handler that suppresses the native submit) rather than one spelling.
+    assert.match(source, /onSubmit=\{handle\w*\}/, `${name} has no bound submit handler`);
+    assert.match(
+      source,
+      /event\.preventDefault\(\)|form\.handleSubmit\(/,
+      `${name} does not suppress native submission`
+    );
+    assert.match(source, /useState|useForm\(/, `${name} holds no field state`);
     for (const marker of ['"loading"', '"error"', '"empty"', "OperationalState"]) {
       assert.equal(source.includes(marker), true, `${name} missing canonical state ${marker}`);
     }
@@ -29,11 +40,13 @@ test("PH-07E PS01 contact and dependent panels are real controlled forms with su
 test("PH-07E PS02 change-request editor submits through the client and surfaces error envelopes", () => {
   for (const marker of [
     "<form",
-    "onSubmit={handleSubmit}",
-    "event.preventDefault()",
+    // URF-00R: re-anchored after the useForm migration. form.handleSubmit() owns preventDefault
+    // and the submitting phase, so the component no longer spells either one itself.
+    "onSubmit={handleFormSubmit}",
+    "form.handleSubmit(",
     "createPersonalDetailChangeRequest",
     "crypto.randomUUID()",
-    '"submitting"',
+    "form.isSubmitting",
     '"error"',
     '"success"',
     'role="alert"',
@@ -49,13 +62,22 @@ test("PH-07E PS02 approver queue wires approve/reject/send-back with a mandatory
     '"approve"',
     '"reject"',
     '"send-back"',
-    "ERR-REASON-REQ",
-    "ERR-PS02-SOD",
+    "ERR-REASON-REQ",   // client-side validation message, legitimately spelled in the component
     "<button",
     "onClick",
   ]) {
     assert.equal(queueSource.includes(marker), true, `ChangeRequestApproverQueue missing ${marker}`);
   }
+  // URF-00R: ERR-PS02-SOD is emitted by the API (apps/api/src/modules/ps02/changeGovernanceService.ts),
+  // not authored in the component. The only occurrence here was a doc comment, removed by 5bf0e8e.
+  // Assert the mechanism that actually surfaces it — the server's displayCode is rendered rather
+  // than swallowed — which also covers every other governance code the API can return.
+  assert.match(
+    queueSource,
+    /HrmsApiError\s*\?\s*\w+\.displayCode/,
+    "ChangeRequestApproverQueue no longer surfaces the API error code (ERR-PS02-SOD reaches the user through displayCode)"
+  );
+  assert.match(queueSource, /state\.errorCode/, "ChangeRequestApproverQueue does not render the error code it captured");
   for (const marker of ['"loading"', '"error"', '"empty"', "OperationalState"]) {
     assert.equal(queueSource.includes(marker), true, `ChangeRequestApproverQueue missing canonical state ${marker}`);
   }

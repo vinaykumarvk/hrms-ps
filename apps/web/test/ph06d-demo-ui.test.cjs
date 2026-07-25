@@ -14,8 +14,11 @@ const transferOrdersSource = fs.readFileSync("apps/web/src/modules/ps05/Transfer
 test("PH-06D PS03 leave-apply form is a real controlled form submitting through the client", () => {
   for (const marker of [
     "<form",
-    "onSubmit={handleSubmit}",
-    "event.preventDefault()",
+    // URF-00R: re-anchored after the useForm migration. The form is still controlled and still
+    // suppresses native submission — the handler is now produced by form.handleSubmit(), which
+    // calls e.preventDefault() internally, so the component no longer calls it directly.
+    "onSubmit={handleFormSubmit}",
+    "form.handleSubmit(",
     "<input",
     "<select",
     "useState",
@@ -38,10 +41,12 @@ test("PH-06D PS03 approver inbox wires Approve/Reject buttons to the decision ro
 test("PH-06D PS05 initiate-transfer form posts /api/v1/transfers/orders through the client", () => {
   for (const marker of [
     "<form",
-    "onSubmit={handleSubmit}",
-    "event.preventDefault()",
+    // URF-00R: re-anchored after the useForm migration (see the leave-form note above).
+    "onSubmit={handleFormSubmit}",
+    "form.handleSubmit(",
     "<input",
-    "useState",
+    // URF-00R: field state moved from useState to the useForm hook.
+    "useForm(",
     "initiateTransferOrder",
     "crypto.randomUUID()",
   ]) {
@@ -71,7 +76,9 @@ test("PH-06D interactive surfaces render canonical loading/error/empty states", 
     ["LeaveApplyForm", leaveFormSource],
     ["TransferInitiateForm", transferFormSource],
   ]) {
-    for (const marker of ['"submitting"', '"error"', '"success"', "role=\"alert\""]) {
+    // URF-00R: the submitting phase is no longer a literal state string on the component — it is
+    // owned by useForm and surfaced as form.isSubmitting. The error and success phases still are.
+    for (const marker of ["form.isSubmitting", '"error"', '"success"', "role=\"alert\""]) {
       assert.equal(source.includes(marker), true, `${name} missing ${marker}`);
     }
   }

@@ -155,7 +155,9 @@ test("PH-05D Service Register view exposes append-only chain cues", () => {
 });
 
 test("PH-05D document view exposes retention and hold states", () => {
-  for (const marker of ["legal hold", "retention", "fail-closed"]) {
+  // URF-00R: "fail-closed" was jargon in the source; the rule is now stated in user-facing words
+  // ("Disposal disabled while legal hold or WORM retention is active"). Assert the rule, not the term.
+  for (const marker of ["legal hold", "retention", "Disposal disabled while legal hold"]) {
     assert.equal(recordsSource.includes(marker), true, marker);
   }
 });
@@ -264,9 +266,17 @@ test("PH-05D vault lists GET /api/v1/documents results with legal-hold, retentio
 
   const markup = renderToStaticMarkup(React.createElement(DocumentVaultView, { client, initialState: state }));
   assert.equal(markup.includes("DOC/2026/0001001"), true, "API documents render");
-  assert.equal(markup.includes("legal hold (fail-closed)"), true, "legal-hold state renders per document");
-  assert.equal(markup.includes("WORM retention"), true, "retention state renders per document");
-  assert.equal(markup.includes("version v4"), true, "document version renders from the API");
+  // URF-00R: the vault moved to the shared DataTable, so per-document state renders as typed
+  // badges in Hold / WORM / Ver columns rather than an inline prose string. The states asserted
+  // are the same ones; only their presentation changed.
+  assert.equal(markup.includes("LEGAL HOLD"), true, "legal-hold state renders per document");
+  assert.equal(markup.includes("WORM"), true, "retention state renders per document");
+  assert.equal(markup.includes("v4"), true, "document version renders from the API");
+  assert.match(
+    markup,
+    /Disposal disabled while legal hold or WORM retention is active/,
+    "the vault no longer states the fail-closed disposal rule"
+  );
 });
 
 test("PH-05D vault renders loading, error, and empty branches", async () => {

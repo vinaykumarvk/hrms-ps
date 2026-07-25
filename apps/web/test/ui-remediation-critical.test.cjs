@@ -18,7 +18,8 @@ test("UIR-06 every navigation destination has route workspace icon and permissio
 
 test("UIR-06 shell has accessible mobile disclosure and active navigation", () => {
   const shell = read("apps/web/src/app/AppShell.tsx");
-  for (const marker of ["aria-expanded", 'aria-label="Open menu"', "<Drawer", 'aria-current={item.href === activePath', 'aria-label="Main navigation"']) assert.ok(shell.includes(marker), marker);
+  // URF-00R: the disclosure button's label was made more specific ("Open navigation menu").
+  for (const marker of ["aria-expanded", 'aria-label="Open navigation menu"', "<Drawer", 'aria-current={item.href === activePath', 'aria-label="Main navigation"']) assert.ok(shell.includes(marker), marker);
 });
 
 test("UIR-06 login blocks double submit clears errors and has no unsupported reset control", () => {

@@ -7,7 +7,11 @@ const client = fs.readFileSync("apps/web/src/api/hrmsClient.ts", "utf8");
 const fixture = fs.readFileSync("apps/web/src/api/fixtureHrmsClient.ts", "utf8");
 const app = fs.readFileSync("apps/web/src/App.tsx", "utf8");
 test("PH-27C evidence-vault list is a real controlled surface using the client with canonical states", () => {
-  for (const m of ["<form", "onSubmit={handleSubmit}", "onClick=", "event.preventDefault()", "useState", "listCaseEvidence"]) {
+  // URF-00R: the bare `onClick=` marker is re-anchored to the DataTable interaction wiring. The
+  // list moved to the shared DataTable, so row interaction (sort/page) is delivered through
+  // `callbacks={tableCallbacks}` rather than a hand-rolled click handler. Form submission and
+  // preventDefault are unchanged in this component.
+  for (const m of ["<form", "onSubmit={handleSubmit}", "callbacks={tableCallbacks}", "event.preventDefault()", "useState", "listCaseEvidence"]) {
     assert.equal(comp.includes(m), true, `list missing ${m}`);
   }
   for (const m of ['"loading"', '"error"', '"empty"', "OperationalState"]) {
