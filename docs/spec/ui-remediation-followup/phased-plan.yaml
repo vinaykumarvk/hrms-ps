@@ -1,0 +1,660 @@
+# PrimeSoft HRMS — UI Remediation Follow-up: phased build plan
+#
+# Produced by: phased-planner
+# Source review: docs/reviews/full-review-ui-remediation.md (verdict CONDITIONAL, 2026-07-11)
+#
+# WHY THIS FILE IS NOT docs/spec/phased-plan.yaml
+#   docs/spec/phased-plan.yaml is the master program plan (HRMS-DEV-PLAN-v1, PH-00..PH-14
+#   + UIR-00..UIR-08) and is referenced by ~30 artifacts including docs/spec/manifest.json,
+#   docs/spec/pipeline/prompts/*, and docs/contracts/dependency-register.yaml. Overwriting it
+#   would destroy the program record. This follow-up is a scoped sub-programme and follows the
+#   convention already used for its predecessor (docs/spec/ui-remediation/ +
+#   docs/spec/ui-remediation-pipeline/). Register this plan in the master plan by reference.
+
+meta:
+  plan_id: HRMS-UIR-FOLLOWUP-v1
+  title: UI Remediation Follow-up — closure of the CONDITIONAL verdict
+  status: draft_for_gate
+  generated_on: "2026-07-25"
+  classification: standard
+  supersedes: null
+  extends: docs/spec/phased-plan.yaml   # UIR-00..UIR-08 completed; this closes their residue
+  objective: >
+    Close the two amendment-required architectural blockers (production authentication /
+    server-side token verification, deployment security policy) and the partial-closure
+    residue (evidence, traceability, design-system adoption, error-boundary observability)
+    left open by the CONDITIONAL verdict of docs/reviews/full-review-ui-remediation.md, so
+    that production release is no longer blocked.
+
+  source_artifacts:
+    review: docs/reviews/full-review-ui-remediation.md
+    prior_review: docs/reviews/ui-review-all-2026-07-11.md
+    prior_pipeline: docs/spec/ui-remediation-pipeline/
+    ledger: docs/spec/ui-remediation/finding-closure-ledger.yaml
+    contracts:
+      - docs/contracts/auth-matrix.yaml
+      - docs/contracts/error-taxonomy.yaml
+      - docs/contracts/dependency-register.yaml
+    deployment_surface:
+      - Dockerfile
+      - server.mjs
+      - ops/
+      - apps/web/vite.config.ts
+
+  # ---------------------------------------------------------------------------
+  # State reconciliation performed while authoring this plan (2026-07-25, at HEAD
+  # cfd8576). The review was written at 2026-07-11; ~25 commits have landed since
+  # (design tokens, DataTable/useForm migration, dark mode, PrimeSoft rebrand,
+  # Cloud Run + Cloud SQL deployment). Every file:line anchor in the review has
+  # therefore decayed and was re-checked. This is INPUT to URF-00, not a substitute
+  # for it — URF-00 must re-derive it with executed commands.
+  # ---------------------------------------------------------------------------
+  authoring_time_state_probe:
+    method: source read at HEAD; no verification commands executed
+    findings:
+      FR-01: >
+        PARTIAL, not closed. Demo login is now env-gated
+        (apps/web/src/app/session.ts:124 `!import.meta.env.DEV &&
+        VITE_ENABLE_DEMO_LOGIN !== "true"`), but hardcoded credential DEFAULTS remain
+        compiled in ("PS-100246" / "Welcome@123", session.ts:125-126) and the
+        `{alg:"none"}` minting path (session.ts:129) is still production source,
+        reachable in any build that sets the opt-in flag — which the standalone demo
+        deployment does. The review's "production bundle negative scan passes" claim
+        holds only for flag-off builds.
+      FR-02: OPEN / amendment-required. server.mjs:52-70 `decodeActor` still base64-decodes
+        unverified claims and still substitutes default tenantId/entityId (lines 65-66).
+        No signature/issuer/audience verification exists anywhere.
+      FR-03: RESOLVED. Expiry timer + `hrms:unauthorized` termination at apps/web/src/App.tsx:83-108.
+      FR-04: RESIDUAL. Oracle docs/spec/ui-remediation-pipeline/checks/uir-08.sh exists and is
+        substantive, but its evidence assertions must be re-run and re-anchored post-rebrand.
+      FR-05: RESOLVED. `AbortSignal.any([init.signal, timeoutSignal])` at apps/web/src/api/hrmsClient.ts:1033.
+      FR-06: RESOLVED in implementation. Field clones the single child with merged
+        aria-describedby/aria-invalid (apps/web/src/components/ui/Field.tsx:11). Behavioral test still owed.
+      FR-07: RESOLVED. replaceState moved into an effect (apps/web/src/App.tsx:115-117).
+      FR-08: PARTIAL. `componentDidCatch` invokes `this.props.onError?.()` but there is no
+        sanitized reporting sink and no forced-failure behavioral test (review says explicitly partial).
+      FR-09: >
+        OPEN. docs/spec/ui-remediation/finding-closure-ledger.yaml:19 still sets
+        `closure_status` to closed on the shared `&defaults` anchor, so every finding inherits
+        closed unless individually overridden — the exact defect FR-09 names.
+      FR-10: OPEN and now ACTIONABLE. The review skipped infra because "no production deployment
+        surface is in this target"; that premise is now false (Dockerfile, server.mjs, ops/,
+        Cloud Run + Cloud SQL). server.mjs sets no CSP/HSTS/nosniff/referrer/permissions headers.
+      FR-11: RESOLVED. reuseExistingServer:false on both entries (apps/web/playwright.config.ts:22,29).
+      FR-12: RESOLVED per review; re-verification owed (axe fail-on-all + keyboard journey).
+      FR-13: PARTIAL. Safe-area assertion still recorded partial in the ledger.
+      FR-14: RESOLVED. try/catch/finally in apps/web/src/app/LoginPanel.tsx:32-42.
+      FR-15: RESOLVED. Both controls carry aria-invalid/aria-describedby (LoginPanel.tsx:84,90).
+      FR-16: LARGELY RESOLVED, ledger stale. Raw form controls dropped from 126 to 20
+        (`<input|select|textarea>` across 16 .tsx files). Closure state must be corrected, remainder migrated.
+      FR-17: RESOLVED. Recovery is `window.location.reload()` (apps/web/src/app/ErrorBoundary.tsx);
+        behavioral fallback/focus test still owed.
+
+  ordering_rule_applied: >
+    phased-planner ordering is CONFLICT/migration -> PARTIAL modifications -> MISSING data ->
+    service -> API -> UI -> integration. One deliberate deviation: the baseline re-verification
+    phase (URF-00) runs BEFORE the conflict-closure phase (URF-01). The conflicts here are
+    documentary (spec amendments), and resolving them requires knowing which findings still
+    reproduce at HEAD after 25 intervening commits. Deciding an auth architecture against a
+    14-day-old file:line matrix would be deciding against fiction.
+
+  deviation_register:
+    - id: DEV-01
+      rule: CONFLICT phase first
+      deviation: URF-00 (re-verification, auto gate) precedes URF-01 (conflict closure, human gate)
+      justification: see ordering_rule_applied
+      accepted_by: pending_human
+
+# =============================================================================
+# PHASES
+# =============================================================================
+phases:
+
+  # ---------------------------------------------------------------------------
+  - id: URF-00
+    name: Baseline re-verification and finding-state matrix
+    category: partial_baseline
+    gate: auto
+    depends_on: []
+    parallel_group: G0
+    objective: >
+      Establish what is actually true at HEAD. Execute every verification command named in the
+      review, re-anchor all 17 findings to current file:line, and classify each as resolved /
+      partial / open / regressed / amendment_required with a direct evidence reference.
+    requirements:
+      - FR-01..FR-17 re-anchoring (all file:line anchors in the review have decayed)
+      - "Review section 'Verification commands' must be executed, not cited"
+      - "Review section 'Checks run' must be re-derived; the 'infra review: skipped' row is now false"
+    files_expected:
+      - docs/spec/ui-remediation-followup/finding-state-matrix.yaml
+      - docs/evidence/ui-remediation-followup/urf-00-command-log.md
+      - docs/spec/ui-remediation-followup/scope-delta.md
+    generated_tests: []
+    verification_commands:
+      - npm run check
+      - npm run web:check
+      - npm run web:test:e2e -- --project=chromium
+      - npm audit --audit-level=low
+      - bash docs/spec/pipeline/checks/ph-05e.sh
+      - bash docs/spec/ui-remediation-pipeline/checks/uir-08.sh
+    review_criteria:
+      - Every one of FR-01..FR-17 has an entry with state, current file:line, and evidence_id.
+      - No entry is marked resolved without a command output or test name backing it.
+      - Commands that fail are recorded as failing; a red oracle is a finding, not a blocker to this phase.
+      - The scope delta explicitly records that a deployment surface now exists.
+    rollback: docs-only phase; git revert of the docs commit. No code touched.
+    retry_policy: { max_attempts: 2, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-00R
+    name: Baseline repair — typecheck, web-test triage, oracle integrity
+    category: conflict          # the code and its tests disagree; that must be resolved first
+    gate: auto
+    depends_on: [URF-00]
+    parallel_group: G0R
+    inserted: "2026-07-25, on user approval, in response to the URF-00 escalation"
+    objective: >
+      Make the baseline truthful: remove the 80 TypeScript errors blocking web:typecheck, triage
+      every failing web test into stale assertion vs real defect, and repair the oracles that
+      could not fail. Without this, URF-05/06/07 are RED before they start.
+    requirements:
+      - "ESC-01 — web:typecheck blocked by 80 errors rooted in apps/web/src/lib/useForm.ts"
+      - "ESC-02 — 26 failing web unit tests (127/153)"
+      - "ESC-03 — the inherited uir-08.sh negative scan passes vacuously without ripgrep"
+      - "ESC-04 — the e2e gate hangs silently when port 5173 is occupied"
+    files_expected:
+      - apps/web/src/lib/useForm.ts
+      - apps/web/src/modules/ps14/AnalyticsWorkspace.tsx
+      - apps/web/src/modules/ps14/KpiCard.tsx
+      - apps/web/test/**                     # re-anchored assertions only, each justified
+      - docs/spec/ui-remediation-pipeline/checks/uir-01.sh
+      - docs/spec/ui-remediation-pipeline/checks/uir-08.sh
+      - tools/e2e-preflight.mjs
+      - docs/spec/ui-remediation-followup/urf-00r-triage.md
+    generated_tests: []       # this phase repairs existing tests rather than adding new ones
+    review_criteria:
+      - No type error is suppressed; the root cause is fixed.
+      - Every edited assertion has a triage entry naming the behaviour verified to still exist.
+      - Where a behaviour was genuinely lost, the code is repaired — the test is not weakened.
+      - Negative assertions in the repaired oracles fail on a planted value and on a missing target.
+      - The e2e gate produces a diagnostic rather than a hang.
+    rollback: >
+      git revert of the phase commit. The test re-anchorings and the source repairs are separable
+      commits, so a reviewer who disputes a re-anchoring can revert it without losing the
+      typecheck fix.
+    retry_policy: { max_attempts: 3, on_failure: park_for_human }
+    known_prior_art: >
+      origin/feature/dev@4335641 already fixed this defect class on the pre-rebrand tree and is not
+      an ancestor of HEAD. This phase matched its public API and wording deliberately. Reconciling
+      the branches is a human decision — see docs/spec/ui-remediation-followup/urf-00r-triage.md §0.
+
+  # ---------------------------------------------------------------------------
+  - id: URF-01
+    name: Conflict closure — auth contract and deployment-security amendments
+    category: conflict
+    gate: human
+    depends_on: [URF-00R]
+    parallel_group: G1
+    objective: >
+      Resolve the two architectural conflicts the review could not resolve: the specification
+      contains no login endpoint while the app performs a login, and no deployment security
+      policy exists while bearer data is browser-readable. Produce ratified amendments, not code.
+    requirements:
+      - "FR-02 (production identity provider / server-side token verification) — amendment-required"
+      - "FR-10 (production CSP/HSTS/nosniff/referrer/permissions policy; cookie vs bearer storage) — amendment-required"
+      - "Review section 'Required amendments' items 1 and 2"
+      - "Deferred-by-owner items (localization, password recovery) stay deferred and are recorded, not silently added. Dark theme is no longer deferred — it shipped in commit 1d68603 and must be re-recorded as delivered."
+    decisions_required:
+      - id: D-AUTH-01
+        question: External IdP (OIDC) or server-issued session token minted by apps/api?
+        default_if_unanswered: none — blocking
+      - id: D-AUTH-02
+        question: Token transport — HttpOnly cookie or Authorization bearer from sessionStorage?
+        note: The review prefers HttpOnly cookies "if architecture permits"; Cloud Run same-origin serving via server.mjs permits it.
+      - id: D-AUTH-03
+        question: Does the demo login survive in any deployed artifact, and under what boundary?
+        note: VITE_ENABLE_DEMO_LOGIN currently lets a production build mint an alg:none privileged token.
+      - id: D-SEC-01
+        question: CSP posture — strict nonce-based, or hash/allowlist with documented unsafe-inline exceptions?
+    files_expected:
+      - docs/spec/ui-remediation-followup/auth-contract-amendment.md
+      - docs/spec/ui-remediation-followup/deployment-security-policy.md
+      - docs/spec/ui-remediation-followup/threat-model.md
+      - docs/spec/ui-remediation-followup/scope-conflict-register.yaml
+    generated_tests: []
+    review_criteria:
+      - All four decisions are answered with a named owner; none reads TBD.
+      - The amendment names the exact endpoints, claims, algorithms, and lifetimes to be implemented.
+      - No amendment weakens RBAC, tenant isolation, or the P02/RLS authority boundary.
+      - "The standing rule is restated: client route guards are UX and data minimization, never authorization."
+      - Every downstream phase (URF-02..URF-06) is traceable to a clause in these documents.
+    rollback: docs-only; revert. Downstream phases must not start on an unratified amendment.
+    retry_policy: { max_attempts: 1, on_failure: park_for_human }
+    escalation: >
+      This is a security-policy decision. It is a human gate by the standing gate policy
+      ("Security/auth/RBAC/data-isolation policy is weakened or materially changed").
+
+  # ---------------------------------------------------------------------------
+  - id: URF-02
+    name: Identity and session data model plus migration
+    category: missing_data
+    gate: human
+    depends_on: [URF-01]
+    parallel_group: G2a
+    objective: >
+      Add the schema the ratified auth amendment requires — session/refresh records, IdP or
+      signing-key configuration, and revocation — as a forward migration under the repo's
+      migrations-only DB-change policy.
+    requirements:
+      - "Derived from D-AUTH-01/D-AUTH-02 in docs/spec/ui-remediation-followup/auth-contract-amendment.md"
+      - "CLAUDE.md: data model is authoritative; never invent schema — add a migration"
+      - "CLAUDE.md: multi-tenancy is mandatory — every entity carries tenant_id/entity_id"
+    files_expected:
+      - apps/api/db/migrations/0034_platform_identity_sessions.sql
+      - docs/data-model/00-platform-core.sql       # amended to match
+      - .claude/approved-db-changes.txt            # explicit approval line, announced
+    generated_tests:
+      - apps/api/test/platform-identity-schema.test.cjs   # schema loads; tenant scoping enforced
+    review_criteria:
+      - Migration is forward-only and additive; no destructive DDL.
+      - Every new table carries tenant_id and entity_id with an index supporting scoped reads.
+      - Token/secret material is not stored in plaintext; only hashes or key references.
+      - The db_change_guard hook passes via an approved-changes entry, never via a bypass.
+    rollback: >
+      Forward-only. Rollback is a compensating migration, never an edit of the applied file.
+      Record the compensating SQL in the phase evidence before applying.
+    retry_policy: { max_attempts: 2, on_failure: park_for_human }
+    escalation: DB change under the migrations policy — human gate by standing policy.
+
+  # ---------------------------------------------------------------------------
+  - id: URF-03
+    name: Token verification service and bridge hardening
+    category: service
+    gate: auto
+    depends_on: [URF-02]
+    parallel_group: G2a
+    objective: >
+      Make claim verification a real server-side boundary. Verify signature, issuer, audience,
+      and expiry; reject alg:none outright; and stop the local bridge from inventing actor
+      context. Browser-side claims become presentation-only.
+    requirements:
+      - "FR-02 implementation portion — server-side token verification"
+      - "server.mjs:52-70 decodeActor must not substitute default tenantId/entityId"
+      - "tools/local-api-server.mjs remains test-only and grants no privilege defaults"
+      - "CLAUDE.md: reuse the platform — verification belongs in apps/api/src/platform/authorization"
+    files_expected:
+      - apps/api/src/platform/authorization/tokenVerification.ts
+      - apps/api/src/platform/authorization/index.ts
+      - server.mjs                       # decodeActor delegates to the verified path
+      - tools/local-api-server.mjs       # test-only; no defaults
+    generated_tests:
+      - apps/api/test/auth-token-verification.test.cjs
+    test_cases_required:
+      - alg:none token is rejected
+      - invalid signature is rejected
+      - expired token is rejected
+      - wrong issuer or audience is rejected
+      - missing tenant/entity claim yields 401 and never a substituted default
+      - a valid token yields exactly the claimed permissions, with no widening
+    review_criteria:
+      - No code path reconstructs actor context from unverified claims.
+      - Failures return the platform error model with X-Correlation-Id; no new error codes invented.
+      - The bridge refuses to start in production mode (assert it, do not assume it).
+    rollback: git revert of the phase commit; prior decode path is restored by the revert only if the DB migration is left in place (additive, safe).
+    retry_policy: { max_attempts: 3, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-04
+    name: Auth API contract and endpoints
+    category: api
+    gate: auto
+    depends_on: [URF-03]
+    parallel_group: G2a
+    objective: >
+      Add the login/session endpoints the specification currently lacks, contract-first, and
+      make 401/403 behavior conform to the platform error model.
+    requirements:
+      - "Review 'Required amendments' item 1 — the current specification explicitly contains no login endpoint"
+      - "CLAUDE.md error model: platform 8-code table, {error:{code,message,field,details}}, X-Correlation-Id"
+      - "Derived from D-AUTH-01/D-AUTH-02"
+    files_expected:
+      - docs/contracts/openapi/AUTH.yaml
+      - apps/api/src/platform/authorization/authRoutes.ts
+      - docs/contracts/auth-matrix.yaml        # amended
+      - docs/contracts/dependency-register.yaml # amended
+    generated_tests:
+      - apps/api/test/auth-endpoints.test.cjs
+    test_cases_required:
+      - valid credentials issue a verifiable session
+      - invalid credentials fail closed with a generic message and no user enumeration
+      - refresh honors the ratified lifetime and revocation
+      - logout revokes server-side, not only client-side
+      - every failure carries a correlation id
+    review_criteria:
+      - OpenAPI parses and matches the implemented routes.
+      - No endpoint returns privilege data before verification.
+      - Rate limiting or lockout posture is stated explicitly, even if the decision is "none, accepted".
+    rollback: git revert; endpoints are additive so revert restores the prior surface cleanly.
+    retry_policy: { max_attempts: 3, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-05
+    name: Deployment security headers and CSP
+    category: service
+    gate: auto
+    depends_on: [URF-01]
+    parallel_group: G2b     # parallel with the URF-02..04 chain
+    objective: >
+      Implement the ratified deployment security policy on the surface that now exists
+      (server.mjs behind Cloud Run) — the surface whose absence caused the review to skip
+      infra entirely.
+    requirements:
+      - "FR-10 — production CSP/HSTS/nosniff/referrer/permissions policy"
+      - "Derived from D-SEC-01 and docs/spec/ui-remediation-followup/deployment-security-policy.md"
+    files_expected:
+      - server.mjs
+      - ops/security-headers-verification.sh
+      - Dockerfile           # only if the policy requires build-time changes
+      - apps/web/vite.config.ts
+    generated_tests:
+      - apps/api/test/security-headers.test.cjs
+    test_cases_required:
+      - HTML responses carry CSP, HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+      - API responses carry the non-HTML subset of the policy
+      - any unsafe-inline or unsafe-eval allowance is present in the test as an explicit documented exception
+      - the health endpoint is not exempted by accident
+    review_criteria:
+      - The header set matches the ratified policy document exactly, clause by clause.
+      - CSP does not break the built SPA — the browser suite must pass against a header-enabled server.
+      - No secret or environment value is echoed into a header.
+    rollback: git revert of server.mjs; headers are additive and independently revertible.
+    retry_policy: { max_attempts: 3, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-06
+    name: Web auth integration and demo-credential removal
+    category: ui
+    gate: auto
+    depends_on: [URF-04, URF-05]
+    parallel_group: G3
+    objective: >
+      Route sign-in through the verified API, remove compiled-in credential defaults and the
+      alg:none minting path from the shipped bundle, and reduce browser-held claims to
+      presentation-only.
+    requirements:
+      - "FR-01 residue — hardcoded credential defaults at apps/web/src/app/session.ts:125-126 and alg:none minting at :129"
+      - "FR-02 browser portion — claims are presentation-only"
+      - "Derived from D-AUTH-03 — the demo boundary decision"
+    files_expected:
+      - apps/web/src/app/session.ts
+      - apps/web/src/app/LoginPanel.tsx
+      - apps/web/src/App.tsx
+      - apps/web/src/api/hrmsClient.ts
+    generated_tests:
+      - apps/web/test/session-auth.test.cjs
+      - apps/web/test/e2e/auth.spec.ts
+    test_cases_required:
+      - a production-mode build contains neither demo credentials nor alg:none minting, regardless of the demo flag
+      - a rejected sign-in clears busy state and shows a generic error (FR-14 regression guard)
+      - session expiry and a 401 both terminate the protected session (FR-03 regression guard)
+      - UI never grants a permission the server did not return
+    review_criteria:
+      - No credential literal remains in apps/web/src outside a dev-only module excluded from the production bundle.
+      - The production-artifact negative scan is executable and part of the phase oracle.
+      - Client route guards are still not treated as authorization.
+    rollback: git revert; the prior demo path returns, which is acceptable only on a non-production branch.
+    retry_policy: { max_attempts: 3, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-07
+    name: Residual UI, accessibility, and design-system closure
+    category: ui
+    gate: auto
+    depends_on: [URF-00R]
+    parallel_group: G2c     # parallel with URF-01..06; touches no auth surface
+    objective: >
+      Close the partial UI findings with behavioral proof rather than source assertions, and
+      finish the primitive migration that FR-16 measured as incomplete.
+    requirements:
+      - "FR-08 — sanitized error reporting sink plus a forced-failure behavioral test"
+      - "FR-06 — behavioral proof that hint/error text is programmatically associated"
+      - "FR-13 — safe-area assertion, still partial in the ledger"
+      - "FR-16 — remaining raw form controls (20 across 16 files at HEAD, down from 126)"
+      - "FR-17 — behavioral test of fallback recovery and focus"
+    files_expected:
+      - apps/web/src/app/ErrorBoundary.tsx
+      - apps/web/src/app/errorReporting.ts
+      - apps/web/src/components/ui/Field.tsx
+      - apps/web/src/modules/**            # remaining raw-control migrations
+    generated_tests:
+      - apps/web/test/error-boundary.test.cjs
+      - apps/web/test/e2e/a11y-residual.spec.ts
+    test_cases_required:
+      - a forced child throw renders the fallback, calls the sink, and exposes no error detail to the user
+      - the sink receives sanitized data only — no token, no PII, no stack shown in UI
+      - a screen reader name/description association is asserted behaviorally, not by regex
+      - safe-area insets hold at 360x800 with a long-content page
+      - recovery from the fallback restores a usable shell and moves focus predictably
+    review_criteria:
+      - Every assertion added here is behavioral; a source-regex assertion does not close a finding.
+      - Raw-control count is reported as a number before and after, not as a claim.
+      - Deferred items (localization, password recovery) remain deferred and are not silently implemented.
+    rollback: git revert of the phase commit; independent of the auth chain.
+    retry_policy: { max_attempts: 3, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-08
+    name: Evidence and traceability ledger regeneration
+    category: integration
+    gate: auto
+    depends_on: [URF-06, URF-07]
+    parallel_group: G4
+    objective: >
+      Rebuild the closure record so it states what was proved, by which evidence, at what
+      severity — replacing default-closed inheritance with explicit per-finding closure.
+    requirements:
+      - "FR-09 — the shared &defaults anchor still sets closure_status: closed (finding-closure-ledger.yaml:19)"
+      - "FR-04 — release evidence must contain executed results, not placeholders"
+      - "FR-12 — the WCAG-AA claim must be exactly as broad as the executed checks"
+      - "FR-16 — design-system adoption recorded as partial with a measured number"
+      - "Review 'Traceability impact' — the 28-item ledger needs direct evidence IDs"
+    files_expected:
+      - docs/spec/ui-remediation-followup/finding-closure-ledger.yaml
+      - docs/evidence/ui-remediation-followup/final-command-log.md
+      - docs/evidence/ui-remediation-followup/accessibility-summary.md
+      - docs/evidence/ui-remediation-followup/keyboard-traversal.md
+      - docs/evidence/ui-remediation-followup/authorization-negative-results.md
+      - docs/evidence/ui-remediation-followup/screenshot-matrix/
+      - docs/release/ui-remediation-followup-readiness.md
+    generated_tests:
+      - docs/spec/ui-remediation-followup-pipeline/checks/ledger-integrity.sh
+    review_criteria:
+      - No finding inherits a closure state from a YAML anchor; every state is written explicitly.
+      - Every closed finding names an evidence_id that resolves to a real file and a real executed result.
+      - Anything proved only by source inspection is recorded partial, never closed.
+      - Claims wording matches executed scope — no "WCAG-AA compliant" where only axe plus keyboard ran.
+    rollback: docs-only; revert restores the prior ledger. Never edit a superseded ledger in place.
+    retry_policy: { max_attempts: 2, on_failure: park_for_human }
+
+  # ---------------------------------------------------------------------------
+  - id: URF-09
+    name: Integration validation and human release decision
+    category: integration
+    gate: human
+    depends_on: [URF-08]
+    parallel_group: G5
+    objective: >
+      Run the complete oracle end to end and put a release decision in front of a human with
+      the evidence attached. This phase does not decide; it presents.
+    requirements:
+      - "Review 'Verification commands' — all seven, executed at HEAD"
+      - "Review 'Remaining risks' — restated with current status"
+      - "Production release is unblocked only if FR-01, FR-02, FR-04, and FR-10 are all closed"
+    files_expected:
+      - docs/release/ui-remediation-followup-readiness.md
+      - docs/evidence/ui-remediation-followup/urf-09-final-log.md
+    generated_tests: []
+    verification_commands:
+      - npm run check
+      - npm run web:check
+      - npm run web:test:e2e
+      - npm audit --audit-level=low
+      - bash docs/spec/pipeline/checks/ph-05e.sh
+      - bash docs/spec/ui-remediation-pipeline/checks/uir-08.sh
+      - bash ops/security-headers-verification.sh
+      - production build negative scan for demo credentials and alg:none
+    review_criteria:
+      - Every command's exact result is pasted, not summarized.
+      - The verdict states which of the original 17 findings remain open and why.
+      - A CONDITIONAL verdict is reported as CONDITIONAL; the gate is a human's to pass.
+    rollback: none — evidence phase. A red result parks; it does not revert.
+    retry_policy: { max_attempts: 1, on_failure: park_for_human }
+    escalation: Production/go-live approval — human gate by standing policy.
+
+# =============================================================================
+# DEPENDENCY VIEW
+# =============================================================================
+dependency_graph:
+  URF-00: []
+  URF-00R: [URF-00]
+  URF-01: [URF-00R]
+  URF-02: [URF-01]
+  URF-03: [URF-02]
+  URF-04: [URF-03]
+  URF-05: [URF-01]
+  URF-06: [URF-04, URF-05]
+  URF-07: [URF-00R]
+  URF-08: [URF-06, URF-07]
+  URF-09: [URF-08]
+
+parallelizable_groups:
+  - group: G0
+    phases: [URF-00]
+    note: sequential entry point; everything downstream reads its matrix
+  - group: G0R
+    phases: [URF-00R]
+    note: >
+      blocking. Inserted after URF-00 found the baseline red. Everything whose oracle calls
+      npm run web:check depends on it.
+  - group: G1
+    phases: [URF-01]
+    note: human decision gate; blocks the auth chain and the header work
+  - group: G2
+    concurrent:
+      - lane: G2a
+        phases: [URF-02, URF-03, URF-04]
+        note: auth chain; strictly sequential within the lane
+      - lane: G2b
+        phases: [URF-05]
+        note: header policy; shares no files with G2a
+      - lane: G2c
+        phases: [URF-07]
+        note: UI residue; may start right after URF-00R, before URF-01 ratifies
+    file_conflict_check: >
+      G2a touches apps/api and server.mjs decodeActor; G2b touches server.mjs response headers.
+      Both edit server.mjs — run them in separate worktrees or serialize the server.mjs edit,
+      otherwise the lanes conflict. This is the only overlap in the plan.
+  - group: G3
+    phases: [URF-06]
+  - group: G4
+    phases: [URF-08]
+  - group: G5
+    phases: [URF-09]
+
+# =============================================================================
+# GATES
+# =============================================================================
+phase_gates:
+  gate_a_baseline_truth:
+    after: URF-00
+    gate: auto
+    pass_when:
+      - The finding-state matrix covers all 17 findings with evidence references.
+      - All verification commands ran and their real results are recorded, pass or fail.
+    blocks: [URF-00R]
+  gate_a2_baseline_green:
+    after: URF-00R
+    gate: auto
+    pass_when:
+      - npm run check, npm run web:check, and ph-05e.sh are all GREEN.
+      - Every re-anchored assertion is justified in the URF-00R triage document.
+      - Repaired oracles fail on a planted value and on a missing scan target.
+    blocks: [URF-01, URF-07]
+  gate_b_amendment_ratified:
+    after: URF-01
+    gate: human
+    pass_when:
+      - D-AUTH-01, D-AUTH-02, D-AUTH-03, and D-SEC-01 are decided and owned.
+      - No amendment weakens RBAC, tenant isolation, or the server-authoritative boundary.
+    blocks: [URF-02, URF-05]
+  gate_c_schema_approved:
+    after: URF-02
+    gate: human
+    pass_when:
+      - Migration is additive, tenant-scoped, and recorded in .claude/approved-db-changes.txt.
+      - A compensating migration is written down before the forward one is applied.
+    blocks: [URF-03]
+  gate_d_auth_boundary_real:
+    after: URF-04
+    gate: auto
+    pass_when:
+      - alg:none, bad signature, expired, wrong issuer/audience, and missing tenant all fail closed.
+      - No code path reconstructs actor context from unverified claims.
+    blocks: [URF-06]
+  gate_e_release_decision:
+    after: URF-09
+    gate: human
+    pass_when:
+      - FR-01, FR-02, FR-04, and FR-10 are closed with executed evidence.
+      - The complete oracle is GREEN and its output is attached verbatim.
+    outcome: human_release_decision
+
+# =============================================================================
+# TRACEABILITY
+# =============================================================================
+traceability:
+  finding_to_phase:
+    FR-01: [URF-00, URF-06]
+    FR-02: [URF-01, URF-02, URF-03, URF-04, URF-06]
+    FR-03: [URF-00, URF-06]         # regression guard only
+    FR-04: [URF-00, URF-08]
+    FR-05: [URF-00]                 # regression guard only
+    FR-06: [URF-07]
+    FR-07: [URF-00]                 # regression guard only
+    FR-08: [URF-07]
+    FR-09: [URF-08]
+    FR-10: [URF-01, URF-05]
+    FR-11: [URF-00]                 # regression guard only
+    FR-12: [URF-00, URF-08]
+    FR-13: [URF-07, URF-08]
+    FR-14: [URF-00, URF-06]         # regression guard only
+    FR-15: [URF-00]                 # regression guard only
+    FR-16: [URF-07, URF-08]
+    FR-17: [URF-07]
+  evidence_required_per_phase:
+    - changed files
+    - generated tests and their names
+    - verbatim command output
+    - screenshots for UI phases
+    - schema load log for the migration phase
+    - a ledger entry per finding touched, with an explicit closure state
+
+# =============================================================================
+# RISKS
+# =============================================================================
+risks:
+  - id: R-01
+    risk: Both G2a and G2b edit server.mjs.
+    mitigation: Serialize the server.mjs edit or run the lanes in separate git worktrees.
+  - id: R-02
+    risk: A strict CSP breaks the built SPA and is discovered only at URF-09.
+    mitigation: URF-05's oracle runs the browser suite against a header-enabled server, not a bare build.
+  - id: R-03
+    risk: Choosing HttpOnly cookies (D-AUTH-02) invalidates the sessionStorage bearer path the whole web client is built on.
+    mitigation: The decision is made at URF-01, before any implementation phase starts; URF-06 sizes the client change from the ratified answer.
+  - id: R-04
+    risk: The review's file:line anchors are 14 days and ~25 commits stale, so a phase could repair code that no longer exists.
+    mitigation: URF-00 exists precisely for this and blocks everything else.
+  - id: R-05
+    risk: Evidence regeneration re-inherits default-closed states from the old ledger.
+    mitigation: URF-08 ships an executable ledger-integrity check that fails on anchor-inherited closure.

@@ -1,0 +1,104 @@
+# UI Remediation Follow-up pipeline manifest — consumed by run.sh (the external driver).
+#
+# Compiled by plan-to-pipeline from docs/spec/ui-remediation-followup/phased-plan.yaml,
+# which was compiled by phased-planner from docs/reviews/full-review-ui-remediation.md.
+#
+# The hard rule: automate SEQUENCING, never JUDGMENT.
+#   exit_criteria runs OUTSIDE the model. gate:auto needs a real command.
+#   gate:human parks for approvals/<id>.approved after the check is GREEN.
+#
+# Paths in `prompt` and `exit_criteria` are relative to the git repo root.
+
+version: 1
+defaults:
+  phase_timeout_seconds: 7200
+  branch_required: true
+  default_gate: auto
+
+gate_policy:
+  model: agentic_by_default
+  human_required_when:
+    - Security/auth/RBAC/data-isolation policy is materially changed (URF-01).
+    - Destructive or irreversible database/migration operations are required (URF-02).
+    - Production/go-live/release approval is required (URF-09).
+
+phases:
+  - id: URF-00
+    name: Baseline re-verification and finding-state matrix
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-00.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-00.sh
+    gate: auto
+    depends_on: []
+
+  # Inserted 2026-07-25 on user approval, after URF-00 found the baseline red: 80 TypeScript
+  # errors, 26 failing web tests, and an inherited oracle that could not fail. URF-05/06/07 all
+  # call `npm run web:check`, so they were RED before they started.
+  - id: URF-00R
+    name: Baseline repair — typecheck, web-test triage, oracle integrity
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-00R.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-00r.sh
+    gate: auto
+    depends_on: [URF-00]
+
+  - id: URF-01
+    name: Conflict closure — auth contract and deployment-security amendments
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-01.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-01.sh
+    gate: human            # security-policy decision; a document check cannot grade a decision
+    depends_on: [URF-00R]
+
+  - id: URF-02
+    name: Identity and session data model plus migration
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-02.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-02.sh
+    gate: human            # DB change under the migrations-only policy
+    depends_on: [URF-01]
+
+  - id: URF-03
+    name: Token verification service and bridge hardening
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-03.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-03.sh
+    gate: auto
+    depends_on: [URF-02]
+
+  - id: URF-04
+    name: Auth API contract and endpoints
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-04.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-04.sh
+    gate: auto
+    depends_on: [URF-03]
+
+  - id: URF-05
+    name: Deployment security headers and CSP
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-05.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-05.sh
+    gate: auto
+    depends_on: [URF-01]
+
+  - id: URF-06
+    name: Web auth integration and demo-credential removal
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-06.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-06.sh
+    gate: auto
+    depends_on: [URF-04, URF-05]
+
+  - id: URF-07
+    name: Residual UI, accessibility, and design-system closure
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-07.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-07.sh
+    gate: auto
+    depends_on: [URF-00R]
+
+  - id: URF-08
+    name: Evidence and traceability ledger regeneration
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-08.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-08.sh
+    gate: auto
+    depends_on: [URF-06, URF-07]
+
+  - id: URF-09
+    name: Integration validation and human release decision
+    prompt: docs/spec/ui-remediation-followup-pipeline/prompts/URF-09.md
+    exit_criteria: bash docs/spec/ui-remediation-followup-pipeline/checks/urf-09.sh
+    gate: human            # production release decision
+    depends_on: [URF-08]
