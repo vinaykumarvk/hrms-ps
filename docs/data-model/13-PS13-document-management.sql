@@ -660,6 +660,12 @@ CREATE TABLE security_clearances (
 CREATE INDEX ix_clearance_tenant    ON security_clearances(tenant_id);
 CREATE INDEX ix_clearance_principal ON security_clearances(principal_type, principal_ref);
 CREATE INDEX ix_clearance_status    ON security_clearances(status);
+-- CC-021: at most one ACTIVE clearance per principal and level. Cross-row and scoped to live
+-- rows, so it is a partial unique index rather than a CHECK. Shipped as
+-- apps/api/db/migrations/0034_ps13_clearance_unique_active.sql.
+CREATE UNIQUE INDEX ck_clearance_unique_active
+    ON security_clearances (tenant_id, principal_type, principal_ref, clearance_level)
+    WHERE status = 'ACTIVE' AND is_deleted = false;
 
 -- E22 data_subject_requests (GAP — DPDP lattice; P05 redaction + JOB-M11-DISPOSAL) ----
 CREATE TABLE data_subject_requests (

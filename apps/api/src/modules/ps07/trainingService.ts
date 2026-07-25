@@ -155,6 +155,31 @@ export class TrainingService {
     if (!this.employeeMaster.getById(actor, input.employeeId)) {
       throw new FoundationError("NOT_FOUND", "Employee not found");
     }
+    // CC-019: enforce uq_training_nominations (tenant_id, training_session_id, employee_id) —
+    // the constraint the canonical data model already declares
+    // (docs/data-model/07-PS07-training-skill-development.sql) but which nothing enforced at
+    // runtime, because the nominations table is not yet in apps/api/db/migrations and the store
+    // is in-memory. Without this, nominating the same employee to the same session twice created
+    // a second nomination AND a second WF-PS07-NOMINATION workflow instance, so the duplicate
+    // consumed a capacity seat and could be approved independently of the first.
+    //
+    // The declared constraint carries no partial predicate, so ANY existing row for the triple
+    // blocks — including REJECTED and COMPLETED. This service therefore blocks on any status
+    // rather than only on live ones: a laxer runtime rule would insert rows that the constraint
+    // rejects once the table is migrated, turning a clean 409 into a 500. If re-nomination after
+    // a rejection is required operationally, that is a data-model change (a partial predicate on
+    // uq_training_nominations), not a service-side exception.
+    const duplicate = this.nominations.find(
+      (item) =>
+        item.tenantId === actor.tenantId &&
+        item.sessionId === session.id &&
+        item.employeeId === input.employeeId
+    );
+    if (duplicate) {
+      throw new FoundationError("CONFLICT", "Employee is already nominated for this training session", {
+        details: { messageId: "ERR-PS07-DUPLICATE-NOMINATION", nominationNo: duplicate.nominationNo, status: duplicate.status },
+      });
+    }
     const started = this.workflow.start(actor, {
       workflowCode: "WF-PS07-NOMINATION",
       subjectRef: `ps07_training_nominations:${input.employeeId}:${session.id}`,

@@ -713,6 +713,23 @@ export class DocumentVaultService {
         details: { messageId: "ERR-PS13-SOD_VIOLATION" },
       });
     }
+    // CC-021 (ck_clearance_unique_active): re-granting a clearance that is already ACTIVE for the
+    // same principal and level returns the existing row instead of creating a duplicate. Only the
+    // seed wrapper pre-checked this, so any other caller — a retried request, a replayed job — could
+    // accumulate several ACTIVE rows for one principal. That matters beyond tidiness: revoking one
+    // row left the others ACTIVE, so a revocation could silently fail to remove access.
+    const existingActive = this.security
+      .listClearances(scope.tenantId)
+      .find(
+        (clearance) =>
+          clearance.principalType === input.principalType &&
+          clearance.principalRef === input.principalRef &&
+          clearance.clearanceLevel === input.clearanceLevel &&
+          clearance.status === "ACTIVE"
+      );
+    if (existingActive) {
+      return existingActive;
+    }
     const clearance = this.security.saveClearance({
       tenantId: scope.tenantId,
       entityId: scope.entityId,
