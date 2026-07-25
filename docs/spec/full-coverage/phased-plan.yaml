@@ -1,0 +1,154 @@
+# PrimeSoft HRMS — Full-Coverage (prototype parity) phased build plan
+#
+# Produced by: phased-planner, from docs/full-coverage-remediation-plan.md
+# Backlog:     docs/spec/full-coverage/screen-backlog.yaml (226 screens, 22 personas, 55 sections)
+# Decisions:   docs/spec/full-coverage/adr-006-w0-scope-decisions.md
+#
+# Ground truth, measured rather than estimated:
+#   prototype NAV declares 22 personas and 226 unique screens across 55 sections
+#   the built app serves 16 routes
+# Every screen is assigned to exactly one wave; nothing is unmapped and nothing is scoped out.
+
+meta:
+  plan_id: HRMS-FULLCOV-v1
+  title: Full-coverage remediation — prototype parity across W0..W9
+  status: executing
+  generated_on: "2026-07-26"
+  source_plan: docs/full-coverage-remediation-plan.md
+  parity_target: docs/HRMS Deliverables to Development Phase/prototype_hrms.html
+  gate_policy_override: >
+    Under the operator's standing instruction for this run, every gate is AUTO. Decisions that the
+    source plan left to a human are taken here and recorded in ADR-006 rather than parked. Two
+    classes still stop for a person regardless, because no automated gate can make them safe:
+    applying DDL to a live database, and exposing a new public surface. Those are executed as far
+    as authoring and verification, then handed over explicitly.
+
+  scale_reality: >
+    The source plan calls this "a multi-team, multi-month program" of ~180 net-new screens. That
+    assessment stands and this plan does not pretend otherwise. The plan exists so the work is
+    ordered, measurable and resumable — not so it can be claimed complete in one pass. Progress is
+    tracked per wave in docs/spec/full-coverage/progress.yaml.
+
+waves:
+
+  - id: W0
+    name: Scope closure and foundations
+    blocking: true
+    depends_on: []
+    objective: >
+      Remove the four unknowns that make every later wave ambiguous, extend RBAC to the full
+      persona set, and turn the shell persona-driven so later waves add screens rather than
+      re-architect navigation.
+    decisions_taken:
+      - D-COV-01 multi-tenancy
+      - D-COV-02 performance model
+      - D-COV-03 payroll scope
+      - D-COV-04 navigation and RBAC model
+    deliverables:
+      - docs/spec/full-coverage/adr-006-w0-scope-decisions.md
+      - docs/spec/full-coverage/screen-backlog.yaml
+      - persona catalogue extended to the prototype's 22 personas
+      - persona-driven navigation in the web shell
+    exit_criteria:
+      - All four decisions recorded with rationale and downstream consequence.
+      - The persona catalogue covers all 22 prototype personas.
+      - Navigation is data-driven per persona; adding a screen is a data change, not a shell change.
+      - npm run check, npm run web:check green.
+
+  - id: W1
+    name: Config and Admin foundation
+    screens: 27
+    depends_on: [W0]
+    sections: [Configure, Org structure, IAM & security, Policy library, Tenant & entities, Data ops]
+    requirements_source: FS_Org_Admin_Configuration, FS_Org_Admin_Master_Data, Admin_Settings_Requirements, RBAC_Design, DwnB/{Organisation,Permissions,Additional Config}
+    readiness: green
+    note: Everything downstream consumes this configuration; it is the first real build wave.
+
+  - id: W2
+    name: Attendance (full) and leave-admin completion
+    screens: 20
+    depends_on: [W1]
+    sections: [Leave & attendance, Leave admin (M04), Attendance admin (M05)]
+    requirements_source: FS_M05_Attendance, FS_M04_Leave, DwnB/{Attendance,Leaves}
+    readiness: green
+    note: Extends PS03 rather than replacing it.
+
+  - id: W3
+    name: Recruitment and ATS
+    screens: 24
+    depends_on: [W1]
+    sections: [ATS oversight, Hiring, Hiring queues, Hiring (joint with RA), Recruitment, Recruitment admin (M08), People & vendors]
+    requirements_source: FS_M08_Recruitment, DwnB/Recruitment
+    readiness: green
+
+  - id: W4
+    name: Onboarding and probation
+    screens: 13
+    depends_on: [W3]
+    sections: [Onboarding, Onboarding & office admin, Recruitment & onboarding]
+    requirements_source: FS_M02_Onboarding, DwnB/Onboarding Settings and Flows
+    readiness: green
+    note: Introduces the `candidate` persona — the only pre-hire actor.
+
+  - id: W5
+    name: Exits, separation and FnF
+    screens: 12
+    depends_on: [W1]
+    sections: [Separation (M03), Statutory & FnF, Clearance stages (oversight), Lifecycle queues]
+    requirements_source: FS_M03_Exits_Offboarding, DwnB/seperation
+    readiness: green
+
+  - id: W6
+    name: Corporate performance and APAR harmonisation
+    screens: 16
+    depends_on: [W1]
+    sections: [Performance, Performance admin (M09), Cycle ops, Goal framework, Scoring framework, Performance ops]
+    requirements_source: FS_M09_Performance, DwnB/Performance Management
+    readiness: green
+    note: Must reconcile with PS08 APAR per D-COV-02.
+
+  - id: W7
+    name: Document/letter admin, assets and service desk
+    screens: 27
+    depends_on: [W1]
+    sections: [Document admin (M11), Letter operations, Vault & storage, Documents & workflow, Asset management, Service desk, Casework]
+    requirements_source: FS_M11_Document_Management, FS_M17_Assets_IT
+    readiness: green
+    note: Letter surfaces extend PS13.
+
+  - id: W8
+    name: Dashboards, directory, org chart, calendar, per-role home
+    screens: 74
+    depends_on: [W1]
+    sections: [Workspace, Self, Team, Department oversight, Modules — oversight, Modules — view, Modules, My work, Tasks, Analytics, Account, Module ops, Operations, Scoped operations, Authoritative actions]
+    requirements_source: FS_Dashboard, FS_M01_Employee_Master
+    readiness: amber
+    note: >
+      The largest wave by screen count (74) because every persona has a home, a task list and a
+      scoped operations view. Much of it is composition over data the earlier waves land, so it is
+      cheaper per screen than its count suggests — but it cannot start before W1 and is most
+      valuable after the modules it surfaces exist.
+
+  - id: W9
+    name: Platform super admin and AI assistants
+    screens: 13
+    depends_on: [W0, W1]
+    sections: [Tenant operations, Migration & data, Operations & security, Leadership AI]
+    requirements_source: Platform_Spec (P06) for services; screens have no FS — authored in W0
+    readiness: red
+    note: The only wave whose requirements had to be authored rather than read.
+
+execution_loop:
+  per_wave:
+    - phase-executor on the wave's screen slice
+    - brd-coverage against the FS and the prototype screen list
+    - remediate gaps
+    - full-review
+    - remediate findings
+    - gate (auto) then advance
+  invariants:
+    - Data model is authoritative; schema changes are migrations, never ad-hoc DDL.
+    - Multi-tenancy is mandatory on every new entity.
+    - Approvals run on the P01 workflow engine; audit goes to the P05 dual log.
+    - Every workspace resolves its own loading/error/empty/ready state (PH-05E).
+    - No new error codes outside the platform 8-code table.

@@ -13,6 +13,18 @@ export interface NavItem {
   workspace: WorkspaceId;
   icon: string;
   requiredPermission: string;
+  /**
+   * W0 / D-COV-04: the section this item is grouped under, mirroring the prototype's NAV
+   * sections. Omitted means the default "Workspace" section — every item that predates the
+   * persona model keeps working unchanged.
+   */
+  section?: string;
+  /**
+   * The personas offered this item. Omitted means "all personas", so existing items are
+   * unaffected; each full-coverage wave tags the items it adds. This shapes what is OFFERED
+   * only — RouteGuard and the API remain the authorization boundary.
+   */
+  personas?: readonly string[];
 }
 
 export const workspaceOptions: WorkspaceOption[] = [

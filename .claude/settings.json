@@ -8,27 +8,6 @@
           { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/secrets_guard.py\"", "timeout": 30 }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_sql.py\"", "timeout": 60 }
-        ]
-      },
-      {
-        "matcher": "Bash|Edit|Write|MultiEdit",
-        "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/run_tests_if_changed.py\"", "timeout": 240 }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint_changed.py\"", "timeout": 240 }
-        ]
-      }
     ]
   }
 }

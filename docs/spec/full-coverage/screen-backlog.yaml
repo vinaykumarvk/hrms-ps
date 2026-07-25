@@ -1,0 +1,1170 @@
+version: 1
+source: docs/HRMS Deliverables to Development Phase/prototype_hrms.html
+personas:
+- attendance_admin
+- candidate
+- ceo
+- document_admin
+- employee
+- finance_admin
+- hod
+- hr_admin
+- hrbp
+- it_admin
+- leave_admin
+- manager_l1
+- office_admin
+- onboarding_admin
+- org_admin
+- performance_admin
+- platform_super_admin
+- recruiter
+- recruitment_admin
+- separation_admin
+- service_desk_admin
+- service_desk_agent
+totals:
+  screens: 226
+  personas: 22
+  sections: 51
+waves:
+  W1:
+  - id: cfg-catalog-items
+    section: Configure
+    personas:
+    - service_desk_admin
+  - id: cfg-kb-articles
+    section: Configure
+    personas:
+    - service_desk_admin
+  - id: cfg-sd-config
+    section: Configure
+    personas:
+    - service_desk_admin
+  - id: cfg-separation-policy
+    section: Configure
+    personas:
+    - separation_admin
+  - id: cfg-separation-workflow
+    section: Configure
+    personas:
+    - separation_admin
+  - id: audit-log
+    section: Data ops
+    personas:
+    - document_admin
+    - hr_admin
+    - org_admin
+    - platform_super_admin
+  - id: bulk-upload
+    section: Data ops
+    personas:
+    - hr_admin
+  - id: dob-view
+    section: Data ops
+    personas:
+    - hr_admin
+  - id: cfg-devices
+    section: IAM & security
+    personas:
+    - org_admin
+  - id: cfg-geofence
+    section: IAM & security
+    personas:
+    - org_admin
+  - id: cfg-grants
+    section: IAM & security
+    personas:
+    - org_admin
+  - id: cfg-ip
+    section: IAM & security
+    personas:
+    - org_admin
+  - id: cfg-nid
+    section: IAM & security
+    personas:
+    - org_admin
+  - id: cfg-rbac
+    section: IAM & security
+    personas:
+    - org_admin
+  - id: cfg-assign
+    section: Org structure
+    personas:
+    - org_admin
+  - id: cfg-bu
+    section: Org structure
+    personas:
+    - org_admin
+  - id: cfg-classification
+    section: Org structure
+    personas:
+    - org_admin
+  - id: cfg-custom
+    section: Org structure
+    personas:
+    - org_admin
+  - id: cfg-depts
+    section: Org structure
+    personas:
+    - org_admin
+  - id: cfg-geo
+    section: Org structure
+    personas:
+    - org_admin
+  - id: cfg-grades
+    section: Org structure
+    personas:
+    - org_admin
+  - id: da-ack-campaign
+    section: Policy library
+    personas:
+    - document_admin
+  - id: da-categories
+    section: Policy library
+    personas:
+    - document_admin
+  - id: cfg-entities
+    section: Tenant & entities
+    personas:
+    - org_admin
+  - id: cfg-integrations
+    section: Tenant & entities
+    personas:
+    - org_admin
+  - id: cfg-sso
+    section: Tenant & entities
+    personas:
+    - org_admin
+  - id: cfg-tenant
+    section: Tenant & entities
+    personas:
+    - org_admin
+  W2:
+  - id: attendance-config
+    section: Attendance admin (M05)
+    personas:
+    - attendance_admin
+    - hr_admin
+  - id: attendance-policies
+    section: Attendance admin (M05)
+    personas:
+    - attendance_admin
+    - hr_admin
+  - id: attendance-reasons
+    section: Attendance admin (M05)
+    personas:
+    - attendance_admin
+    - hr_admin
+  - id: attendance-shifts
+    section: Attendance admin (M05)
+    personas:
+    - attendance_admin
+    - hr_admin
+  - id: geofencing
+    section: Attendance admin (M05)
+    personas:
+    - attendance_admin
+    - hr_admin
+  - id: cfg-att-platform
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-att-policy
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-blackout
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-compoff
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-decisionmatrix
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-holiday-calendars
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-infraction
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-leave-platform
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-shifts
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-weeklyoff
+    section: Leave & attendance
+    personas:
+    - org_admin
+  - id: cfg-leave-policy
+    section: Leave admin (M04)
+    personas:
+    - hr_admin
+    - leave_admin
+    - org_admin
+  - id: leave-balance-adjust
+    section: Leave admin (M04)
+    personas:
+    - hr_admin
+    - leave_admin
+  - id: leave-config
+    section: Leave admin (M04)
+    personas:
+    - hr_admin
+    - leave_admin
+  - id: leave-policies
+    section: Leave admin (M04)
+    personas:
+    - hr_admin
+    - leave_admin
+    - org_admin
+  - id: leave-reasons
+    section: Leave admin (M04)
+    personas:
+    - hr_admin
+    - leave_admin
+  W3:
+  - id: generate-offer
+    section: ATS oversight
+    personas:
+    - recruitment_admin
+  - id: hiring-flow
+    section: ATS oversight
+    personas:
+    - recruitment_admin
+  - id: job-openings
+    section: ATS oversight
+    personas:
+    - recruitment_admin
+  - id: ra-add-candidate
+    section: ATS oversight
+    personas:
+    - recruitment_admin
+  - id: ra-raise-requisition
+    section: ATS oversight
+    personas:
+    - recruitment_admin
+  - id: ra-schedule-interview
+    section: ATS oversight
+    personas:
+    - recruitment_admin
+  - id: candidates
+    section: Hiring
+    personas:
+    - recruiter
+  - id: hiring-pipeline
+    section: Hiring
+    personas:
+    - recruiter
+  - id: interviews
+    section: Hiring
+    personas:
+    - recruiter
+  - id: requisitions
+    section: Hiring
+    personas:
+    - recruiter
+  - id: offer-letters
+    section: Hiring (joint with RA)
+    personas:
+    - hr_admin
+    - onboarding_admin
+    - recruiter
+    - recruitment_admin
+  - id: ra-document-review
+    section: Hiring (joint with RA)
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-offer-queue
+    section: Hiring (joint with RA)
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-pre-offer-queue
+    section: Hiring (joint with RA)
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-external-recruiters
+    section: People & vendors
+    personas:
+    - recruitment_admin
+  - id: ra-portals
+    section: People & vendors
+    personas:
+    - recruitment_admin
+  - id: ra-recruiters
+    section: People & vendors
+    personas:
+    - recruitment_admin
+  - id: ra-vendor-onboarding
+    section: People & vendors
+    personas:
+    - recruitment_admin
+  - id: my-interviews
+    section: Recruitment
+    personas:
+    - employee
+  - id: my-referrals
+    section: Recruitment
+    personas:
+    - employee
+  - id: refer
+    section: Recruitment
+    personas:
+    - employee
+  - id: ra-duplicity
+    section: Recruitment admin (M08)
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-pipeline
+    section: Recruitment admin (M08)
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-recruiter-assignment
+    section: Recruitment admin (M08)
+    personas:
+    - hr_admin
+    - recruitment_admin
+  W4:
+  - id: document-upload
+    section: Onboarding
+    personas:
+    - candidate
+  - id: offer-letter
+    section: Onboarding
+    personas:
+    - candidate
+  - id: onboarding-form
+    section: Onboarding
+    personas:
+    - candidate
+  - id: pre-joining
+    section: Onboarding
+    personas:
+    - candidate
+  - id: bank-entry
+    section: Onboarding & office admin
+    personas:
+    - hr_admin
+  - id: document-clusters
+    section: Onboarding & office admin
+    personas:
+    - hr_admin
+    - onboarding_admin
+  - id: national-id
+    section: Onboarding & office admin
+    personas:
+    - hr_admin
+  - id: onboarding-config
+    section: Onboarding & office admin
+    personas:
+    - hr_admin
+  - id: cfg-bgv-checklist
+    section: Recruitment & onboarding
+    personas:
+    - org_admin
+  - id: cfg-duplicity
+    section: Recruitment & onboarding
+    personas:
+    - org_admin
+  - id: cfg-external-rec
+    section: Recruitment & onboarding
+    personas:
+    - org_admin
+  - id: cfg-hiring-leads
+    section: Recruitment & onboarding
+    personas:
+    - org_admin
+  - id: cfg-sources
+    section: Recruitment & onboarding
+    personas:
+    - org_admin
+  W5:
+  - id: clearance-attendance
+    section: Clearance stages (oversight)
+    personas:
+    - attendance_admin
+    - separation_admin
+  - id: clearance-facilities
+    section: Clearance stages (oversight)
+    personas:
+    - office_admin
+    - separation_admin
+  - id: clearance-it-assets
+    section: Clearance stages (oversight)
+    personas:
+    - it_admin
+    - separation_admin
+  - id: clearance-leave
+    section: Clearance stages (oversight)
+    personas:
+    - leave_admin
+    - separation_admin
+  - id: absconding
+    section: Lifecycle queues
+    personas:
+    - hr_admin
+    - separation_admin
+  - id: cfg-exit-interview-form
+    section: Separation (M03)
+    personas:
+    - hr_admin
+    - separation_admin
+  - id: cfg-separation-checklist
+    section: Separation (M03)
+    personas:
+    - hr_admin
+    - separation_admin
+  - id: exit-interview
+    section: Separation (M03)
+    personas:
+    - hr_admin
+    - hrbp
+    - separation_admin
+  - id: payroll-export
+    section: Statutory & FnF
+    personas:
+    - finance_admin
+  - id: pf-uan
+    section: Statutory & FnF
+    personas:
+    - finance_admin
+  - id: reimbursements
+    section: Statutory & FnF
+    personas:
+    - finance_admin
+  - id: tds-tax
+    section: Statutory & FnF
+    personas:
+    - finance_admin
+  W6:
+  - id: pa-cycle-create
+    section: Cycle ops
+    personas:
+    - performance_admin
+  - id: pa-exclusions
+    section: Cycle ops
+    personas:
+    - performance_admin
+  - id: admin-add-goal
+    section: Goal framework
+    personas:
+    - performance_admin
+  - id: pa-goal-plan-create
+    section: Goal framework
+    personas:
+    - performance_admin
+  - id: cfg-calibration
+    section: Performance
+    personas:
+    - org_admin
+  - id: cfg-goal-templates
+    section: Performance
+    personas:
+    - org_admin
+  - id: cfg-pip
+    section: Performance
+    personas:
+    - org_admin
+  - id: cfg-rating
+    section: Performance
+    personas:
+    - org_admin
+  - id: cfg-review-templates
+    section: Performance
+    personas:
+    - org_admin
+  - id: pa-assign-plan
+    section: Performance admin (M09)
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: pa-calibration
+    section: Performance admin (M09)
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: pa-goal-plans
+    section: Performance admin (M09)
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: pa-pip
+    section: Performance admin (M09)
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: pa-scorecard-pillars
+    section: Performance admin (M09)
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: pa-metrics
+    section: Scoring framework
+    personas:
+    - performance_admin
+  - id: pa-normalization
+    section: Scoring framework
+    personas:
+    - performance_admin
+  W7:
+  - id: it-asset-assignment
+    section: Asset management
+    personas:
+    - it_admin
+  - id: it-asset-master
+    section: Asset management
+    personas:
+    - it_admin
+  - id: it-cmdb
+    section: Asset management
+    personas:
+    - it_admin
+  - id: it-masters
+    section: Asset management
+    personas:
+    - it_admin
+  - id: escalations
+    section: Casework
+    personas:
+    - hrbp
+  - id: hrbp-my-employees
+    section: Casework
+    personas:
+    - hrbp
+  - id: pip-cases
+    section: Casework
+    personas:
+    - hrbp
+  - id: da-letter-queue
+    section: Document admin (M11)
+    personas:
+    - document_admin
+    - hr_admin
+  - id: da-signoff-tracker
+    section: Document admin (M11)
+    personas:
+    - document_admin
+    - hr_admin
+  - id: da-templates
+    section: Document admin (M11)
+    personas:
+    - document_admin
+    - hr_admin
+  - id: da-vault
+    section: Document admin (M11)
+    personas:
+    - document_admin
+    - hr_admin
+  - id: cfg-approval-flows
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-doc-templates
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-document-settings
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-letterheads
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-notif
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-signers
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-skip
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-sla
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: cfg-workflows
+    section: Documents & workflow
+    personas:
+    - org_admin
+  - id: da-bulk-letters
+    section: Letter operations
+    personas:
+    - document_admin
+  - id: da-merge-fields
+    section: Letter operations
+    personas:
+    - document_admin
+  - id: knowledge-base
+    section: Service desk
+    personas:
+    - it_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: sd-queue
+    section: Service desk
+    personas:
+    - it_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: da-doc-master
+    section: Vault & storage
+    personas:
+    - document_admin
+  - id: da-storage
+    section: Vault & storage
+    personas:
+    - document_admin
+  - id: da-versioning
+    section: Vault & storage
+    personas:
+    - document_admin
+  W8:
+  - id: settings
+    section: Account
+    personas:
+    - employee
+  - id: ra-sources
+    section: Analytics
+    personas:
+    - recruitment_admin
+  - id: attendance-lock
+    section: Authoritative actions
+    personas:
+    - attendance_admin
+    - hr_admin
+  - id: force-separation
+    section: Authoritative actions
+    personas:
+    - hr_admin
+    - separation_admin
+  - id: leave-revocation
+    section: Authoritative actions
+    personas:
+    - hr_admin
+    - leave_admin
+  - id: pl-encashment
+    section: Authoritative actions
+    personas:
+    - hr_admin
+  - id: dept-attendance
+    section: Department oversight
+    personas:
+    - hod
+  - id: dept-headcount
+    section: Department oversight
+    personas:
+    - hod
+  - id: dept-leave
+    section: Department oversight
+    personas:
+    - hod
+  - id: dept-performance
+    section: Department oversight
+    personas:
+    - hod
+  - id: dept-view
+    section: Department oversight
+    personas:
+    - hod
+  - id: hod-employees
+    section: Department oversight
+    personas:
+    - hod
+  - id: calendar
+    section: Modules
+    personas:
+    - attendance_admin
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+  - id: directory
+    section: Modules
+    personas:
+    - ceo
+    - employee
+    - performance_admin
+  - id: da-policies
+    section: "Modules \u2014 oversight"
+    personas:
+    - document_admin
+    - hr_admin
+  - id: employee-master
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+  - id: holiday-calendar
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - leave_admin
+  - id: hr-add-employee
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: hr-project-master
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - org_admin
+  - id: onboarding-oversight
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - onboarding_admin
+  - id: pa-review-cycles
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - performance_admin
+  - id: ra-candidates
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-interviews
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: ra-requisitions
+    section: "Modules \u2014 oversight"
+    personas:
+    - hr_admin
+    - recruitment_admin
+  - id: documents-oversight
+    section: "Modules \u2014 view"
+    personas:
+    - hrbp
+  - id: recruitment
+    section: "Modules \u2014 view"
+    personas:
+    - hrbp
+  - id: cfg-forms
+    section: Operations
+    personas:
+    - onboarding_admin
+    - org_admin
+  - id: it-postmortems
+    section: Operations
+    personas:
+    - service_desk_admin
+  - id: access-control
+    section: Scoped operations
+    personas:
+    - office_admin
+  - id: biometric-mgmt
+    section: Scoped operations
+    personas:
+    - office_admin
+  - id: office-assets
+    section: Scoped operations
+    personas:
+    - office_admin
+  - id: office-attendance
+    section: Scoped operations
+    personas:
+    - office_admin
+  - id: visitor-mgmt
+    section: Scoped operations
+    personas:
+    - office_admin
+  - id: ai-policy-chat
+    section: Self
+    personas:
+    - ceo
+    - document_admin
+    - org_admin
+    - performance_admin
+    - platform_super_admin
+    - recruitment_admin
+  - id: attendance
+    section: Self
+    personas:
+    - attendance_admin
+    - ceo
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+    - separation_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: initiate-separation
+    section: Self
+    personas:
+    - attendance_admin
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+  - id: my-assets
+    section: Self
+    personas:
+    - attendance_admin
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+    - separation_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: my-goals
+    section: Self
+    personas:
+    - attendance_admin
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+  - id: my-leave
+    section: Self
+    personas:
+    - attendance_admin
+    - ceo
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+    - separation_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: my-profile
+    section: Self
+    personas:
+    - attendance_admin
+    - ceo
+    - document_admin
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - org_admin
+    - performance_admin
+    - platform_super_admin
+    - recruiter
+    - recruitment_admin
+    - separation_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: my-tickets
+    section: Self
+    personas:
+    - employee
+    - service_desk_admin
+    - service_desk_agent
+  - id: policies
+    section: Self
+    personas:
+    - attendance_admin
+    - ceo
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - recruiter
+    - separation_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: approvals
+    section: Tasks
+    personas:
+    - hr_admin
+    - leave_admin
+    - manager_l1
+  - id: attendance-approvals
+    section: Tasks
+    personas:
+    - attendance_admin
+    - hr_admin
+    - manager_l1
+  - id: bgv-reports
+    section: Tasks
+    personas:
+    - hr_admin
+    - hrbp
+    - onboarding_admin
+  - id: checkin-approvals
+    section: Tasks
+    personas:
+    - attendance_admin
+    - hr_admin
+    - manager_l1
+  - id: clearance-compliance
+    section: Tasks
+    personas:
+    - hr_admin
+    - separation_admin
+  - id: compoff-approvals
+    section: Tasks
+    personas:
+    - hr_admin
+    - leave_admin
+    - manager_l1
+  - id: fnf-clearance-hub
+    section: Tasks
+    personas:
+    - hr_admin
+    - separation_admin
+  - id: it-asset-requests
+    section: Tasks
+    personas:
+    - it_admin
+  - id: joining-forms-approval
+    section: Tasks
+    personas:
+    - hr_admin
+    - hrbp
+    - onboarding_admin
+  - id: manager-appraisal-tasks
+    section: Tasks
+    personas:
+    - hr_admin
+    - manager_l1
+    - performance_admin
+  - id: notifications
+    section: Tasks
+    personas:
+    - employee
+  - id: probation-approval
+    section: Tasks
+    personas:
+    - hr_admin
+    - onboarding_admin
+  - id: probation-decision
+    section: Tasks
+    personas:
+    - hrbp
+    - manager_l1
+  - id: requisition-approval
+    section: Tasks
+    personas:
+    - ceo
+    - hr_admin
+  - id: reviews
+    section: Tasks
+    personas:
+    - hrbp
+    - manager_l1
+  - id: sensitive-changes
+    section: Tasks
+    personas:
+    - hr_admin
+    - hrbp
+  - id: separation-stage1
+    section: Tasks
+    personas:
+    - hr_admin
+    - manager_l1
+    - separation_admin
+  - id: separation-stage2
+    section: Tasks
+    personas:
+    - hr_admin
+    - hrbp
+    - separation_admin
+  - id: tasks
+    section: Tasks
+    personas:
+    - employee
+  - id: fnf-clearance
+    section: Team
+    personas:
+    - finance_admin
+    - manager_l1
+  - id: my-team
+    section: Team
+    personas:
+    - manager_l1
+  - id: probation-confirmation
+    section: Team
+    personas:
+    - manager_l1
+  - id: team-assets
+    section: Team
+    personas:
+    - manager_l1
+  - id: team-attendance
+    section: Team
+    personas:
+    - manager_l1
+  - id: team-leave
+    section: Team
+    personas:
+    - manager_l1
+  - id: cfg-cross-entity
+    section: Workspace
+    personas:
+    - org_admin
+  - id: consent-history
+    section: Workspace
+    personas:
+    - performance_admin
+  - id: dashboard
+    section: Workspace
+    personas:
+    - attendance_admin
+    - candidate
+    - ceo
+    - document_admin
+    - employee
+    - finance_admin
+    - hod
+    - hr_admin
+    - hrbp
+    - it_admin
+    - leave_admin
+    - manager_l1
+    - office_admin
+    - onboarding_admin
+    - org_admin
+    - performance_admin
+    - platform_super_admin
+    - recruiter
+    - recruitment_admin
+    - separation_admin
+    - service_desk_admin
+    - service_desk_agent
+  - id: org-chart
+    section: Workspace
+    personas:
+    - performance_admin
+  - id: pa-review-status
+    section: Workspace
+    personas:
+    - performance_admin
+  - id: psa-analytics
+    section: Workspace
+    personas:
+    - platform_super_admin
+  - id: rec-overview
+    section: Workspace
+    personas:
+    - recruitment_admin
+  W9:
+  - id: leadership-ai-chat
+    section: Leadership AI
+    personas:
+    - ceo
+  - id: psa-master-data
+    section: Migration & data
+    personas:
+    - platform_super_admin
+  - id: psa-migration
+    section: Migration & data
+    personas:
+    - platform_super_admin
+  - id: psa-migration-detail
+    section: Migration & data
+    personas:
+    - platform_super_admin
+  - id: psa-environments
+    section: Operations & security
+    personas:
+    - platform_super_admin
+  - id: psa-monitoring
+    section: Operations & security
+    personas:
+    - platform_super_admin
+  - id: psa-releases
+    section: Operations & security
+    personas:
+    - platform_super_admin
+  - id: psa-security
+    section: Operations & security
+    personas:
+    - platform_super_admin
+  - id: psa-feature-flags
+    section: Tenant operations
+    personas:
+    - platform_super_admin
+  - id: psa-licenses
+    section: Tenant operations
+    personas:
+    - platform_super_admin
+  - id: psa-provisioning
+    section: Tenant operations
+    personas:
+    - platform_super_admin
+  - id: psa-tenant-detail
+    section: Tenant operations
+    personas:
+    - platform_super_admin
+  - id: psa-tenants
+    section: Tenant operations
+    personas:
+    - platform_super_admin
