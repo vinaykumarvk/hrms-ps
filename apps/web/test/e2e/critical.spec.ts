@@ -20,7 +20,7 @@ async function installAdminSession(page: import("@playwright/test").Page) {
 test("@critical employee navigation and mobile drawer are operable", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await loginEmployee(page);
-  await page.getByRole("button", { name: "Open menu" }).click();
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
   await expect(page.getByRole("dialog", { name: "Me navigation" })).toBeVisible();
   await page.getByRole("link", { name: "Employees" }).click();
   await expect(page).toHaveURL(/\/me\/employees$/);
@@ -65,7 +65,7 @@ test("@critical authenticated shell is reachable without horizontal overflow acr
 test("@critical drawer and dialog support keyboard open close and focus return", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await loginEmployee(page);
-  const menu = page.getByRole("button", { name: "Open menu" });
+  const menu = page.getByRole("button", { name: "Open navigation menu" });
   await menu.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog", { name: "Me navigation" })).toBeVisible();

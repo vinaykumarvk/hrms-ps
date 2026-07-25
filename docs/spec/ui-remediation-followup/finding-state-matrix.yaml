@@ -194,29 +194,38 @@ findings:
     domain: Accessibility evidence
     review_anchor: apps/web/test/e2e/foundation.spec.ts:18; docs/evidence/ui-remediation/accessibility-summary.md:5
     current_anchor: apps/web/test/e2e/foundation.spec.ts
-    state: open
-    evidence_id: EV-00-07
+    state: partial
+    evidence_id: EV-00R-E2E
     notes: >
-      Cannot be verified: the e2e suite did not run (EV-00-07), so neither the axe posture nor
-      the keyboard journey coverage could be observed. The review reported this resolved on the
-      strength of a run that this phase could not reproduce. Unverifiable evidence is not
-      closure; recorded open pending a clean e2e run.
+      Updated by URF-00R, which obtained the first executed browser evidence (16/16 passing;
+      docs/evidence/ui-remediation-followup/urf-00r-e2e-log.md). The axe half is satisfied:
+      `expect(results.violations).toEqual([])` fails on every violation with no impact filter,
+      on both login and the authenticated shell. The keyboard half is only partly satisfied:
+      Enter, Escape, and focus return are asserted on both the drawer and the publish dialog,
+      but Tab and Shift+Tab traversal are never exercised — the test moves focus with .focus()
+      instead of traversing, and the finding named Tab/Shift+Tab explicitly. Also note the two
+      keyboard tests this closure originally rested on had been failing on a stale locator
+      ("Open menu" vs "Open navigation menu") since the label was refined, so they cannot have
+      passed in the interim. Remaining work belongs to URF-07.
     downgraded_from: resolved
-    downgrade_reason: could not be reproduced
+    downgrade_reason: could not be reproduced; re-verified in part by URF-00R
 
   - id: FR-13
     severity: HIGH
     domain: Responsive evidence
     review_anchor: apps/web/test/e2e/evidence.spec.ts:16; docs/release/ui-remediation-readiness.md:13
     current_anchor: apps/web/test/e2e/evidence.spec.ts
-    state: open
-    evidence_id: EV-00-07
+    state: partial
+    evidence_id: EV-00R-E2E
     notes: >
-      Same basis as FR-12 — the suite carrying the viewport, drawer, long-content, and safe-area
-      assertions did not execute. The prior ledger already carried the safe-area portion as
-      partial. Recorded open pending a clean e2e run.
+      Updated by URF-00R. Of the four assertions the review asked for, two now execute and pass:
+      authenticated viewport overflow across 360x800 / 768x1024 / 1280x800, and drawer
+      operability including the keyboard path. Two remain absent: no test renders overflowing
+      long content and asserts its behaviour, and no safe-area assertion exists in the specs —
+      nor was any env(safe-area-inset-*) rule found in apps/web/src/styles.css, so there is
+      currently nothing to assert against. Remaining work belongs to URF-07.
     downgraded_from: partial
-    downgrade_reason: could not be reproduced
+    downgrade_reason: could not be reproduced; re-verified in part by URF-00R
 
   - id: FR-14
     severity: HIGH
