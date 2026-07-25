@@ -14,6 +14,7 @@ import { registerPS11Routes } from "./ps11.routes";
 import { registerPS12Routes } from "./ps12.routes";
 import { registerPS13Routes } from "./ps13.routes";
 import { registerPS14Routes } from "./ps14.routes";
+import { registerCfgRoutes } from "./cfg.routes";
 import { registerP01WorkflowRoutes } from "./p01-workflow.routes";
 
 export function registerFoundationRoutes(kernel: ApiKernel): void {
@@ -32,6 +33,7 @@ export function registerFoundationRoutes(kernel: ApiKernel): void {
   registerPS12Routes(kernel);
   registerPS13Routes(kernel);
   registerPS14Routes(kernel);
+  registerCfgRoutes(kernel);
 }
 
 export function createFoundationApi(services: FoundationServices = createFoundationServices()): ApiKernel {

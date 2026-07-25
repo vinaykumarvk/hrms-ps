@@ -97,6 +97,7 @@ import { AnalyticsService } from "../modules/ps14/analyticsService";
 import { AnalyticsEngineService } from "../modules/ps14/analyticsEngineService";
 import { InMemoryAnalyticsEngineRepository } from "../modules/ps14/analyticsEngineRepository";
 import { NotificationService } from "../notifications/notificationService";
+import { OrgConfigService } from "../modules/cfg/orgConfigService";
 import { ph03AuthorityFacts, ph03Documents, ph03Employees, ph03Ids, ph03LeaveTypes } from "../seed/ph03Seed";
 import { AuditService } from "./audit/auditService";
 import { AuthorityResolutionService } from "./authority-resolution/authorityResolutionService";
@@ -153,6 +154,8 @@ export interface FoundationServices {
   promotion: PromotionService;
   sealedCover: SealedCoverService;
   training: TrainingService;
+  /** W1 — Org-Admin configuration registries (full-coverage parity). */
+  orgConfig: OrgConfigService;
   apar: AparService;
   disciplinary: DisciplinaryService;
   payroll: PayrollService;
@@ -392,6 +395,7 @@ export function createFoundationServices(options: FoundationServicesOptions = {}
   );
   // PH-08D: PS07 taxonomy/gap-contract/campaign + PS08 cycle/goal/disclosure/part-period depth
   // entities behind the same repository pattern.
+  const orgConfig = new OrgConfigService(authorization, audit);
   const training = new TrainingService(
     employeeMaster,
     authorization,
@@ -550,6 +554,7 @@ export function createFoundationServices(options: FoundationServicesOptions = {}
     promotion,
     sealedCover,
     training,
+    orgConfig,
     apar,
     disciplinary,
     payroll,
