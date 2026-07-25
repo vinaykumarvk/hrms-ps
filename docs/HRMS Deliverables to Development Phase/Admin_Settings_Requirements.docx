@@ -1,0 +1,484 @@
+**PrimeSoft Solutions, Inc.**
+
+**PrimeSoft HRMS — Admin Settings**
+
+**Requirements Specification — Draft**
+
+| **Version** | v1.0 |
+| --- | --- |
+| **Date** | April 2026 |
+| **Classification** | Confidential |
+| **Status** | Final draft. Tenant-level configuration registry covering organisation setup, HR configuration, user & access management, system & integration, and compliance & audit. RBAC role assignments and field-level access rules align with the RBAC Design Document. Cross-module rules for probation, notice period, holiday calendar, and biometric devices reference the owning module (M04, M05). Two open decisions in §H require business sign-off. Two migration gates outstanding. |
+| **Audience** | CEO · CTO · CHRO · Product Architect · Implementation Lead |
+| **Structure** | Part A: Organisation Settings · Part B: HR Configuration · Part C: User & Access Management Settings · Part D: System & Integration Settings · Part E: Compliance & Audit Settings · Part F: Use Case Register · Part G: Process Flows (Swimlane) · Part H: Decision Log · Part I: Exception & Boundary Register · Part J: Open Items & Next Steps |
+| **Source documents** | Product Vision v2.4 · RBAC Design Document · M04 Leave Management Requirements · M05 Attendance Requirements · M01 Employee Master Requirements · M02 Onboarding Requirements · M03 Exits & Offboarding Requirements · M11 Document Management Requirements · Darwinbox exports: Assignment, Band, Deactivation Reasons, Department, Designation, Grade, Location, National ID, Notice Period, Probation, Profile View Settings, Weekly Off, Neev Level |
+| **Next steps** | 1. Business sign-off on this document · 2. DB design · 3. Visual design · 4. Functional specification · 5. Prototype |
+
+# **Part A — Organisation Settings**
+
+Settings governing the top-level organisation structure, legal entities, locations, and calendar. These settings form the foundational configuration layer from which all functional modules inherit defaults.
+
+*'****Configured by****'** reflects RBAC decisions. Rows highlighted in blue are confirmed decisions locked during requirements sessions. Yellow rows indicate values that differ from Darwinbox source data or require explicit configuration action before go-live.*
+
+## **A.1 Company Profile**
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **COMPANY IDENTITY** |  |  |  |  |  |
+| Company / Tenant name | The legal name of the organisation as displayed across all modules, communications, and statutory outputs. | Free text — max 200 chars | PrimeSoft IP Solutions Private Limited | Platform Super Admin | All modules · statutory filings · payslips |
+| Company display name | Short name used in UI headers, notifications, and employee-facing portals. | Free text — max 60 chars | PrimeSoft | Org Admin | Employee portal · notifications |
+| Company logo | Uploaded image displayed in the header, onboarding portal, payslips, and all downloadable documents. | PNG / JPG — max 2MB · recommended 300×100px | PrimeSoft logo | Org Admin | All UI surfaces · documents |
+| Company registration number | CIN or equivalent — stored for statutory reporting context. | Free text | To be configured | Org Admin | Statutory outputs |
+| Company PAN | Employer PAN — used in TDS computation and Form 16 / Form 24Q generation. | 10-character alphanumeric | To be configured | HR Admin | M07 Statutory Compliance · payslips |
+| Registered address | Registered office address for statutory documents and filings. | Multi-line text | To be configured | Org Admin | Statutory outputs · offer letters |
+| **FINANCIAL YEAR**** ****&**** ****CALENDAR** |  |  |  |  |  |
+| **Financial year start month** | LOCKED: Determines the start of the payroll year, leave cycle reset, and statutory compliance period. April is mandated for Indian entities. | Month selector | **April** | Platform — not configurable per entity | M04 Leave · M06 Payroll · M07 Statutory · M16 Analytics |
+| Calendar week start day | First day of the working week — affects shift scheduling, roster display, and weekly-off calculations. | Monday · Sunday | Monday | Org Admin | M05 Attendance · M04 Leave |
+| Working days per week (default) | Used for notice period countdown, SLA timer calculation, and shift defaults. Overridable per location. | 5 · 6 | 5 | Org Admin | M03 Exits · M05 Attendance · P01 Workflow |
+| **INDUSTRY SEGMENT**** ****&**** ****GEOGRAPHY** |  |  |  |  |  |
+| **Industry segment** | LOCKED: Set at provisioning. Drives defaults for leave policy, performance framework, attendance model, payroll structure, workflow templates, and analytics dashboards. Cannot be changed post-provisioning without data migration. | IT Services · BFSI · Manufacturing · Retail · Healthcare (expandable) | **IT Services** | Platform Super Admin — provisioning only | All modules — default cascade |
+| **Primary geography** | LOCKED: Set at provisioning. Drives tax slabs, social security rates, labour law defaults, holiday calendar, and data residency flag. Additional geographies added per entity. | India · UAE · Singapore · UK · USA (expandable) | **India** | Platform Super Admin — provisioning only | M07 Statutory · M04 Holiday Calendar · M06 Payroll |
+
+## **A.2 Legal Entities**
+
+Each legal entity within the tenant has its own configuration for compliance, payroll, and leave while sharing master data and consolidated reporting with the parent tenant.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Entity name | Full legal name of the entity as it appears in statutory filings. | Free text | PrimeSoft IP Solutions Private Limited | Org Admin | M06 Payroll · M07 Statutory · all entity-scoped roles |
+| Entity short code | Abbreviation used for system-generated IDs and references. | 3–6 uppercase chars | PSI | Org Admin | Employee IDs · system references |
+| Entity PAN | Employer PAN for this entity — may differ from parent company. | 10-char alphanumeric | To be configured | HR Admin | M07 Statutory · Form 16 · Form 24Q |
+| Entity TAN | Tax Deduction Account Number for TDS filings. | 10-char alphanumeric | To be configured | HR Admin | M07 TDS · Form 24Q |
+| Entity PF registration number | EPFO establishment code for ECR challan generation. | Alphanumeric | To be configured | Compliance Admin / HR Admin | M07 EPF · ECR challan |
+| Entity ESI code | ESIC employer code for ESI challan generation. | Alphanumeric | To be configured | Compliance Admin / HR Admin | M07 ESI · ESIC challan |
+| Professional tax state | State determines applicable PT slabs. Set per entity — multi-state entities configure at location level. | State selector — all Indian states and UTs | To be configured per office location | Compliance Admin / HR Admin | M07 Professional Tax |
+| Labour Welfare Fund state | State determines LWF applicability and deduction frequency. | State selector | To be configured per office location | Compliance Admin / HR Admin | M07 LWF |
+
+## **A.3 Departments**
+
+Departments are the primary organisational grouping unit. Department configuration drives HOD scoping, analytics segmentation, recruitment requisition routing, and cost centre mapping. Source: Department-Export from Darwinbox — verify active/inactive status for all entries before migration.
+
+*Role boundary: Org Admin owns the tenant-level department master list. HR Admin assigns employees and HODs within their entity only. These are distinct actions. The** ****'******Manage org structure******'**** **capability attributed to HR Admin in RBAC §4 M01 refers to employee org position management — not department master list creation.*
+
+| **Setting** | **What it controls** | **Configured by** | **Scope** | **Current** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **DEPARTMENT MASTER LIST — TENANT LEVEL** |  |  |  |  |  |
+| **Department name** | Full name as displayed in employee profiles, org chart, analytics, and requisitions. Adding a new department to the master list is a tenant-level action — HR Admin cannot create departments not in this list. | **Org Admin** | Tenant | Sourced from Department-Export | M01 · M08 · M09 · M16 · HOD scope |
+| Department code | Short code for reports and integrations. Auto-generated at creation — editable by Org Admin. | Org Admin | Tenant | Auto-generated | Reporting · integrations |
+| Parent department | Enables department hierarchy for large organisations. Set at tenant level for consistency across all entities. Optional — flat structure is the default. | Org Admin | Tenant | None (flat structure — configurable) | Org chart · analytics drill-down |
+| **Active / inactive** | Inactive departments are hidden from new assignment selectors across all entities. Deactivating a department with active employees requires HR Admin to reassign those employees first. Verified against Department-Export before migration. | **Org Admin** | Tenant | Active — verify Department-Export before migration | All modules · display filter · M01 · M08 |
+| **Department entity-level suppression (OD01 — OPEN DECISION) ⚠** | Can HR Admin suppress a tenant-level department for their entity only, without affecting other entities? No source document answers this. Defaults to Option A (no suppression — all tenant-level departments visible to all entities) for Phase 1. Requires business sign-off before M01 functional design. | Decision required — defaults to Org Admin only (no suppression) | Entity | Not configured — pending sign-off | Group Company deployment · M01 · P04 |
+| **DEPARTMENT CONFIGURATION — ENTITY LEVEL** |  |  |  |  |  |
+| Department head (HOD) assignment | The designated Head of Department for a given entity. HOD assignment is entity-scoped — different entities in a Group Company can assign different HODs to the same tenant-level department. Determines HOD leave dashboard scope, analytics scope, and optional workflow approval. | HR Admin | Entity | Per department — to be assigned | HOD access scope · M04 · M09 · M16 |
+| Cost centre mapping | Department linked to a cost centre for payroll and budgeting. Finance Admin uses for cost reporting. Mapping may differ per entity in a Group Company. HR Admin has no role in cost centre configuration. | Finance Admin | Entity | To be configured | M06 Payroll · M16 Analytics |
+| **EMPLOYEE ORG POSITION — ENTITY LEVEL (HR ADMIN)** |  |  |  |  |  |
+| Employee department assignment | Assigning an employee to a department via their employment record (RBAC §7 — Department field, E for HR Admin). Distinct from creating the department master list entry. HR Admin cannot assign an employee to a department that does not exist in the tenant master list. | HR Admin | Entity | Per employee record | M01 · org chart · analytics |
+
+## **A.4 Designations**** ****&**** ****Job Titles**
+
+Designations appear in employee profiles, the org chart, the employee directory, offer letters, and payslips. Source: Designation_Names-Export from Darwinbox — verify active/inactive for all entries before migration.
+
+*Role boundary: Two distinct actions exist. Managing the designation master list (adding, renaming, marking inactive) is Org Admin — tenant level. Assigning a designation to an individual employee is HR Admin — entity level (RBAC §7, Designation field = E for HR Admin). HR Admin cannot assign a designation that does not exist in the tenant master list.*
+
+| **Setting** | **What it controls** | **Configured by** | **Scope** | **Current** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **DESIGNATION MASTER LIST — TENANT LEVEL** |  |  |  |  |  |
+| **Designation name** | Job title label in the tenant master list. Adding a new designation that can be used across all entities. No employee can be assigned a designation that does not exist in this list. HR Admin cannot add to the master list. | **Org Admin** | Tenant | Sourced from Designation_Names-Export | M01 · M08 · directory · org chart · payslips · offer letters |
+| Designation → grade mapping | Links a designation to a grade for compensation, leave policy assignment, and entitlement defaults. Tenant-level mapping — defines what grade a designation is associated with across all entities. HR Admin cannot configure this mapping; can assign the resulting grade to an employee via employment record. | Org Admin | Tenant | Per designation — Designation_Names-Export + Grade-Export | M06 Payroll · M04 Leave · M10 Compensation · RBAC entitlements |
+| **Designation → contribution level mapping (OD02 — OPEN DECISION) ⚠** | Maps a designation to a contribution level (Intern · Associate · Individual Contributor · Lead · Senior Lead · Manager · Senior Manager · CEO) for RBAC scoping, M09 calibration, and M10 hike banding. No source document explicitly assigns this to a role. Inferred as Org Admin: contribution levels are a RBAC scoping dimension (RBAC §3.1) and RBAC configuration is Org Admin territory. Requires business sign-off. Recommended resolution: Org Admin for master mapping; HR Admin override on individual employee record (see OD02). | Org Admin — inferred, pending sign-off (see OD02) | Tenant | Sourced from Neev-Level-Export — verify mappings before migration ⚠ | RBAC scoping · M09 calibration · M10 hike banding |
+| **Designation active / inactive ⚠** | Marking a designation inactive removes it from new assignment selectors across all entities. Designations in the Designation_Names-Export that are no longer in use must be marked inactive before go-live — must NOT be migrated as Active. Existing employee records that reference an inactive designation retain it in read-only state. HR Admin cannot mark designations inactive. | **Org Admin** | Tenant | Audit required — inactive Darwinbox entries must not migrate as Active ⚠ | M01 · M08 · directory · migration gate |
+| **DESIGNATION ASSIGNMENT TO EMPLOYEE — ENTITY LEVEL** |  |  |  |  |  |
+| Employee designation assignment | Assigning a designation from the master list to an individual employee employment record (RBAC §7 — Designation/Job Title field, E for HR Admin). HR Admin cannot assign a designation that does not exist in the tenant master list. Selector shows only active designations. | HR Admin | Entity | Per employee record | M01 · directory · org chart · payslips · offer letters |
+
+## **A.5 Grades**** ****&**** ****Bands**
+
+Grade and band configuration operates across two distinct layers with different role ownership. Source: Grade-Export and Band-Export from Darwinbox.
+
+*Role boundary: Grade structure (names, contribution level mapping, leave policy association) is org configuration — Org Admin at tenant level, HR Admin assigns per employee. Compensation band values (CTC floor/ceiling) are M10 configuration — Compensation Admin + Finance Admin only. These two layers are separate. Neither Org Admin nor HR Admin configures CTC ranges.*
+
+| **Setting** | **What it controls** | **Configured by** | **Scope** | **Current** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **GRADE STRUCTURE — TENANT LEVEL (ORG ADMIN)** |  |  |  |  |  |
+| **Grade name** | Grade label (e.g. G1, G2, IC3, M1). Adding a new grade to the tenant master list. No employee can be assigned a grade that does not exist in this list. HR Admin cannot create grades. | **Org Admin** | Tenant | Sourced from Grade-Export | M01 · M06 · M10 · RBAC entitlements |
+| **Grade → contribution level mapping (OD02 — OPEN DECISION) ⚠** | Maps a grade to a contribution level for RBAC scoping, M09 calibration, and M10 hike banding. No source document explicitly assigns this to a role. Inferred as Org Admin: contribution levels are a RBAC scoping dimension (RBAC §3.1). Requires business sign-off. Recommended resolution: Org Admin for master mapping; HR Admin can override on individual employee record with approval (consistent with E · AR pattern in RBAC §7 for the Contribution Level field). | Org Admin — inferred, pending sign-off (see OD02) | Tenant | Sourced from Neev-Level-Export — verify before migration ⚠ | RBAC scoping · M09 calibration · M10 hike banding |
+| Grade → leave policy association | Default leave policy set assigned to employees of this grade. Configured at tenant level — all entities start from this baseline. HR Admin can override at entity level, inheriting from Org Admin tenant default where no override exists. This is the one setting in A.5 where both roles have a defined action. | Org Admin (tenant default) overridable by HR Admin (entity) | Both | Per grade — see M04 policy matrix | M04 Leave |
+| Grade active / inactive | Inactive grades hidden from new assignment selectors. Existing employee records retain the grade in read-only state. HR Admin cannot deactivate grades. | Org Admin | Tenant | Active — verify Grade-Export before migration | M01 · M10 |
+| **EMPLOYEE GRADE ASSIGNMENT — ENTITY LEVEL (HR ADMIN)** |  |  |  |  |  |
+| Employee grade assignment | Assigning a grade from the master list to an individual employee employment record (RBAC §7 — Grade/Band field, E for HR Admin). HR Admin cannot assign a grade that does not exist in the tenant master list. Selector shows only active grades. | HR Admin | Entity | Per employee record | M01 · M06 · M10 · RBAC scoping |
+| **COMPENSATION BAND VALUES — M10 ONLY (COMPENSATION ADMIN + FINANCE ADMIN)** |  |  |  |  |  |
+| **Band name** | The label for a compensation band (e.g. Band A, IC-Senior). Band naming is inseparable from the CTC range it represents — both are M10 configuration. Neither Org Admin nor HR Admin configures band names or values (Product Vision v2.4 §3.1 — Compensation Admin and Finance Admin joint M10 admin). HR Admin can view bands (RBAC §6) but has no edit rights. | **Compensation Admin + Finance Admin (joint M10)** | Tenant | Sourced from Band-Export | M10 Compensation · M08 offer benchmarking · M16 Analytics |
+| **CTC floor and ceiling ⚠** | Minimum and maximum CTC for a band. Configured jointly by Compensation Admin + Finance Admin in M10. HR Admin has no configuration rights on CTC values. Finance Admin can view band ranges for budgeting (RBAC §6) but holds no approval authority in the hike workflow — CEO is sole approver. | **Compensation Admin + Finance Admin (joint M10)** | Tenant | To be configured per band in M10 | M10 · M08 offer benchmarking · finance budgeting |
+
+## **A.6 Locations**
+
+Locations drive professional tax assignment, optional holiday configuration, and geography-specific leave policies. Source: Location-Export, Location-Region-Export, and Location_Country_Master_Data.
+
+*Note: Biometric device mapping (linking a location to registered biometric devices) is configured in M05 Attendance — see M05 Part A (DA04, DA06) and Part B geofence/IP register. Weekly off pattern is set here as a location default and consumed by M05 for shift assignment and comp-off generation.*
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Location name | Office name — appears in employee profiles, org chart, and directory. | Free text | Mumbai · Hyderabad · Bengaluru · Labcorp (from Location-Export) | Org Admin | M01 · M04 optional holidays · M05 · M07 PT |
+| State / UT | Determines professional tax slab, labour welfare fund applicability, state holiday calendar, and Shops & Establishments Act configuration. | State selector — all Indian states and UTs | Maharashtra · Telangana · Karnataka (per office) | Org Admin / Compliance Admin | M07 PT · LWF · M04 holiday calendar |
+| Country | Drives currency, tax regime, and data residency flag. India for all Release 1 locations. | Country selector | India | Org Admin | M06 · M07 · data residency |
+| Optional holiday quota | Number of optional holidays available to employees at this location. Governed by M04 decisions D17 (hidden during probation) and D18 (hidden during notice period) — see M04 Part A. | Numeric — 0 to N | Mumbai: 1 day · Hyderabad: 1 day · Bengaluru: 1 day · Labcorp: 8 days (date-specific) | Leave Admin | M04 Optional Holidays |
+| Weekly off pattern | Default weekly off for employees at this location. Overridable per shift in M05. Drives comp-off generation when employee works on assigned weekly off. Source: Weekly_Off-Export. | Saturday-Sunday · Sunday only · Custom | Sourced from Weekly_Off-Export | Attendance Admin | M05 Attendance · comp-off generation (M04) |
+
+# **Part B — HR Configuration**
+
+Settings governing employment types, probation, notice periods, deactivation reasons, and profile visibility. These settings are foundational to the employee lifecycle and drive downstream module behaviour.
+
+## **B.1 Employment Types**
+
+Employment types determine leave policy eligibility, payroll component mapping, and RBAC defaults. The Assignment exports (AssignmentOne, AssignmentTwo, AssignmentThree) define the employment type framework from Darwinbox.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Employment type name | Label for the employment classification — appears in employee profiles, leave policy assignment, and payroll. | Free text | Full Time · Associate · Contract & Consultant (from Assignment exports) | Org Admin / HR Admin | M04 Leave · M06 Payroll · RBAC defaults |
+| Leave policy group | Default leave policy set assigned to employees of this type. Drives M04 leave type eligibility (e.g. Contract & Consultant = PL_CC). | Policy group selector | Full Time & Associate → standard policy set. Contract & Consultant → PL_CC only. | Org Admin / HR Admin | M04 Leave type visibility |
+| Payroll component eligibility | Determines which salary components apply to this employment type. Full Time = standard CTC. Contract = fee-based. | Component set selector | Per employment type — to be configured in M06 | Payroll Admin / HR Admin | M06 Payroll |
+| Statutory compliance scope | Which statutory deductions apply (PF, ESI, PT, TDS). Contract employees typically exempt from PF and ESI below threshold. | Per-statute toggles | Per employment type — to be confirmed with Compliance Admin | Compliance Admin / HR Admin | M07 Statutory Compliance |
+
+## **B.2 Probation Settings**
+
+Probation configuration drives the probation confirmation workflow and employee lifecycle state. Source: Probation-Export from Darwinbox.
+
+*Leave and encashment behaviour during probation is governed entirely by M04 Leave Management — see M04 Part A (decisions D15, D17, D19) and Part B policy matrix. Those rules are locked in M04 and are not repeated here. Cross-references are noted where relevant.*
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **PROBATION DURATION** |  |  |  |  |  |
+| Default probation period | Duration applied to new joiners unless overridden by employment type or individual record. | Days / months — numeric | Sourced from Probation-Export per employment type | Org Admin / HR Admin | M01 · M09 probation confirmation · M04 leave visibility |
+| Probation extension | HR Admin can extend probation for a specified period. Requires audit log entry. Confirmation workflow re-triggered at end of extension. | Yes · No | Yes — HR Admin discretion | HR Admin | M01 · M09 · M04 |
+| **LEAVE BEHAVIOUR DURING PROBATION — GOVERNED BY M04** |  |  |  |  |  |
+| Leave type restrictions during probation | Leave type availability during probation is locked in M04. Cross-reference: M04 Part A (D19) — Only Unpaid/LOP available during probation. All other types hidden. M04 Part A (D17) — Optional holidays hidden during probation. M04 Part A (D15, E17) — PL encashment blocked during probation. These rules are platform-enforced and not configurable here. | See M04 — D15 · D17 · D19 | Locked in M04 | See M04 Part A | M04 Leave · employee portal |
+| **PROBATION CONFIRMATION WORKFLOW** |  |  |  |  |  |
+| Confirmation trigger | System triggers the probation confirmation workflow at end of the probation period (or extended period if applicable). | Scheduled — probation end date | Scheduled trigger — calendar-driven | System (scheduled) | M09 Performance · M01 Employee |
+| Confirmation workflow stages | Stage 1: L1 Manager recommendation. Stage 2: HR Admin confirmation. Cannot be manually bypassed without HR Admin override. | Two-stage: Manager → HR Admin | Two-stage (see M09 Performance Management) | Org Admin via P01 Workflow Engine | M09 · M01 lifecycle state |
+| Probation sub-state in employee record | Probation is tracked as a flag on the employment record — it is not a separate lifecycle state. Employees on probation are in Active state. | Flag: Probation = Yes / No | Flag on Active state record | System — set on joining, cleared on confirmation | M01 · M04 · RBAC |
+
+## **B.3 Notice Period Settings**
+
+Notice period configuration determines resignation workflow behaviour and the notice period countdown mechanism. Source: Notice-Export from Darwinbox.
+
+*Leave type availability and restrictions during notice period are governed entirely by M04 Leave Management — see M04 Part A (decisions D18, D19) and Part B policy matrix. Those rules are locked in M04 and are not repeated here.*
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Notice period duration | Default notice period applied per employment type and grade. Overridable on the individual employment record. | Days / months — numeric | Sourced from Notice-Export per employment type and grade | Org Admin / HR Admin | M03 Exits · M04 Leave · M01 |
+| Notice period buyout | Employee or employer can buy out remaining notice. HR Admin records buyout. FnF calculation adjusts accordingly. | Yes · No | Yes — HR Admin discretion | HR Admin | M03 Exits · M06 FnF Payroll |
+| Notice period countdown basis | Working-day countdown uses M04 Holiday Calendar as the authoritative source. Non-working days do not count against notice period unless configured otherwise. | Calendar days · Working days | Working days — using M04 Holiday Calendar | Org Admin | M03 Exits · M04 Holiday Calendar |
+| Leave behaviour during notice period | Leave type availability during notice period is locked in M04. Cross-reference: M04 Part A (D19) — Only SL (if balance > 0) and Unpaid/LOP available during notice. M04 Part A (D18) — Optional holidays hidden during notice. M04 Part A — Leave initiation restricted to applications not extending beyond last working date. These rules are platform-enforced and not configurable here. | See M04 — D18 · D19 | Locked in M04 | See M04 Part A | M04 Leave · employee portal |
+
+## **B.4 Deactivation**** ****&**** ****Separation Reasons**
+
+Separation reasons are captured at exit, recorded in the employee lifecycle record, and used for attrition analytics in M16. Source: Deactivation_Reasons-Export from Darwinbox.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Separation reason list | The list of reasons presented to HR Admin when recording a separation. Sourced from Deactivation_Reasons-Export. | Configurable list | Sourced from Deactivation_Reasons-Export — verify active vs archived before migration | Org Admin / HR Admin | M03 Exits · M16 attrition analytics |
+| Voluntary / involuntary flag | Each reason is tagged as voluntary (resignation, retirement) or involuntary (termination, absconding). Drives attrition category in analytics. | Voluntary · Involuntary | Per reason — see Deactivation_Reasons-Export | Org Admin | M16 Analytics — attrition segmentation |
+| Rehire eligibility flag | Certain separation reasons automatically flag the employee as rehire-eligible or rehire-ineligible. HR Admin can override case-by-case. | Rehire eligible · Not eligible · HR Admin decision | Per reason — to be configured | Org Admin / HR Admin | M03 Exits · M01 lifecycle state |
+| **Archived reasons — do not migrate ⚠** | Archived separation reasons in Darwinbox must not be migrated as active options. Review Deactivation_Reasons-Export for archived entries before P06 Migration Toolkit ETL runs. | Active · Archived | Audit required — archived entries excluded from migration | Migration Toolkit (P06) — HR Admin review | P06 Migration · M03 Exits |
+
+## **B.5 Profile View Settings**
+
+Profile view settings control which fields and sections are visible to each role on the employee profile. These settings are governed by the RBAC Design Document field-level access rules (Section 7). Source: Profile_View_settings.csv from Darwinbox.
+
+Profile view configuration is applied at the platform layer using the field-level access matrix defined in RBAC Section 7. No separate 'profile view settings' module exists — all access is governed by the RBAC layer. The Darwinbox Profile_View_settings export must be reviewed to identify any field visibility customisations made in Darwinbox that differ from the PrimeSoft HRMS default RBAC rules — these discrepancies must be explicitly resolved before go-live.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Field visibility — role defaults | Which fields are VISIBLE / MASKED / HIDDEN for each role on the employee profile. Defined in RBAC Section 7. | VISIBLE · MASKED · HIDDEN | Per role — see RBAC §7 | Platform RBAC layer | All roles — M01 profile |
+| Field editability — role defaults | Which fields are EDITABLE vs READ_ONLY vs APPROVAL_REQUIRED for each role. | EDITABLE · READ_ONLY · APPROVAL_REQUIRED | Per role — see RBAC §7 | Platform RBAC layer | All roles — M01 profile |
+| PII ceiling enforcement | Government identifiers, financial, biometric, and health fields carry system-enforced protection ceilings. No Org Admin or Module Admin can override these ceilings upward. | Platform-enforced — not configurable upward | Enforced — see RBAC §1 and §6 | Platform — not overridable | All roles — PII fields |
+| **Darwinbox profile view discrepancies ⚠** | The Profile_View_settings.csv export from Darwinbox must be cross-referenced against RBAC §7 before go-live. Any field that was visible in Darwinbox to a role that is HIDDEN in PrimeSoft HRMS represents a data access reduction — users must be informed. Any field that was HIDDEN in Darwinbox but VISIBLE in PrimeSoft represents a new exposure — requires Org Admin review. | Audit + align before go-live | Cross-reference required — action before Phase 1 go-live | Org Admin · Implementation Lead | M01 · RBAC §7 |
+
+## **B.6 National Identity Document Settings**
+
+National ID configuration governs which identity documents are collected, how they are stored, and which roles can view or upload them. Source: National_ID-Export. PII protection ceilings apply — see RBAC §6.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **IDENTITY DOCUMENT TYPES** |  |  |  |  |  |
+| PAN | Permanent Account Number — mandatory for TDS computation. Field value and document treated identically. | 10-char alphanumeric | Mandatory for all Indian employees | HR Admin · Office Admin (view/upload) | M07 TDS · Form 16 |
+| Aadhaar | 12-digit unique identity number. Masked in all display contexts. Changes require HR Admin approval workflow. | 12-digit numeric | Collected for all Indian employees | HR Admin · Office Admin (view/upload) | M07 · statutory compliance |
+| Passport | Passport number — collected for international travel, visa applications. Masked in display. | Alphanumeric | Optional — collected where applicable | HR Admin · Office Admin (view/upload) | M01 document vault |
+| Driving Licence | Optional identity document. Platform-level grant — Driving Licence is included in the Office Admin access scope alongside PAN, Aadhaar, and Passport Number. View and upload permitted. Cannot delete. Changes to the Driving Licence field value require HR Admin approval workflow — same rule as PAN, Aadhaar, and Passport Number (RBAC §3.4). | Alphanumeric | Optional — collected where applicable | HR Admin · Office Admin (view/upload) | M01 document vault |
+| **ACCESS RULES** |  |  |  |  |  |
+| **Permitted viewers — National ID** | LOCKED (RBAC §6): Employee (own, masked) · HR Admin · Office Admin (view and upload). All other roles: hidden. Platform-level grant for Office Admin — fixed, not configurable by Org Admin. | Employee (masked) · HR Admin · Office Admin | **Enforced — see RBAC §6** | Platform — not configurable | RBAC · M01 · M07 |
+| **Display masking** | LOCKED: Government ID field values are masked in all display contexts (e.g. PAN shown as XXXXX1234X). Raw values are never written to logs. Change to these fields requires HR Admin approval via workflow. | Masked — system-enforced | **Masked** | Platform — not configurable | All UI surfaces · audit log |
+| **Change approval requirement — field values** | LOCKED: Any change to the field values of PAN, Aadhaar, or Passport Number routes through an HR Admin approval workflow before the change is committed — per RBAC §7 (E · AR for HR Admin). No direct field value edit is permitted for any role. Distinction: Office Admin can upload a new identity document (document addition — direct write per RBAC §3.4) but cannot change the field value (PAN number, Aadhaar number, Passport Number) without HR Admin approval. These are two separate actions with different approval rules. | Field value change: HR Admin approval workflow mandatory. Document upload by Office Admin: direct write permitted. | **Field value: approval required. Document upload: direct.** | Platform — not configurable | M01 · RBAC §3.4 · §7 · audit log |
+
+# **Part C — User**** ****&**** ****Access Management Settings**
+
+Settings governing authentication, session management, RBAC configuration, and individual user entitlements. These settings are administered by Organisation Admin and Platform Super Admin. Full RBAC design rules are documented in RBAC Design Document.
+
+## **C.1 Authentication**** ****&**** ****Session Settings**
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **AUTHENTICATION METHODS** |  |  |  |  |  |
+| Google SSO | OAuth 2.0 — primary authentication mechanism for Google Workspace organisations. Enables single sign-on. | Enabled · Disabled | Enabled — primary method | Org Admin | All users · all modules |
+| Username & password | Fallback / standalone authentication. Passwords stored as one-way hashes. Never stored in plain text or reversible form. | Enabled · Disabled | Enabled — standalone option | Org Admin | All users |
+| **MULTI-FACTOR AUTHENTICATION** |  |  |  |  |  |
+| **MFA enforcement — HR Admin and Org Admin** | LOCKED: MFA is enforced by default for HR Admin and Organisation Admin roles — the two roles with RBAC write access. Cannot be disabled by Org Admin for these roles. | Enforced — platform default | **Enforced by default** | Platform — not configurable for these roles | HR Admin · Org Admin |
+| MFA enforcement — other roles | Org Admin can enable MFA enforcement for additional roles. TOTP (authenticator app) and SMS OTP are supported methods. | TOTP · SMS OTP · Disabled | Optional — Org Admin decision per role | Org Admin | Any role |
+| **SESSION MANAGEMENT** |  |  |  |  |  |
+| Access token lifetime | Short-lived JWT access tokens. Configurable by Org Admin within platform-defined min/max bounds. | Minutes — configurable | To be configured | Org Admin | All users — session security |
+| Refresh token lifetime | Long-lived refresh tokens stored server-side with blacklist capability. Logout invalidates both access and refresh tokens. | Days — configurable | To be configured | Org Admin | All users — persistent login |
+| Session invalidation on logout | Logout invalidates both the access token and the refresh token. Cannot be re-used after logout. | Yes — enforced | Yes — platform enforced | Platform — not configurable | All users |
+| **PASSWORD POLICY** |  |  |  |  |  |
+| Minimum password length | Minimum number of characters for a valid password. | Numeric — minimum 8 | To be configured by Org Admin | Org Admin | All users — password auth |
+| Complexity requirements | Uppercase, lowercase, numeric, special character requirements. | Configurable toggles | To be configured by Org Admin | Org Admin | All users — password auth |
+| Password maximum age | Number of days before password must be changed. | Days — 0 = no expiry | To be configured by Org Admin | Org Admin | All users — password auth |
+| Password history restriction | Prevents reuse of the last N passwords. | Numeric — 0 to 10 | To be configured by Org Admin | Org Admin | All users — password auth |
+| **ACCOUNT LOCKOUT**** ****&**** ****IP RESTRICTION** |  |  |  |  |  |
+| Failed attempt threshold | Number of consecutive failed login attempts before account is locked. All lockout events logged. | Numeric — 3 to 10 | To be configured by Org Admin | Org Admin | All users |
+| Lockout duration | Duration for which the account remains locked after threshold exceeded. | Minutes / manual unlock | To be configured by Org Admin | Org Admin | All users |
+| IP restriction | Org Admin can restrict login to specified IP ranges. Out-of-range login attempts are blocked and logged in the security audit log. | IP range list · No restriction | To be configured by Org Admin | Org Admin | All users |
+
+## **C.2 RBAC**** ****&**** ****Role Configuration**
+
+Role configuration is administered by Organisation Admin. Full permission profiles, field-level access matrices, and entitlement rules are defined in RBAC Design Document. This section covers the configuration settings that Org Admin manages for role assignment, entitlements, and sensitive data access. PII protection is platform-set configuration (not hard-coded at any level) and establishes a protection floor: Org Admin (and entity-level configuration) may tighten PII masking further at group or entity level, but no setting can widen PII exposure above the platform ceiling. The 'not configurable' entries below mean the ceiling cannot be raised — downward tightening remains permitted.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **ROLE ASSIGNMENT** |  |  |  |  |  |
+| Conflict resolution rule | Where a user holds more than one role simultaneously, the more restrictive permission applies. A less permissive role never elevates access. | Most restrictive always applies — platform rule | Enforced — not configurable | Platform — not configurable | All users with multiple roles |
+| Contractor / Consultant role definition | The Contractor / Consultant role access definition must be confirmed and implemented before Phase 1 go-live. Interim assumption is not acceptable for production. See Product Vision v2.4 §1.7 and §3.1. | TBD — Phase 1 gate criterion | Interim: own attendance and documents scoped to engagement period. No payroll visibility. Not in directory. | Org Admin — confirmed before go-live | M05 · M11 · employee directory |
+| **INDIVIDUAL ENTITLEMENTS** |  |  |  |  |  |
+| Entitlement grant | Time-bound access beyond a role's default profile. Granted by Org Admin (all entitlement types) or HR Admin (non-PII-ceiling fields only within their entity). No separate request process — administrative action performed directly. | Department · Field · Section · Module · Contribution-level | Per user — Org Admin grants | Org Admin · HR Admin (non-PII only) | Individual user access scope |
+| Entitlement expiry | All entitlements carry a mandatory expiry date. Access reverts automatically to role default on expiry. No gap in Org Admin or HR Admin coverage. | Date — mandatory | Set at time of grant — no open-ended entitlements | Org Admin | Individual user — time-bound access |
+| HOD compensation visibility | HOD and UAG Head compensation visibility is off by default. Org Admin can enable per individual HOD or UAG Head user. | Off (default) · On — per user | Off by default | Org Admin | HOD · UAG Head — M10 · M16 |
+| HOD workflow approval authority | HOD workflow approval authority is off by default. Org Admin can enable per workflow type per individual HOD user. UAG Head workflow approval authority cannot be granted — hard ceiling. | Off (default) · On per workflow type — HOD only | Off by default | Org Admin | HOD — P01 Workflow Engine |
+| **USER ASSIGNMENT GROUPS (UAG)** |  |  |  |  |  |
+| UAG creation | Created and managed by Organisation Admin. A UAG is a named group of one or more employees independent of org hierarchy and department. | Admin action — Org Admin | Per HR operations need | Org Admin | HRBP scope · UAG Head scope |
+| UAG membership | One or more employees. An employee can be a member of more than one UAG. | Employee list selector — multi-select | Per UAG — to be configured | Org Admin | HRBP assignment · UAG Head scope |
+
+# **Part D — System**** ****&**** ****Integration Settings**
+
+Settings governing integrations, notifications, background processing, and AI configuration. These are tenant-level configuration settings administered by Organisation Admin and Platform Super Admin.
+
+## **D.1 Integration Configuration**
+
+All integrations are configuration-driven — credentials, field mappings, sync frequency, and error handling are stored as tenant-level configuration. Integrations are additive and the platform degrades gracefully when any integration is unavailable. Every integration call is logged.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **JOB BOARD INTEGRATIONS (PHASE 1)** |  |  |  |  |  |
+| Careers portal (company website) | Bidirectional sync — job posting outbound, application inbound with source tagging. | URL · API credentials | To be configured | Org Admin | M08 Recruitment |
+| Naukri.com | Job posting outbound, candidate applications inbound with source tag. | API credentials | To be configured | Org Admin | M08 Recruitment |
+| LinkedIn Jobs | Job posting outbound, candidate applications inbound with source tag. | API credentials | To be configured | Org Admin | M08 Recruitment |
+| **BACKGROUND VERIFICATION (PHASE 1)** |  |  |  |  |  |
+| BGC vendor (primary) | Auto-trigger on offer acceptance. Webhook inbound for result. Adverse result holds offer — HR Admin must review before proceeding. | Vendor credentials · webhook URL | To be configured | Org Admin | M08 Recruitment · M02 Onboarding |
+| **BIOMETRIC ATTENDANCE (PHASE 1) — CONFIGURED IN M05** |  |  |  |  |  |
+| Biometric device integration | Biometric device registration (device type, IP, port, employee ID mapping) and geofencing/IP restriction configuration are fully specified in M05 Attendance Requirements — Part A (DA04 geofencing, DA06 IP restriction), Part B (geofence register B.2, IP register B.3). Device health heartbeat monitoring is also covered there. Cross-reference M05 for all attendance device configuration decisions. | See M05 — DA04 · DA06 · Part B | See M05 Part A and Part B | Attendance Admin — see M05 | M05 Attendance |
+| **PAYROLL BANK (PHASE 2)** |  |  |  |  |  |
+| Bank disbursement file format | Bank-format disbursement file (NEFT/RTGS) generated post payroll approval. Never auto-transmitted — Payroll Admin initiates, Finance Admin approves before release. | NEFT · RTGS — bank-specific format | To be configured per bank | Payroll Admin / Finance Admin | M06 Payroll |
+| **CALENDAR INTEGRATION (PHASE 1)** |  |  |  |  |  |
+| Calendar integration | Interview invites sent to interviewer calendars. Holiday calendar sync via iCal. | Google Calendar · Microsoft Outlook · iCal | To be configured | Org Admin | M08 Recruitment · M04 Holiday Calendar |
+| **AI / CLAUDE API (PHASE 1)** |  |  |  |  |  |
+| **Claude API key management** | LOCKED: All AI API calls are made from the backend proxy — the API key is never exposed to the browser or client. PII is never sent to the AI model — all context is stripped server-side before the API call. | Backend proxy only — API key server-side | **Backend proxy — enforced** | Platform — not configurable | P03 Chat Agent |
+| Chat Agent grounding sources | The Chat Agent answers only from two sources: organisation-uploaded HR policy documents (M11) and platform-managed help guide documents. No live HRMS data, no employee records. | M11 documents · Platform help guides | Two sources only — not expandable | HR Admin via M11 | P03 Chat Agent |
+
+## **D.2 Notification Settings**
+
+Notification settings control the channels, templates, and triggers for system-generated communications across all modules.
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Notification channels | Email is the primary channel. In-app notifications for real-time actions. SMS optional for MFA OTP. | Email · In-app · SMS (OTP only) | Email + In-app — primary | Org Admin | All users — all modules |
+| Module-specific notifications | Leave approval SLA escalation (10 days — M04 D04), carry-forward expiry alerts (M04 Part A smart suggestions), and attendance payroll-window notifications (M05 DA13 — every 2 hours on 24th/25th) are each governed and configured within their respective module requirement documents. Cross-reference: M04 Part A for leave notifications. M05 Part A (DA13) for attendance notifications. | See M04 and M05 | Locked in respective module documents | See M04 Part A · M05 Part A | M04 Leave · M05 Attendance · approvers |
+| Probation end reminder | System sends reminder to L1 Manager and HR Admin 30 days before probation end date. | Days before end — configurable | 30 days | Org Admin | M09 · M01 · L1 Manager · HR Admin |
+| Contract expiry reminder | Notification sent 60 days and 30 days before contract end date. | 60 days and 30 days — configurable | 60 + 30 days | Org Admin | M01 · HR Admin · Org Admin |
+| Compliance reminders (Phase 2) | PF / ESI / TDS filing deadline reminders. POSH annual report due alerts. | Configurable days before deadline | To be configured in Phase 2 | Compliance Admin / HR Admin | M07 Statutory Compliance |
+
+# **Part E — Compliance**** ****&**** ****Audit Settings**
+
+Settings governing data retention, right to erasure, consent management, and the immutable audit log. These settings underpin DPDPA 2023 compliance (Phase 1) and SOC 2 / ISO 27001 alignment.
+
+## **E.1 Data Retention Settings**
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| **Audit log minimum retention** | LOCKED: Audit log entries are retained for a minimum of 7 years. After 2 years, entries may be archived to cold storage but must remain queryable within 24 hours. This minimum cannot be reduced. | 7 years minimum — not reducible | **7 years** | Platform — not configurable below minimum | P05 Audit Log |
+| **Statutory data hard delete block** | LOCKED: Hard deletion of statutory records (payroll, PF, TDS) is blocked at both the application and database layers. Statutory data can only be archived — not deleted. | Blocked — system-enforced | **Blocked** | Platform — not configurable | M06 · M07 · P05 |
+| Non-statutory PII retention period | Configurable retention period per data category after employee exit. Automated deletion scheduled on expiry. | Days — configurable per category | To be configured per data category | Org Admin | M01 · DPDPA 2023 compliance |
+| Separated employee portal access period | Separated employees retain read-only access to own payslips and documents for a configurable period after exit. | Days — configurable | To be configured | Org Admin | M01 lifecycle · M06 payslips |
+
+## **E.2 Consent Management**** ****&**** ****DPDPA 2023**
+
+| **Setting** | **What it controls** | **Possible values** | **Current** | **Configured by** | **Affects** |
+| --- | --- | --- | --- | --- | --- |
+| Consent capture at onboarding | Consent for data collection and processing captured during employee onboarding (M02). Consent records are immutable — they can be superseded but never deleted. | Mandatory — Phase 1 M02 | Enabled — Phase 1 | Platform — enforced in M02 | M02 Onboarding · DPDPA compliance |
+| Consent basis of processing | Platform tracks the basis of processing for each PII category: consent, contractual necessity, legal obligation. | Consent · Contractual · Legal obligation | Per PII category — to be configured | Org Admin / HR Admin | DPDPA 2023 · data principal records |
+| Right to erasure workflow | Employee consent withdrawal triggers the data erasure workflow for non-statutory data. Statutory data erasure is blocked at the platform layer. | Workflow — triggered on consent withdrawal | Enabled — DPDPA Phase 1 | Platform — enforced | M01 · DPDPA · P05 audit |
+| PII redaction in audit log | Where non-statutory PII exists in the immutable audit log, it is overwritten with a redaction marker at erasure time. This is the only permitted mutation of the audit log — itself logged as a system erasure event. | System-initiated only — not admin action | System-controlled | Platform — not configurable | P05 Audit Log · DPDPA |
+| Data principal request register | Right to erasure requests are tracked. Fulfillment for non-statutory data is documented. Legal basis recorded where erasure is not possible. | Register — HR Admin managed | Enabled — Phase 1 | HR Admin | DPDPA 2023 · P05 |
+
+# **Part F — Use Case Register**
+
+Complete use case inventory for Admin Settings. Rows highlighted in blue are platform-enforced behaviours. Rows in yellow require explicit configuration action before go-live.
+
+| **Use case** | **Actor(s)** | **Required outcome** |
+| --- | --- | --- |
+| **ORGANISATION SETUP** |  |  |
+| Configure company profile and logo | Org Admin | Company name, logo, registration number, and PAN saved. Logo appears across all UI surfaces and downloadable documents. |
+| Add a new legal entity to an existing tenant | Org Admin | Entity created by Org Admin within the existing tenant. Org Admin configures entity-specific CIN, PAN, TAN, PF and ESI codes. Entity inherits tenant defaults. HR Admin and Compliance Admin assigned to entity. Note: new tenant provisioning (top-level) is Platform Super Admin — this use case covers adding an entity within an already-provisioned tenant. |
+| Configure department master list and assign HODs | Org Admin (master list) · HR Admin (HOD assignment per entity) | Org Admin creates departments in tenant master list from Department-Export. Active/inactive status verified before migration. HR Admin assigns the HOD for each department within their entity. HR Admin assigns employees to departments via employment records. Finance Admin maps departments to cost centres separately. |
+| Configure locations and optional holiday quotas | Org Admin · Leave Admin | Location created with state, country, and weekly off pattern. Optional holiday quota set per location per M04 decisions D17/D18. Biometric device registration (geofencing, IP restriction, device-to-employee mapping) is configured in M05 — see M05 Part A and Part B. |
+| Configure designation master list and grade mappings | Org Admin | Org Admin loads designations from Designation_Names-Export into tenant master list. Active designations confirmed. Inactive designations marked inactive — must not migrate as Active. Designation-to-grade mappings confirmed from Designation_Names-Export + Grade-Export. Designation-to-contribution level mappings loaded from Neev-Level-Export — pending OD02 sign-off on who maintains going forward. HR Admin assigns designations to individual employees via employment records. |
+| **HR CONFIGURATION** |  |  |
+| Configure probation period per employment type | Org Admin · HR Admin | Probation duration set per type. Platform automatically restricts leave types to Unpaid/LOP during probation. Confirmation workflow triggered at end. |
+| Configure notice period per employment type and grade | Org Admin · HR Admin | Notice period duration set. Working-day countdown using M04 Holiday Calendar confirmed. Leave restrictions applied automatically. |
+| Configure separation reasons from Darwinbox export | Org Admin · HR Admin | Active reasons imported. Archived reasons excluded. Voluntary/involuntary tags set. Rehire eligibility flags configured per reason. |
+| Cross-reference profile view settings against RBAC | Org Admin · Implementation Lead | Darwinbox Profile_View_settings.csv compared against RBAC §7. Discrepancies documented. Access reductions communicated to affected users before go-live. |
+| **USER**** ****&**** ****ACCESS MANAGEMENT** |  |  |
+| Enable Google SSO for the tenant | Org Admin | SSO configured with OAuth 2.0 credentials. All users can log in with Google Workspace credentials. Password auth retained as fallback. |
+| Configure password policy | Org Admin | Minimum length, complexity, maximum age, and history restriction configured. Applied to all users on password auth. |
+| Set account lockout threshold and duration | Org Admin | Failed attempt threshold and lockout duration configured. All lockout events logged in security audit log. |
+| Grant individual entitlement to a user | Org Admin · HR Admin (non-PII only) | Entitlement type, scope, and mandatory expiry date set. Logged in audit trail. Access reverts automatically on expiry. |
+| Create a User Assignment Group (UAG) | Org Admin | UAG created with selected employees. UAG Head assigned. HRBP assigned to UAG for direct employee coverage. All membership changes audit-logged. |
+| Confirm Contractor / Consultant role definition before go-live | Org Admin · Implementation Lead | Contractor role access definition confirmed (own attendance and documents, scoped to engagement period, no payroll, not in directory). Implemented and tested before Phase 1 go-live. Phase 1 gate criterion. |
+| **INTEGRATION CONFIGURATION** |  |  |
+| Configure attendance device integration | Attendance Admin — see M05 | Biometric device registration, geofence configuration (15 active fences — M05 DA04), IP restriction configuration (6 IP entries — M05 DA06), and device-to-employee mapping are all configured within M05 Attendance. See M05 Part A and Part B for the full configuration catalogue and locked decisions. |
+| Configure BGC vendor integration | Org Admin | BGC vendor credentials and webhook URL configured. Auto-trigger on offer acceptance tested. Adverse result hold workflow validated. |
+| Configure job board integrations | Org Admin | Naukri, LinkedIn, and careers portal credentials configured. Outbound posting and inbound application sync tested. Source tagging verified. |
+| **COMPLIANCE**** ****&**** ****AUDIT** |  |  |
+| Configure data retention periods per PII category | Org Admin | Retention period set per category (non-statutory PII). Automated deletion scheduled. Statutory data retention floor enforced by platform. |
+| Query audit log for RBAC changes | Org Admin · HR Admin | Audit log queried for role changes, field-level access changes, and individual entitlement grants within tenant/entity. Query itself logged as an auditable action. |
+| Export audit log for regulatory submission | Org Admin · HR Admin | Audit log exported as structured data. Export includes data mutation log, security event log, and access control audit entries. |
+
+# **Part G — Process Flows (Swimlane)**
+
+High-level actor-level flows for the four highest-complexity admin setup scenarios. These are requirements-level flows — screen detail and field specifications belong in the functional specification.
+
+Rows represent actors. Boxes are states or actions. Diamonds are decision points. Dashed lines are notifications.
+
+## **G.1 New Tenant Provisioning Flow**
+
+Actors: Platform Super Admin · Organisation Admin · HR Admin
+
+Step 1 — Platform Super Admin selects industry segment (IT Services) and primary geography (India) at provisioning. Cascade load fires: leave policy defaults, performance framework, attendance model, payroll structure, workflow templates, statutory compliance scope, analytics defaults, holiday calendar pre-loaded.
+
+Step 2 — Organisation Admin receives admin credentials. Configures company profile, logo, and registered address. Adds legal entities with entity-specific CIN, PAN, TAN, PF, and ESI codes.
+
+Step 3 — Organisation Admin configures departments, designations, grades, and locations. Assigns HODs. Maps designations to grades and contribution levels.
+
+Step 4 — HR Admin reviews and overrides entity-level configuration: leave policy assignments per grade, notice period per employment type, probation duration, separation reasons.
+
+Step 5 — Org Admin configures authentication (SSO / password policy / MFA). Assigns roles to users. Creates UAGs for HRBP assignment.
+
+Step 6 — Org Admin configures integrations (biometric devices, job boards, BGC vendor, calendar). Tests integrations. Reviews Integration Health dashboard.
+
+Step 7 — Org Admin and HR Admin cross-reference Darwinbox Profile_View_settings export against RBAC §7. Documents discrepancies. Confirms Contractor role definition. Phase 1 gate criteria checked.
+
+## **G.2 Individual Entitlement Grant Flow**
+
+Actors: Requesting Manager / HRBP · Organisation Admin · System
+
+Step 1 — Requesting party identifies access requirement beyond role default (e.g. HRBP temporarily covering a department not in their UAG). Communicates to Organisation Admin.
+
+Step 2 — Org Admin validates request against PII protection ceiling (RBAC §1). If request would exceed PII ceiling, it is refused — no override path exists. If within ceiling, Org Admin proceeds.
+
+Step 3 — Org Admin configures entitlement: type (department / field / section / module / contribution level), scope, and mandatory expiry date. Entitlement takes effect immediately.
+
+Step 4 — System logs the grant: granting admin, user, entitlement type, effective date, expiry date. Logged in security audit log.
+
+Step 5 — On expiry date, system automatically reverts user access to role default. No manual action required. HR Admin and Org Admin retain full coverage throughout — no gap in in-flight actions.
+
+## **G.3 Darwinbox Profile View Settings Reconciliation Flow**
+
+Actors: Implementation Lead · Organisation Admin · HR Admin
+
+Step 1 — Implementation Lead exports Profile_View_settings.csv from Darwinbox and compares each field-role combination against RBAC §7 field-level access matrix.
+
+Step 2 — For each discrepancy: (a) If Darwinbox showed a field to a role that PrimeSoft HRMS hides — this is an access reduction. Document and communicate to affected users before go-live. (b) If Darwinbox hid a field that PrimeSoft HRMS shows — this is a new exposure. Org Admin reviews and decides whether to suppress the field via individual entitlement configuration or accept the new visibility.
+
+Step 3 — Org Admin signs off on the reconciliation. All discrepancies resolved or documented with business decision recorded. This is a Phase 1 go-live gate check.
+
+## **G.4 Separation Reason**** ****&**** ****Deactivation Configuration Flow**
+
+Actors: Org Admin · HR Admin · Implementation Lead
+
+Step 1 — Implementation Lead exports Deactivation_Reasons-Export from Darwinbox. Reviews each entry for active vs archived status.
+
+Step 2 — Active entries are mapped to PrimeSoft HRMS separation reason list. Voluntary/involuntary flag assigned per reason. Rehire eligibility default set per reason.
+
+Step 3 — HR Admin provides the confirmed list of archived reasons to the Platform Super Admin. Platform Super Admin configures the P06 Migration Toolkit ETL to exclude archived reasons — per RBAC §4 and Product Vision v2.4 §3.8, no role other than Platform Super Admin has access to migration scripts or ETL configuration. HR Admin access to P06 is limited to entity-level data verification and field mapping review only.
+
+Step 4 — Org Admin validates final separation reason list before go-live. HR Admin confirms rehire eligibility defaults align with HR policy.
+
+# **Part H — Decision Log**
+
+All confirmed decisions for Admin Settings. Changes to any locked decision require a recorded revision with date and decision owner.
+
+| **#** | **Area** | **Decision** | **Note** | **Locked** |
+| --- | --- | --- | --- | --- |
+| AD01 | Financial year | Financial year starts in April for all Indian entities. Platform-enforced. Drives payroll year, leave cycle reset, and statutory compliance period. | Mandated by Indian statutory framework. | April 2026 |
+| AD02 | Probation leave | Only Unpaid / LOP available during probation. All other leave types hidden. Platform-wide, non-configurable. Inherited from M04 D19. | Consistent with M04 locked decisions. | April 2026 |
+| AD03 | Notice period leave | Only Sick Leave (if balance > 0) and Unpaid / LOP available during notice period. All other types hidden. Inherited from M04 D19. | Consistent with M04 locked decisions. | April 2026 |
+| AD04 | National ID access | Office Admin can view and upload national identity documents (PAN, Aadhaar, Passport). This is a platform-level grant — fixed, not configurable by Org Admin upward or downward. Changes to field values require HR Admin approval workflow. | See RBAC §3.4 and §6. | April 2026 |
+| AD05 | MFA enforcement | MFA enforced by default for HR Admin and Organisation Admin. These are the two roles with RBAC write access. Org Admin cannot disable MFA for these roles. MFA for other roles is Org Admin-configurable. | See Product Vision v2.4 §2.2 and RBAC §13. | April 2026 |
+| AD06 | Contractor role | Contractor / Consultant role definition must be confirmed and implemented before Phase 1 go-live. The interim assumption (own attendance and documents, no payroll, not in directory) is not acceptable for production. Responsible owner: TBD. | Phase 1 gate criterion. See Product Vision v2.4 §1.7. | April 2026 |
+| AD07 | PII ceiling | PII fields carry system-enforced protection ceilings. No Organisation Admin, Module Admin, or any other role can override these ceilings upward. This applies to all admin settings in this document — no admin action can expose government identifiers, financial data, biometric data, or health data beyond the defined permitted viewers. | See RBAC §1 and §6. Platform-enforced — not configurable. | April 2026 |
+| AD08 | Audit log | Audit log entries are written by database-level trigger — not application code. No application bug, developer action, or API bypass can suppress an audit entry. Minimum retention: 7 years. Hard delete of statutory records blocked. | See Product Vision v2.4 §2.8. | April 2026 |
+| AD09 | Profile view reconciliation | Darwinbox Profile_View_settings.csv must be cross-referenced against RBAC §7 before go-live. All discrepancies documented. Access reductions communicated to affected users. This is a Phase 1 go-live gate check. | Gate criterion — Org Admin sign-off required. | April 2026 |
+| AD10 | Deactivation reasons migration | Archived deactivation reasons from Darwinbox must not be migrated as active. P06 Migration Toolkit ETL must be configured to exclude archived entries. Active reasons retain voluntary/involuntary classification and rehire eligibility defaults. | Migration gate — review required before Wave 1. | April 2026 |
+| AD11 | UAG Head workflow approval authority | UAG Head workflow approval authority is a hard system ceiling — cannot be granted under any configuration. This is a platform-enforced ceiling, not a default setting. Org Admin has no configuration option to enable workflow approval authority for UAG Head users. HOD workflow approval authority remains configurable per workflow type per individual HOD user by Org Admin. | See RBAC §3.5 and Product Vision v2.4 §3.1. | April 2026 |
+| AD12 | Analytics Admin scope | Analytics Admin is entity-scoped by default. Where tenant-wide report configuration is required, Org Admin may grant a tenant-scope individual entitlement to a designated Analytics Admin user. Both configurations are valid and audit-logged. | See RBAC §4 and Product Vision v2.4 §3.7 M16. | April 2026 |
+| AD13 | HOD calendar | HOD does not see team leave on the calendar. HOD uses the dedicated team leave dashboard. HOD calendar visibility is fixed off — not configurable by Leave Admin or Org Admin. Inherited from M04 D28. | Consistent with M04 locked decisions. | April 2026 |
+| AD14 | Bank disbursement | Bank disbursement files are never auto-transmitted. Payroll Admin initiates generation. Finance Admin approval required before release. This applies to all bank file types (NEFT and RTGS). | See Product Vision v2.4 §3.7 M06. | April 2026 |
+
+# **Part I — Exception**** ****&**** ****Boundary Register**
+
+Boundary conditions and exception scenarios for Admin Settings. Type: Confirmed = agreed as stated · Pending = requires business decision · Gate = Phase 1 go-live gate criterion.
+
+| **#** | **Exception / boundary condition** | **System behaviour** | **Type** |
+| --- | --- | --- | --- |
+| AE01 | Org Admin attempts to override PII protection ceiling | Blocked at the platform layer. No UI action available to expose government identifiers, financial, biometric, or health data beyond permitted viewers. Attempt logged in security audit log. | Confirmed |
+| AE02 | Contractor / Consultant role not confirmed before go-live | Phase 1 go-live is blocked. The interim assumption is explicitly not acceptable for production. Responsible owner must confirm role definition. See AD06 and Product Vision v2.4 §1.7. | Gate |
+| AE03 | Profile view discrepancy — Darwinbox field visible to role that is HIDDEN in PrimeSoft HRMS | Access reduction. Org Admin and Implementation Lead document the change. Affected users notified before go-live. No automatic restoration of Darwinbox visibility — PrimeSoft HRMS RBAC takes precedence. | Confirmed |
+| AE04 | Org Admin attempts to grant an entitlement beyond PII ceiling | Blocked. Entitlement grant UI does not surface PII-ceiling fields for selection. If attempted through API, rejected with error. Attempt logged. | Confirmed |
+| AE05 | Archived designation from Darwinbox assigned to an active employee | Designation marked inactive in PrimeSoft HRMS. Existing employee records retain the designation in read-only state. New assignments using this designation are blocked. HR Admin must update the employee record to an active designation. | Confirmed |
+| AE06 | UAG Head granted workflow approval authority by Org Admin | Blocked. UAG Head workflow approval authority is a hard system ceiling — the configuration option does not appear for UAG Head users. HOD users have the configurable option. Org Admin attempting to grant to UAG Head receives an explicit system refusal. | Confirmed |
+| AE07 | HR Admin changes PAN or Aadhaar field value directly | Blocked as a direct save. Changes to government identifier fields (PAN, Aadhaar, Passport Number) always route through an HR Admin approval workflow before the change is committed — per RBAC §7 (E · AR) and Product Vision v2.4 §2.5. Neither source specifies that a second HR Admin must approve — that is an unresolved workflow design question. The approval could be peer HR Admin, a self-confirmation step, or Organisation Admin sign-off. This must be resolved during functional design for M01 sensitive field change workflow. | Pending — approval chain within HR Admin tier to be confirmed during M01 functional design |
+| AE08 | Biometric device offline during attendance capture | Device health heartbeat flag turns red in Integration Health dashboard. App check-in available as fallback where configured. Attendance records for the offline period are flagged for HR Admin review. Punch records sync when device reconnects — no data loss. | Confirmed |
+| AE09 | Individual entitlement expires while an action is in progress | On expiry, user access reverts immediately to role default. Any in-flight approval actions initiated before expiry remain valid and can be completed by HR Admin or Org Admin within their normal scope. No gap in coverage. | Confirmed |
+| AE10 | Two Org Admins simultaneously change the same RBAC rule | Last-write-wins. Both changes are audit-logged with timestamp and user. The system does not lock RBAC configuration for editing — Org Admins should coordinate out-of-band for simultaneous changes to critical rules. | Pending — concurrency handling to be confirmed |
+| AE11 | Financial year start month change requested post-provisioning | Blocked — financial year start is a provisioning-time setting. Changing it post-provisioning would require data migration of leave balances, payroll records, and statutory compliance cycles. If required, must be raised as a formal change request to the Implementation Lead. | Confirmed |
+| AE12 | Deactivation reason archived in Darwinbox but already used in existing separation records | The archived reason is excluded from new separation workflows. Existing separation records that reference the archived reason retain it in read-only historical state. HR Admin can view historical records with the archived reason — it appears as legacy data with an 'archived' indicator. | Confirmed |
+| AE13 | Analytics Admin granted tenant-scope by Org Admin — what does this cover? | Tenant-scope Analytics Admin can create and publish custom report definitions visible across all entities within the tenant, and schedule tenant-wide report delivery. Data visibility within those reports is still governed by each individual user's own role entitlement — the Analytics Admin scope grant does not expand data access. Entity-scoped Analytics Admin operations remain restricted to their entity. | Confirmed |
+| AE14 | Employee's location changed mid-month — which optional holiday quota applies? | Optional holiday quota applies based on the location active at the time of the optional holiday. If location changes mid-year, the new location's quota applies from the effective date of the change. HR Admin must review and adjust any pending optional holiday applications that pre-date the location change. | Pending — business rule to be confirmed |
+
+# **Part J — Open Items ****&**** Next Steps**
+
+## **J.1 Open decisions**
+
+| **#** | **Area** | **Decision required** | **Recommended resolution** | **Owner** |
+| --- | --- | --- | --- | --- |
+| OD01 | Contractor / Consultant role | The Contractor role access definition (own attendance and documents, scoped to engagement period, no payroll visibility, not in directory) is an interim assumption. Final definition and ownership must be confirmed before Phase 1 go-live. | Confirm role definition and assign owner. Phase 1 gate criterion. | Org Admin · Implementation Lead |
+| OD02 | Designation/Grade → Contribution level mapping | The tenant-level master mapping of designation and grade to RBAC contribution level (Intern · Associate · Individual Contributor · Lead · Senior Lead · Manager · Senior Manager · CEO) requires role assignment. No source document explicitly assigns this. | Inferred as Org Admin: contribution levels are an RBAC scoping dimension (RBAC §3.1) and RBAC configuration is Org Admin territory. HR Admin retains direct-edit on individual employee record per RBAC §7. Requires business sign-off. | Org Admin |
+
+## **J.2 Migration gates**
+
+| **#** | **Area** | **Action required before go-live** |
+| --- | --- | --- |
+| MG01 | Darwinbox Profile_View_settings reconciliation | Cross-reference Profile_View_settings.csv against RBAC §7 field-level access matrix. Document all discrepancies. Communicate access reductions to affected users. Org Admin sign-off required. See AD09 and G.3. |
+| MG02 | Archived deactivation reasons | Configure P06 Migration Toolkit ETL to exclude archived separation reasons from Deactivation_Reasons-Export. Active reasons retain voluntary/involuntary classification and rehire eligibility defaults. See AD10 and G.4. |
+| MG03 | Archived designations | Confirm active vs archived state for all designations in Designation_Names-Export before migration. Inactive designations must not migrate as Active. See A.4. |
+| MG04 | Neev-Level-Export verification | Verify designation-to-contribution-level and grade-to-contribution-level mappings before migration. Pending OD02 resolution for ongoing ownership. See A.4 and A.5. |
+
+## **J.3 Next steps**
+
+| **Step** | **Action** | **Dependency** |
+| --- | --- | --- |
+| 1 | Business sign-off on this document (closes OD01 and OD02 if resolved at sign-off) | — |
+| 2 | DPDPA legal review — consent capture, data retention periods, right-of-erasure flows | Step 1 |
+| 3 | DB schema design — tenant master tables, entity tables, department/designation/grade masters, location master, employment type master, separation reason master, audit log schema | Step 1 |
+| 4 | Visual design — Admin Settings UI screens for Org Admin and HR Admin | Step 1 |
+| 5 | Migration gate resolution — MG01 (Profile_View reconciliation), MG02 (archived reasons), MG03 (archived designations), MG04 (Neev-Level verification) | Concurrent with Steps 2–4 |
+| 6 | Functional specification — screen specs, API contracts, validation rules | Step 3 |
+| 7 | Prototype — interactive prototype for Org Admin and HR Admin review | Step 6 |
+
+*PrimeSoft Solutions, Inc. · Admin Settings · Requirements Specification · v1.0 · Confidential*

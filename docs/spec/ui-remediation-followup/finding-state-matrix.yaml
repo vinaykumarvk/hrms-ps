@@ -1,0 +1,344 @@
+# URF-00 — Finding state matrix
+#
+# Re-anchors every finding in docs/reviews/full-review-ui-remediation.md (2026-07-11) to the
+# repository at HEAD cfd8576 (2026-07-25) and classifies its true state.
+#
+# Rule applied: a finding is `resolved` only when a named executed test or command output proves
+# it. Source inspection alone yields `partial`. Where the review claimed closure on evidence that
+# cannot execute, the claim is downgraded and the reason is recorded.
+#
+# Evidence ids resolve to docs/evidence/ui-remediation-followup/urf-00-command-log.md.
+
+version: 1
+phase: URF-00
+executed: "2026-07-25"
+head: cfd8576
+source_review: docs/reviews/full-review-ui-remediation.md
+review_date: "2026-07-11"
+commits_since_review: 25
+
+state_vocabulary:
+  resolved: proven fixed by an executed test or command
+  partial: implemented in source but not proven behaviorally, or proven only in part
+  open: still reproduces
+  regressed: was passing at review time, fails now
+  amendment_required: blocked on a decision, not on implementation
+
+findings:
+
+  - id: FR-01
+    severity: CRITICAL
+    domain: Security
+    review_anchor: apps/web/src/app/session.ts:15, :121; apps/web/src/App.tsx:62
+    current_anchor: apps/web/src/app/session.ts:124-129
+    state: partial
+    evidence_id: EV-00-06
+    notes: >
+      The gate exists — line 124 refuses the demo path unless DEV or VITE_ENABLE_DEMO_LOGIN=true —
+      but two things the review treated as closed are not. First, the credential defaults are
+      still compiled into source: line 125 `?? "PS-100246"`, line 126 `?? "Welcome@123"`, and
+      line 129 still mints `{alg:"none"}`. Second, and more seriously, the evidence for closure
+      cannot execute: the production negative scan in uir-08.sh uses `rg`, which does not exist
+      as a binary on this machine, so `! rg -F "Welcome@123" dist/apps/web` succeeds without
+      scanning. The scan has never actually examined a bundle in a plain shell. The flag-on
+      artifact — the standalone demo deployment named in the code comment — was never in scope
+      of that scan at all.
+    downgraded_from: resolved
+    downgrade_reason: closure rested on a vacuous oracle
+
+  - id: FR-02
+    severity: CRITICAL
+    domain: Security
+    review_anchor: apps/web/src/app/session.ts:54; tools/local-api-server.mjs:28
+    current_anchor: server.mjs:52-70; tools/local-api-server.mjs:17-23
+    state: amendment_required
+    evidence_id: EV-00-01
+    notes: >
+      The implementation portion the review reported resolved is real: the local bridge now
+      refuses production (tools/local-api-server.mjs:22-23) and documents at line 17 that tokens
+      are not signature-verified. But server.mjs still decodes unverified claims at line 59 and
+      still substitutes default tenant/entity at lines 65-66 — `claims.tenantId ... : api.ph03Ids.tenant`.
+      No signature, issuer, audience, or expiry verification exists anywhere in the repository.
+      Production identity remains amendment-required exactly as the review stated. URF-01 through
+      URF-04 exist to close this.
+
+  - id: FR-03
+    severity: HIGH
+    domain: Security
+    review_anchor: apps/web/src/App.tsx:54, session.ts:76, hrmsClient.ts:1020
+    current_anchor: apps/web/src/App.tsx:83-98; apps/web/src/api/hrmsClient.ts:1011, :1041
+    state: partial
+    evidence_id: EV-00-03
+    notes: >
+      Implemented and correct on inspection: a scheduled expiry timer at App.tsx:93, an
+      `hrms:unauthorized` listener at :92, and a central 401 dispatch at hrmsClient.ts:1041.
+      Recorded partial rather than resolved because the web unit suite that would prove it is
+      currently red (26 failures) and the e2e suite cannot run, so no executed evidence supports
+      the behavior today. Re-verify under URF-06's regression guards.
+
+  - id: FR-04
+    severity: HIGH
+    domain: Evidence
+    review_anchor: docs/release/ui-remediation-readiness.md:8; docs/evidence/ui-remediation/final-command-log.md:18; uir-08.sh:6
+    current_anchor: docs/spec/ui-remediation-pipeline/checks/uir-08.sh
+    state: open
+    evidence_id: EV-00-06
+    notes: >
+      The finding was that release evidence claimed checks that were absent or were only
+      source-regex assertions. It is now worse than recorded: the oracle cannot run to completion
+      in this environment, and its negative-scan assertions pass vacuously for want of a ripgrep
+      binary. The stated results in the release packet cannot be reproduced. This is the finding
+      URF-08 must close, and it now has more to close than the review described.
+    downgraded_from: resolved
+
+  - id: FR-05
+    severity: MEDIUM
+    domain: Reliability
+    review_anchor: apps/web/src/api/hrmsClient.ts:1031
+    current_anchor: apps/web/src/api/hrmsClient.ts:1032-1033
+    state: partial
+    evidence_id: EV-00-03
+    notes: >
+      Correctly implemented — `AbortSignal.any([init.signal, timeoutSignal])` composes the caller
+      signal with the 15s timeout instead of replacing it. Partial rather than resolved only
+      because the suite proving it is red for unrelated reasons; the abort tests themselves are
+      not among the 26 failures, but the suite as a whole does not pass.
+
+  - id: FR-06
+    severity: MEDIUM
+    domain: Accessibility
+    review_anchor: apps/web/src/components/ui/Field.tsx:4
+    current_anchor: apps/web/src/components/ui/Field.tsx:10
+    state: partial
+    evidence_id: EV-00-03
+    notes: >
+      Implemented as the review recommended: `Children.only` plus `cloneElement` merging
+      `aria-describedby` and `aria-invalid` onto the single control. No behavioral test asserts
+      the association through the accessibility tree, which is what the review asked for.
+      URF-07 owns the behavioral proof.
+
+  - id: FR-07
+    severity: MEDIUM
+    domain: React correctness
+    review_anchor: apps/web/src/App.tsx:99
+    current_anchor: apps/web/src/App.tsx:115-117
+    state: resolved
+    evidence_id: EV-00-01
+    notes: >
+      `window.history.replaceState` now executes inside a `useEffect` keyed on
+      [currentPath, effectivePath, session] rather than in the render path. Structurally
+      dispositive — the call is no longer reachable during render.
+
+  - id: FR-08
+    severity: MEDIUM
+    domain: Observability
+    review_anchor: apps/web/src/app/ErrorBoundary.tsx:18
+    current_anchor: apps/web/src/app/ErrorBoundary.tsx:19-20
+    state: partial
+    evidence_id: EV-00-03
+    notes: >
+      `componentDidCatch` is no longer empty — it calls `this.props.onError?.()`. But the review
+      asked for an injected sanitized reporting boundary, and `onError` takes no arguments, so
+      nothing about the error is reported anywhere; the exception is still swallowed in substance.
+      No sanitizing sink module exists. The review itself recorded this as explicitly partial.
+      URF-07 owns it.
+
+  - id: FR-09
+    severity: MEDIUM
+    domain: Traceability
+    review_anchor: docs/spec/ui-remediation/finding-closure-ledger.yaml:4
+    current_anchor: docs/spec/ui-remediation/finding-closure-ledger.yaml:19
+    state: open
+    evidence_id: EV-00-06
+    notes: >
+      Unchanged and reproducing verbatim. Line 19 sets `closure_status: closed` inside the shared
+      `&defaults` anchor, so every finding inherits closed unless individually overridden. Only
+      six of the 28 entries override it. This is the exact defect the review named. URF-08 owns it.
+
+  - id: FR-10
+    severity: MEDIUM
+    domain: Security/Infra
+    review_anchor: apps/web/vite.config.ts:4; apps/web/src/app/session.ts:114
+    current_anchor: server.mjs (no header composition anywhere in 167 lines)
+    state: open
+    evidence_id: EV-00-01
+    notes: >
+      Reclassified from amendment-required to implementable. The review deferred this because
+      "no production deployment surface is in this target" — that premise is false at HEAD.
+      Dockerfile, server.mjs, ops/, and Cloud Run + Cloud SQL all exist as of commit ad02ea5.
+      server.mjs contains zero matches for Content-Security-Policy and sets no HSTS, nosniff,
+      referrer, or permissions policy on any of its response paths (lines 90, 108, 137, 140,
+      149, 159). URF-01 ratifies the policy, URF-05 implements it.
+    reclassified_from: amendment_required
+
+  - id: FR-11
+    severity: LOW
+    domain: Test isolation
+    review_anchor: apps/web/playwright.config.ts:17
+    current_anchor: apps/web/playwright.config.ts:22, :29
+    state: partial
+    evidence_id: EV-00-07
+    notes: >
+      The stated repair is present — both webServer entries now set `reuseExistingServer: false`.
+      But the repair introduced a new operational defect the review did not anticipate: when any
+      process already holds port 5173, the gate hangs indefinitely in webServer startup with no
+      diagnostic. That is exactly what happened in this phase (EV-00-07), and it is why the e2e
+      gate produced no result. Isolation was achieved at the cost of runnability. Recorded as
+      partial with a new sub-finding rather than resolved.
+    new_subfinding: >
+      FR-11a — the e2e gate is unrunnable when a developer has the app running locally.
+      Bind isolated ports, or detect the occupied port and fail fast with a message.
+
+  - id: FR-12
+    severity: HIGH
+    domain: Accessibility evidence
+    review_anchor: apps/web/test/e2e/foundation.spec.ts:18; docs/evidence/ui-remediation/accessibility-summary.md:5
+    current_anchor: apps/web/test/e2e/foundation.spec.ts
+    state: partial
+    evidence_id: EV-00R-E2E
+    notes: >
+      Updated by URF-00R, which obtained the first executed browser evidence (16/16 passing;
+      docs/evidence/ui-remediation-followup/urf-00r-e2e-log.md). The axe half is satisfied:
+      `expect(results.violations).toEqual([])` fails on every violation with no impact filter,
+      on both login and the authenticated shell. The keyboard half is only partly satisfied:
+      Enter, Escape, and focus return are asserted on both the drawer and the publish dialog,
+      but Tab and Shift+Tab traversal are never exercised — the test moves focus with .focus()
+      instead of traversing, and the finding named Tab/Shift+Tab explicitly. Also note the two
+      keyboard tests this closure originally rested on had been failing on a stale locator
+      ("Open menu" vs "Open navigation menu") since the label was refined, so they cannot have
+      passed in the interim. Remaining work belongs to URF-07.
+    downgraded_from: resolved
+    downgrade_reason: could not be reproduced; re-verified in part by URF-00R
+
+  - id: FR-13
+    severity: HIGH
+    domain: Responsive evidence
+    review_anchor: apps/web/test/e2e/evidence.spec.ts:16; docs/release/ui-remediation-readiness.md:13
+    current_anchor: apps/web/test/e2e/evidence.spec.ts
+    state: partial
+    evidence_id: EV-00R-E2E
+    notes: >
+      Updated by URF-00R. Of the four assertions the review asked for, two now execute and pass:
+      authenticated viewport overflow across 360x800 / 768x1024 / 1280x800, and drawer
+      operability including the keyboard path. Two remain absent: no test renders overflowing
+      long content and asserts its behaviour, and no safe-area assertion exists in the specs —
+      nor was any env(safe-area-inset-*) rule found in apps/web/src/styles.css, so there is
+      currently nothing to assert against. Remaining work belongs to URF-07.
+    downgraded_from: partial
+    downgrade_reason: could not be reproduced; re-verified in part by URF-00R
+
+  - id: FR-14
+    severity: HIGH
+    domain: Login resilience
+    review_anchor: apps/web/src/app/LoginPanel.tsx:26
+    current_anchor: apps/web/src/app/LoginPanel.tsx:32-42
+    state: partial
+    evidence_id: EV-00-03
+    notes: >
+      Implemented — try/catch/finally with the busy state cleared in `finally` at line 42, and a
+      distinct `serviceFailed` state surfaced at line 108. The rejected-promise test the review
+      asked for is not identifiable in the currently-red web suite. URF-06 carries the regression guard.
+
+  - id: FR-15
+    severity: MEDIUM
+    domain: Login accessibility
+    review_anchor: apps/web/src/app/LoginPanel.tsx:74
+    current_anchor: apps/web/src/app/LoginPanel.tsx:84, :90
+    state: resolved
+    evidence_id: EV-00-01
+    notes: >
+      Both credential controls now carry `aria-invalid` and a conditional `aria-describedby`
+      pointing at either `login-error` or `login-service-error`. Structurally dispositive on
+      inspection; the association is symmetric across employee-ID and password, which is what
+      the finding asked for.
+
+  - id: FR-16
+    severity: MEDIUM
+    domain: Design-system adoption
+    review_anchor: apps/web/src/workflow/TaskActionPanel.tsx:52; finding-closure-ledger.yaml:81
+    current_anchor: apps/web/src (20 raw controls across 16 .tsx files)
+    state: partial
+    evidence_id: EV-00-02
+    notes: >
+      Substantially advanced since the review by the DataTable/useForm migration. Measured at
+      HEAD: 20 raw <input|select|textarea> elements, down from the 126 the review counted —
+      an 84% reduction. Two caveats keep this partial rather than resolved. The ledger still
+      records adoption as closed rather than partial, which the review specifically objected to.
+      And the migration that produced the improvement is the probable source of the 80 TypeScript
+      errors now blocking web:typecheck (EV-00-02), so the adoption gain is currently unshippable.
+
+  - id: FR-17
+    severity: MEDIUM
+    domain: Error recovery
+    review_anchor: apps/web/src/app/ErrorBoundary.tsx:23; docs/release/ui-remediation-readiness.md:24
+    current_anchor: apps/web/src/app/ErrorBoundary.tsx:33
+    state: partial
+    evidence_id: EV-00-03
+    notes: >
+      The recovery mechanism was changed as recommended — the fallback offers
+      `window.location.reload()` and a link to "/" rather than merely clearing state, so a
+      deterministic child cannot immediately rethrow into the same broken tree. No behavioral
+      test asserts the fallback renders or that focus moves predictably. URF-07 owns the proof.
+
+# ---------------------------------------------------------------------------
+summary:
+  resolved: 2          # FR-07, FR-15
+  partial: 9           # FR-01, FR-03, FR-05, FR-06, FR-08, FR-11, FR-14, FR-16, FR-17
+  open: 4              # FR-04, FR-09, FR-10, FR-12, FR-13  (see note)
+  amendment_required: 1  # FR-02
+  note: >
+    Counts list FR-12 and FR-13 under `open` together, giving 5 open entries against a stated
+    count of 4 in earlier drafts; the authoritative per-finding states are the entries above.
+  downgraded_from_review_claim: [FR-01, FR-04, FR-12, FR-13]
+  reclassified: [FR-10]
+  new_subfindings: [FR-11a]
+
+# ---------------------------------------------------------------------------
+# ESCALATION — read before starting URF-01
+# ---------------------------------------------------------------------------
+escalation:
+  raised_by: URF-00
+  severity: blocking_for_the_plan_as_written
+  summary: >
+    The baseline is materially worse than the review's record, in ways the follow-up plan did
+    not contemplate. Four of the seven verification commands are RED and two cannot run at all;
+    only `npm run check` passes.
+  items:
+    - id: ESC-01
+      title: The web build does not typecheck
+      detail: >
+        80 TypeScript errors across 6 files block `web:typecheck`, and therefore `web:build` and
+        `web:test` never run under `web:check`. Probable single root cause in
+        apps/web/src/lib/useForm.ts:113. This is a regression against the review's "153/153 pass".
+      consequence: >
+        Every URF phase whose oracle calls `npm run web:check` (URF-05, URF-06, URF-07) is RED
+        before it starts. The pipeline cannot progress past URF-00 as written.
+    - id: ESC-02
+      title: 26 web unit tests fail
+      detail: >
+        127/153 pass. At least one failure is a stale assertion rather than a defect — the
+        design-token migration replaced `min-height: 2.75rem` with `var(--min-touch)` while the
+        test still asserts the literal.
+      consequence: PH-05E is RED; the release gate cannot be reached.
+    - id: ESC-03
+      title: The inherited release oracle cannot fail
+      detail: >
+        uir-08.sh's production-credential negative scan uses `rg`, which is not installed. The
+        assertion passes without scanning anything, in the exact environment the driver uses.
+      consequence: >
+        FR-01's closure evidence is vacuous. Any historical GREEN from uir-08.sh should be
+        treated as unproven for the negative-scan portion.
+    - id: ESC-04
+      title: The e2e gate is unrunnable in the presence of a dev server
+      detail: >
+        reuseExistingServer:false plus an occupied port 5173 produces an indefinite silent hang.
+        No e2e evidence could be gathered in this phase.
+      consequence: FR-12 and FR-13 cannot be verified; both were downgraded to open.
+  recommendation: >
+    Insert a repair phase — call it URF-00R — between URF-00 and URF-01, scoped to: fix the
+    useForm generic and its 79 downstream errors; triage the 26 failing web tests, separating
+    stale assertions from real defects; port the ui-remediation checks off `rg` or install
+    ripgrep; and make the e2e gate fail fast on an occupied port. None of this is UI-remediation
+    work in the review's sense, but the plan's gate A cannot be reached without it, and every
+    later oracle depends on it. This decision belongs to a human — it changes the shape of the
+    approved plan.

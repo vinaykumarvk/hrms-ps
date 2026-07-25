@@ -19,7 +19,11 @@ test("UIR-07 all routed module destinations remain substantive", () => {
 
 test("UIR-07 shared form table target and overflow rules cover remaining raw module controls", () => {
   const styles = read("apps/web/src/styles.css");
-  assert.match(styles, /button,[\s\S]*min-height: 2\.75rem/);
+  // URF-00R: the design-token pass (2dd433f) replaced the literal with var(--min-touch). Assert
+  // the guarantee end to end — the rule applies the token, and the token is still the WCAG 2.5.5
+  // minimum of 2.75rem/44px — rather than the old hardcoded spelling.
+  assert.match(styles, /button,[\s\S]*min-height: var\(--min-touch\)/);
+  assert.match(read("apps/web/src/styles/tokens.css"), /--min-touch:\s*2\.75rem/);
   assert.match(styles, /\.content-surface table[\s\S]*overflow-x: auto/);
   assert.match(styles, /\.record-panel form/);
 });

@@ -14,9 +14,13 @@ import { Database, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
-const MART_FRESHNESS_SLA_MINUTES = 60;
+// URF-00R: these four symbols are the module's test-facing API. They were defined but not
+// exported, which left the k-anonymity suppression, the 60-minute staleness SLA, and the
+// FORBIDDEN/NOT_FOUND mapping unreachable by their unit tests. origin/feature/dev@4335641
+// exported the same four; matching that public API keeps the two branches convergent.
+export const MART_FRESHNESS_SLA_MINUTES = 60;
 
-const MART_DRILL_DIMENSIONS: Record<string, readonly string[]> = {
+export const MART_DRILL_DIMENSIONS: Record<string, readonly string[]> = {
   MART_LEAVE: ["leaveTypeId", "status"],
   MART_ATTENDANCE: ["status"],
   MART_ESTABLISHMENT: ["cadreId", "orgUnitId", "status"],
@@ -59,7 +63,7 @@ type DrillState =
 
 /* ── Helpers ───────────────────────────────────────────────── */
 
-function isMartStale(log: MartRefreshLogView, nowMs: number): boolean {
+export function isMartStale(log: MartRefreshLogView, nowMs: number): boolean {
   if (log.status !== "SUCCESS" || !log.finishedAt) return true;
   return nowMs - Date.parse(log.finishedAt) > MART_FRESHNESS_SLA_MINUTES * 60000;
 }
@@ -92,7 +96,7 @@ function timeAgo(isoString?: string): string {
 
 /* ── Loader ────────────────────────────────────────────────── */
 
-async function loadDashboard(client: HrmsClient, nowMs = Date.now()): Promise<DashboardState> {
+export async function loadAnalyticsDashboard(client: HrmsClient, nowMs = Date.now()): Promise<DashboardState> {
   try {
     const kpis = await client.listAnalyticsKpis();
     const activeKpis = kpis.items.filter((k) => k.status === "ACTIVE");
@@ -257,7 +261,7 @@ function DrillPanel({
 
             {drill.aggregate.total === null ? (
               <p className="mt-3 text-xs text-amber-600">
-                Total withheld — {drill.aggregate.suppressedCells} cell(s) suppressed (k={drill.aggregate.minCellSizeK})
+                Withheld — {drill.aggregate.suppressedCells} suppressed cohort(s) (k={drill.aggregate.minCellSizeK})
               </p>
             ) : (
               <p className="mt-3 text-xs text-gray-500">
@@ -285,7 +289,16 @@ function DrillPanel({
                       <td className="px-3 py-1.5 text-gray-700">{cell.key}</td>
                       <td className="px-3 py-1.5 text-right tabular-nums">
                         {cell.suppressed ? (
-                          <span className="text-amber-600" title={cell.suppressionReason}>k-anon</span>
+                          // URF-00R: `data-suppressed` is the hook the k-anonymity no-leakage test
+                          // asserts on, and the wording states the rule rather than the shorthand
+                          // "k-anon". Matches origin/feature/dev@4335641. Privacy was already
+                          // enforced — only the machine-checkable evidence of it was missing.
+                          <span data-suppressed="true" className="text-amber-600" title={cell.suppressionReason}>
+                            Suppressed — cohort below k={drill.aggregate.minCellSizeK}
+                            {cell.suppressionReason === "ERR-PS14-COMP-SUPPRESS" && (
+                              <span className="ml-1 text-[10px] text-amber-500">(complementary suppression)</span>
+                            )}
+                          </span>
                         ) : (
                           <span className="font-medium text-gray-900">{cell.value?.toLocaleString()}</span>
                         )}
@@ -316,7 +329,7 @@ function FreshnessPanel({ freshness }: { freshness: MartFreshnessRow[] }) {
   const freshCount = freshness.length - staleCount;
 
   return (
-    <section aria-label="Datamart freshness" className="rounded-xl border bg-white p-5">
+    <section aria-label="Freshness (datamart_refresh_logs)" className="rounded-xl border bg-white p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-800">Datamart Health</h3>
         <div className="flex items-center gap-3 text-xs">
@@ -335,6 +348,10 @@ function FreshnessPanel({ freshness }: { freshness: MartFreshnessRow[] }) {
         {freshness.map((mart) => (
           <div
             key={mart.martCode}
+            // URF-00R: `data-stale` is the hook the freshness test counts to prove that exactly
+            // the SLA-breaching and FAILED marts are flagged. Staleness was already computed
+            // correctly by isMartStale; only the machine-checkable marker was missing.
+            data-stale={mart.stale ? "true" : undefined}
             className="flex items-center justify-between rounded-lg border px-4 py-3"
           >
             <div className="flex items-center gap-3">
@@ -373,7 +390,9 @@ function FreshnessPanel({ freshness }: { freshness: MartFreshnessRow[] }) {
               </span>
               {mart.errorDetail && (
                 <span className="text-[10px] text-red-600 max-w-[120px] truncate" title={mart.errorDetail}>
-                  {mart.errorDetail}
+                  {/* URF-00R: a failed refresh states its status alongside the detail, so the
+                      reason a mart is stale is legible rather than implied by colour alone. */}
+                  {mart.status === "FAILED" ? `FAILED — ${mart.errorDetail}` : mart.errorDetail}
                 </span>
               )}
             </div>
@@ -401,7 +420,7 @@ export function AnalyticsWorkspace({ client, initialState, initialDrill }: Analy
   useEffect(() => {
     let mounted = true;
     setState({ kind: "loading" });
-    void loadDashboard(client).then((next) => { if (mounted) setState(next); });
+    void loadAnalyticsDashboard(client).then((next) => { if (mounted) setState(next); });
     return () => { mounted = false };
   }, [client]);
 

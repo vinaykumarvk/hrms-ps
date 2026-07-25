@@ -31,9 +31,13 @@ test("PH-07 workspace renders PS02, PS03, and PS04 wave panels", () => {
     assert.equal(ps02Source.includes(marker), true, marker);
   }
   assert.equal(ps03Source.includes("READY_FOR_PS10"), true);
-  for (const marker of ["PS04", "DEAD_LETTERED", "PS12 append"]) {
+  // URF-00R: DEAD_LETTERED lived only in the removed `evidence-line` debug paragraph (see the
+  // note in ph08-statutory-wave). The workspace now renders the dead-letter count and rate as
+  // first-class UI, which is a stronger guarantee than the debug string ever was.
+  for (const marker of ["PS04", "slice.deadLettered", "PS12 append"]) {
     assert.equal(ps04Source.includes(marker), true, marker);
   }
+  assert.equal(ps04Source.includes("evidence-line"), false, "LeaveSrRelayWorkspace re-introduced the evidence-line marker card");
   for (const marker of ["PersonalDetailsWorkspace", "LeaveSrRelayWorkspace"]) {
     assert.equal(appSource.includes(marker), true, marker);
   }

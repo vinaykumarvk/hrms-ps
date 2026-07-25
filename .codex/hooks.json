@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {"type": "command", "command": "python3 .codex/hooks/db_change_guard.py", "timeout": 30, "statusMessage": "Checking DB change policy"},
+          {"type": "command", "command": "python3 .codex/hooks/secrets_guard.py", "timeout": 30, "statusMessage": "Checking protected values"}
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {"matcher": "apply_patch|Edit|Write", "hooks": [{"type": "command", "command": "python3 .codex/hooks/validate_sql.py", "timeout": 60, "statusMessage": "Checking SQL changes"}]},
+      {"matcher": "Bash|apply_patch|Edit|Write", "hooks": [{"type": "command", "command": "python3 .codex/hooks/run_tests_if_changed.py", "timeout": 240, "statusMessage": "Running changed-file tests"}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "python3 .codex/hooks/lint_changed.py", "timeout": 240, "statusMessage": "Running lint/typecheck advisory checks"}]}
+    ]
+  }
+}

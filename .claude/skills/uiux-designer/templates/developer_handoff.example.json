@@ -1,0 +1,765 @@
+{
+  "version": "uiux-handoff.v1",
+  "product": "Example Request Portal",
+  "scope": "Create a request from dashboard to confirmation.",
+  "platforms": [
+    "responsive_web"
+  ],
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "Users are authenticated before starting the flow.",
+      "impact": "Login screens are out of scope."
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "Q-001",
+      "question": "Should users be able to attach multiple files?",
+      "impact": "Affects attachment component and validation.",
+      "owner": "Product"
+    }
+  ],
+  "roles": [
+    {
+      "id": "ROLE-001",
+      "name": "Requester",
+      "goals": [
+        "Create and track requests"
+      ],
+      "permissions": [
+        "create_request",
+        "view_own_requests"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "summary": "Requester can create a new request.",
+      "type": "functional",
+      "priority": "must"
+    },
+    {
+      "id": "REQ-002",
+      "summary": "Requester can review before submitting.",
+      "type": "functional",
+      "priority": "must"
+    }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-001",
+      "name": "Create request",
+      "actor_role_id": "ROLE-001",
+      "trigger": "Requester selects New request from dashboard.",
+      "entry_screen_id": "SCR-001",
+      "steps": [
+        {
+          "order": 1,
+          "screen_id": "SCR-001",
+          "user_action": "Select New request.",
+          "system_response": "Display request details form.",
+          "next_screen_id": "SCR-002",
+          "requirement_ids": [
+            "REQ-001"
+          ]
+        },
+        {
+          "order": 2,
+          "screen_id": "SCR-002",
+          "user_action": "Enter required details and select Continue.",
+          "system_response": "Validate input and show review screen.",
+          "next_screen_id": "SCR-003",
+          "requirement_ids": [
+            "REQ-001",
+            "REQ-002"
+          ]
+        },
+        {
+          "order": 3,
+          "screen_id": "SCR-003",
+          "user_action": "Review and submit.",
+          "system_response": "Create request and show confirmation.",
+          "next_screen_id": "SCR-004",
+          "requirement_ids": [
+            "REQ-002"
+          ]
+        }
+      ],
+      "alternate_paths": [
+        {
+          "name": "Save draft",
+          "starts_at_screen_id": "SCR-002",
+          "result": "Draft saved and requester returns to dashboard."
+        }
+      ],
+      "exception_paths": [
+        {
+          "name": "Validation error",
+          "starts_at_screen_id": "SCR-002",
+          "result": "Inline errors appear and focus moves to error summary."
+        }
+      ],
+      "exit_criteria": "Requester receives confirmation number."
+    }
+  ],
+  "screens": [
+    {
+      "id": "SCR-001",
+      "name": "Dashboard",
+      "purpose": "Help requester see recent requests and start a new one.",
+      "user_goal": "Start a request quickly.",
+      "entry_points": [
+        "Login success"
+      ],
+      "exit_points": [
+        "SCR-002"
+      ],
+      "layout_summary": "Header with primary action, status summary, recent requests list.",
+      "primary_action": {
+        "label": "New request",
+        "destination": "SCR-002"
+      },
+      "secondary_actions": [
+        {
+          "label": "View all requests",
+          "destination": "SCR-005"
+        }
+      ],
+      "components": [
+        "CMP-001",
+        "CMP-002"
+      ],
+      "content": {
+        "title": "Requests",
+        "empty_state": "No requests yet. Start by creating your first request."
+      },
+      "data_inputs": [],
+      "data_outputs": [
+        {
+          "name": "recent_requests",
+          "source": "GET /requests?limit=5"
+        }
+      ],
+      "validations": [],
+      "states": [
+        "default",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "accessibility": {
+        "focus_order": "Page title, New request, filters, request rows",
+        "notes": "Status badges include text labels and do not rely on color alone."
+      },
+      "analytics_events": [
+        "EVT-001"
+      ],
+      "api_or_data_dependencies": [
+        {
+          "name": "recent requests",
+          "endpoint": "GET /requests?limit=5"
+        }
+      ],
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "acceptance_criteria": [
+        "AC-001"
+      ],
+      "visual": {
+        "hierarchy": "1) New request primary button, 2) status summary cards, 3) recent requests table.",
+        "emphasis_tokens": "neutral surface; primary accent only on the New request action; status via badge color+label.",
+        "density": "comfortable"
+      },
+      "motion": {
+        "transitions": "Cards and table fade/slide in on load (opacity+transform, ease-out, base).",
+        "loading_treatment": "skeleton cards and skeleton table rows",
+        "reduced_motion": "Show content immediately without slide; no fade."
+      }
+    },
+    {
+      "id": "SCR-002",
+      "name": "Request details",
+      "purpose": "Capture the minimum information required to create a request.",
+      "user_goal": "Provide details without confusion.",
+      "entry_points": [
+        "SCR-001"
+      ],
+      "exit_points": [
+        "SCR-003",
+        "SCR-001"
+      ],
+      "layout_summary": "Single-column form grouped into requester details and request details.",
+      "primary_action": {
+        "label": "Continue to review",
+        "destination": "SCR-003"
+      },
+      "secondary_actions": [
+        {
+          "label": "Save draft",
+          "destination": "SCR-001"
+        },
+        {
+          "label": "Cancel",
+          "destination": "SCR-001"
+        }
+      ],
+      "components": [
+        "CMP-003",
+        "CMP-004"
+      ],
+      "content": {
+        "title": "Request details",
+        "helper": "Provide the details needed to route your request."
+      },
+      "data_inputs": [
+        {
+          "name": "request_title",
+          "required": true
+        },
+        {
+          "name": "description",
+          "required": true
+        }
+      ],
+      "data_outputs": [],
+      "validations": [
+        {
+          "id": "VAL-001",
+          "field": "request_title",
+          "rule": "Required, max 100 characters",
+          "message": "Enter a request title."
+        }
+      ],
+      "states": [
+        "default",
+        "saving",
+        "validation_error",
+        "system_error"
+      ],
+      "accessibility": {
+        "focus_order": "Error summary, title, description, attachments, actions",
+        "notes": "Errors are linked to fields and announced after validation."
+      },
+      "analytics_events": [
+        "EVT-002",
+        "EVT-003"
+      ],
+      "api_or_data_dependencies": [
+        {
+          "name": "save draft",
+          "endpoint": "POST /request-drafts"
+        }
+      ],
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "acceptance_criteria": [
+        "AC-002"
+      ],
+      "visual": {
+        "hierarchy": "1) Section/field labels and inputs, 2) Continue primary action, 3) Save draft secondary (ghost).",
+        "emphasis_tokens": "single-column form on surface; danger token only for validation errors; primary on Continue.",
+        "density": "comfortable"
+      },
+      "motion": {
+        "transitions": "Inline error messages animate in (fast, ease-out); button \u2192 saving \u2192 state change.",
+        "loading_treatment": "button loading state on Continue/Save draft",
+        "reduced_motion": "Errors appear without animation; button state changes without spinner motion."
+      }
+    },
+    {
+      "id": "SCR-003",
+      "name": "Review request",
+      "purpose": "Let requester verify information before submission.",
+      "user_goal": "Confirm details are correct.",
+      "entry_points": [
+        "SCR-002"
+      ],
+      "exit_points": [
+        "SCR-004",
+        "SCR-002"
+      ],
+      "layout_summary": "Read-only summary sections with edit links.",
+      "primary_action": {
+        "label": "Submit request",
+        "destination": "SCR-004"
+      },
+      "secondary_actions": [
+        {
+          "label": "Edit details",
+          "destination": "SCR-002"
+        }
+      ],
+      "components": [
+        "CMP-005"
+      ],
+      "content": {
+        "title": "Review your request",
+        "warning": "You can edit details before submitting."
+      },
+      "data_inputs": [],
+      "data_outputs": [
+        {
+          "name": "draft_summary",
+          "source": "draft state"
+        }
+      ],
+      "validations": [
+        {
+          "id": "VAL-002",
+          "field": "draft",
+          "rule": "Draft must pass all validations before submit",
+          "message": "Fix the highlighted details before submitting."
+        }
+      ],
+      "states": [
+        "default",
+        "submitting",
+        "validation_error",
+        "system_error"
+      ],
+      "accessibility": {
+        "focus_order": "Title, summary sections, edit links, submit",
+        "notes": "Edit links include section name in accessible label."
+      },
+      "analytics_events": [
+        "EVT-004"
+      ],
+      "api_or_data_dependencies": [
+        {
+          "name": "submit",
+          "endpoint": "POST /requests"
+        }
+      ],
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "acceptance_criteria": [
+        "AC-003"
+      ]
+    },
+    {
+      "id": "SCR-004",
+      "name": "Confirmation",
+      "purpose": "Confirm successful submission and give next steps.",
+      "user_goal": "Know the request was created and what happens next.",
+      "entry_points": [
+        "SCR-003"
+      ],
+      "exit_points": [
+        "SCR-001",
+        "SCR-005"
+      ],
+      "layout_summary": "Success message, confirmation number, next actions.",
+      "primary_action": {
+        "label": "View request",
+        "destination": "SCR-005"
+      },
+      "secondary_actions": [
+        {
+          "label": "Back to dashboard",
+          "destination": "SCR-001"
+        }
+      ],
+      "components": [
+        "CMP-006"
+      ],
+      "content": {
+        "title": "Request submitted",
+        "body": "Your confirmation number is shown below."
+      },
+      "data_inputs": [],
+      "data_outputs": [
+        {
+          "name": "confirmation_number",
+          "source": "POST /requests response"
+        }
+      ],
+      "validations": [],
+      "states": [
+        "default"
+      ],
+      "accessibility": {
+        "focus_order": "Success heading, confirmation number, next actions",
+        "notes": "Success status is announced."
+      },
+      "analytics_events": [
+        "EVT-005"
+      ],
+      "api_or_data_dependencies": [],
+      "requirement_ids": [
+        "REQ-001",
+        "REQ-002"
+      ],
+      "acceptance_criteria": [
+        "AC-004"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "CMP-001",
+      "name": "Primary action button",
+      "type": "button",
+      "used_on_screen_ids": [
+        "SCR-001"
+      ],
+      "variants": [
+        "primary"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "disabled"
+      ],
+      "accessibility_notes": "Visible focus and descriptive label."
+    },
+    {
+      "id": "CMP-002",
+      "name": "Recent requests table",
+      "type": "table",
+      "used_on_screen_ids": [
+        "SCR-001"
+      ],
+      "variants": [
+        "responsive"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "loading"
+      ],
+      "accessibility_notes": "Table headers are programmatically associated."
+    },
+    {
+      "id": "CMP-003",
+      "name": "Text input",
+      "type": "form_control",
+      "used_on_screen_ids": [
+        "SCR-002"
+      ],
+      "variants": [
+        "required",
+        "optional"
+      ],
+      "states": [
+        "default",
+        "error",
+        "disabled"
+      ],
+      "accessibility_notes": "Labels and error messages are associated."
+    },
+    {
+      "id": "CMP-004",
+      "name": "Attachment upload",
+      "type": "file_upload",
+      "used_on_screen_ids": [
+        "SCR-002"
+      ],
+      "variants": [
+        "single",
+        "multiple_pending"
+      ],
+      "states": [
+        "default",
+        "uploading",
+        "error"
+      ],
+      "accessibility_notes": "Keyboard operable and file restrictions described before upload."
+    },
+    {
+      "id": "CMP-005",
+      "name": "Review summary",
+      "type": "summary_list",
+      "used_on_screen_ids": [
+        "SCR-003"
+      ],
+      "variants": [
+        "with_edit_links"
+      ],
+      "states": [
+        "default"
+      ],
+      "accessibility_notes": "Edit links include contextual accessible names."
+    },
+    {
+      "id": "CMP-006",
+      "name": "Success panel",
+      "type": "status",
+      "used_on_screen_ids": [
+        "SCR-004"
+      ],
+      "variants": [
+        "success"
+      ],
+      "states": [
+        "default"
+      ],
+      "accessibility_notes": "Status is announced and not conveyed by color alone."
+    }
+  ],
+  "global_accessibility": {
+    "standard": "WCAG 2.2 AA target unless product policy specifies otherwise.",
+    "keyboard": "All interactive controls are reachable and operable by keyboard.",
+    "focus": "Visible focus indicator and logical focus movement after validation and navigation.",
+    "color_contrast": "Text and meaningful UI elements meet required contrast ratios.",
+    "screen_reader": "Controls have accessible names; dynamic status changes are announced.",
+    "touch_targets": "Touch controls have adequate size and spacing.",
+    "error_handling": "Errors are specific, actionable, and associated with fields."
+  },
+  "analytics_events": [
+    {
+      "id": "EVT-001",
+      "name": "new_request_clicked",
+      "trigger": "Requester selects New request",
+      "properties": [
+        "role",
+        "entry_screen"
+      ]
+    },
+    {
+      "id": "EVT-002",
+      "name": "request_details_continue_clicked",
+      "trigger": "Requester selects Continue to review",
+      "properties": [
+        "validation_result"
+      ]
+    },
+    {
+      "id": "EVT-003",
+      "name": "request_draft_saved",
+      "trigger": "Requester selects Save draft",
+      "properties": [
+        "field_completion_percent"
+      ]
+    },
+    {
+      "id": "EVT-004",
+      "name": "request_submit_clicked",
+      "trigger": "Requester submits review screen",
+      "properties": [
+        "validation_result"
+      ]
+    },
+    {
+      "id": "EVT-005",
+      "name": "request_submitted",
+      "trigger": "Submission succeeds",
+      "properties": [
+        "request_id",
+        "role"
+      ]
+    }
+  ],
+  "design_system": {
+    "aesthetic_direction": "Functional minimal \u2014 neutral-led, one confident accent; calm and content-first to suit an internal request tool.",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "color": {
+      "bg": {
+        "light": "#FBFBFC",
+        "dark": "#0E1116"
+      },
+      "surface": {
+        "light": "#FFFFFF",
+        "dark": "#171A21"
+      },
+      "surface_raised": {
+        "light": "#FFFFFF",
+        "dark": "#1F232C"
+      },
+      "text": {
+        "light": "#1A1D23",
+        "dark": "#E8EAED"
+      },
+      "text_muted": {
+        "light": "#5A6472",
+        "dark": "#A6ADBA"
+      },
+      "text_subtle": {
+        "light": "#8A93A2",
+        "dark": "#7B8494"
+      },
+      "border": {
+        "light": "#E4E7EC",
+        "dark": "#2A2F3A"
+      },
+      "primary": {
+        "light": "#2F6FED",
+        "dark": "#5B8DEF"
+      },
+      "primary_hover": {
+        "light": "#2456C4",
+        "dark": "#7AA4F2"
+      },
+      "primary_tint": {
+        "light": "#EAF1FE",
+        "dark": "#1A2740"
+      },
+      "on_primary": {
+        "light": "#FFFFFF",
+        "dark": "#0E1116"
+      },
+      "success": {
+        "light": "#1A7F4B",
+        "dark": "#3FB97A"
+      },
+      "success_bg": {
+        "light": "#E7F6EE",
+        "dark": "#13261C"
+      },
+      "warning": {
+        "light": "#9A6700",
+        "dark": "#E3B341"
+      },
+      "warning_bg": {
+        "light": "#FBF1DD",
+        "dark": "#2A2113"
+      },
+      "danger": {
+        "light": "#C42B2B",
+        "dark": "#F2807F"
+      },
+      "danger_bg": {
+        "light": "#FCEBEA",
+        "dark": "#2C1717"
+      },
+      "info": {
+        "light": "#2F6FED",
+        "dark": "#5B8DEF"
+      },
+      "focus_ring": {
+        "light": "#2F6FED",
+        "dark": "#7AA4F2"
+      }
+    },
+    "typography": {
+      "families": {
+        "sans": "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+      },
+      "scale": {
+        "xs": 12,
+        "sm": 14,
+        "base": 16,
+        "lg": 18,
+        "xl": 20,
+        "2xl": 24,
+        "3xl": 30,
+        "4xl": 36
+      },
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600
+      },
+      "line_heights": {
+        "body": 1.5,
+        "heading": 1.2
+      },
+      "reading_measure_ch": 70,
+      "numerics": "tabular figures in tables and metrics"
+    },
+    "spacing": {
+      "base": 8,
+      "scale": {
+        "1": 4,
+        "2": 8,
+        "3": 12,
+        "4": 16,
+        "6": 24,
+        "8": 32,
+        "12": 48,
+        "16": 64
+      }
+    },
+    "radius": {
+      "sm": 4,
+      "md": 8,
+      "lg": 12,
+      "full": 9999
+    },
+    "elevation": {
+      "sm": "0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.10)",
+      "md": "0 4px 8px rgba(16,24,40,0.08), 0 2px 4px rgba(16,24,40,0.06)",
+      "lg": "0 12px 24px rgba(16,24,40,0.12), 0 4px 8px rgba(16,24,40,0.08)",
+      "dark_note": "In dark mode express elevation via lighter surfaces rather than shadow."
+    },
+    "motion": {
+      "durations": {
+        "fast": "120ms",
+        "base": "200ms",
+        "slow": "320ms"
+      },
+      "easings": {
+        "out": "cubic-bezier(0.2, 0, 0, 1)",
+        "in_out": "cubic-bezier(0.4, 0, 0.2, 1)"
+      },
+      "reduced_motion": "Under prefers-reduced-motion, drop decorative transitions; keep state-change feedback instantaneous."
+    }
+  },
+  "responsive": {
+    "breakpoints": {
+      "sm": 640,
+      "md": 768,
+      "lg": 1024,
+      "xl": 1280
+    },
+    "container_widths": {
+      "content": 760,
+      "app": "fluid with 240px sidebar"
+    },
+    "density": [
+      "comfortable",
+      "compact"
+    ]
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "screen_id": "SCR-001",
+      "flow_id": "FLOW-001",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "statement": "Requester can start a new request from the dashboard using a clearly labeled primary action.",
+      "priority": "must"
+    },
+    {
+      "id": "AC-002",
+      "screen_id": "SCR-002",
+      "flow_id": "FLOW-001",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "statement": "If required fields are blank, inline errors appear and focus moves to the error summary.",
+      "priority": "must"
+    },
+    {
+      "id": "AC-003",
+      "screen_id": "SCR-003",
+      "flow_id": "FLOW-001",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "statement": "Requester can review all entered details and edit any section before submission.",
+      "priority": "must"
+    },
+    {
+      "id": "AC-004",
+      "screen_id": "SCR-004",
+      "flow_id": "FLOW-001",
+      "requirement_ids": [
+        "REQ-001",
+        "REQ-002"
+      ],
+      "statement": "After successful submission, requester sees a confirmation number and next actions.",
+      "priority": "must"
+    }
+  ]
+}

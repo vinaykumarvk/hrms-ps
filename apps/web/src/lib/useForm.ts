@@ -9,12 +9,21 @@ export interface FieldConfig<TOutput = string> {
   validate?: (value: TOutput, allValues: Record<string, unknown>) => string | null;
 }
 
+// `FieldConfig<any>` rather than `FieldConfig` (= FieldConfig<string>): the constraint must admit
+// number, boolean, and object-valued fields. `any` is required rather than `unknown` because
+// `validate` is a function-typed property, so under strictFunctionTypes a `FieldConfig<string>`
+// is not assignable to a `FieldConfig<unknown>` (parameters are contravariant).
 export interface FormFields {
-  [key: string]: FieldConfig;
+  [key: string]: FieldConfig<any>;
 }
 
+// Read `initial` directly instead of inferring through `FieldConfig<infer V>`. The conditional
+// form had two failure modes: it resolved to `never` for any field whose config did not match
+// `FieldConfig<string>`, and where a field supplied `validate`, V had a second inference site in
+// a contravariant parameter position, so a helper typed `(value: unknown) => ...` could widen the
+// field's value type. Indexing the property has neither problem.
 export type FormValues<T extends FormFields> = {
-  [K in keyof T]: T[K] extends FieldConfig<infer V> ? V : never;
+  [K in keyof T]: T[K]["initial"];
 };
 
 export type FormErrors<T extends FormFields> = Partial<Record<keyof T, string>>;
@@ -33,6 +42,7 @@ export interface FormState<T extends FormFields> {
 type FormAction<T extends FormFields> =
   | { type: "SET_FIELD"; field: keyof T; value: unknown }
   | { type: "TOUCH_FIELD"; field: keyof T }
+  | { type: "TOUCH_ALL"; touched: Partial<Record<keyof T, boolean>> }
   | { type: "SET_ERRORS"; errors: FormErrors<T> }
   | { type: "SUBMIT_START" }
   | { type: "SUBMIT_END" }
@@ -54,6 +64,8 @@ function formReducer<T extends FormFields>(
       };
     case "TOUCH_FIELD":
       return { ...state, touched: { ...state.touched, [action.field]: true } };
+    case "TOUCH_ALL":
+      return { ...state, touched: { ...state.touched, ...action.touched } };
     case "SET_ERRORS":
       return { ...state, errors: action.errors, isSubmitting: false };
     case "SUBMIT_START":
@@ -108,7 +120,7 @@ export function useForm<T extends FormFields>(fields: T) {
     const errors: FormErrors<T> = {};
     let valid = true;
     for (const key of Object.keys(fields)) {
-      const config = fields[key] as FieldConfig;
+      const config = fields[key] as FieldConfig<unknown>;
       if (config.validate) {
         const error = config.validate(state.values[key], state.values as Record<string, unknown>);
         if (error) {
@@ -127,12 +139,17 @@ export function useForm<T extends FormFields>(fields: T) {
         e?.preventDefault();
         dispatch({ type: "SUBMIT_START" });
 
-        // Mark all fields touched
+        // Mark all fields touched, so validation errors surface on every field at submit and
+        // not only on the ones the user happened to visit.
+        // URF-00R: this block computed `allTouched` and then threw it away, dispatching
+        // TOUCH_FIELD with a null field instead — which wrote a `null` key into the touched map
+        // and left every real field untouched. Same defect and same fix as
+        // origin/feature/dev@4335641.
         const allTouched: Partial<Record<keyof T, boolean>> = {};
         for (const key of Object.keys(fields)) {
           allTouched[key as keyof T] = true;
         }
-        dispatch({ type: "TOUCH_FIELD", field: null as unknown as keyof T });
+        dispatch({ type: "TOUCH_ALL", touched: allTouched });
 
         if (!validateAll()) {
           dispatch({ type: "SUBMIT_END" });

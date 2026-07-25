@@ -119,7 +119,8 @@ test("PH-08F PS08 tier forms are gated by the actor's tier permission (SoD)", ()
 });
 
 test("PH-08F PS07 nomination form renders capacity/eligibility feedback from the server", () => {
-  for (const marker of ["<form", "onSubmit={handleSubmit}", "nominateForTraining", "WAITLISTED", "waitlistPosition", 'role="alert"']) {
+  // URF-00R: re-anchored after the useForm migration (form.handleSubmit owns preventDefault).
+  for (const marker of ["<form", "onSubmit={handleFormSubmit}", "form.handleSubmit(", "nominateForTraining", "WAITLISTED", "waitlistPosition", 'role="alert"']) {
     assert.equal(ps07NominationSource.includes(marker), true, `TrainingNominationForm missing ${marker}`);
   }
 });
@@ -347,12 +348,14 @@ test("PH-08F PS08 tier forms render only the tiers the actor holds (SoD in the U
   const client = createFixtureHrmsClient();
   const appraiseeMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: ["ps08.apar.self.submit"] }));
   assert.match(appraiseeMarkup, /Self-appraisal/);
-  assert.doesNotMatch(appraiseeMarkup, /Reporting officer assessment/);
-  assert.doesNotMatch(appraiseeMarkup, /Reviewing officer review/);
+  // URF-00R: headings were title-cased by the design-system pass ('Reporting Officer
+  // Assessment'). These assertions test tier visibility (SoD), not letter case.
+  assert.doesNotMatch(appraiseeMarkup, /Reporting officer assessment/i);
+  assert.doesNotMatch(appraiseeMarkup, /Reviewing officer review/i);
   const roMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: ["ps08.apar.report", "ps08.apar.review"] }));
-  assert.match(roMarkup, /Reporting officer assessment/);
-  assert.match(roMarkup, /Reviewing officer review/);
-  assert.doesNotMatch(roMarkup, /Self-appraisal \(appraisee tier\)/);
+  assert.match(roMarkup, /Reporting officer assessment/i);
+  assert.match(roMarkup, /Reviewing officer review/i);
+  assert.doesNotMatch(roMarkup, /Self-appraisal \(appraisee tier\)/i);
   const noTierMarkup = renderToStaticMarkup(React.createElement(AparTierForms, { client, permissions: [] }));
   assert.match(noTierMarkup, /data-state="empty"/);
 });
