@@ -101,3 +101,19 @@ docs/evidence/w3/0037-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0038_w4_onboarding.sql
 docs/evidence/w4/0038-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W5 (M03 Exits/Separation) · approved by: agent, standing autonomous instruction
+#
+# 0039_w5_separation.sql
+#   Creates separation_records, fnf_clearances, exit_interviews. Grounded in the EXTRACTED
+#   FS_M03_Exits_Offboarding v1.3 body: entity refs §4, the POST /api/v1/separations §4.1
+#   request/response contract, the §8.4 state machine (SUBMITTED -> STAGE1 -> STAGE2 -> ...),
+#   VAL-SEP-LWD (server-computed proposed_last_working_day), and the 409 "active separation
+#   already exists per employee" rule. Not inferred.
+#
+#   Additive and forward-only. None is in project.config.yaml sensitive_tables.
+#   Compensating statement: docs/evidence/w5/0039-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0039_w5_separation.sql
+docs/evidence/w5/0039-compensating.sql
