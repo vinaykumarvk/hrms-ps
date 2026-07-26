@@ -30,3 +30,24 @@
 0034_ps13_clearance_unique_active.sql
 docs/evidence/cc-021/0034-compensating.sql
 docs/evidence/cc-021/duplicate-active-clearance-precheck.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W1 Gap A · approved by: agent under the standing autonomous-execution instruction
+#
+# 0035_w1_config_master_data.sql
+#   Creates ten configuration tables the W1 Org-Admin screens administer but which had no
+#   definition anywhere: business_units, devices, ip_allowlist, tenant_settings, integrations,
+#   sso_providers, service_catalog_items, kb_articles, separation_policies, separation_workflows.
+#
+#   Additive and forward-only: CREATE TABLE / CREATE INDEX only. No existing object is altered
+#   or removed and no data is rewritten. None of the ten is in project.config.yaml
+#   sensitive_tables.
+#
+#   Derived from prototype screens rather than a signed FS — the source plan's W0 FS-gap list did
+#   not include them (see docs/spec/full-coverage/w1-coverage.md). Assumptions are recorded in the
+#   migration header. Credential material is referenced, never stored.
+#
+#   Compensating statement: docs/evidence/w1/0035-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0035_w1_config_master_data.sql
+docs/evidence/w1/0035-compensating.sql

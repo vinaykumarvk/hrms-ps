@@ -2,7 +2,7 @@
 **Wave:** W1 (Config and Admin foundation) · **Evaluated:** 2026-07-26
 **Backlog:** docs/spec/full-coverage/screen-backlog.yaml · **Prototype:** prototype_hrms.html
 
-## Verdict: 12/27 W1 screens backed
+## Verdict: 22/27 W1 screens backed (was 12/27 before Gap-A remediation)
 
 The registry substrate backs a screen when a descriptor names it AND the table it
 administers exists in the data model. Both conditions are required: a descriptor
@@ -64,3 +64,35 @@ for the ten missing tables first — which is W0-class work that the original pl
 W0 but scoped only to AI assistants, the PSA console and visitor management.
 
 **This is a real finding: W0's FS-gap list was incomplete.**
+
+---
+
+## Gap-A remediation (2026-07-26, same session)
+
+Gap A is closed. Migration `0035_w1_config_master_data.sql` creates the ten missing tables —
+`business_units`, `devices`, `ip_allowlist`, `tenant_settings`, `integrations`, `sso_providers`,
+`service_catalog_items`, `kb_articles`, `separation_policies`, `separation_workflows` — and the
+ten corresponding descriptors now back their screens. **Coverage moved 12/27 → 22/27.**
+
+Verified programmatically rather than asserted: every descriptor's `table` resolves to a real
+`CREATE TABLE` in `docs/data-model/` or `apps/api/db/migrations/`. Zero descriptors point at
+nothing.
+
+Review of the migration:
+- 10/10 tables carry `NOT NULL tenant_id`; 10/10 have a business key unique per tenant
+- no destructive DDL; additive and forward-only
+- **no credential material is stored** — `integrations` and `sso_providers` hold a
+  `credential_ref` into the vault, never a secret
+
+These tables were derived from prototype screens, **not** from a signed FS, because the source
+plan's W0 FS-gap list did not include them. Assumptions are recorded in the migration header.
+That remains the finding worth carrying: the FS-gap list was incomplete, and the same is likely
+true for W3–W7.
+
+**Not yet applied to any database.** The migration is authored and reviewed; applying it is a
+deployment step.
+
+## Remaining 5 — Gap B, unchanged
+
+`cfg-sd-config`, `audit-log`, `bulk-upload`, `dob-view`, `da-ack-campaign` are not registry-shaped
+and need bespoke surfaces. They are correctly *not* forced through the registry substrate.

@@ -166,6 +166,93 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
     table: "document_categories",
     attributes: [{ key: "classification", label: "Default classification", type: "text", required: true }],
   },
+  // W1 Gap A — unblocked by migration 0035_w1_config_master_data.sql.
+  {
+    key: "business-units", label: "Business units", permissionPrefix: "cfg.businessunit",
+    screenId: "cfg-bu", table: "business_units",
+    attributes: [
+      { key: "headEmployeeId", label: "Head", type: "text" },
+      { key: "costCentreCode", label: "Cost centre", type: "text" },
+    ],
+  },
+  {
+    key: "devices", label: "Devices", permissionPrefix: "cfg.device",
+    screenId: "cfg-devices", table: "devices",
+    attributes: [
+      { key: "deviceType", label: "Type", type: "text", required: true },
+      { key: "serialNumber", label: "Serial number", type: "text" },
+      { key: "locationCode", label: "Location", type: "text" },
+    ],
+  },
+  {
+    key: "ip-allowlist", label: "IP allowlist", permissionPrefix: "cfg.ip",
+    screenId: "cfg-ip", table: "ip_allowlist",
+    attributes: [
+      { key: "cidrBlock", label: "CIDR block", type: "text", required: true },
+      { key: "appliesTo", label: "Applies to", type: "text", required: true },
+    ],
+  },
+  {
+    key: "tenant-settings", label: "Tenant settings", permissionPrefix: "cfg.tenant",
+    screenId: "cfg-tenant", table: "tenant_settings",
+    attributes: [
+      { key: "settingValue", label: "Value", type: "text" },
+      { key: "valueType", label: "Value type", type: "text", required: true },
+    ],
+  },
+  {
+    key: "integrations", label: "Integrations", permissionPrefix: "cfg.integration",
+    screenId: "cfg-integrations", table: "integrations",
+    attributes: [
+      { key: "provider", label: "Provider", type: "text", required: true },
+      { key: "endpointUrl", label: "Endpoint", type: "text" },
+      // Deliberately a reference, never the secret itself — the vault holds the material.
+      { key: "credentialRef", label: "Credential reference", type: "text" },
+    ],
+  },
+  {
+    key: "sso-providers", label: "SSO providers", permissionPrefix: "cfg.sso",
+    screenId: "cfg-sso", table: "sso_providers",
+    attributes: [
+      { key: "protocol", label: "Protocol", type: "text", required: true },
+      { key: "issuerUrl", label: "Issuer URL", type: "text" },
+      { key: "credentialRef", label: "Credential reference", type: "text" },
+    ],
+  },
+  {
+    key: "service-catalog", label: "Service catalog", permissionPrefix: "cfg.catalog",
+    screenId: "cfg-catalog-items", table: "service_catalog_items",
+    attributes: [
+      { key: "category", label: "Category", type: "text", required: true },
+      { key: "slaHours", label: "SLA (hours)", type: "number" },
+      { key: "ownerGroup", label: "Owner group", type: "text" },
+    ],
+  },
+  {
+    key: "kb-articles", label: "Knowledge base", permissionPrefix: "cfg.kb",
+    screenId: "cfg-kb-articles", table: "kb_articles",
+    attributes: [
+      { key: "category", label: "Category", type: "text" },
+      { key: "reviewStatus", label: "Review status", type: "text", required: true },
+    ],
+  },
+  {
+    key: "separation-policies", label: "Separation policies", permissionPrefix: "cfg.separationpolicy",
+    screenId: "cfg-separation-policy", table: "separation_policies",
+    attributes: [
+      { key: "noticePeriodDays", label: "Notice period (days)", type: "number", required: true },
+      { key: "appliesToGrade", label: "Applies to grade", type: "text" },
+    ],
+  },
+  {
+    key: "separation-workflows", label: "Separation workflows", permissionPrefix: "cfg.separationworkflow",
+    screenId: "cfg-separation-workflow", table: "separation_workflows",
+    attributes: [
+      // Binds to a P01 definition; separation never gets its own workflow engine.
+      { key: "p01WorkflowCode", label: "P01 workflow", type: "text", required: true },
+      { key: "separationType", label: "Separation type", type: "text", required: true },
+    ],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

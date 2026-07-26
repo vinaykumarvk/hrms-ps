@@ -28,7 +28,17 @@ export type ConfigRegistryKey =
   | "permission-grants"
   | "geofences"
   | "national-id-types"
-  | "document-categories";
+  | "document-categories"
+  | "business-units"
+  | "devices"
+  | "ip-allowlist"
+  | "tenant-settings"
+  | "integrations"
+  | "sso-providers"
+  | "service-catalog"
+  | "kb-articles"
+  | "separation-policies"
+  | "separation-workflows";
 
 export interface ConfigRecord {
   id: string;
