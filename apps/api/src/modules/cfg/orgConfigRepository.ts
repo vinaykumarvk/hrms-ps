@@ -23,7 +23,12 @@ export type ConfigRegistryKey =
   | "locations"
   | "entities"
   | "classifications"
-  | "custom-fields";
+  | "custom-fields"
+  | "rbac-roles"
+  | "permission-grants"
+  | "geofences"
+  | "national-id-types"
+  | "document-categories";
 
 export interface ConfigRecord {
   id: string;

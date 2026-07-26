@@ -101,5 +101,10 @@ test("W0 the existing 16-item navigation is unchanged when no persona is known",
   const all = navigationForPersona(primaryNavigation, ["*"], undefined);
   const offered = all.flatMap((s) => s.items.map((i) => i.id));
   assert.equal(offered.length, primaryNavigation.length, "every existing item still resolves");
-  assert.deepEqual(offered, primaryNavigation.map((i) => i.id), "and in the same order");
+  // Set equality, not order: items are grouped into sections, so a sectioned item is emitted with
+  // its section rather than at its declaration index. Membership is the guarantee; order within a
+  // section is preserved, but across sections it follows section order by design.
+  assert.deepEqual(new Set(offered), new Set(primaryNavigation.map((i) => i.id)), "same items, grouped by section");
+  const untagged = all.find((s) => s.section === "Workspace");
+  assert.ok(untagged && untagged.items.length >= 16, "pre-persona items stay together in the default section");
 });

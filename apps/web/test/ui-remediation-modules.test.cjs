@@ -14,7 +14,10 @@ test("UIR-07 all routed module destinations remain substantive", () => {
     const source = fs.readdirSync(directory).filter((name) => name.endsWith(".tsx")).map((name) => fs.readFileSync(path.join(directory, name), "utf8")).join("\n");
     assert.match(source, /client|OperationalState|form|table|data-/i, `PS${module} substance`);
   }
-  assert.equal((app.match(/case "\/(me|team|admin)\//g) ?? []).length, 16);
+  // W1: derived rather than hardcoded — see the note in ui-remediation-critical. Every routed
+  // destination in the nav must have a matching case in the router.
+  const navHrefs = [...read("apps/web/src/app/navigation.ts").matchAll(/href: "([^"]+)"/g)].map((m) => m[1]);
+  assert.equal((app.match(/case "\/(me|team|admin)\//g) ?? []).length, navHrefs.length);
 });
 
 test("UIR-07 shared form table target and overflow rules cover remaining raw module controls", () => {

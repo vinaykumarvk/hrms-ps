@@ -119,6 +119,53 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
       { key: "appliesTo", label: "Applies to", type: "text", required: true },
     ],
   },
+  {
+    key: "rbac-roles",
+    label: "Roles",
+    permissionPrefix: "cfg.role",
+    screenId: "cfg-rbac",
+    table: "roles",
+    attributes: [{ key: "scope", label: "Scope", type: "text", required: true }],
+  },
+  {
+    key: "permission-grants",
+    label: "Permission grants",
+    permissionPrefix: "cfg.grant",
+    screenId: "cfg-grants",
+    table: "role_permissions",
+    attributes: [
+      { key: "roleCode", label: "Role", type: "text", required: true },
+      { key: "permissionCode", label: "Permission", type: "text", required: true },
+    ],
+  },
+  {
+    key: "geofences",
+    label: "Geofences",
+    permissionPrefix: "cfg.geofence",
+    screenId: "cfg-geofence",
+    table: "geofences",
+    attributes: [
+      { key: "centreLat", label: "Centre latitude", type: "number", required: true },
+      { key: "centreLng", label: "Centre longitude", type: "number", required: true },
+      { key: "radiusMetres", label: "Radius (m)", type: "number", required: true },
+    ],
+  },
+  {
+    key: "national-id-types",
+    label: "National ID types",
+    permissionPrefix: "cfg.nid",
+    screenId: "cfg-nid",
+    table: "national_id_types",
+    attributes: [{ key: "validationPattern", label: "Validation pattern", type: "text" }],
+  },
+  {
+    key: "document-categories",
+    label: "Document categories",
+    permissionPrefix: "cfg.doccategory",
+    screenId: "da-categories",
+    table: "document_categories",
+    attributes: [{ key: "classification", label: "Default classification", type: "text", required: true }],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

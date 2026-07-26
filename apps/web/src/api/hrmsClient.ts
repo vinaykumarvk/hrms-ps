@@ -1,4 +1,5 @@
 export const HRMS_API_ROUTES = {
+  configRegistries: "/api/v1/config/registries",
   myRightsRequests: "/api/v1/me/rights-requests",
   sealedCovers: "/api/v1/promotions/sealed-covers",
   biKpis: "/api/v1/analytics/bi-kpis",
@@ -921,7 +922,47 @@ export interface WorkflowActionRequestBody {
   toUserId?: string;
 }
 
+/** W1 — Org-Admin configuration registries (full-coverage parity). */
+export interface ConfigAttributeSpec {
+  key: string;
+  label: string;
+  type: "text" | "number" | "boolean";
+  required?: boolean;
+}
+export interface ConfigRegistryDescriptor {
+  key: string;
+  label: string;
+  permissionPrefix: string;
+  screenId: string;
+  table: string;
+  hierarchical?: boolean;
+  attributes: ConfigAttributeSpec[];
+}
+export interface ConfigEntryRecord {
+  id: string;
+  registry: string;
+  code: string;
+  name: string;
+  isActive: boolean;
+  attributes: Record<string, string | number | boolean | undefined>;
+  parentId?: string;
+  version: number;
+  updatedAt: string;
+}
+export interface ConfigEntryInput {
+  code: string;
+  name: string;
+  isActive?: boolean;
+  parentId?: string;
+  attributes?: Record<string, string | number | boolean | undefined>;
+  expectedVersion?: number;
+}
+
 export interface HrmsClient {
+  listConfigRegistries(): Promise<PageResult<ConfigRegistryDescriptor>>;
+  listConfigEntries(registry: string): Promise<PageResult<ConfigEntryRecord>>;
+  createConfigEntry(registry: string, input: ConfigEntryInput, idempotencyKey: string): Promise<{ entry: ConfigEntryRecord }>;
+  deactivateConfigEntry(registry: string, id: string, idempotencyKey: string): Promise<{ entry: ConfigEntryRecord }>;
   listWorkflowTasks(): Promise<PageResult<WorkflowTaskSummary>>;
   actOnWorkflowTask(taskId: string, verb: WorkflowTaskActionVerb, body: WorkflowActionRequestBody, idempotencyKey: string): Promise<unknown>;
   actOnWorkflowInstance(instanceId: string, verb: WorkflowInstanceActionVerb, body: WorkflowActionRequestBody, idempotencyKey: string): Promise<unknown>;
@@ -1132,6 +1173,23 @@ export function createHrmsClient(options: HrmsClientOptions = {}): HrmsClient {
     getServiceRegisterTimeline: (employeeId, page = {}) =>
       request<PageResult<SrTimelineEntry>>(
         `${HRMS_API_ROUTES.srEmployees}/${encodeURIComponent(employeeId)}/timeline${toPageQueryString(page)}`
+      ),
+    listConfigRegistries: () => request<PageResult<ConfigRegistryDescriptor>>(HRMS_API_ROUTES.configRegistries),
+    listConfigEntries: (registry) =>
+      request<PageResult<ConfigEntryRecord>>(
+        `${HRMS_API_ROUTES.configRegistries}/${encodeURIComponent(registry)}/entries`
+      ),
+    createConfigEntry: (registry, input, idempotencyKey) =>
+      postWithIdempotency<{ entry: ConfigEntryRecord }>(
+        `${HRMS_API_ROUTES.configRegistries}/${encodeURIComponent(registry)}/entries`,
+        input,
+        idempotencyKey
+      ),
+    deactivateConfigEntry: (registry, id, idempotencyKey) =>
+      postWithIdempotency<{ entry: ConfigEntryRecord }>(
+        `${HRMS_API_ROUTES.configRegistries}/${encodeURIComponent(registry)}/entries/${encodeURIComponent(id)}:deactivate`,
+        {},
+        idempotencyKey
       ),
     listDocuments: () => request<PageResult<DocumentSummary>>(HRMS_API_ROUTES.documents),
     listMyRightsRequests: () => request<PageResult<MyRightsRequest>>(HRMS_API_ROUTES.myRightsRequests),

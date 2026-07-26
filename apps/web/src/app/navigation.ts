@@ -53,6 +53,16 @@ export const primaryNavigation: NavItem[] = [
   { id: "payroll", label: "Payroll", href: "/admin/payroll", workspace: "admin", icon: "indian-rupee", requiredPermission: "ps10.payroll.read" },
   { id: "pension-retirement", label: "Pension & Retirement", href: "/admin/pension-retirement", workspace: "admin", icon: "landmark", requiredPermission: "ps11.pension.read" },
   { id: "analytics", label: "Analytics", href: "/admin/analytics", workspace: "admin", icon: "chart-no-axes-combined", requiredPermission: "ps14.analytics.read" },
+  {
+    id: "configuration",
+    label: "Configuration",
+    href: "/admin/configuration",
+    workspace: "admin",
+    icon: "settings",
+    requiredPermission: "cfg.registry.read",
+    section: "Configure",
+    personas: ["org_admin", "hr_admin", "platform_super_admin"],
+  },
   { id: "workflow-config", label: "Workflow Config", href: "/admin/workflow-config", workspace: "admin", icon: "workflow", requiredPermission: "p01.workflow.config.review" },
 ];
 

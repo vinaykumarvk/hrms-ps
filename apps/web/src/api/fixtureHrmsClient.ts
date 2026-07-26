@@ -661,7 +661,33 @@ export function createFixtureHrmsClient(): HrmsClient {
     return Promise.resolve({ form: { ...form } });
   }
 
+
   return {
+    // W1 — config registries: a small deterministic fixture so the workspace renders without the API.
+    listConfigRegistries: async () => ({
+      items: [
+        { key: "org-units", label: "Departments and org units", permissionPrefix: "cfg.orgunit", screenId: "cfg-depts", table: "org_units", hierarchical: true,
+          attributes: [{ key: "orgUnitType", label: "Type", type: "text", required: true }] },
+        { key: "grades", label: "Grades", permissionPrefix: "cfg.grade", screenId: "cfg-grades", table: "grades",
+          attributes: [{ key: "levelOrder", label: "Seniority order", type: "number", required: true }] },
+      ],
+      limit: 25,
+      next_cursor: null,
+    }),
+    listConfigEntries: async (registry) => ({
+      items: registry === "grades"
+        ? [{ id: "cfg-grades-1", registry, code: "G-01", name: "Junior Officer", isActive: true, attributes: { levelOrder: 1 }, version: 1, updatedAt: "2026-07-26T00:00:00.000Z" }]
+        : [{ id: "cfg-org-units-1", registry, code: "OU-ROOT", name: "Head Office", isActive: true, attributes: { orgUnitType: "DEPARTMENT" }, version: 1, updatedAt: "2026-07-26T00:00:00.000Z" }],
+      limit: 25,
+      next_cursor: null,
+    }),
+    createConfigEntry: async (registry, input) => ({
+      entry: { id: `cfg-${registry}-new`, registry, code: input.code, name: input.name, isActive: input.isActive ?? true,
+               attributes: input.attributes ?? {}, parentId: input.parentId, version: 1, updatedAt: "2026-07-26T00:00:00.000Z" },
+    }),
+    deactivateConfigEntry: async (registry, id) => ({
+      entry: { id, registry, code: "RETIRED", name: "Retired", isActive: false, attributes: {}, version: 2, updatedAt: "2026-07-26T00:00:00.000Z" },
+    }),
     listEmployeeContacts: () => Promise.resolve(page(employeeContacts.map((contact) => ({ ...contact })))),
     addEmployeeContact: (employeeId: string, input: EmployeeContactAddInput) => {
       const contact: EmployeeContactRecord = {

@@ -7,6 +7,7 @@ import { ReactNode, useCallback, useEffect, useState } from "react";
 import { primaryNavigation, workspaceForPath, WorkspaceId } from "./app/navigation";
 import { WorkflowWorkspace } from "./workflow/WorkflowWorkspace";
 import { WorkflowConfigConsole } from "./workflow/WorkflowConfigConsole";
+import { ConfigRegistryWorkspace } from "./modules/cfg/ConfigRegistryWorkspace";
 import { EmployeeProfile } from "./modules/ps01/EmployeeProfile";
 import { EmployeeContactsPanel } from "./modules/ps01/EmployeeContactsPanel";
 import { EmployeeDependentsPanel } from "./modules/ps01/EmployeeDependentsPanel";
@@ -177,6 +178,9 @@ function renderRoute(path: string, permissions: readonly string[], refresh: numb
     case "/admin/pension-retirement": return routePage("Pension & Retirement", "ps11.pension.read", permissions, <><PensionWorkspace client={client} /><PensionCaseConsole client={client} permissions={permissions} /></>);
     case "/admin/analytics": return routePage("Analytics", "ps14.analytics.read", permissions, <><AnalyticsWorkspace client={client} /><EmbeddedBiDashboard client={client} /></>);
     case "/admin/workflow-config": return routePage("Workflow Config", "p01.workflow.config.review", permissions, <WorkflowConfigConsole />);
+    // W1 — Org-Admin configuration registries (full-coverage parity: cfg-depts, cfg-grades,
+    // cfg-assign, cfg-geo, cfg-entities, cfg-classification, cfg-custom).
+    case "/admin/configuration": return routePage("Configuration", "cfg.registry.read", permissions, <ConfigRegistryWorkspace client={client} />);
     default:
       return <section className="not-found" aria-labelledby="route-heading"><h2 id="route-heading" tabIndex={-1}>Page not found</h2><p>The requested HRMS destination does not exist.</p><button type="button" onClick={() => navigate(defaultPath(permissions))}>Go to your workspace</button></section>;
   }

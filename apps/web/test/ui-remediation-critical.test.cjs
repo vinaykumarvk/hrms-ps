@@ -10,10 +10,20 @@ test("UIR-06 every navigation destination has route workspace icon and permissio
   const nav = read("apps/web/src/app/navigation.ts");
   const routes = read("apps/web/src/App.tsx");
   const destinations = [...nav.matchAll(/href: "([^"]+)"/g)].map((match) => match[1]);
-  assert.equal(destinations.length, 16);
+  // W1: the count is DERIVED, not hardcoded. The full-coverage programme adds destinations wave
+  // by wave (226 prototype screens), so a literal here would break on every wave and teach us to
+  // bump it reflexively. The property that matters is the invariant: every declared destination
+  // has a route, a workspace and an icon — whatever the count.
+  assert.ok(destinations.length >= 16, "the shell must not lose destinations");
+  assert.equal(new Set(destinations).size, destinations.length, "no duplicate hrefs");
   for (const destination of destinations) assert.ok(routes.includes(`case "${destination}"`), destination);
-  assert.equal((nav.match(/workspace: "/g) ?? []).length, 16);
-  assert.equal((nav.match(/icon: "/g) ?? []).length, 16);
+  // Scope the field counts to the primaryNavigation array: workspaceOptions also declares
+  // requiredPermission, so counting across the whole file overcounts.
+  const navBlock = nav.slice(nav.indexOf("export const primaryNavigation"));
+  const block = navBlock.slice(0, navBlock.indexOf("\n];") + 3);
+  assert.equal((block.match(/workspace: "/g) ?? []).length, destinations.length, "every destination declares a workspace");
+  assert.equal((block.match(/icon: "/g) ?? []).length, destinations.length, "every destination declares an icon");
+  assert.equal((block.match(/requiredPermission: "/g) ?? []).length, destinations.length, "every destination declares a permission");
 });
 
 test("UIR-06 shell has accessible mobile disclosure and active navigation", () => {
