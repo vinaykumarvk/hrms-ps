@@ -117,3 +117,25 @@ docs/evidence/w4/0038-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0039_w5_separation.sql
 docs/evidence/w5/0039-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W6 (M09 Performance) · approved by: agent, standing autonomous instruction
+#
+# 0040_w6_performance.sql
+#   Creates review_cycles, review_records, review_templates, performance_improvement_plans,
+#   calibration_configurations. Grounded in extracted FS_M09_Performance v1.4 (entity refs
+#   §4.10.3 review_cycles, §4.10.4 review_records, §4.10.19 performance_improvement_plans).
+#
+#   REUSE, not duplication (ADR-006 D-COV-02): goal_plans, goals, calibration_sessions,
+#   scorecard_pillars ALREADY EXIST under PS08 (08-PS08-performance-appraisal.sql). This migration
+#   adds only the M09-specific tables PS08 lacks; it does not re-create the shared ones. APAR is a
+#   profile over M09, per D-COV-02.
+#
+#   PIP note: FS marks the PIP entity OPEN-FS-M09-04. The table is created with the fields the FS
+#   does specify; open decisions are left to the PIP slice.
+#
+#   Additive and forward-only. None is in project.config.yaml sensitive_tables.
+#   Compensating statement: docs/evidence/w6/0040-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0040_w6_performance.sql
+docs/evidence/w6/0040-compensating.sql

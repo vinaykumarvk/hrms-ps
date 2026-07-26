@@ -50,6 +50,8 @@ export type ConfigRegistryKey =
   | "comp-off-rules"
   | "blackout-periods"
   | "decision-matrix"
+  | "review-templates"
+  | "calibration-configs"
   | "external-recruiters"
   | "job-portals"
   | "interview-types"

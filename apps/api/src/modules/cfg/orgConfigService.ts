@@ -401,6 +401,15 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
       { key: "description", label: "Description", type: "text" },
     ],
   },
+  // W6 — M09 Performance configuration, grounded in the extracted FS body (0040).
+  {
+    key: "review-templates", label: "Review templates", permissionPrefix: "cfg.reviewtemplate",
+    screenId: "cfg-review-templates", table: "review_templates", attributes: [],
+  },
+  {
+    key: "calibration-configs", label: "Calibration configuration", permissionPrefix: "cfg.calibration",
+    screenId: "cfg-calibration", table: "calibration_configurations", attributes: [],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));
