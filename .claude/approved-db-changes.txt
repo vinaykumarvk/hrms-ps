@@ -181,3 +181,18 @@ docs/evidence/w8/0042-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0043_w9_migration_runs.sql
 docs/evidence/w9/0043-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · 0035 re-derivation correction · approved by: agent, standing autonomous instruction
+#
+# 0044_separation_policy_detail.sql
+#   Re-derivation of 0035 against the now-readable FS bodies found 9/10 tables FS-consistent and
+#   ONE under-modelled: separation_policies. FS_M03 (§4.8.1, §370) specifies it as a 5-step wizard
+#   with policy-detail toggles (allow_past_dated_resignation, force_separate_on_lwd, applicability)
+#   and TWO child tables: §4.8.1a separation_policy_initiators, §4.8.1b separation_policy_workflow_map.
+#   0035's flat table lacked all of that. This migration ADDS the columns and the two child tables.
+#   Additive only (ALTER TABLE ADD COLUMN + CREATE TABLE); 0035 stays as-approved and unapplied.
+#   Compensating: docs/evidence/w1/0044-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0044_separation_policy_detail.sql
+docs/evidence/w1/0044-compensating.sql
