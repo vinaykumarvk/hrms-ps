@@ -410,6 +410,22 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
     key: "calibration-configs", label: "Calibration configuration", permissionPrefix: "cfg.calibration",
     screenId: "cfg-calibration", table: "calibration_configurations", attributes: [],
   },
+  // W7 — Documents/Letters + Assets config, grounded in the extracted FS bodies (0041).
+  // Screen ids verified against the W7 backlog, not guessed (W6 lesson).
+  {
+    key: "letter-templates", label: "Letter templates", permissionPrefix: "cfg.lettertemplate",
+    screenId: "da-templates", table: "letter_templates",
+    attributes: [{ key: "version", label: "Version", type: "number" }],
+  },
+  {
+    key: "asset-categories", label: "Asset categories", permissionPrefix: "cfg.assetcategory",
+    screenId: "it-masters", table: "asset_categories", attributes: [],
+  },
+  {
+    key: "ticket-categories", label: "Ticket categories", permissionPrefix: "cfg.ticketcategory",
+    screenId: "cfg-sla", table: "ticket_categories",
+    attributes: [{ key: "slaHours", label: "SLA (hours)", type: "number" }],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

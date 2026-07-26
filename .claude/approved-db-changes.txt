@@ -139,3 +139,19 @@ docs/evidence/w5/0039-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0040_w6_performance.sql
 docs/evidence/w6/0040-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W7 (M11 Documents/Letters + M17 Assets/Service-desk) · approved by: agent, standing instruction
+#
+# 0041_w7_documents_assets.sql
+#   M11: letter_templates, letters (letter admin: templates, merge fields, queue, bulk).
+#   M17: assets, asset_categories, asset_assignments, tickets, ticket_categories, cmdb_cis.
+#   Grounded in extracted FS_M11 (§4.11 letter_templates/employee_documents) and FS_M17
+#   (assets/asset_assignments/cmdb_cis; asset field list asset_tag/category/make/model/condition).
+#   kb_articles + service_catalog_items already exist (0035); NOT re-created.
+#
+#   Additive and forward-only. None is in project.config.yaml sensitive_tables.
+#   Compensating statement: docs/evidence/w7/0041-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0041_w7_documents_assets.sql
+docs/evidence/w7/0041-compensating.sql
