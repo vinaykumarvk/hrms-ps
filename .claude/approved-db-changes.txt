@@ -51,3 +51,18 @@ docs/evidence/cc-021/duplicate-active-clearance-precheck.sql
 # ---------------------------------------------------------------------------------------------
 0035_w1_config_master_data.sql
 docs/evidence/w1/0035-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W2 Gap A · approved by: agent under the standing autonomous-execution instruction
+#
+# 0036_w2_leave_attendance_config.sql
+#   Creates comp_off_rules, blackout_periods, decision_matrix. Unlike W1's Gap A these are NOT
+#   inferred: every column traces to a field in the DwnB form-field exports shipped with the FS
+#   (Tenant_Leaves_Compoff_Export.csv, Leave-Policy-Block-Leave-Export.csv, Approvalflows-Export.csv).
+#   cfg-infraction is deliberately EXCLUDED — no field export specifies it.
+#
+#   Additive and forward-only. None of the three is in project.config.yaml sensitive_tables.
+#   Compensating statement: docs/evidence/w2/0036-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0036_w2_leave_attendance_config.sql
+docs/evidence/w2/0036-compensating.sql

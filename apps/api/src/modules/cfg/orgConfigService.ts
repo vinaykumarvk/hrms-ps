@@ -311,6 +311,36 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
       { key: "halfDayUnderMinutes", label: "Half-day under (minutes)", type: "number" },
     ],
   },
+  // W2 Gap A — unblocked by 0036. Columns trace to the DwnB field exports, not to screenshots.
+  {
+    key: "comp-off-rules", label: "Comp-off rules", permissionPrefix: "cfg.compoff",
+    screenId: "cfg-compoff", table: "comp_off_rules",
+    attributes: [
+      { key: "calculationFrequency", label: "Calculation frequency", type: "text", required: true },
+      { key: "overtimePolicyCode", label: "Overtime policy", type: "text" },
+      { key: "isHourlyLeave", label: "Hourly leave", type: "boolean" },
+      { key: "minDurationMinutes", label: "Min duration (minutes)", type: "number" },
+    ],
+  },
+  {
+    key: "blackout-periods", label: "Blackout periods", permissionPrefix: "cfg.blackout",
+    screenId: "cfg-blackout", table: "blackout_periods",
+    attributes: [
+      { key: "leaveTypeCode", label: "Leave type", type: "text" },
+      { key: "frequency", label: "Frequency", type: "text" },
+      { key: "allowPastDates", label: "Allow past dates", type: "boolean" },
+    ],
+  },
+  {
+    key: "decision-matrix", label: "Approval decision matrix", permissionPrefix: "cfg.decisionmatrix",
+    screenId: "cfg-decisionmatrix", table: "decision_matrix",
+    attributes: [
+      { key: "requestType", label: "Request type", type: "text", required: true },
+      { key: "p01WorkflowCode", label: "P01 workflow", type: "text", required: true },
+      { key: "tierOrder", label: "Tier", type: "number", required: true },
+      { key: "approverRule", label: "Approver rule", type: "text", required: true },
+    ],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

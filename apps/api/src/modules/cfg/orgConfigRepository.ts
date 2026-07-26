@@ -46,7 +46,10 @@ export type ConfigRegistryKey =
   | "leave-types"
   | "attendance-reasons"
   | "leave-reasons"
-  | "attendance-policies";
+  | "attendance-policies"
+  | "comp-off-rules"
+  | "blackout-periods"
+  | "decision-matrix";
 
 export interface ConfigRecord {
   id: string;

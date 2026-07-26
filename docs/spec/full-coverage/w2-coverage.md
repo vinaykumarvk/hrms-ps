@@ -2,7 +2,7 @@
 
 **Wave:** W2 (Attendance full + leave-admin completion) · **Evaluated:** 2026-07-26
 
-## Verdict: 8/20 screens backed by a registry descriptor
+## Verdict: 11/20 screens backed (was 8/20 before Gap-A remediation)
 
 Every one of the eight is backed by a table that ALREADY EXISTED in
 `docs/data-model/03-PS03-attendance-leave.sql` or `00-platform-core.sql`. No schema was
@@ -58,3 +58,29 @@ Counting them as covered would overstate parity, so they are listed separately.
 8/20 is deliberately conservative. Six of the twelve uncovered screens (Gap C) are alternate
 surfaces over registries that ARE built, so a looser rule would report 14/20. The stricter
 count is used because a screen is not delivered until its own surface exists.
+
+---
+
+## Gap-A remediation (2026-07-26, same session)
+
+Migration `0036_w2_leave_attendance_config.sql` adds `comp_off_rules`, `blackout_periods` and
+`decision_matrix`, with descriptors for `cfg-compoff`, `cfg-blackout` and `cfg-decisionmatrix`.
+**Coverage 8/20 → 11/20.**
+
+The important difference from W1's Gap A: **these were not inferred.** Every column traces to a
+named field in the DwnB form-field exports that ship with the FS —
+`Tenant_Leaves_Compoff_Export.csv`, `Leave-Policy-Block-Leave-Export.csv`,
+`Approvalflows-Export.csv`. The column comments carry the mapping.
+
+`cfg-infraction` was deliberately **excluded**. No field export or FS section specifies it, and
+authoring it would repeat exactly the problem W1's Gap A created. It stays uncovered until
+specified — that is the correct outcome, not a shortfall.
+
+`decision_matrix` binds to a P01 workflow definition rather than re-implementing approval routing
+(CLAUDE.md: reuse the platform).
+
+Review of 0036: 3/3 tables tenant-scoped with `NOT NULL tenant_id`, 3/3 have a per-tenant unique
+business key, additive only, no destructive DDL. `blackout_periods` carries a CHECK preventing a
+window that ends before it starts.
+
+**Not applied to any database.** Authored and reviewed only.
