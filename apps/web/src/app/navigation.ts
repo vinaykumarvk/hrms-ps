@@ -38,6 +38,7 @@ export const workspaceOptions: WorkspaceOption[] = [
 // permission from the API permission families (gNN.* prefixes) so the shell
 // only shows destinations the session actually grants.
 export const primaryNavigation: NavItem[] = [
+  { id: "home", label: "Home", href: "/me/home", workspace: "me", icon: "home", requiredPermission: "workspace.me", section: "Self" },
   { id: "inbox", label: "Inbox", href: "/me/inbox", workspace: "me", icon: "inbox", requiredPermission: "p01.workflow.read" },
   { id: "employees", label: "Employees", href: "/me/employees", workspace: "me", icon: "users", requiredPermission: "ps01.employee.read" },
   { id: "personal-details", label: "Personal Details", href: "/me/personal-details", workspace: "me", icon: "user-round-pen", requiredPermission: "ps02.change.read" },

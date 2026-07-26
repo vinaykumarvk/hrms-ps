@@ -24,11 +24,14 @@ export interface HrmsSession {
   userId: string;
   displayName: string;
   permissions: readonly string[];
+  /** Session roles; drives persona resolution for the W8 home composition. Presentation-only. */
+  roles: readonly string[];
   expiresAt?: number;
 }
 
 interface SessionClaims {
   sub?: unknown;
+  roles?: unknown;
   name?: unknown;
   permissions?: unknown;
   exp?: unknown;
@@ -78,10 +81,14 @@ export function parseSessionToken(token: string): HrmsSession | null {
   const permissions = claims.permissions.filter(
     (grant): grant is string => typeof grant === "string" && grant.length > 0
   );
+  const roles = Array.isArray(claims.roles)
+    ? claims.roles.filter((role): role is string => typeof role === "string" && role.length > 0)
+    : [];
   return {
     userId: claims.sub,
     displayName: typeof claims.name === "string" && claims.name.length > 0 ? claims.name : claims.sub,
     permissions,
+    roles,
     expiresAt: typeof claims.exp === "number" ? claims.exp * 1000 : undefined,
   };
 }

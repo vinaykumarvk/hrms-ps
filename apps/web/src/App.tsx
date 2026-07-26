@@ -5,6 +5,7 @@ import { RouteGuard } from "./app/RouteGuard";
 import { endSession, HrmsSession, readSessionMessage, readStoredSession, startEmployeeSession } from "./app/session";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { primaryNavigation, workspaceForPath, WorkspaceId } from "./app/navigation";
+import { HomeWorkspace } from "./modules/home/HomeWorkspace";
 import { WorkflowWorkspace } from "./workflow/WorkflowWorkspace";
 import { WorkflowConfigConsole } from "./workflow/WorkflowConfigConsole";
 import { ConfigRegistryWorkspace } from "./modules/cfg/ConfigRegistryWorkspace";
@@ -100,6 +101,7 @@ export function App() {
   }, [session]);
 
   const permissions = session?.permissions ?? [];
+  const roles = session?.roles ?? [];
 
   const navigate = (path: string) => {
     window.history.pushState({}, "", path);
@@ -135,7 +137,7 @@ export function App() {
       permissions={permissions}
       sessionUser={session.displayName}
     >
-      {renderRoute(effectivePath, permissions, ps02QueueRefresh, bumpPS02Queue, navigate)}
+      {renderRoute(effectivePath, permissions, roles, ps02QueueRefresh, bumpPS02Queue, navigate)}
     </AppShell>
   );
 }
@@ -155,13 +157,14 @@ function routePage(label: string, permission: string, permissions: readonly stri
   );
 }
 
-function renderRoute(path: string, permissions: readonly string[], refresh: number, bump: () => void, navigate: (path: string) => void): ReactNode {
+function renderRoute(path: string, permissions: readonly string[], roles: readonly string[], refresh: number, bump: () => void, navigate: (path: string) => void): ReactNode {
   const workspace = workspaceForPath(path);
   const workspacePermission = `workspace.${workspace}`;
   if (!permissions.includes(workspacePermission)) {
     return routePage("Restricted workspace", workspacePermission, permissions, null);
   }
   switch (path) {
+    case "/me/home": return routePage("Home", "workspace.me", permissions, <HomeWorkspace navigation={primaryNavigation} permissions={permissions} roles={roles} />);
     case "/me/inbox": return routePage("Workflow inbox", "p01.workflow.read", permissions, <WorkflowWorkspace client={client} />);
     case "/me/employees": return routePage("Employees", "ps01.employee.read", permissions, <><EmployeeProfile client={client} /><PrivacyConsole client={client} /><EmployeeContactsPanel client={client} /><EmployeeDependentsPanel client={client} /></>);
     case "/me/personal-details": return routePage("Personal Details", "ps02.change.read", permissions, <><PersonalDetailsWorkspace client={client} /><ChangeRequestEditor client={client} onCreated={bump} /><ChangeRequestApproverQueue client={client} refreshToken={refresh} onDecided={bump} /></>);
