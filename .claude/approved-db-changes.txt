@@ -155,3 +155,15 @@ docs/evidence/w6/0040-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0041_w7_documents_assets.sql
 docs/evidence/w7/0041-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W8 (Dashboards) · approved by: agent, standing autonomous instruction
+#
+# 0042_w8_dashboard_widgets.sql
+#   Creates dashboard_widgets (the widget catalog) — the ONE persistent entity FS_Dashboard v1.0
+#   defines. Each widget is "specified once and composed per persona"; its data is aggregated from
+#   existing modules (PS14 analytics, P01 tasks, W1-W7 summaries). W8 is a composition wave.
+#   Additive/forward-only. Not in sensitive_tables. Compensating: docs/evidence/w8/0042-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0042_w8_dashboard_widgets.sql
+docs/evidence/w8/0042-compensating.sql
