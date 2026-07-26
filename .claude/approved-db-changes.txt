@@ -167,3 +167,17 @@ docs/evidence/w7/0041-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0042_w8_dashboard_widgets.sql
 docs/evidence/w8/0042-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W9 (Migration Toolkit only) · approved by: agent, standing autonomous instruction
+#
+# 0043_w9_migration_runs.sql
+#   Creates migration_runs — the ONE W9 entity with a real spec: Platform_Specification P06
+#   Migration Toolkit, §4.14.9 migration_runs, FR-P06-001, ETL+V (Extract->Validate->Transform->
+#   Load->Verify), idempotent re-run. Everything else in W9 is unspecified (see w9-coverage.md):
+#   feature-flags/licenses have no entity spec; monitoring/releases/environments are Cloud Run ops
+#   not app schema; leadership-ai-chat has no FS. None of those is authored.
+#   Additive/forward-only. Not in sensitive_tables. Compensating: docs/evidence/w9/0043-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0043_w9_migration_runs.sql
+docs/evidence/w9/0043-compensating.sql
