@@ -253,6 +253,64 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
       { key: "separationType", label: "Separation type", type: "text", required: true },
     ],
   },
+  // W2 — Attendance and leave administration. Every table below ALREADY EXISTS in
+  // docs/data-model/03-PS03-attendance-leave.sql or 00-platform-core.sql, so these screens are
+  // covered with no new schema and no inferred specification (FS_M04_Leave / FS_M05_Attendance).
+  {
+    key: "shifts", label: "Shifts", permissionPrefix: "cfg.shift",
+    screenId: "cfg-shifts", table: "shifts",
+    attributes: [
+      { key: "startTime", label: "Start time", type: "text", required: true },
+      { key: "endTime", label: "End time", type: "text", required: true },
+      { key: "graceMinutes", label: "Grace (minutes)", type: "number" },
+    ],
+  },
+  {
+    key: "weekly-off-patterns", label: "Weekly-off patterns", permissionPrefix: "cfg.weeklyoff",
+    screenId: "cfg-weeklyoff", table: "weekly_off_patterns",
+    attributes: [{ key: "pattern", label: "Pattern", type: "text", required: true }],
+  },
+  {
+    key: "holiday-calendars", label: "Holiday calendars", permissionPrefix: "cfg.holidaycalendar",
+    screenId: "cfg-holiday-calendars", table: "holiday_calendars",
+    attributes: [{ key: "calendarYear", label: "Year", type: "number", required: true }],
+  },
+  {
+    key: "leave-accrual-policies", label: "Leave policies", permissionPrefix: "cfg.leavepolicy",
+    screenId: "cfg-leave-policy", table: "leave_accrual_policies",
+    attributes: [
+      { key: "frequency", label: "Accrual frequency", type: "text", required: true },
+      { key: "unitsPerPeriod", label: "Units per period", type: "number", required: true },
+    ],
+  },
+  {
+    key: "leave-types", label: "Leave types", permissionPrefix: "cfg.leavetype",
+    screenId: "leave-config", table: "leave_types",
+    attributes: [
+      { key: "countsHolidays", label: "Counts holidays", type: "boolean", required: true },
+      { key: "openingBalance", label: "Opening balance", type: "number" },
+      { key: "entitlementCapDays", label: "Entitlement cap (days)", type: "number" },
+    ],
+  },
+  {
+    key: "attendance-reasons", label: "Attendance reasons", permissionPrefix: "cfg.attendancereason",
+    screenId: "attendance-reasons", table: "attendance_reasons",
+    attributes: [{ key: "appliesTo", label: "Applies to", type: "text", required: true }],
+  },
+  {
+    key: "leave-reasons", label: "Leave reasons", permissionPrefix: "cfg.leavereason",
+    screenId: "leave-reasons", table: "leave_reasons",
+    attributes: [{ key: "leaveTypeCode", label: "Leave type", type: "text" }],
+  },
+  {
+    key: "attendance-policies", label: "Attendance policies", permissionPrefix: "cfg.attendancepolicy",
+    screenId: "attendance-policies", table: "attendance_policies",
+    attributes: [
+      { key: "backdateWindowDays", label: "Backdate window (days)", type: "number", required: true },
+      { key: "regularisationCapPerPeriod", label: "Regularisation cap", type: "number", required: true },
+      { key: "halfDayUnderMinutes", label: "Half-day under (minutes)", type: "number" },
+    ],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

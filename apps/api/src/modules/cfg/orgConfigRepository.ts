@@ -38,7 +38,15 @@ export type ConfigRegistryKey =
   | "service-catalog"
   | "kb-articles"
   | "separation-policies"
-  | "separation-workflows";
+  | "separation-workflows"
+  | "shifts"
+  | "weekly-off-patterns"
+  | "holiday-calendars"
+  | "leave-accrual-policies"
+  | "leave-types"
+  | "attendance-reasons"
+  | "leave-reasons"
+  | "attendance-policies";
 
 export interface ConfigRecord {
   id: string;
