@@ -1,0 +1,297 @@
+Functional Specification — Dashboard & Landing (DSH)
+Version 1.0 · June 2026 · PrimeSoft HRMS Programme
+References: BRD §10 (Reporting & Analytics — §10.2 Role-Aware Dashboard Widgets, §10.4 Data Freshness & Caching, §10.5 Export & Delivery), BRD §3.4 (Workspace/self-service), BRD §3.7 (permission matrix — Manager Hub & dashboard rows), BRD §3.9 (field access); Prototype v2.6 screen dashboard (one shell, role-composed; persona homes per Prototype Link Verification); RBAC Design Document; Platform Specification §P02/§P03 (Workspace model); Foundation FS (Menu & Navigation Entitlement "Home / Dashboard", Scheduled Jobs §4, Message Catalogue §5, Global UI State Standard); UI Specification v1.0 (companion — owns visual layout, design tokens, responsive behaviour; not restated here).
+This FS adds the build layer — widget data-binding, refresh/cache, drill-down, per-role composition, the aggregation API, and per-screen RBAC projection — on top of the widget inventory fixed in BRD §10.2. It does not restate the widget inventory, the caching policy, the permission matrix, or the visual design; each is referenced to its single source.
+
+1. Scope & Reference Map
+This FS specifies the Home / Dashboard landing experience: a single role-composed shell (dashboard) that assembles a per-role set of widgets, plus the persona "home" variants the prototype exposes. It is cross-cutting (it surfaces data owned by M01–M17) and therefore references each owning module&#39;s FS for the underlying data and screens it drills into.
+Concern
+	Single source (referenced)
+	Authored here
+
+Which widgets exist; role-awareness
+	BRD §10.2
+	Per-widget data binding & composition
+
+Data freshness / caching policy
+	BRD §10.4
+	Per-widget TTL application
+
+Export & delivery
+	BRD §10.5
+	Widget-level export hooks (where applicable)
+
+Permission matrix (Manager Hub, dashboard, analytics rows)
+	BRD §3.7
+	Per-widget RBAC projection
+
+Field visibility/masking
+	BRD §3.9
+	Per-widget field projection
+
+Workspace model (Me / My Team / Admin)
+	Platform §P02/§P03; BRD §3.4
+	Which widget set binds to each workspace
+
+Menu entry "Home / Dashboard"
+	Foundation FS — Menu & Navigation Entitlement
+	Per-role widget manifest behind that entry
+
+Refresh/cache-warm jobs
+	Foundation FS §4 (Scheduled Jobs)
+	New job ids registered (see §3)
+
+Company-feed / announcement copy
+	Foundation FS §5 (Message Catalogue)
+	New message ids registered (see §3)
+
+Visual layout, tokens, responsive
+	UI Specification v1.0
+	Region/zone map only (not visual design)
+
+Underlying records each widget reads
+	Owning module FS (M01–M17)
+	Aggregation/drill-down contract
+
+Prototype anchor. All screens trace to the single prototype page dashboard, which is content-swapped per persona (Employee, L1 Manager / Manager Hub, HRBP, HOD, CEO, and the admin homes: Attendance, Performance, Recruitment, Service Desk, Org Admin, Platform). No dashboard screen in this FS is invented; where a BRD §10.2 widget has no prototype surface, it is raised in §7, not silently specified.
+
+2. Screen Specifications
+2.1 Dashboard shell (dashboard)
+Purpose: the authenticated landing page; assembles a role-composed widget set within the active workspace (Me / My Team / Admin). Satisfies BRD §10.2 (role-aware widgets) and §3.4 (workspace landing).
+Layout regions (zones only — visual design per UI Spec v1.0): (a) greeting/status bar — salutation, pending-task count, primary status chips (e.g., Clock-In state, days-to-next-event); (b) primary column — action-oriented widgets (My tasks, Clock-In, Time-off); (c) secondary column — informational widgets (Profile completeness, Company feed); (d) team band (My Team workspace only) — team widgets.
+States (reference Foundation Global UI State Standard): loading — per-widget skeletons, shell renders immediately; empty — per-widget empty copy (see catalogue); error — a failed widget shows an inline retry without failing the shell (partial-data is the norm); no-permission — a widget the role cannot see is omitted from the manifest (never rendered-then-blocked).
+Composition rule: the shell requests a widget manifest for {role holdings × active workspace × has-reportees} (see §4 GET /dashboard); it does not hard-code widgets.
+2.2 Widget Catalogue
+Each widget is specified once here and composed per persona in §2.3. Columns follow the dashboard/widget pattern: data source, aggregation, refresh/cache (applying BRD §10.4), drill-down, role visibility (BRD §3.7), and states.
+Widget id
+	Purpose (BRD §10.2 ref)
+	Data source (owning FS / API §4)
+	Aggregation / metric
+	Refresh & cache (BRD §10.4)
+	Drill-down target (screen id)
+	Visible to (BRD §3.7)
+	Empty / error
+
+DSH-W-TASKS
+	Action inbox
+	Workflow tasks across M01–M17 (Platform P01)
+	Count + list of open tasks assigned to user
+	Near-real-time; 60 s TTL
+	the owning task screen per item
+	All roles
+	"No pending tasks" / inline retry
+
+DSH-W-CLOCKIN
+	Attendance quick-action
+	M05 attendance (attendance page)
+	Today&#39;s clock state + last punch
+	Real-time on action; 30 s TTL
+	attendance
+	Roles with attendance self-service
+	Hidden if attendance not applicable
+
+DSH-W-PROFILE
+	Profile completeness
+	M01 employee master
+	% complete + missing critical fields
+	On profile write; 5 min TTL
+	directory/my-profile
+	Self (all employees)
+	"Profile complete"
+
+DSH-W-TIMEOFF
+	Upcoming time-off & holidays
+	M04 leave + holiday master
+	Next N approved leaves + holidays
+	5 min TTL
+	leave page / calendar
+	All roles
+	"No upcoming time off"
+
+DSH-W-FEED
+	Company feed / announcements
+	Foundation Message Catalogue (announcement ids)
+	Latest N published items
+	5 min TTL
+	item link
+	All roles
+	"No announcements"
+
+DSH-W-PENDING-APPR
+	Team approvals at a glance
+	Workflow approvals (P01), scoped to reporting chain
+	Count by type (leave/attendance/etc.)
+	60 s TTL
+	the approval queue per type
+	L1–L5 Manager, HRBP, HOD
+	"No pending approvals"
+
+DSH-W-TEAM-LEAVE
+	Team on leave today
+	M04 leave, reporting-chain scope
+	Who is off today / this week
+	5 min TTL
+	team leave view
+	L1–L5 Manager, HOD
+	"No one on leave"
+
+DSH-W-TEAM-ATT
+	Team attendance summary
+	M05 attendance, reporting-chain scope
+	Present / absent / late counts
+	5 min TTL
+	team attendance view
+	L1–L5 Manager, HOD
+	inline retry
+
+DSH-W-TEAMVSORG
+	Team vs Org overview
+	M05 attendance settings show_team_vs_org_widget
+	Team metric vs org benchmark
+	15 min TTL
+	analytics
+	L1 Manager (where enabled)
+	hidden if toggle off
+
+DSH-W-HRBP
+	HRBP operational metrics
+	M01/M03/M08 (separation, BGV, sensitive-change queues)
+	Open items by category
+	5 min TTL
+	the owning HRBP queue
+	HRBP
+	inline retry
+
+DSH-W-ADMIN-TILES
+	Admin-home quick actions + module KPIs
+	the owning admin module (M05/M08/M09/M11/M17/Org/Platform)
+	Module KPI tiles + shortcuts
+	5 min TTL
+	the module admin screen
+	the matching admin persona
+	per-tile empty copy
+
+DSH-W-CEO
+	Org-wide leadership analytics
+	BRD §10.2 (CEO)
+	Org headcount/attrition/etc.
+	Deferred
+	—
+	CEO
+	see §7 OPEN-FS-DSH-02
+
+2.3 Per-persona composition
+Which widgets the shell composes per persona (each cell references the catalogue; the set is the new content; data scope per §6).
+Persona (role)
+	Workspace
+	Widget set
+
+Employee (self-service)
+	Me
+	TASKS, CLOCKIN, PROFILE, TIMEOFF, FEED
+
+L1 Manager
+	Me + My Team
+	(Me set) + PENDING-APPR, TEAM-LEAVE, TEAM-ATT, TEAMVSORG
+
+L2–L5 Manager
+	Me + My Team
+	(Me set) + PENDING-APPR, TEAM-LEAVE, TEAM-ATT (progressively read-only per §3.7)
+
+HOD
+	Me + My Team
+	(Me set) + TEAM-LEAVE, TEAM-ATT (department scope), PENDING-APPR
+
+HRBP
+	Me + Admin
+	(Me set) + HRBP, PENDING-APPR
+
+CEO
+	Me
+	(Me set) + CEO (deferred — §7)
+
+Admin personas (Attendance / Performance / Recruitment / Service Desk / Org / Platform)
+	Admin
+	TASKS + ADMIN-TILES (module-specific KPI tiles + shortcuts)
+
+3. Interaction & Navigation Flows
+Workspace switch. The Me / My Team / Admin switcher (Platform §P02/§P03) re-requests the manifest; Admin is an exclusive workspace (OPEN-FS-FND-05, resolved). "My Team" is offered only when has-reportees is true (derived — see §7 / OPEN-FS-CFG-08).
+Drill-down. Every widget routes to its owning module screen (catalogue "drill-down" column); the dashboard never duplicates the module screen, it links to it.
+Refresh. Widgets refresh on the cadence in §2.2 (applying BRD §10.4); a cache-warm job (Foundation §4, new id JOB-DSH-CACHE) pre-computes heavy team/org aggregations off the request path. Task/approval counts are event-invalidated on the underlying P01 transaction.
+No state machine is redrawn — drill-downs hand off to the owning module&#39;s flows (reference each module FS §3).
+
+4. API Contracts
+GET /api/v1/dashboard (inventory: BRD §10.2 — role-composed manifest)
+Returns the widget manifest for the caller&#39;s {role holdings × workspace × has-reportees}; no widget data, just the composition.
+Request: workspace (enum: ME | MY_TEAM | ADMIN, default ME).
+Response 2xx: { workspace, widgets: [ { widget_id, region, refresh_ttl_s, drilldown_route } ] }
+Errors: 401 (unauth) · 403 (workspace not held by role — reference RBAC) · 422 (invalid workspace).
+Auth / pagination / idempotency: reference Foundation FS conventions. Manifest is cacheable per role for the TTL of the shortest-lived widget.
+GET /api/v1/dashboard/widgets/{widget_id} (widget data)
+Request: path widget_id; optional scope honoured server-side from RBAC (caller cannot widen scope).
+Response 2xx: { widget_id, generated_at, ttl_s, payload } (payload shape per widget).
+Errors: 403 (widget not in caller&#39;s manifest — reference RBAC §3.7) · 404 (unknown widget) · 503 (source degraded → client shows inline retry, shell unaffected).
+Caching: server applies the BRD §10.4 TTL; response carries Cache-Control/generated_at. Reads are scope-enforced server-side (reporting chain / department / entity) — never trust a client scope hint.
+POST /api/v1/dashboard/layout (personalisation — optional)
+Persists per-user widget order/visibility within the role-permitted set. Tenant-wide layout management is an Analytics Admin capability (BRD §3.6 role; action dashboard.layout.manage — see §7 RBAC registration).
+Errors: 403 (widget not in permitted set) · 422 (unknown widget id).
+
+5. Validation
+No new field-input validation — dashboard widgets are read-only aggregations. Reference Foundation FS shared catalogue for any drill-down form. The only authored rule is scope integrity: a widget request resolving to a scope wider than the caller&#39;s RBAC data-level grant returns 403 (not a filtered result) — see §4 and §6.
+
+6. Per-Screen RBAC Projection & Menu
+Menu entitlement. The single menu entry Home / Dashboard (Foundation FS — Menu & Navigation Entitlement) is visible to all roles; the behind-the-entry composition is the per-persona set in §2.3. No new menu node.
+Per-widget visibility projects BRD §3.7 (and §10.2 role-awareness); see the "Visible to" column in §2.2. New content is the projection, not the matrix.
+Data-level scope (projects BRD §3.7 row-level security): team widgets resolve to reporting chain for L1–L5; department for HOD; entity/org for CEO/leadership (deferred); self-only for the Me set. Scope is enforced in the API (§4), not the UI.
+New action to register in RBAC: dashboard.layout.manage (Analytics Admin) for tenant-wide layout management — see §7.
+
+7. Open Items, Conflicts & Recommendations
+Id
+	Type
+	What&#39;s missing / in conflict
+	Owner
+	PROPOSED — confirm before build
+
+OPEN-FS-DSH-01
+	Gap (design)
+	Visual layout, design tokens, responsive behaviour (375/768/1280) are owned by UI Specification v1.0, which is referenced but not yet authored
+	Design
+	Author UI Spec v1.0 dashboard section; this FS supplies the region/zone map and widget data contracts to build against
+
+OPEN-FS-DSH-02
+	Scope
+	CEO org-analytics widgets (DSH-W-CEO) are in BRD §10.2 role-awareness but deferred
+	Product
+	Keep in enhancement backlog per JUDG-CEO-001 (confirmed not Release-1); employee/manager/admin widgets ship in R1
+
+OPEN-FS-DSH-03
+	Dependency
+	"My Team" composition gates on has-reportees
+	Product
+	Use the derived has-reportees flag per OPEN-FS-CFG-08 (Platform already leans derived); confirm derived vs derived+override
+
+OPEN-FS-DSH-04
+	Gap (screen)
+	Admin-home widget sets (DSH-W-ADMIN-TILES) — prototype shows persona homes but the exact KPI tile set per admin persona isn&#39;t fixed in BRD
+	Product
+	Proposed: each admin home shows its module&#39;s top 3–4 KPIs + the persona&#39;s task shortcuts; confirm the KPI per persona
+
+OPEN-FS-DSH-05
+	Gap (source)
+	Company-feed (DSH-W-FEED) content source & moderation not fixed in BRD
+	Product
+	Proposed: feed sourced from Foundation Message Catalogue announcement ids, published by HR/Comms roles; confirm authoring & moderation
+
+OPEN-FS-DSH-06
+	Conflict
+	Per-widget refresh TTLs in §2.2 are proposed against the BRD §10.4 freshness policy but the policy&#39;s exact TTLs aren&#39;t enumerated per widget
+	Architecture
+	Confirm the §2.2 TTLs against BRD §10.4; register JOB-DSH-CACHE in Foundation §4
+
+OPEN-FS-DSH-07
+	RBAC
+	dashboard.layout.manage (Analytics Admin) is implied by BRD §3.6 but not an explicit matrix action
+	Product / RBAC
+	Register the action in the RBAC matrix for Analytics Admin (entity-scoped)
+
+Reference register (screen → sources) for the cross-document audit: dashboard → BRD §10.2/§10.4/§3.4/§3.7 · entities owned by M01/M04/M05/M08/M11/M17 · Foundation menu/jobs/messages · Platform §P02/§P03 · prototype dashboard. Open items above are the only places this FS proposes rather than references.

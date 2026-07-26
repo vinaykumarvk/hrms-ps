@@ -1,0 +1,1427 @@
+FS ��� M08 Recruitment v1.3
+Table of Contents
+ TOC \z \o "1-2" \u \h
+1. Scope &** Reference Map**
+References: BRD §5.7, §4.9, §3.7.2, §6.4 (M08) · Prototype v20.9 recruitment screens.
+This section proves non-repetition: it lists what the FS references versus what it authors. Every screen specification in Section 2 traces back to a prototype screen id and the BRD FR id(s) it satisfies; the FS adds the screen, contract, validation, and projection that the referenced items only name.
+1.1 BRD coverage map (referenced, not restated)
+BRD topic
+	BRD section
+	FS treatment
+
+Recruitment functional requirements (FR-M08-001…016, with acceptance criteria, business rules, edge cases)
+	§5.7
+	Reference the FR id; FS adds the screen + complete contract that satisfies it.
+
+M08 data model — positions, jobs, job_hiring_team, job_hiring_stages, job_postings, job_application_field_config, candidates, interviews, offers (+ workspace lifecycle extension), external_recruiters, duplicity_check_settings, etc.
+	§4.9.1–4.9.18
+	Reference per entity/field; FS adds only UI control + screen mapping. job_board_codes/published_at/expires_at were removed from jobs (§4.9.2) in favour of job_postings (§4.9.16) — FS honours this.
+
+Action-level permission matrix (role × recruitment action)
+	§3.7.2
+	Reference; FS projects onto each screen (Section 6), never restates the matrix.
+
+Sensitive-data restrictions & field-level access
+	§3.8, §3.9
+	Reference; FS expresses per-screen masking/read-only for PII (PAN/Aadhaar/CTC).
+
+API conventions (response envelope, rate limiting, error model, auth)
+	§6.2–6.3
+	Reference once; FS authors full per-endpoint contracts in Section 4.
+
+M08 API endpoint inventory
+	§6.4 (M08 Recruitment)
+	Reference the inventory entry; FS authors the complete request/response/error contract.
+
+Candidate / Requisition / Offer state machines
+	§8.6, §8.7, §8.7a
+	Reference; FS maps which screen drives each transition (Section 3).
+
+M08 notification matrix (OFFER_, INTERVIEW_, JOB_PUBLISHED…)
+	§9.5
+	Reference by event code; the new lifecycle triggers are folded into BRD v7.5 §9.4 (§7).
+
+NFRs (performance, security, accessibility, audit)
+	§7
+	Reference; never restate targets.
+
+Reporting / analytics widget definitions
+	§10
+	Reference; FS adds data binding, refresh, drill-down, per-role composition for the recruiter dashboards.
+
+Glossary (JR, JOB, CAN, IOI, pre-offer, IJP, duplicity…)
+	§12
+	Reference terms; never redefine.
+
+1.2 Screen → requirement reference register (M08)
+References: Prototype v20.9 data-page ids · BRD §5.7 FR ids · BRD §4.9 entities.
+FS screen (prototype id)
+	BRD FR id(s)
+	Primary BRD entities
+	RBAC row (§3.7.2)
+
+job-openings
+	FR-M08-011
+	jobs §4.9.2, positions §4.9.13
+	Recruitment — requisitions
+
+create-job
+	FR-M08-011/013/014
+	jobs, job_hiring_team §4.9.14, job_hiring_stages §4.9.15, job_postings §4.9.16, job_application_field_config §4.9.17
+	Recruitment — requisitions (Adm)
+
+ra-raise-requisition
+	FR-M08-012/001
+	requisitions, positions §4.9.13
+	Recruitment — requisitions
+
+ra-requisitions / ra-req-detail / requisition-approval
+	FR-M08-001
+	requisitions
+	Recruitment — requisitions
+
+ra-candidates / ra-add-candidate / candidate-profile
+	FR-M08-002/003/008
+	candidates §4.9.3, duplicity_check_settings §4.9.12
+	Recruitment — candidates
+
+ra-pipeline / hiring-flow
+	FR-M08-013
+	candidates, interviews §4.9.4, job_hiring_stages
+	Recruitment — candidates
+
+ra-interviews / ra-schedule-interview / my-interviews
+	FR-M08-007/013/016
+	interviews §4.9.4
+	Recruitment — candidates
+
+ra-pre-offer-queue / ra-pre-offer-issue
+	FR-M08-009
+	candidates (pre-offer fields)
+	Recruitment — offer letters
+
+ra-document-review / ra-document-review-detail
+	FR-M08-010
+	candidates (verification), M11 vault
+	Recruitment — offer letters
+
+generate-offer / ra-offer-queue / ra-offer-preview / offer-letters
+	FR-M08-015/004
+	offers §4.9.5 + workspace lifecycle ext §4.9.18
+	Recruitment — offer letters
+
+ra-recruiters / ra-recruiter-assignment
+	FR-M08-001
+	users, recruiter assignment
+	Recruitment — candidates
+
+ra-external-recruiters / ra-vendor-onboarding
+	FR-M08-006
+	external_recruiters §4.9.6, external_recruiter_groups
+	Recruitment — requisitions
+
+ra-portals / ra-sources
+	FR-M08-008/014
+	job_postings, custom_sources
+	Recruitment — requisitions
+
+rec-overview
+	FR-M08-016
+	candidates, offers, interviews (roll-up)
+	Recruitment — candidates
+
+ijp-openings / ijp-applied
+	FR-M08-016/014/003
+	jobs, job_postings, candidates
+	Employee self-scope — accepted (§7)
+
+refer / my-referrals / link-accounts
+	FR-M08-016/014/003
+	jobs, candidates (source=REFERRAL)
+	Employee self-scope — accepted (§7)
+
+candidate-profile / document-upload / offer-letter (candidate panel)
+	FR-M08-002/010/004/015, FR-M08-005
+	candidates §4.9.3, offers §4.9.5, duplicity_check_settings §4.9.12, verification_status, M11 vault
+	Candidate (external portal) — §2.9
+
+2. Screen Specifications
+One subsection per prototype screen. Field tables follow the format Field · Control · Source (BRD ref) · Validation (ref) · Role behaviour (ref) · On-screen behaviour — only Control and On-screen behaviour are new content; every other column is a reference. Layout describes regions, not visual design (owned by the design system). Standard states authored for every screen: empty, loading, error, no-permission, partial-data — listed per screen only where they differ from the Foundation default.
+2.1 job-openings — Job Openings list
+References: FR-M08-011 · jobs §4.9.2, positions §4.9.13 · §3.7.2 (Recruitment — requisitions) · prototype data-page=“job-openings”*.*
+Purpose: list and triage Jobs (public-facing posting/configuration containers) with status tabs and an entry point to the Create Job wizard. A Job advertises funded Positions supplied by one or more Requisitions (FR-M08-012).
+Layout: page-head (title, “My positions only” toggle, “+ Create job” primary action) · status tab strip · results table · pager.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Status tabs
+	Tab strip (All / Open / Drafts / On hold / Archived)
+	jobs.status enum §4.9.2
+	—
+	All roles with view (§3.7.2)
+	Each tab filters by jobs.status with a live count; default All.
+
+My positions only
+	Toggle
+	positions.assigned_recruiter_user_id §4.9.13
+	—
+	Recruiter sees own; Adm sees all
+	Filters list to jobs with a position assigned to the current user.
+
+Job title & job code
+	Read-only cell
+	jobs.job_title, jobs.job_code (JOB_) §4.9.2
+	VAL-M08-JOBCODE
+	View per §3.7.2
+	Row click → job detail (Create Job in view mode).
+
+Mapped designation
+	Read-only
+	designations (FK)
+	—
+	View
+	Designation title + code.
+
+Job status
+	Pill
+	jobs.status
+	—
+	View
+	Open/Draft/On hold/Archived colour mapping.
+
+Remote job
+	Read-only
+	jobs.tag_remote
+	—
+	View
+	Yes/No.
+
+Location / Department
+	Read-only
+	locations, departments (FK)
+	—
+	View
+	—
+
+Actions: “+ Create job” → 2.2 create-job (route create-job). Row → create-job (view). Search filters title/code client-side; server search via GET /jobs (Section 4).
+2.2 create-job — Create Job (5-step wizard)
+References: FR-M08-011, FR-M08-013, FR-M08-014 · jobs §4.9.2, job_hiring_team §4.9.14, job_hiring_stages §4.9.15, job_postings §4.9.16, job_application_field_config §4.9.17, positions §4.9.13 · §3.7.2 (Recruitment — requisitions = Adm) · prototype data-page=“create-job”*.*
+Purpose: author a Job end-to-end. Five steps rendered as ordered sections with a step rail: (1) Job Details, (2) Job Posting, (3) Job Application, (4) Hiring Workflow, (5) Hiring Team. Wizard-level actions: Cancel · Save as draft (persists jobs.status=DRAFT) · Post (validates steps 1/4/5, sets jobs.status=OPEN, activates configured channels).
+Step 1 — Job Details
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Select company *
+	Select
+	jobs.entity_id (FK) §4.9.2
+	VAL-REQUIRED
+	Adm
+	—
+
+Select department *
+	Select
+	jobs.department_id
+	VAL-REQUIRED
+	Adm
+	Cascades designation list.
+
+Select designation *
+	Select
+	jobs.designation_id
+	VAL-REQUIRED
+	Adm
+	Drives JD default lookup.
+
+Employee type *
+	Select
+	jobs.employment_type
+	VAL-REQUIRED
+	Adm
+	Full/Part/Contract/Consultant/Intern.
+
+Job location *
+	Select
+	jobs.location_id
+	VAL-REQUIRED
+	Adm
+	—
+
+Job name on Careers/IJP/Refer
+	Text
+	jobs.public_job_name
+	VAL-LEN-200
+	Adm
+	If blank, defaults to designation title.
+
+Job tags
+	Multi-select
+	jobs.tags
+	—
+	Adm
+	—
+
+Tag as remote job
+	Toggle
+	jobs.tag_remote
+	—
+	Adm
+	—
+
+Experience range
+	From/To + unit
+	jobs.exp_from, exp_to, exp_unit
+	VAL-M08-EXPRANGE
+	Adm
+	To ≥ From.
+
+Target time to fill (days)
+	Number
+	jobs.target_ttf_days
+	VAL-INT-POS
+	Adm
+	—
+
+Job description summary / JD
+	Textarea / rich
+	jobs.jd_summary, jobs.jd_html
+	—
+	Adm
+	If no designation JD configured, show “Create manually”.
+
+Add & Manage Positions (within Step 1): counters (Total/Open/Selected-filled/On-hold/Draft/Auto-archived/Archived) over positions §4.9.13 and a positions table (Requisition ID · Position no · Position ID {JR_code}:{position_no} · Status · Recruiter · Specific requirements). Positions are funded by Requisitions (FR-M08-012) — this surface attaches existing positions to the job; it does not create headcount.
+Step 2 — Job Posting
+Sub-tabs: Job Posting Options and Sources. Per FR-M08-014 each channel has its own window and status.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Channel rows
+	Table (Careers/Refer/IJP/External/Job Boards/Social/Custom)
+	job_postings.channel §4.9.16
+	—
+	Adm
+	One row per channel.
+
+Display from / Display to
+	Date
+	job_postings.display_from/display_to
+	VAL-M08-WINDOW
+	Adm
+	To ≥ From; posting visible only inside window.
+
+Channel status
+	Pill + Activate/Deactivate
+	job_postings.channel_status
+	—
+	Adm
+	Active/Inactive per channel.
+
+Re-application days
+	Number
+	job_postings.reapplication_days
+	VAL-INT-POS
+	Adm
+	Default 180; per channel for this job.
+
+Job board code
+	Select (Naukri/LinkedIn/Glassdoor)
+	job_postings.job_board_code
+	—
+	Adm
+	Only for Job Boards / Social (LC08).
+
+Step 3 — Job Application
+Per-field, per-channel visibility/mandatory matrix over job_application_field_config §4.9.17. Sub-tabs: Job Application · Pre Screening Settings · Screener Fields.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Field row
+	Matrix row per application field
+	job_application_field_config.field_id/section §4.9.17
+	—
+	Adm
+	Grouped by section (Resume, Biographical, Contact, Education…).
+
+Display name
+	Text
+	…display_name
+	VAL-LEN-160
+	Adm
+	Overrides the default label.
+
+Careers/IJP/Refer View
+	Checkbox
+	…careers_view/ijp_view/refer_view
+	—
+	Adm
+	Controls field presence per channel.
+
+Careers/IJP/Refer Mandatory
+	Checkbox
+	…careers_mandatory/…
+	VAL-M08-MANDVIEW
+	Adm
+	Mandatory requires View=on for the same channel.
+
+Pre-offer view
+	Checkbox
+	…preoffer_view
+	—
+	Adm
+	Required when Enable Pre-Offer is on (Step 4).
+
+Resume parsing
+	Multi-select + country
+	…resume_parsing_channels/country
+	—
+	Adm
+	Channels with parsing; country scope (e.g. IN).
+
+Step 4 — Hiring Workflow
+Editable per-job stage list seeded from the company default; first stage and last stage (Offer Stage) are non-deletable; changes apply only to candidates added after the change. Job-level toggles set the stage behaviour.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Stage list
+	Sortable table (add/edit/delete; + Add round)
+	job_hiring_stages §4.9.15
+	—
+	Adm
+	First & last locked; delete blocked if stage holds candidates.
+
+Evaluation type
+	Select
+	job_hiring_stages.evaluation_type
+	—
+	Adm
+	Online / Face to face (LC07).
+
+Parallel evaluation
+	Toggle
+	jobs.parallel_evaluation_allowed
+	—
+	Adm
+	“Can interviews/evaluations be done in parallel?”
+
+Enable Pre-Offer
+	Toggle
+	jobs.pre_offer_enabled
+	—
+	Adm
+	When on, Step 3 Pre-offer fields must be configured.
+
+Interviewer feedback access
+	Toggle
+	jobs.interviewer_feedback_access
+	—
+	Adm
+	Governs my-interviews visibility (2.x).
+
+Step 5 — Hiring Team
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Hiring lead *
+	Select (user)
+	job_hiring_team.hiring_lead_user_id §4.9.14
+	VAL-REQUIRED
+	Adm
+	Mandatory to Post.
+
+Screening / Scheduling team
+	Multi-select
+	…screening_team_user_ids/scheduling_team_user_ids
+	—
+	Adm
+	—
+
+Hiring group
+	Select
+	…hiring_group_id
+	—
+	Adm
+	—
+
+Collaborators
+	Multi-select
+	…collaborator_user_ids
+	—
+	Adm
+	—
+
+States: Empty (no JD / no positions → guidance + Create-manually / link requisition). Draft (Save as draft allowed at any step). Validation error inline per field. No-permission: non-Adm cannot reach Post (read-only).
+Actions: Post → PUT /jobs/{id} (status OPEN) + POST /jobs/{id}/postings activation (Section 4); emits JOB_PUBLISHED (§9.5). Save as draft → PUT /jobs/{id} (DRAFT). Positions table → reads GET /requisitions/{id}/positions (BRD v7.5 §7.4.5; Section 4).
+2.3 ra-raise-requisition — Raise Requisition (4-step wizard)
+References: FR-M08-012, FR-M08-001 · requisitions, positions §4.9.13 · §3.7.2 (Recruitment — requisitions) · prototype data-page=“ra-raise-requisition”*.*
+Purpose: raise a requisition that funds the Positions a Job advertises. Steps: (1) Basic details, (2) Job details, (3) Position selection, (4) Other details. Submit routes through the configured approval flow; on approval the requisition becomes Approved Active and its positions become available to Jobs. JR code auto-numbered (JR_ prefix, counter continuation per FR-M08-001); positions addressed as {JR_code}:{position_no}.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Hiring manager *
+	User picker
+	requisitions.hiring_manager_id
+	VAL-REQUIRED
+	Adm/Hiring Lead
+	Step 1.
+
+Company / Department / Designation *
+	Select
+	requisitions.* (FK)
+	VAL-REQUIRED
+	Adm
+	Step 1.
+
+Experience range
+	From/To + unit
+	requisitions.exp_*
+	VAL-M08-EXPRANGE
+	Adm
+	Step 2.
+
+Recruitment start date *
+	Date
+	requisitions.recruitment_start_date
+	VAL-REQUIRED
+	Adm
+	Step 2.
+
+Hiring lead *
+	Select
+	requisitions.hiring_lead_id
+	VAL-REQUIRED
+	Adm
+	Step 2.
+
+Position-specific requirements / skills
+	Textarea
+	requisitions.position_requirements/skills
+	—
+	Adm
+	Free text beyond standard JD.
+
+No. of new / replacement positions
+	Number
+	positions (count by position_type) §4.9.13
+	VAL-M08-POSMAX
+	Adm
+	Computed total ≤ 100.
+
+Position details (per row)
+	Repeating table
+	positions.* §4.9.13
+	VAL-M08-REPL
+	Adm
+	Location*, Replacement-for* (REPLACEMENT only; NA for NEW), Reporting manager, Employee group*, Contribution level*, Designation alias; copy-to-all per column.
+
+Comments / instructions
+	Textarea
+	requisitions.comments
+	—
+	Adm
+	Step 4.
+
+Project manager * / Duration *
+	Text
+	requisitions.project_manager/duration
+	VAL-REQUIRED
+	Adm
+	Step 4 (project-staffing).
+
+Rounds / Interview rounds / Client location / Project start / Customer
+	Mixed
+	requisitions.* (project staffing)
+	—
+	Adm
+	Step 4, project-staffing only.
+
+States: Validation error: replacement row blocks submit if Replacement-for empty (VAL-M08-REPL); total positions > 100 blocked (VAL-M08-POSMAX); reducing count below positions already on active offers blocked (edge case, FR-M08-012).
+Actions: Submit → POST /requisitions (Section 4) → approval workflow (§8.7). On approval, positions become attachable in create-job Step 1.
+2.4 hiring-flow — Per-candidate Hiring Flow tracker
+References: FR-M08-013 · candidates §4.9.3, interviews §4.9.4, job_hiring_stages §4.9.15 · §8.6 (candidate state machine) · prototype data-page=“hiring-flow”*.*
+Purpose: track one candidate through the job’s configured stages with per-stage status and actions. Stage statuses: Completed · Selected · Pending for feedback · Pending for scheduling · Pending. Stage card surfaces interviewer panel (primary + optional), interviewer decision, event name, interview type, and the interview window in the employee timezone.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Stage status
+	Status pill per stage
+	interviews.outcome / candidate.state §8.6
+	—
+	Recruiter/Adm
+	Drives available action.
+
+Stage actions
+	Buttons
+	—
+	—
+	Per §3.7.2
+	Schedule / Re-schedule → 2.x ra-schedule-interview; Mark completed → PUT /interviews/{id}; Initiate Pre-Offer → 2.x ra-pre-offer-issue; Generate offer → 2.x generate-offer.
+
+Interviewer panel & decision
+	Read-only
+	interviews.panel, interviews.decision
+	—
+	Feedback visible only if jobs.interviewer_feedback_access (FR-M08-013)
+	—
+
+Interview window
+	Read-only
+	interviews.start/end (tz)
+	—
+	View
+	Employee timezone.
+
+Actions: Each action maps to a §8.6 transition (Section 3). Mark-completed with pending feedback → warning (error message ERR-M08-STAGEFEEDBACK).
+2.5 generate-offer — Generate Offer Letter (3-step wizard + lifecycle)
+References: FR-M08-015, FR-M08-004 · offers §4.9.5 + workspace lifecycle extension §4.9.18 · §8.7a (offer lifecycle) · §3.7.2 (Recruitment — offer letters = Recruitment Admin · HR Admin; Recruiter excluded) · prototype data-page=“generate-offer”*.*
+Purpose: assemble, preview, and route an offer for approval, then track it through the workspace lifecycle. Top-level tabs Template · Preview · Approval. Template tab holds the 3 steps: (1) Offer Letter, (2) Job/Candidate Details, (3) Pay Details. Joint Recruitment-Admin/HR-Admin authority; Recruiter cannot generate offers. CEO co-signature applies above the CTC threshold (FR-M08-004).
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Offer expiry date *
+	Date
+	offers.offer_expiry_date §4.9.5
+	VAL-M08-FUTUREDATE
+	Adm/HR Admin
+	Step 1.
+
+Template *
+	Select
+	offers.offer_letter_template_id (M11)
+	VAL-REQUIRED
+	Adm/HR Admin
+	Step 1.
+
+Company/Dept/Designation *
+	Select
+	offers.proposed_* §4.9.5
+	VAL-REQUIRED
+	Adm/HR Admin
+	Step 2.
+
+Location, Employee type, Reporting manager, Probation, Designation alias, HRBP, Dotted-line, Contribution level
+	Mixed
+	offers.proposed_* / §4.9.18
+	—
+	Adm/HR Admin
+	Step 2.
+
+First/Middle/Last/Legal name
+	Text
+	candidates.* / offers
+	VAL-NAME
+	Adm/HR Admin
+	Step 2; First name mandatory.
+
+Date of joining
+	Date
+	offers.proposed_doj
+	VAL-DATE
+	Adm/HR Admin
+	Step 2.
+
+Salary structure (Old/New), Pay scale group, Salary structure, Currency
+	Mixed
+	offers.pay_structure_mode/pay_scale_group_id/salary_structure_id/ctc_currency §4.9.18/§4.9.5
+	—
+	Adm/HR Admin
+	Step 3.
+
+Fixed CTC / Show Total CTC / Previous CTC / % increment
+	Number/Toggle
+	offers.total_ctc/show_total_ctc_in_breakup/previous_total_ctc/percentage_fixed_ctc_increment §4.9.18
+	VAL-CURRENCY, VAL-PCT
+	Masked per §3.8/§3.9 for non-PII roles
+	Step 3; CTC drives CEO threshold (FR-M08-004).
+
+Differently abled / Metro
+	Select
+	offers.differently_abled/metro §4.9.18
+	—
+	Adm/HR Admin
+	Step 3.
+
+Approver email (subject/body/CC users/CC roles), Trigger custom exception flow, Approver/Candidate attachments
+	Mixed (Approval tab)
+	offers.approver_cc_user_ids/approver_cc_roles/trigger_custom_exception_flow/approver_attachment_ids/candidate_attachment_ids §4.9.18
+	VAL-REQUIRED (subject)
+	Adm/HR Admin
+	No approver email fires when there are no approvers.
+
+Offer lifecycle board (read-only) renders offer_lifecycle_state §4.9.18 as the canonical workspace status governed by §8.7a: Pending for approval → Approved/to-share → Pending with candidate → Accepted/to-pending-list → In pending list → Employee movement initiated → Employee movement approved → Completed; Rejected and Expired branch from approval and the candidate window. approval_status and candidate_acceptance_status (§4.9.5) are derived sub-statuses (per §4.9 SSOT note).
+States: No approvers → no approval email (FR-M08-015). Expired → frees the position. Above-threshold CTC → CEO co-sign required before share (FR-M08-004).
+Actions: Send for approval → POST /offers (Section 4) + lifecycle transitions POST /offers/{id}/approve|share|… (BRD v7.5 §7.4.5; Section 4). Employee Movement Approved → triggers M01 employee creation + M02 pre-joining (FR-M08-005).
+2.6 ra-add-candidate — Add Candidate
+References: FR-M08-002/003/008 · candidates §4.9.3, duplicity_check_settings §4.9.12 · prototype data-page=“ra-add-candidate”*.*
+Purpose: add a candidate against a requisition with source tagging (platform-mandatory, FR-M08-008) and duplicity check (FR-M08-003). CAN_ auto-numbering per employment type.
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Name / Email / Mobile
+	Text
+	candidates.first_name/last_name/email/mobile §4.9.3
+	VAL-NAME, VAL-EMAIL, VAL-MOBILE
+	Recruiter/Adm (E·A* §3.7.2)
+	Email/mobile drive duplicity check.
+
+Target employment type
+	Select
+	candidates.target_employment_type
+	VAL-REQUIRED
+	Recruiter/Adm
+	Drives CAN_ counter.
+
+Source type *
+	Select
+	candidates.source_type
+	VAL-REQUIRED
+	Recruiter/Adm
+	Mandatory at addition (FR-M08-008).
+
+Source detail
+	Text
+	candidates.source_detail
+	—
+	Recruiter/Adm
+	Board / referrer.
+
+Resume
+	File
+	candidates.resume_document_id (M11)
+	VAL-FILE
+	Recruiter/Adm
+	OCR/parse per job config (FR-M08-014).
+
+States: Duplicity hit → blocking banner with override (Adm/Hiring Lead/Permission holder only, FR-M08-003); error ERR-M08-DUP.
+Actions: Save → POST /candidates (duplicity applied, Section 4).
+2.7 Self-service — IJP, Refer, My Referrals, My Interviews, Link Accounts
+References: FR-M08-016 (with FR-M08-014 channel config and FR-M08-003 duplicity/re-application) · jobs/job_postings, candidates · prototype data-page ijp-openings, ijp-applied, refer, my-referrals, my-interviews, link-accounts.
+Employee/interviewer surfaces. These respect per-job channel windows and field config (FR-M08-014) and duplicity/re-application rules (FR-M08-003). RBAC for employee recruitment actions is employee self-scope, folded into BRD v7.5 §3.7.2 (§7).
+Screen
+	Purpose
+	Key fields / columns
+	States / notes
+
+ijp-openings
+	List internal postings open to the employee
+	Job title & code, Remote, Company, Location, Dept & BU, Employee type, Expires on
+	Empty state when none open; respects IJP window.
+
+ijp-applied
+	Track the employee’s internal applications
+	Job, Job status, Email & phone, Applied date, Status, Action(Withdraw)
+	Status mirrors candidate.state for the IJP application.
+
+refer
+	Refer candidates to open roles
+	Job title & code, Remote, Company, Location, Dept & BU, Employee type, Refer action
+	Refer → create candidate with source_type=REFERRAL.
+
+my-referrals
+	Track submitted referrals
+	Candidate, Job, Referred on, Stage, Status
+	Pipeline progress per referral.
+
+my-interviews
+	Interviewer view of assigned interviews
+	Upcoming / History tabs, date strip, Pending feedback panel
+	Feedback visible only if jobs.interviewer_feedback_access (FR-M08-013).
+
+link-accounts
+	Link external accounts for sourcing
+	LinkedIn / Naukri / Glassdoor link tiles
+	Linkage status per provider.
+
+2.8 Existing recruitment screens (concise specs)
+These screens already exist in the prototype and satisfy FR-M08-001…010; specified concisely (purpose · FR ref · key controls · states · primary action). Field-level data and rules are governed by the referenced BRD sections.
+Screen (prototype id)
+	FR ref
+	Purpose &** key controls / states / primary action**
+
+ra-requisitions
+	FR-M08-001
+	All requisitions list with counts (Total/Active offer/Closed); filter, search; row → ra-req-detail. Empty/loading/error standard.
+
+ra-req-detail
+	FR-M08-001
+	Requisition summary, positions, linked candidates; actions per §3.7.2. → ra-recruiter-assignment.
+
+requisition-approval
+	FR-M08-001
+	Approver decision screen mapped to §8.7; approve/reject with reason; → audit.
+
+ra-candidates / candidate-profile
+	FR-M08-002/008
+	Candidate pool (search Name/Email/Phone/CAN_), CV, experience, job applied, contextual actions; profile = §4.9.3 fields (PII masked per §3.9).
+
+ra-pipeline
+	FR-M08-013
+	Funnel/pipeline by stage; drill to hiring-flow.
+
+ra-interviews / ra-schedule-interview
+	FR-M08-007
+	Interview oversight + scheduling (type Online/Face-to-face, panel, window, calendar invite → INTERVIEW_SCHEDULED §9.5).
+
+ra-pre-offer-queue / ra-pre-offer-issue
+	FR-M08-009
+	Pre-offer (IOI) issuance from INTERVIEW_PASSED; LTR_IOI template; validity default 5 wd (max 14); → PRE_OFFER_EXTENDED (§8.6).
+
+ra-document-review / -detail
+	FR-M08-010
+	Post-pre-offer document review; mandatory docs (PAN, Aadhaar, education cert, relieving letter, 3-mo salary slips, bank proof, photograph); verify/discrepancy; SLA 5 wd → HRBP day 7; → DOCUMENT_REVIEW_PASSED.
+
+ra-offer-queue / ra-offer-preview / offer-letters
+	FR-M08-004/015
+	Offer queues grouped by lifecycle (§8.7a); preview; → generate-offer.
+
+ra-recruiters / ra-recruiter-assignment
+	FR-M08-001
+	Recruiter management & assignment to requisitions/positions.
+
+ra-external-recruiters / ra-vendor-onboarding
+	FR-M08-006
+	External recruiter agencies/groups (§4.9.6), contract dates, add vendor.
+
+ra-portals / ra-sources
+	FR-M08-008/014
+	Job portals (LC08) and source analytics; channel posting reflects job_postings §4.9.16.
+
+2.9 Candidate & Pre-joining Portal (Candidate role)
+References: BRD §5.7 FR-M08-002/004/005/010/015 · §8.6 (candidate state machine) · Vision §3.1 (Candidate mandate) and §2.2/§2.6 (external auth, consent) · prototype candidate panel (candidate-profile, document-upload, offer-letter; pre-joining/onboarding screens are M02) · config: duplicity_check_settings §4.9.12, Candidate_Auto_Numbering, Custom_Source, Verification Status master, Candidate Decision/Archival reasons, ReasonList candidate flags. The Candidate is an external party; this section authors the candidate-facing recruitment surface and the hand-off to M02, and does not restate M02 pre-joining screens.
+The Candidate role has two consecutive states, both served through an external portal — never the live HRMS:
+Candidate state (recruitment) — from application through offer decision. Surfaces: careers application, candidate profile, application-status tracking, document upload & BGC consent, offer accept/decline.
+Pre-joining state (post-offer-acceptance) — handed to M02. Surfaces: pre-joining checklist, onboarding form, stakeholder workflow forms, buddy, policy/sign-off documents, Chat Agent. These are specified in M02 (FR-M02-001/003, Appendix J) and referenced here, not restated.
+2.9.1 Portal boundary & authentication
+Aspect
+	Specification
+
+Identity
+	External candidate identity, separate from employee SSO. Created on first careers application or on offer release. No employee record exists until offer acceptance triggers M01 creation (FR-M08-005).
+
+Access ceiling
+	Portal-only. No access to any live HRMS module, employee directory, org chart, other candidates, internal notes, recruiter feedback, CTC bands, or internal decision/archival reasons. PII is own-record only.
+
+Auth mechanism
+	Email + OTP (passwordless) for the external candidate portal — a candidate identity separate from employee SSO. Session policy per Vision §2.2 (short-lived token, server-side refresh with revoke); account recovery via email OTP. No password store for candidates.
+
+Consent
+	DPDPA consent captured at application and at BGC initiation; consent records are immutable (supersede, never delete) per Vision §2.6.
+
+2.9.2 Careers application & candidate profile
+Screen: candidate-profile (+ external careers entry). FR-M08-002/003/008.
+Entry channels: Careers Page (external self-apply), Refer (employee referral link), External Recruiter Portal (vendor submission). IJP is out of scope (CFG-002).
+Application fields are driven per job by job_application_field_config (§4.9.17). Configuration ownership: the Org Admin maintains the global candidate / custom-field catalog (fields that may exist); the Recruitment Admin selects which of those fields appear on a given job's application form and marks each enable/mandatory/default, at Create Job → Job Application (Recruiters cannot configure this). The per-tenant default field set is a tenant configuration action, not a code dependency.
+On submit: candidate record created with CAN number from Candidate_Auto_Numbering (prefix + next number, keyed by Company / Employee Type / Region); source stamped from Custom_Source / source type. State → APPLIED (§8.6).
+Duplicity / re-application (duplicity_check_settings §4.9.12): duplicate detection on the configured key fields; re-application blocked until Number Of Days Before Reapplication By Candidate elapses; Allow candidate to apply for multiple positions governs concurrent applications (separately for Other Sources and External Recruiter). Override is limited to Super Admin / Hiring Lead / permission holders.
+Candidate may edit own profile only while in pre-submission/early stages as configured; resume parsing may pre-fill fields (candidate confirms).
+2.9.3 Application-status tracking
+Screen: candidate-profile (status view). FR-M08-016.
+Candidate sees own progress across the job's configured hiring stages (§8.6) — e.g., Applied → Screening → Interview → Offer — at the granularity the tenant exposes.
+Internal decision/archival reasons (Candidate Rejection, Candidate On Hold, Offer Withdrawal, Job Archival, Job Closure, Candidate Decline Offer) are hidden from the candidate unless the reason's Hide Reason for Candidate flag is off (ReasonList master).
+Candidate reminder e-mails are governed by Reminder Email to Candidate (ReasonList) and the onboarding reminder cadence (every X days) where applicable.
+2.9.4 Document upload & BGC consent
+Screen: document-upload (FR-M08-010 verification set; FR-M02-003 vault). Verification Status master.
+Candidate uploads the mandatory document set (PAN, Aadhaar, education certificate, relieving letter, recent salary slips, bank proof, photograph) per the document-review checklist; each item shows category and status.
+Verification is performed by Recruiter (first-pass flag) / Recruitment Admin / HR Admin — the candidate cannot self-verify. Status values come from the Verification Status master: Documents Awaited · BGV In Progress · Completed Successfully · BGV Failed · On Hold · VerificationInitiated · VerificationCompleted.
+BGC: candidate gives explicit BGC consent before initiation; BGC is enabled tenant-wide via Enable BGV (Onboarding settings). Release 1 runs BGC in-house / manually — no external BGC-vendor integration is in scope. Status is tracked via the Verification Status master; external-vendor integration is a later-phase enhancement.
+PII uploaded by the candidate is encrypted and masked in downstream display per Vision §2.4/§2.5.
+2.9.5 Offer letter — accept / decline
+Screen: offer-letter (FR-M08-004/015).
+Candidate views the released offer (read-only), downloads the PDF, and acts: Accept (countersign → POST /api/v1/offers/{id}/countersign, Auth: Candidate portal) or Decline (reason captured; event Candidate Decline Offer). No candidate counter-offer / negotiation is in scope — accept or decline only.
+Offer is visible to the candidate only when its lifecycle state is Approved/to-share → Pending with candidate (§8.7a); earlier states are not exposed.
+On Accept: offer lifecycle advances to employee-movement; /movement/approve triggers M01 employee creation + M02 pre-joining (FR-M08-005). Candidate transitions from Candidate state to Pre-joining state.
+Offer expiry and withdrawal (Offer Withdrawal) are system/recruiter driven; on expiry the candidate can no longer act.
+2.9.6 Hand-off to pre-joining (M02)
+At acceptance the candidate is handed to the M02 pre-joining portal (FR-M02-001): pre-joining checklist, onboarding form (incl. BGV form variants), stakeholder workflow forms (Appendix J), buddy introduction, policy/sign-off documents, and the Chat Agent. These screens are specified in M02 and are not restated here. The candidate retains portal-only access throughout pre-joining; no live HRMS access is granted until onboarding completion activates the employee record (M02 completion criteria).
+2.9.7 Candidate state-machine touchpoints (§8.6)
+Candidate-visible action
+	Screen
+	§8.6 transition
+
+Submit application
+	careers / candidate-profile
+	→ APPLIED
+
+Upload documents
+	document-upload
+	(supports DOCUMENT_REVIEW; verification by staff)
+
+Give BGC consent
+	document-upload
+	(enables BGV In Progress)
+
+Accept offer
+	offer-letter
+	PRE_OFFER/OFFER → EMPLOYEE_MOVEMENT (FR-M08-005)
+
+Decline offer
+	offer-letter
+	→ Candidate Decline Offer (archival)
+
+(No action)
+	—
+	Offer expiry / Withdrawal / Rejection / On Hold are staff- or system-driven
+
+2.9.8 RBAC & data boundary (Candidate)
+Surface
+	Candidate access
+
+Own application, profile, status
+	View; edit profile only as configured pre-submission
+
+Own documents
+	Upload, replace, view — no verify
+
+Own offer
+	View, download, accept/countersign, decline
+
+Other candidates / pipeline / feedback / internal notes
+	Hidden
+
+CTC bands, internal reasons, recruiter/admin screens
+	Hidden
+
+Any live HRMS module
+	No access (portal-only ceiling, Vision §3.1)
+
+2.9.9 Confirmed decisions (Release 1)
+The candidate-role open items raised at draft are now confirmed:
+Portal authentication — email + OTP (passwordless), candidate identity separate from employee SSO (§2.9.1). Adopted; confirm if a password option is also wanted.
+Application-form fields — configurable: Org Admin owns the global field catalog, Recruitment Admin composes the per-job form (§2.9.2).
+BGC vendor integration — not in Release 1; BGC is run in-house/manually with status via the Verification Status master (§2.9.4).
+Careers-page filters / branding / locale — Phase 2. Release 1 is a basic English careers application; presentation, filters and additional locales are deferred.
+Candidate communication templates — standard event-triggered candidate e-mails (the §2.9.3 / §2.9.5 event set), configurable per tenant.
+Offer counter-offer / negotiation — not in scope; accept or decline only (§2.9.5).
+Candidate-PII retention / erasure — no candidate-specific schedule; the general DPDPA retention and right-to-erasure policy applies (Vision §2.7).
+3. Interaction &** Navigation Flows**
+References: BRD §8.6 (candidate), §8.7 (requisition), §8.7a (offer) — referenced, not redrawn. Scheduled jobs in §6A drive job-initiated transitions.
+The FS does not redraw the state machines; it maps which screen (or job) drives each transition.
+From → To (BRD machine)
+	Driven by (screen / action / job)
+	Notes
+
+DRAFT → (approval) → APPROVED → OPEN (§8.7)
+	ra-raise-requisition Submit → requisition-approval Approve
+	Positions become attachable in create-job.
+
+jobs: DRAFT → OPEN (FR-M08-011)
+	create-job Post
+	Emits JOB_PUBLISHED (§9.5); activates job_postings.
+
+NEW → SCREENING → SHORTLISTED → INTERVIEW (§8.6)
+	ra-add-candidate, ra-pipeline, hiring-flow, ra-schedule-interview
+	INTERVIEW_SCHEDULED notification (§9.5).
+
+INTERVIEW → INTERVIEW_PASSED → PRE_OFFER_* (§8.6)
+	hiring-flow Mark completed → ra-pre-offer-issue
+	Pre-offer optional per jobs.pre_offer_enabled (FR-M08-013).
+
+PRE_OFFER_ACCEPTED → DOCUMENT_REVIEW → DOCUMENT_REVIEW_PASSED (§8.6)
+	ra-document-review-detail verify
+	Mandatory docs gate (FR-M08-010).
+
+offer_lifecycle: PENDING_FOR_APPROVAL → … → COMPLETED (§8.7a)
+	generate-offer (Approval tab) + offer queues
+	See §8.7a; derived sub-statuses per §4.9.18.
+
+EMPLOYEE_MOVEMENT_APPROVED → M01/M02 handover (§8.6, FR-M08-005)
+	generate-offer / offer-letters movement actions
+	Triggers employee_id + pre-joining (cross-module).
+
+Job-driven: pre-offer/offer expiry, interview-feedback reminder
+	Scheduled jobs (§6A)
+	No user action; see JOB-M08-* ids.
+
+4. API Contracts
+References: BRD §6.2–6.3 (response envelope, error model, rate limiting, auth) and §6.4 (M08 inventory) — referenced; full contracts authored here. Validation tokens reference §5 / Foundation catalogue.
+All endpoints use the BRD standard response envelope (§6.2), bearer auth and RBAC per §3.7.2 (§6.3), and standard pagination/rate-limit conventions; these are not restated per endpoint. Only the request/response/error specifics are authored. Endpoints marked NEW are not yet in the §6.4 inventory and are tracked in §7.
+POST /api/v1/requisitions — create requisition (FR-M08-012)
+Inventory: BRD §6.4 (M08). Auth: Hiring Lead · Recruitment Admin (§3.7.2). Do not restate purpose/auth.
+Request:
+{ hiring_manager_id:uuid*, entity_id:uuid*, department_id:uuid*, designation_id:uuid*,
+exp_from:int, exp_to:int, exp_unit:‘years’|‘months’, recruitment_start_date:date*, hiring_lead_id:uuid*,
+position_requirements:text, position_skills:text,
+positions:[ { position_type:‘NEW’|‘REPLACEMENT’, location_id:uuid, replacement_for_employee_id:uuid?,
+ reporting_manager_user_id:uuid, employee_group_id:uuid*, contribution_level_id:uuid*,
+
+ target_employment_type:enum, designation_alias:str } ]  // 1..100
+other:{ comments:text, project_manager:str*, duration:str*, rounds:int, client_location_id:uuid, project_start:date, customer_id:uuid } }
+Response 2xx:
+{ id:uuid, jr_code:‘JR_’, status:‘DRAFT’, positions:[{ id, position_no, position_ref:‘JR_:’, status:‘DRAFT’ }] }
+Errors:
+400 malformed · 403 RBAC (§3.7.2) · 422 VAL-M08-POSMAX (>100) / VAL-M08-REPL (replacement_for required) · 409 counter race on jr_code
+Idempotency-Key honoured (Foundation conventions). On approval (§8.7) positions move to OPEN.
+POST /api/v1/jobs &** PUT /api/v1/jobs/{id} — create/post job (FR-M08-011)**
+Inventory: BRD §6.4 (M08) lists POST /jobs (publish). Auth: Recruitment Admin (§3.7.2 = Adm).
+Request:
+{ entity_id:uuid*, department_id:uuid*, designation_id:uuid*, employment_type:enum*, location_id:uuid*,
+public_job_name:str, tags:[str], tag_remote:bool, exp_from:int, exp_to:int, exp_unit:enum, target_ttf_days:int,
+jd_summary:text, jd_html:html, position_ids:[uuid],
+hiring_team:{ hiring_lead_user_id:uuid*, screening_team:[uuid], scheduling_team:[uuid], hiring_group_id:uuid, collaborators:[uuid] },
+status:‘DRAFT’|‘OPEN’ }
+Response 2xx:
+{ id:uuid, job_code:‘JOB_’, status:‘DRAFT’|‘OPEN’ }
+Errors:
+400 · 403 RBAC · 422 VAL-REQUIRED (company/department/designation/employment_type/location/hiring_lead on Post) · 409 job_code race
+Post (status OPEN) requires Step 1 mandatory + Step 4 workflow + Step 5 hiring lead; emits JOB_PUBLISHED (§9.5).
+POST /api/v1/jobs/{id}/postings &** PUT /api/v1/jobs/{id}/application-fields — NEW (FR-M08-014)**
+Folded into BRD v7.5 §7.4.5 (OPEN-FS-M08-02). Auth: Recruitment Admin.
+Request:
+postings: { channel:enum*, display_from:date, display_to:date, channel_status:‘ACTIVE’|‘INACTIVE’, reapplication_days:int, job_board_code:str }
+application-fields: [ { field_id:str*, section:str*, display_name:str, careers_view:bool, careers_mandatory:bool,
+ ijp_view:bool, ijp_mandatory:bool, refer_view:bool, refer_mandatory:bool, preoffer_view:bool } ]
+Response 2xx:
+{ ok:true }
+Errors:
+422 VAL-M08-WINDOW (display_to < display_from) · 422 VAL-M08-MANDVIEW (mandatory without view) · 403 RBAC
+Owns the data in job_postings §4.9.16 and job_application_field_config §4.9.17.
+POST /api/v1/candidates — add candidate (FR-M08-002/003/008)
+Inventory: BRD §6.4 (M08). Auth: Recruiter · Recruitment Admin (§3.7.2). Duplicity check applied.
+Request:
+{ requisition_id:uuid, job_id:uuid, first_name:str*, last_name:str, email:str*, mobile:str*,
+target_employment_type:enum*, source_type:enum*, source_detail:str, resume_document_id:uuid, duplicity_override:bool }
+Response 2xx:
+{ candidate_id:‘CAN_’, state:‘NEW’, duplicity:‘UNIQUE’|‘OVERRIDDEN’ }
+Errors:
+409 ERR-M08-DUP (duplicate email/mobile) unless duplicity_override & caller has override right (FR-M08-003) · 403 RBAC · 422 VAL-EMAIL/VAL-MOBILE
+source_type mandatory (FR-M08-008).
+POST /api/v1/interviews — schedule interview (FR-M08-007)
+Inventory: BRD §6.4 (M08). Auth: Recruiter · Recruitment Admin.
+Request:
+{ candidate_id:uuid*, requisition_id:uuid*, stage_id:uuid*, interview_type:‘ONLINE’|‘FACE_TO_FACE’*,
+panel:[uuid], optional_panel:[uuid], start:datetime, end:datetime*, timezone:str*, event_name:str, meeting_link:str }
+Response 2xx:
+{ id:uuid, state:‘SCHEDULED’ } // candidate → INTERVIEW (§8.6)
+Errors:
+422 VAL-M08-WINDOW (end<=start) · 403 RBAC
+Emits INTERVIEW_SCHEDULED (§9.5, iCal). Feedback reminder via JOB-M08-IVFB (§6A).
+POST /api/v1/offers + lifecycle transitions (FR-M08-015/004)
+Inventory: BRD §6.4 (M08) lists POST /offers and POST /offers/{id}/countersign. Auth: Recruitment Admin · HR Admin (Recruiter excluded, §3.7.2).
+Request:
+POST /offers { candidate_id*, requisition_id*, position_ref:‘JR_:’, proposed_:…, offer_expiry_date:date, offer_letter_template_id:uuid*,
+pay:{ structure_mode:‘OLD’|‘NEW’, pay_scale_group_id, salary_structure_id, currency, total_ctc, show_total_ctc_in_breakup:bool,
+    previous_total_ctc, percentage_fixed_ctc_increment, metro:bool, differently_abled:enum },
+approval:{ cc_user_ids:[uuid], cc_roles:[‘MYSELF’|‘HIRING_LEAD’|‘ADMIN’], trigger_custom_exception_flow:bool,
+    subject:str*, body:html, approver_attachment_ids:[uuid], candidate_attachment_ids:[uuid] } }
+Response 2xx:
+{ offer_id:uuid, offer_number:str, offer_lifecycle_state:‘PENDING_FOR_APPROVAL’, approval_status:‘PENDING_APPROVAL’ }
+Errors:
+403 RBAC (Recruiter blocked) · 422 VAL-M08-FUTUREDATE (expiry past) / VAL-CURRENCY / VAL-PCT · 409 above-threshold without CEO co-sign (FR-M08-004)
+Offer-lifecycle transition endpoints — folded into BRD v7.5 §7.4.5 (OPEN-FS-M08-03): POST /offers/{id}/approve · /share · /movement/initiate · /movement/approve · /complete · /reject — each advances offer_lifecycle_state per §8.7a. /movement/approve triggers M01 employee + M02 pre-joining (FR-M08-005). No approver email when cc/approvers empty.
+POST /api/v1/offers/{id}/countersign — candidate accepts (FR-M08-015)
+Inventory: BRD §6.4 (M08). Auth: Candidate (portal).
+Request:
+{ accept:bool*, decline_reason:str? }
+Response 2xx:
+{ offer_lifecycle_state:‘ACCEPTED_TO_PENDING_LIST’ | ‘REJECTED’ }
+Errors:
+410 EXPIRED (past offer_expiry_date) · 409 not in PENDING_WITH_CANDIDATE
+Accept → ACCEPTED_TO_PENDING_LIST (§8.7a). Emits OFFER_ACCEPTED/OFFER_DECLINED (§9.5).
+POST /api/v1/external-recruiters — register vendor (FR-M08-006)
+Inventory: BRD §6.4 (M08). Auth: Recruitment Admin · Org Admin.
+Request:
+{ recruiter_name:str*, agency_name:str, group_id:uuid, primary_contact_email:str*, primary_contact_mobile:str, contract_from:date, contract_to:date }
+Response 2xx:
+{ id:uuid, status:‘ACTIVE’ }
+Errors:
+422 VAL-EMAIL · 403 RBAC
+Maps to external_recruiters §4.9.6.
+Self-service — NEW (FR-M08-016)
+Folded into BRD v7.5 §7.4.5 (OPEN-FS-M08-04). Auth: Employee (own self-scope) — BRD v7.5 §3.7.2.
+Request:
+POST /jobs/{id}/ijp-applications { resume_document_id, answers:{…} } // respects IJP window + duplicity (FR-M08-003)
+POST /jobs/{id}/referrals { candidate:{name,email,mobile,resume}, relationship:str } // source_type=REFERRAL
+POST /me/linked-accounts { provider:‘LINKEDIN’|‘NAUKRI’|‘GLASSDOOR’, token:str }
+DELETE /me/ijp-applications/{id} // withdraw
+Response 2xx:
+{ ok:true, candidate_id?:‘CAN_’ }
+Errors:
+409 ERR-M08-REAPPLY (inside re-application window) · 409 ERR-M08-DUP · 403 IJP eligibility not met (FR-M08-016 edge)
+Eligibility/visibility derived from job_postings + job_application_field_config.
+5. Validation
+References: Shared catalogue entries (VAL-EMAIL, VAL-MOBILE, VAL-PAN, VAL-AADHAAR, VAL-NAME, VAL-DATE, VAL-CURRENCY, VAL-PCT, VAL-INT-POS, VAL-LEN-, VAL-FILE, VAL-REQUIRED) are authored once in the Foundation FS and referenced by id. Only validations unique to M08 screens are authored below.*
+Id
+	Applies to
+	Rule
+
+VAL-M08-POSMAX
+	ra-raise-requisition Step 3; POST /requisitions
+	new + replacement positions ≤ 100 per requisition (tenant-configurable). Block submit otherwise.
+
+VAL-M08-REPL
+	Position row (REPLACEMENT)
+	replacement_for_employee_id required when position_type=REPLACEMENT; NA for NEW.
+
+VAL-M08-WINDOW
+	job_postings; interviews; offer expiry windows
+	display_to ≥ display_from; interview end > start.
+
+VAL-M08-MANDVIEW
+	job_application_field_config
+	a field set Mandatory for a channel must also be View for that channel.
+
+VAL-M08-FUTUREDATE
+	generate-offer offer expiry
+	offer_expiry_date must be in the future at creation.
+
+VAL-M08-EXPRANGE
+	jobs/requisitions experience range
+	exp_to ≥ exp_from; same unit.
+
+VAL-M08-JOBCODE / -JRCODE / -CANCODE
+	jobs/requisitions/candidates
+	auto-numbered formats JOB_ / JR_ / CAN_; unique within tenant (refer §4.9).
+
+VAL-M08-CTCTHRESHOLD
+	generate-offer
+	total_ctc above tenant threshold requires CEO co-signature before share (FR-M08-004).
+
+6. Per-Screen RBAC Projection &** Navigation**
+References: BRD §3.7.2 (Recruitment rows: requisitions / candidates / offer letters), §3.8 (sensitive data), §3.9 (field access) — referenced, never restated. Below is the per-screen projection only.
+Screen
+	Recruiter
+	Recruitment Admin
+	HR Admin
+	Employee
+	Notes (ref)
+
+job-openings / create-job
+	View own positions
+	Full (Adm)
+	Full (superset)
+	—
+	§3.7.2 requisitions row; create/post gated to Adm.
+
+ra-raise-requisition
+	V*
+	Adm
+	V
+	—
+	§3.7.2 requisitions.
+
+ra-candidates / ra-add-candidate / hiring-flow
+	E·A* (no Verify)
+	Adm
+	V
+	—
+	§3.7.2 candidates; CTC/PII masked per §3.9.
+
+generate-offer / offer-letters
+	Hidden
+	E·D·Adm
+	V·D
+	—
+	§3.7.2 offer letters; Recruiter excluded from generation.
+
+ra-document-review-detail
+	Flag only (first pass)
+	Verify
+	Verify
+	—
+	Verification rights = Adm/HR Admin (FR-M08-010).
+
+ijp-openings / refer / my-referrals / link-accounts
+	—
+	—
+	—
+	Self (BRD v7.5)
+	Employee self-scope folded into BRD v7.5 §3.7.2 (OPEN-FS-M08-05).
+
+my-interviews
+	Interviewer
+	Interviewer
+	Interviewer
+	Interviewer
+	Feedback visibility gated by jobs.interviewer_feedback_access.
+
+Candidate (external portal) — projected separately. The Candidate uses distinct portal screens, not the internal recruiter screens above; its per-surface access is specified in §2.9.8. Summary: own application/profile/status (view, limited edit), own documents (upload/replace/view, no verify), own offer (view/download/accept/decline); everything else hidden; no live HRMS access.
+6.1 Menu &** navigation entitlement (M08 slice)**
+References: Full role→menu map lives in the Foundation FS; here only the M08 slice and screen-specific nav gating.
+Menu item
+	Screen id
+	Visible to
+	Gating (§3.7.2)
+
+Recruiter overview
+	rec-overview
+	Recruitment Admin · HR Admin
+	candidates row
+
+Job openings
+	job-openings
+	Recruitment Admin · HR Admin
+	requisitions row
+
+Raise requisition
+	ra-raise-requisition
+	Recruitment Admin · Hiring Lead · HR Admin
+	requisitions row
+
+Generate offer
+	generate-offer
+	Recruitment Admin · HR Admin
+	offer letters row
+
+Hiring flow
+	hiring-flow
+	Recruitment Admin · HR Admin
+	candidates row
+
+Internal jobs (IJP) / Refer / My referrals / My interviews / Link accounts
+	ijp-openings…link-accounts
+	Employee (all roles via self-service)
+	Employee self-scope — accepted (§7)
+
+| Candidate / Pre-joining portal | candidate-profile · document-upload · offer-letter (→ M02 pre-joining) | Candidate (external) | §2.9 portal boundary; no live HRMS |
+6A. Operational Layer (M08 slice)
+Cross-cutting catalogues (full job registry, full message catalogue, full menu map) belong in the Foundation FS; the M08 slice is authored here and should be lifted into the Foundation FS when it is created. Business rules are referenced, not restated.
+6A.1 Scheduled jobs &** background processing**
+Job id
+	Trigger
+	Reads / writes
+	Logic (BRD ref)
+	Idempotency / failure
+
+JOB-M08-PREOFFER-EXP
+	Daily 00:00 IST
+	candidates (pre-offer validity)
+	Expire pre-offers past validity → PRE_OFFER_EXPIRED (§8.6, FR-M08-009)
+	Re-runnable; one transition per candidate; alert on batch failure (ERR id).
+
+JOB-M08-OFFER-EXP
+	Daily 00:00 IST
+	offers.offer_expiry_date / lifecycle
+	Expire offers with no response → EXPIRED, free position (§8.7a)
+	Idempotent on state guard.
+
+JOB-M08-IVFB
+	Hourly
+	interviews
+	24h-after-interview feedback reminder → INTERVIEW_FEEDBACK_PENDING (§9.5)
+	Dedup per interview/day.
+
+JOB-M08-POS-ARCHIVE
+	Daily
+	positions
+	Auto-archive stale positions → AUTO_ARCHIVED (§4.9.13)
+	Guarded by status.
+
+JOB-M08-SLA-ESC
+	Per SLA config
+	candidates/offers queues
+	Escalate document-review/approval SLA breaches (FR-M08-010)
+	Reference SLA settings; alert.
+
+JOB-M08-ONBOARD-INIT
+	14 days before DOJ
+	offers→onboarding (M02)
+	ONBOARDING_AUTO_INITIATED (§9.5) — cross-module
+	Owned with M02; listed for completeness.
+
+6A.2 Message catalogue (M08 slice)
+Notifications — reference §9.5 for which events notify whom; existing codes referenced, not restated:
+Msg id (existing §9.5)
+	Trigger source
+
+OFFER_EXTENDED / OFFER_ACCEPTED / OFFER_DECLINED
+	generate-offer / offers lifecycle / countersign
+
+INTERVIEW_SCHEDULED / INTERVIEW_FEEDBACK_PENDING
+	ra-schedule-interview / JOB-M08-IVFB
+
+JOB_PUBLISHED
+	create-job Post
+
+Notification codes for the FR-M08-015 lifecycle — folded into BRD v7.5 §9.4 (OPEN-FS-M08-06):
+Msg id (accepted)
+	Event
+	Recipients
+
+OFFER_PENDING_APPROVAL
+	Send for approval
+	Approver(s) — none → no email (FR-M08-015)
+
+OFFER_APPROVED
+	Approver approves
+	Recruitment/HR Admin
+
+OFFER_PENDING_WITH_CANDIDATE
+	Shared with candidate
+	Candidate
+
+EMPLOYEE_MOVEMENT_INITIATED / _APPROVED
+	Movement actions
+	Onboarding Admin · HR Admin
+
+Error & system messages (user-facing copy behind error states / API codes):
+Msg id
+	Where shown
+	Message / recovery
+
+ERR-M08-DUP
+	ra-add-candidate / POST /candidates 409
+	“A candidate with this email/mobile already exists.” Override available to authorised roles (FR-M08-003).
+
+ERR-M08-REAPPLY
+	IJP/Refer apply 409
+	“You can re-apply to this job after the configured window.”
+
+ERR-M08-POSMAX
+	ra-raise-requisition 422
+	“A requisition can request at most 100 positions.”
+
+ERR-M08-MANDVIEW
+	create-job Step 3 422
+	“A field marked Mandatory must also be set to View for that channel.”
+
+ERR-M08-STAGEFEEDBACK
+	hiring-flow warning
+	“Interviewer feedback is still pending for this stage — continue anyway?”
+
+ERR-M08-OFFER-CEO
+	generate-offer 409
+	“This CTC is above threshold and requires CEO co-signature before sharing.” (FR-M08-004)
+
+6A.3 Dashboard &** widget specifications**
+References: BRD §10 (reporting/widgets) for which widgets and role-awareness; FS adds data binding, refresh, drill-down, per-role composition. Screen: rec-overview (FR-M08-016) and Recruitment-home dashboard.
+Widget
+	Data source (entities / API)
+	Metric
+	Drill-down
+	Roles
+
+All-tasks tiles (Offer generation / My approvals / Hiring stage / Screening / Misc)
+	candidates, offers, interviews / GET roll-ups
+	Counts of open tasks for assigned jobs
+	→ generate-offer / hiring-flow / ra-candidates
+	Recruitment Admin · HR Admin
+
+Priority tasks / Follow-ups
+	tasks view over candidates/offers
+	Due-dated action list
+	Row → owning screen
+	Assigned recruiter only
+
+Events (Self / Team)
+	interviews/calendar (M-CAL)
+	Today’s interviews
+	→ ra-interviews
+	Self / team scope
+
+Recruitment-home funnel & SLA tiles
+	requisitions/candidates/offers
+	Pipeline by stage, SLA breaches
+	→ ra-pipeline / ra-document-review
+	Recruitment Admin · HR Admin
+
+Refresh/cache and empty/loading/error states follow Foundation conventions; tasks for jobs the recruiter is not assigned to are excluded (FR-M08-016).
+7. Reconciliation Decisions (Accepted Open Items)
+Status — every item below is ACCEPTED as recommended (sign-off 04 Jun 2026) and has been actioned. The items that change the BRD or the §3.7.2 permission matrix are now folded into BRD v7.5 (M08 reconciliation amendment): §7.4.5 endpoints (01–04), §3.7.2 employee self-scope (05), §9.4 offer-lifecycle notification codes (06). Item 07 was already in §4.9.15; item 08 is reflected in the prototype document-review checklist; item 09 is closed. FS v1.2, BRD v7.5 and prototype v20.9 are in sync.
+Id
+	Type
+	What’s missing / in conflict
+	Owner
+	Accepted resolution (build to this)
+
+OPEN-FS-M08-01
+	Gap (API)
+	FR-M08-012 positions model has no §6.4 endpoints (only POST /requisitions, /jobs)
+	Backend / API
+	Folded into BRD v7.5 §7.4.5 — GET/POST /requisitions/{id}/positions and GET /jobs/{id}/positions; position_ref = {JR_code}:{position_no}; honour VAL-M08-POSMAX/REPL. Built per Section 4.
+
+OPEN-FS-M08-02
+	Gap (API)
+	FR-M08-014 per-channel posting & application-field config have no §6.4 endpoints
+	Backend / API
+	Folded into BRD v7.5 §7.4.5 — POST /jobs/{id}/postings and PUT /jobs/{id}/application-fields (Section 4); own job_postings §4.9.16 + job_application_field_config §4.9.17.
+
+OPEN-FS-M08-03
+	Gap (API)
+	FR-M08-015 offer lifecycle beyond countersign not in §6.4
+	Backend / API
+	Folded into BRD v7.5 §7.4.5 — POST /offers/{id}/approve│share│movement/initiate│movement/approve│complete│reject advancing offer_lifecycle_state per §8.7a (Section 4).
+
+OPEN-FS-M08-04
+	Gap (API + screen)
+	FR-M08-016 IJP-apply / referral-submit / link-accounts have no endpoints
+	Backend · Design
+	Folded into BRD v7.5 §7.4.5 — IJP apply/withdraw, referral and linked-accounts endpoints (Section 4); respect IJP window + duplicity (FR-M08-003).
+
+OPEN-FS-M08-05
+	Conflict (RBAC)
+	Prototype exposes employee IJP-apply & referral actions; §3.7.2 grants no employee recruitment action
+	Product · Security
+	Folded into BRD v7.5 §3.7.2 — actions ijp.apply and referral.create added to Employee (self-scope); IJP visibility gated by eligibility.
+
+OPEN-FS-M08-06
+	Gap (notification)
+	§9.4 lacked lifecycle codes for FR-M08-015 (pending-approval/approved/pending-with-candidate/movement)
+	Product
+	Folded into BRD v7.5 §9.4 — added the lifecycle codes listed in 6A.2 with recipients; no email when approvers/cc empty.
+
+OPEN-FS-M08-07
+	Gap (capability flag)
+	jobs.pre_offer_enabled / parallel_evaluation_allowed / interviewer_feedback_access are job-level toggles not registered in §3.10
+	Product
+	Accepted — record as job-entity attributes per §4.9.15 (jobs.pre_offer_enabled / parallel_evaluation_allowed / interviewer_feedback_access); §3.10 capability-registry tenant-default entry deferred to a later pass. No BRD change required now.
+
+OPEN-FS-M08-08
+	Gap (screen)
+	FR-M08-010 enumerated mandatory documents now in BRD; confirm ra-document-review-detail lists all seven
+	Design
+	Accepted — surface the seven mandatory documents (PAN, Aadhaar, education certificate, relieving letter, 3-month salary slips, bank proof, photograph) as the checklist on ra-document-review-detail. Screen-only; no BRD change.
+
+OPEN-FS-M08-09
+	Conflict (data, resolved)
+	Prototype create-job uses per-channel job_postings; legacy jobs.job_board_codes/published_at/expires_at removed in §4.9.2 (v7.3, carried into v7.4)
+	Closed
+	Closed — no action; prototype already aligned to §4.9.16; recorded for traceability.
+
+Page — PrimeSoft HRMS Functional Specification # Prototype Sync Addendum — Batch 7: Employee-as-applicant review (June 2026)
+Reflects the Batch-7 review of the employee recruitment surface (IJP, referrals, interviews) against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Internal job postings (IJP) — not in scope
+IJP is not in scope. The employee IJP screens (internal-jobs browse and “My IJP applications”) and the self-service entry have been removed; the IJP reapplication field has been removed from duplicity configuration; and IJP references in the employee profile, the leadership AI chat, and recruitment analytics have been cleared. The duplicity configuration that enabled IJP application (Allow Employee To Apply For Multiple Positions Via IJP; reapplication-after-days) is to be set to No / disabled in the system. The IJP posting channel on the job-creation screen — the Careers / IJP / Refer channel matrix, including the IJP view / mandatory columns — is to be removed in the Recruitment-Admin pass. Internal mobility, where needed, is handled outside IJP through the recruiter / HR process.
+Referrals
+Employee referral submission uses a candidate-detail form — candidate name, email, phone, role / requisition, source, and resume — rather than a bare action. Duplicate applications are checked against the duplicity settings, and re-referral is permitted only after the configured window. The referral routes to Talent Acquisition.
+Interviews
+The employee’s “My interviews” surface is view-only (upcoming and history); join-link and reschedule actions are not provided to the employee.
+IJP fully removed from recruitment (out of scope)
+Internal Job Postings (IJP) are out of scope for this tenant. The Create Job screen no longer offers IJP as a posting channel — the IJP posting-channel row, the IJP channel pill, the IJP view / IJP mandatory columns in the field-display matrix, and the IJP entries in the job-name label and the resume-parsing list have all been removed. Posting channels are Careers and Refer only. No IJP references remain anywhere in the product (verified: zero occurrences). The corresponding tenant configuration action is CFG-002 (disable IJP multi-position and reapplication settings).

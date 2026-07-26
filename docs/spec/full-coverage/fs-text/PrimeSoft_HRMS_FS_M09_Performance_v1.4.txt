@@ -1,0 +1,1196 @@
+PrimeSoft HRMS ��� FS M09 Performance v1.4
+Table of Contents
+ TOC \z \o "1-2" \u \h
+1. Scope & Reference Map
+References: BRD §5.8, §4.10.x, §3.7. Prototype screen ids as listed.
+This table is the non-repetition index: it shows what the FS references (BRD FRs, entities, permission rows) versus the prototype screens it builds. Anything matching a BRD entry below is referenced, not re-authored.
+BRD FR (ref §5.8)
+	What the FR fixes (referenced — not restated)
+	M09 entities (ref §4.10)
+	Prototype screen(s)
+
+FR-M09-001
+	Appraisal-period-bound OKR plan; goal_plans state enum
+	goal_plans (4.10.1)
+	my-goals, pa-goal-plan-detail
+
+FR-M09-002
+	Goal field set; manual achievement entry
+	goals (4.10.2), goals_field_config (4.10.10)
+	add-goal, pa-goal-plan-detail, cfg-goal-templates
+
+FR-M09-003
+	Review workflow Self→L1→Calibration→Ack
+	review_records (4.10.4), review_cycles (4.10.3)
+	my-goals(reviews), self-review, appraisal-review, calibration
+
+FR-M09-004
+	L1-invited Multi-Source Feedback
+	multi_source_feedback (4.10.6)
+	appraisal-review, start-review
+
+FR-M09-005
+	Probation confirmation (calendar-driven)
+	(M01 employment_history)
+	probation-confirmation, probation-decision, probation-approval, probation-management
+
+FR-M09-006 / -007
+	Goal-plan & review template builders
+	goal_plan_templates (4.10.9), review_templates (4.10.12)
+	cfg-goal-templates, cfg-review-templates, pa-goal-plan-create
+
+FR-M09-008
+	Per-stage field permissions
+	review_stage_field_permissions (4.10.13)
+	cfg-review-templates
+
+FR-M09-009 / -022 / -023
+	Calibration page; manual calibrate & publish; ideal distribution
+	calibration_records (4.10.5), calibration_configurations (4.10.14)
+	calibration, pa-calibration, cfg-calibration
+
+FR-M09-010 / -011
+	Normalization; custom formula engine
+	normalization_rules (4.10.15), custom_formulas (4.10.16)
+	cfg-calibration, cfg-goal-templates
+
+FR-M09-013
+	AI goal generation
+	goals (4.10.2)
+	ai-suggest-goals
+
+FR-M09-014
+	Cascade reject-by-employee
+	goals (4.10.2)
+	my-goals, appraisal-review
+
+FR-M09-015 / -016
+	Goal creation & edit-and-approve; sendback discards L1 eval
+	goals, goals_history
+	add-goal, copy-previous-goal(-mgr), goal-approvals, review-goal-plan, add-goal-for-reportee
+
+FR-M09-019
+	Goal score computation
+	goals (4.10.2)
+	appraisal-review, pa-goal-plan-detail
+
+FR-M09-021
+	SLA settings & escalation
+	review_records, review_cycles
+	pa-review-status, manager-appraisal-tasks
+
+FR-M09-024
+	Cycle closure; goals read-only; dispute path
+	review_cycles, review_records, goals
+	calibration, pa-review-cycles
+
+FR-M09-025
+	L1 goal-by-goal appraisal review screen
+	review_records, goals
+	appraisal-review, start-review
+
+FR-M09-026 / -027
+	Continuous manager feedback + employee response thread
+	manager_feedback (4.10.7), feedback_responses (4.10.8)
+	my-goals(feedback), reviews(continuous feedback)
+
+FR-M09-028
+	Goal plan assignment (cron/approve/override/manual)
+	goal_plans
+	pa-assign-plan, pa-goal-plans, pa-goal-plan-create
+
+FR-M09-029
+	Admin-enabled goal editing — anytime
+	goals, goal_plans
+	admin-add-goal, cfg-goal-templates
+
+FR-M09-030
+	Admin on-demand review activation / pause / resume
+	goal_plans.review_initiation_source, review_records.review_hold (4.10.1/4.10.4)
+	reviews (admin control card), pa-review-cycles, pa-review-status
+
+1.1 Referenced cross-cutting sections (never restated here)
+BRD topic
+	BRD section
+	FS treatment
+
+Permission matrix (role × action)
+	§3.7 (152×18)
+	Referenced; projected per screen in §6
+
+Sensitive-data restrictions / field access
+	§3.8, §3.9
+	Referenced; per-screen masking expressed in §6
+
+Capability flag registry
+	§3.10
+	Referenced by flag name
+
+M09 entity field tables
+	§4.10.1–4.10.18
+	Referenced per entity; FS adds UI control + screen mapping only
+
+Functional requirements (rules, ACs, edge cases)
+	§5.8
+	Referenced by FR id; FS adds the screen + contract that satisfies it
+
+API conventions (response, errors, rate-limit)
+	§6.2–6.3
+	Referenced once; not restated
+
+API endpoint inventory
+	§6.4 (+ §6.4.7 M09)
+	§6.4.7 now enumerates M09 endpoints (OPEN-FS-M09-01 closed); §4 authors the full contracts
+
+NFR targets
+	§7
+	Referenced; never restated
+
+M09 review state machine
+	§8.8 + FR-M09-001/-003
+	Referenced; §3 maps screen transitions onto it
+
+Notification matrix (M09)
+	§9.7
+	Referenced for who/when; §7 authors the templates
+
+Dashboard widgets
+	§10.2
+	Referenced for which/role; §2.13/§2.9 author data binding & refresh
+
+Glossary
+	§12
+	Terms referenced, never redefined
+
+2. Screen Specifications
+One subsection per prototype screen (or tight cluster of near-identical screens). Each opens with its references. Field tables carry only build-layer columns; data type/format and rules live in the BRD by reference. Unless a screen overrides them, all screens use the global state standard: empty (zero-data illustration + primary CTA), loading (skeleton rows), error (inline banner referencing a Message Catalogue id in §7), no-permission (section hidden per §6 projection), and partial-data (render available, flag missing).
+2.1 My goals & reviews — employee (prototype: my-goals)
+References: Satisfies FR-M09-001/-002/-003/-014/-026/-027. Entities §4.10.1/.2/.4/.7/.8. RBAC §3.7 (Individual). Tabs: Goal plan · Reviews · Feedback.
+Layout regions: page header with primary actions (Add goal → 2.2; AI suggest → 2.2c) · tab bar (Goal plan / Reviews / Feedback) · per-tab pane · plan summary banner (period, monthly cohort, template, approver) on the Goal plan tab.
+Removed vs prior prototype: the Progress and Lifecycle columns, the Update-lifecycle-state panel, and the Check-ins · 1:1 tab no longer exist (goal progress states and FR-M09-012 were withdrawn from the BRD). Achievement is captured only at review.
+Goal plan tab — field table
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Goal (name + measurement)
+	§4.10.2 goals; FR-M09-002
+	VAL-GOALNAME
+	Read per §3.7; editable only while plan editable / admin window (FR-M09-029)
+	Row click opens goal detail; measurement shown as secondary line
+
+Category
+	§4.10.2 / goals_field_config §4.10.10
+	catalogue value
+	Read
+	Pill
+
+Weightage %
+	§4.10.2; FR-M09-019 (sum=100)
+	VAL-WEIGHTAGE
+	Editable in DRAFT only
+	Live plan total indicator ‘Total weightage: X% (need 100%)’
+
+Scorecard pillar (optional)
+	§4.10.17 scorecard_pillars_master
+	catalogue value
+	Read
+	Pill
+
+Plan status pill
+	§4.10.1 goal_plans.state (enum per FR-M09-001)
+	—
+	Read
+	Submitted · Awaiting L1 / Active / In review / Closed
+
+Next-cycle auto-open note
+	FR-M09-001 (PENDING→DRAFT 30d early)
+	—
+	Read
+	Informational banner only; driven by JOB-M09-PLAN-OPEN (§5)
+
+Reviews tab
+Lists the employee’s review_records per cycle (FR-M09-003). Each row: cycle name · stage pill (Self / L1 / Calibration / Acknowledgement) · due date · action (Start self-review → 2.3; View summary). Published rows show acknowledged rating; decline captured per FR-M09-003 business rule (referenced).
+Feedback tab (FR-M09-026 / -027)
+Persistent two-way thread on the appraisal record. Each entry: author, timestamp, body (≤4000 chars), and an employee response affordance (Acknowledge · Add context). Visibility per FR-M09-026 business rule (employee + HR Admin + HRBP; other managers excluded) — referenced, not restated. Posting triggers MSG-M09-FEEDBACK / MSG-M09-FEEDBACK-RESP (§7).
+Actions: Add goal (→2.2), AI suggest (→2.2c), Start self-review (→2.3), Respond to feedback (inline, calls PATCH feedback response §4).
+Conflict note: continuous-feedback char limit (4000) and 24-hour edit window appear in the prototype but are not in BRD §5.8 → OPEN-FS-M09-05.
+2.2 Add goal · Copy from previous · AI suggest (prototype: add-goal, copy-previous-goal, ai-suggest-goals)
+References: Satisfies FR-M09-015 (authorship, edit-and-approve), FR-M09-013 (AI), FR-M09-019 (weightage). Entities §4.10.2, goals_history.
+2.2a Add goal — field table
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Goal name
+	§4.10.2; FR-M09-002
+	VAL-GOALNAME
+	Editable (author)
+	Required; placeholder example
+
+Goal measurement
+	§4.10.2
+	VAL-TEXT-LONG
+	Editable
+	Free-text criteria
+
+Category
+	goals_field_config §4.10.10
+	catalogue
+	Editable
+	Select
+
+Weightage %
+	FR-M09-019
+	VAL-WEIGHTAGE
+	Editable
+	Submit blocked unless plan sum=100 (VAL-WSUM)
+
+Scorecard pillar (optional)
+	§4.10.17 scorecard_pillars_master
+	catalogue
+	Editable
+	Optional. Shown only when the goal plan has Goal Scorecard Pillar — Enable; mandatory off by default (Perf-Admin "Mandatory in goal authoring" toggle).
+
+Parent goal (sub-goal/KR)
+	§4.10.2 parent_goal_id; §4.10.11
+	—
+	Editable
+	Sub-goal weightages must sum 100% within parent (VAL-SUBWSUM)
+
+On submit: goal → L1 Manager; L1 actions Approve · Reject · Sendback · Edit-and-Approve (FR-M09-015, referenced). Edit-and-Approve audit-logs field-level old→new and notifies employee (MSG-M09-GOAL-EDITAPPROVE). SLA 3 business days (FR-M09-021).
+2.2b Copy from previous goal (copy-previous-goal / copy-previous-goal-mgr)
+Picker of prior goals from earlier closed cycles (employee: own goals; manager variant: current team members per employees.manager_id — FR-M09-015 scope, referenced). Copy creates a fresh goals row with new id, no parent link; source id audit-logged. Selecting ‘Copy & modify’ opens 2.2a pre-populated.
+2.2c AI suggest goals (ai-suggest-goals, FR-M09-013)
+Generates candidate goals from role/JD, competency framework, prior goals, org priorities (FR-M09-013, referenced). Screen: input parameters → generated list with select-to-add → each accepted goal lands in 2.2a draft. AI goal-generation service contract is now fixed in BRD FR-M09-013 (endpoint POST /api/v1/performance/ai/suggest-goals, §6.4.7; request/response schema, p95 ≤ 8s, manual fallback). §4.2 references it. (OPEN-FS-M09-06 closed.)
+2.3 Self review — employee (prototype: self-review)
+References: Satisfies FR-M09-003 stage 1, FR-M09-008 (per-stage fields). Entities review_records (§4.10.4), review_stage_field_permissions (§4.10.13).
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Per-goal self rating
+	review_records §4.10.4; FR-M09-003
+	configured scale
+	Editable by appraisee in Self stage only (§4.10.13)
+	Rating control per the configured scale. The rating scale & dropdown parameters are configured by the Performance Admin (ReviewKra settings — rating scale, Enable dropdown on rating scale, normalization).
+
+Per-goal self comments
+	§4.10.4
+	VAL-COMMENT
+	Editable (mandatory per template flag)
+	Min length per template (VAL-COMMENT)
+
+Achievement %
+	§4.10.2 goal_achievement_pct; FR-M09-019
+	VAL-ACHV (0–150, cap 120 for score)
+	Editable by appraisee at review
+	Raw % shown; capped only for scoring
+
+Overall self comments
+	§4.10.4
+	VAL-COMMENT-50
+	Editable
+	Min 50 chars if enabled
+
+Custom form (if configured)
+	review_templates §4.10.12
+	per field
+	Editable
+	Rendered from template
+
+Field visibility/editability is entirely driven by review_stage_field_permissions (FR-M09-008) — the FS does not restate which fields are on; it renders from that config. Actions: Save draft (no notification), Submit (advances to L1 stage; locks self fields). On submit, MSG not required to employee; L1 notified via L1_REVIEW_DUE digest (§7).
+2.4 Probation confirmation — employee view (prototype: probation-confirmation)
+References: Satisfies FR-M09-005. Trigger is calendar-driven (M01 employment_history.probation_end_date). Read-only status surface for the employee.
+Shows probation status, end date, and outcome once decided (Confirm / Extend / Not confirm — FR-M09-005, referenced). No employee input; outcome letter generated via M11 on confirmation. Drives no transition — JOB-M09-PROBATION (§5) does.
+2.5 Goals and review — manager (prototype: reviews)
+References: Satisfies FR-M09-003 (manager team-review view). Entities review_records. RBAC §3.7 (L1 Manager — own reportees only).
+Layout regions: page header · team review table. (No admin open/pause/resume control here — see below.)
+L1 exclusion (FR-M09-030): the on-demand open / pause / resume control is NOT on this L1 Manager page. It lives on the Performance-Admin Review-cycles screen (§2.14) and is restricted to Performance Admin and HR Admin per §3.7.5; L1 Managers cannot enable, disable (pause), or resume a review.
+Team review table
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Employee
+	review_records §4.10.4
+	—
+	Rows scoped to L1’s reportees (§3.7 data scoping §3.6)
+	Row click → appraisal-review (2.7)
+
+Self / L1 / Skip / Calibration / Final
+	§4.10.4 stage fields; FR-M09-003
+	—
+	Draft rating Reviewer-only (FR-M09-003 BR)
+	Stage pills; draft rating hidden pre-publish
+
+Status
+	FR-M09-003 / §8.8
+	—
+	Read
+	Stage 1/2/… pill
+
+Changed vs prior prototype: the team monthly check-in reminder banner was removed (check-ins withdrawn), and the FR-M09-030 admin control card was relocated off this page to the Performance-Admin Review-cycles screen (§2.14) so L1 Managers cannot reach it.
+2.6 Goal-plan approvals & reportee goal authoring (prototype: goal-approvals, review-goal-plan, add-goal-for-reportee, copy-previous-goal-mgr)
+References: Satisfies FR-M09-015 (L1 edit-and-approve), FR-M09-016 (sendback discards), FR-M09-019 (weightage). Entities goals, goals_history.
+goal-approvals: queue of pending goal plans/goals for the L1 with per-item Approve / Reject / Sendback / Edit-and-Approve. review-goal-plan: full plan view for one reportee with inline comments and the same action set. add-goal-for-reportee: 2.2a in manager context (manager-created goals skip PENDING_APPROVAL → APPROVED per FR-M09-015 BR; audit created_and_approved_by_same_user). copy-previous-goal-mgr: the team-scoped copy picker (2.2b).
+Sendback (FR-M09-016): clears l1_rating/comments/evaluated_at (preserved in history, hidden from employee); employee resubmits; capped by max_send_back_iterations (review_templates). Sendback reason mandatory (VAL-COMMENT).
+Weightage guard: approval blocked if plan sum≠100 (VAL-WSUM), with the offending goal highlighted (FR-M09-019).
+2.7 Appraisal review — L1 goal-by-goal (prototype: appraisal-review, start-review)
+References: Satisfies FR-M09-025 (review screen), FR-M09-019 (score), FR-M09-016 (sendback), FR-M09-004 (MSF). Entities review_records, goals, multi_source_feedback.
+Layout regions: reportee summary banner · goal-by-goal evaluation cards · overall comments · sticky action bar · left-rail reportee list with status pills.
+Per-goal evaluation card — field table
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Header (name · weightage · pillar)
+	§4.10.2; FR-M09-025
+	—
+	Read
+	No lifecycle pill (withdrawn)
+
+Goal description / measurement
+	§4.10.2
+	—
+	Read; L1 cannot edit measurement (FR-M09-025 BR)
+	Measurement surfaced as the cycle ‘contract’
+
+Achievement %
+	§4.10.2; FR-M09-019
+	VAL-ACHV
+	Employee value read; L1 sees raw + capped-120 score
+	Computed goal_score read-only (FR-M09-019)
+
+Self rating + comments
+	§4.10.4
+	—
+	Read-only to L1
+	Shown for context
+
+L1 rating
+	§4.10.4; FR-M09-008
+	configured scale
+	Editable (L1 stage)
+	Mandatory before submit
+
+L1 comments
+	§4.10.4
+	VAL-COMMENT
+	Editable; mandatory if rating differs from self by ≥1 (FR-M09-025 BR)
+	Evidence attach optional ≤5 files
+
+Overall comments
+	§4.10.4
+	VAL-COMMENT-50
+	Editable
+	Min 50 / max 3000 chars
+
+Action bar: Save draft (review stays IN_PROGRESS, no notify) · Sendback to employee (→ Self stage, discards L1 eval per FR-M09-016) · Submit to calibration (locks record, → Calibration, notifies HR+Perf Admin via CALIBRATION_OPENED).
+Guards (FR-M09-025 BR): cannot submit until every goal has L1 rating+comments; overall comments meet 50-char min; plan weightage=100.
+MSF (FR-M09-004): invite contributors (multi_source_feedback INVITED→SUBMITTED/DECLINED); anonymisation per cycle config (referenced).
+2.8 Team appraisals tasks & probation decision (prototype: manager-appraisal-tasks, probation-decision)
+References: Satisfies FR-M09-021 (SLA/escalation), FR-M09-005 (probation recommendation).
+manager-appraisal-tasks: the L1’s task list (pending self-review nudges, L1 reviews due, sendbacks) with SLA pills; overdue items escalate per FR-M09-021 (JOB-M09-SLA, §5). probation-decision: L1 submits CONFIRM / EXTEND / NOT_CONFIRM with notes (FR-M09-005); routes to HR Admin (2.11).
+2.9 Department performance — manager/HOD (prototype: dept-performance) [dashboard variant]
+References: Satisfies BRD §10.2 (role-aware widgets). Read-only analytics; data referenced from review_records/goals aggregates.
+Widget
+	Purpose (ref §10.2)
+	Data source (entities / API §4)
+	Refresh
+	Drill-down
+	Visible to (ref §3.7)
+
+Rating distribution
+	§10.2
+	review_records.calibration_rating agg
+	On load + manual
+	→ appraisal-review
+	HOD, L1 (own subtree), HR/Perf Admin
+
+Goal completion mix
+	§10.2
+	goals achievement agg
+	On load
+	→ pa-goal-plans
+	HOD, L1, HR/Perf Admin
+
+Review SLA status
+	§10.2; FR-M09-021
+	review_records stage/SLA
+	5-min cache
+	→ pa-review-status
+	HOD, HR/Perf Admin
+
+Data scoping per BRD §3.6 (HOD = department subtree; L1 = direct reports). Empty/loading/error states per global standard.
+2.10 Performance calibration & post-calibration finalisation (prototype: calibration)
+References: Satisfies FR-M09-009 (moderation), FR-M09-022 (manual calibrate & publish), FR-M09-023 (distribution norm), FR-M09-024 (closure). Entities calibration_records (§4.10.5), calibration_configurations (§4.10.14), review_records, review_cycles.
+Layout regions: calibration board launcher · post-calibration finalisation table · update-record form.
+Post-calibration finalisation — field table
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Employee
+	review_records §4.10.4
+	—
+	Visible to HR/Perf Admin, L1, HOD, appraisee (own row) — FR-M09-024
+	Row
+
+Final rating
+	calibration_records §4.10.5; FR-M09-022
+	—
+	Read (calibrated)
+	Pill + ‘(calibrated)’
+
+Employee acknowledgement
+	review_records; FR-M09-024
+	—
+	Read
+	Pending · Acknowledged · Ack-with-comments · Disagreed
+
+Status
+	review_cycles/review_records; FR-M09-024
+	—
+	Editable (admin)
+	Awaiting acknowledgement · Closed
+
+Reworked vs prior prototype: the ‘manager 1:1 meeting’ step, the ‘Meeting with employee’ column/fields, and the Awaiting/In-1:1 statuses are removed (1:1 withdrawn). Flow is final-rating release → acknowledgement → close (FR-M09-024).
+Publish (FR-M09-022): irreversible without HR Admin un-publish (audit-logged; forces re-acknowledgement) — referenced. Publish blocked until all in-cohort have calibration_rating, with option to exclude pending (audit) per FR-M09-022 BR.
+Distribution norm (FR-M09-023): board shows ideal vs actual; norm config in cfg-calibration (2.18). Cohort <20 suppresses enforcement (FR-M09-023 BR, referenced).
+Closure (FR-M09-024): review_cycles.state→CLOSED makes goals read-only (JOB-M09-CLOSE); dispute path HRBP→L2→HR Admin within 5 business days (referenced); HR Admin can re-open.
+2.11 Probation approval & management — HR Admin (prototype: probation-approval, probation-management)
+References: Satisfies FR-M09-005. Entities M01 employment_history (referenced).
+probation-approval: HR Admin reviews the L1 recommendation and confirms; on CONFIRM, probation_flag→FALSE and the confirmation letter (M11 template) generates (RATING/PROBATION_CONFIRMED notify). NOT_CONFIRM initiates separation (M03, category INVOLUNTARY) — cross-module, referenced. probation-management: roster of all employees in/near probation with due dates, sourced from JOB-M09-PROBATION (§5). Manual bypass requires HR Admin override (audit-logged).
+2.12 Add goal on behalf — admin (prototype: admin-add-goal) [FR-M09-029]
+References: Satisfies FR-M09-029 (admin-enabled goal editing, anytime, any employee). Entities goals, goal_plans.
+Performance/HR Admin opens goal editing for one employee, a set, or a whole plan, independent of plan/approval state (FR-M09-029, referenced). Build surface: employee/scope select · routing choice (auto-approve self / route to L1) · goal fields (2.2a) · audit reason. Removed: the ‘Initial lifecycle state’ field (goal progress withdrawn). Every enablement + edit audit-logged; affected employees notified within 5 min (MSG-M09-ADMIN-EDIT).
+2.13 Performance Admin — module operations dashboard (prototype: dashboard / ‘Performance Admin · Module operations’) [dashboard variant]
+References: Satisfies BRD §10.2. Hub for PA sub-pages (2.14–2.18).
+Widget
+	Purpose (ref §10.2)
+	Data source (API §4 ref)
+	Refresh
+	Drill-down
+	Visible to (ref §3.7)
+
+Active cycles & stage spread
+	§10.2; FR-M09-003
+	review_cycles, review_records agg
+	5-min cache
+	→ pa-review-cycles
+	Performance/HR Admin
+
+Plans pending assignment/approval
+	§10.2; FR-M09-028
+	goal_plans state agg
+	On load
+	→ pa-goal-plans
+	Performance/HR Admin
+
+Review SLA breaches
+	§10.2; FR-M09-021
+	review_records SLA
+	5-min cache
+	→ pa-review-status
+	Performance/HR Admin
+
+Calibration progress
+	§10.2; FR-M09-022
+	calibration_records agg
+	On load
+	→ pa-calibration
+	Performance/HR Admin
+
+PIPs open
+	§10.2
+	(PIP entity — see OPEN-FS-M09-04)
+	On load
+	→ pa-pip
+	Performance/HR Admin, HRBP
+
+2.14 Review cycles (prototype: pa-review-cycles, pa-cycle-create)
+References: Satisfies FR-M09-003/-024, FR-M09-030. Entities review_cycles (§4.10.3).
+pa-review-cycles: list of the 12 monthly review cohorts with state, dates, in-scope counts. pa-cycle-create: define a cycle (name, monthly cohort, fiscal year, dates, rating scale) — fields map to review_cycles §4.10.3; user assignment per BRD UAG. State transitions per §8.8.
+Review cycle controls — admin (FR-M09-030) [relocated from §2.5]
+Admin-only build surface (prototype: card on pa-review-cycles). Restricted to Performance Admin and HR Admin; L1 Managers and all other roles are excluded (FR-M09-030 BR; §3.7.5 performance.review.open_ondemand / .hold_resume). Controls: Scope select (Single employee · Selected set · Filter/cohort · Whole monthly cohort) · Employee/cohort select · actions Open review now (ACTIVE→IN_REVIEW; review_initiation_source=ADMIN_MANUAL), Pause review (review_records.review_hold=TRUE; freezes stage progression + SLA clocks; this is the ‘disable’ affordance), and Resume review. No recall once opened.
+2.15 Goal plans & assignment (prototype: pa-goal-plans, pa-goal-plan-detail, pa-assign-plan, pa-goal-plan-create) [FR-M09-028]
+References: Satisfies FR-M09-028 (cron/approve/override/manual), FR-M09-001/-002/-006. Entities goal_plans, goal_plan_templates.
+pa-goal-plans: register of plans with state and assignment_source. pa-goal-plan-detail: a plan’s authorship/config and goal list (Authorship §ref FR-M09-015; field config §4.10.10) — the ‘Mid-cycle revision’ and ‘Lifecycle states’ config fields are removed (FR-M09-018 / progress withdrawn); an ‘Admin goal editing (FR-M09-029)’ toggle replaces them. pa-assign-plan: the FR-M09-028 assignment surface (cron Approve · Override dates/cohort/min-max · Manual single · Manual bulk by filter; assignment_source recorded). pa-goal-plan-create: new plan from template.
+Assignment path
+	Build behaviour
+	Source (BRD)
+
+Approve
+	Approve cron DRAFT as-is → ACTIVE on plan_start_date
+	FR-M09-028
+
+Override
+	Edit plan_start/end, monthly_cohort, min/max before activation
+	FR-M09-028
+
+Manual single / bulk
+	Create for one / filter-selected set; respects one-ACTIVE-plan rule
+	FR-M09-028
+
+2.16 Calibration sessions & review status / SLA (prototype: pa-calibration, pa-review-status)
+References: Satisfies FR-M09-009/-022/-023 (calibration), FR-M09-021 (SLA). Entities calibration_records, review_records.
+pa-calibration: create/run calibration sessions (lobby/group per config); links to the moderation board (2.10). pa-review-status: cycle-wide stage + SLA tracker; breaches escalate per FR-M09-021 (JOB-M09-SLA). Reject-pending-via-cron and auto-ack-on-breach are surfaced here (referenced rules).
+2.17 Performance Improvement Plans (prototype: pa-pip)
+References: Satisfies FR-M09-PIP (BRD §5.8). Entity performance_improvement_plans (§4.10.19). Notifications PIP_CREATED / PIP_REVIEW_DUE / PIP_CLOSED (§9.7). RBAC performance.pip.manage (§3.7.5).
+PIP register + authoring surface (prototype: pa-pip). Now fully specified against FR-M09-PIP and the performance_improvement_plans entity (§4.10.19).
+Field / control
+	Source (BRD)
+	Validation
+	Role behaviour (ref)
+	On-screen behaviour
+
+Employee / owner L1
+	§4.10.19; FR-M09-PIP
+	—
+	HR/Perf Admin, HRBP (performance.pip.manage)
+	Row; owner = L1 Manager
+
+Objectives [{objective, success_criteria, weightage}]
+	§4.10.19; FR-M09-PIP
+	VAL-WSUM-PIP
+	Editable by HR/Perf Admin, HRBP
+	Weightage must sum 100% to save
+
+Status
+	§4.10.19; FR-M09-PIP
+	—
+	Editable
+	DRAFT · ACTIVE · EXTENDED · COMPLETED_SUCCESS · COMPLETED_FAIL · CANCELLED
+
+Review cadence
+	§4.10.19
+	—
+	Editable
+	WEEKLY / FORTNIGHTLY / MONTHLY → drives PIP_REVIEW_DUE
+
+Start / end date
+	§4.10.19
+	—
+	Editable
+	end_date ≥ start_date
+
+Outcome + notes
+	§4.10.19; FR-M09-PIP
+	VAL-COMMENT
+	Editable on closure
+	Mandatory at COMPLETED_*; COMPLETED_FAIL surfaces M03 recommendation
+
+One non-terminal PIP per employee (FR-M09-PIP BR); separation during ACTIVE PIP auto-CANCELs it. Independent of goal_plans/review_cycles state.
+2.18 Configuration — goal-plan / review / calibration templates (prototype: cfg-goal-templates, cfg-review-templates, cfg-calibration)
+References: Satisfies FR-M09-006/-007/-008/-023/-010/-011/-029. Entities goal_plan_templates (§4.10.9), goals_field_config (§4.10.10), review_templates (§4.10.12), review_stage_field_permissions (§4.10.13), calibration_configurations (§4.10.14), normalization_rules (§4.10.15), custom_formulas (§4.10.16).
+cfg-goal-templates (FR-M09-006): authorship config, field toggles (goals_field_config), goal min/max & weightage rules, sub-goal/activity config, approver, AND the Admin-goal-editing (FR-M09-029) toggle. Removed: Mid-cycle revision (FR-M09-018) and Lifecycle-states fields.
+cfg-review-templates (FR-M09-007 / -008): stage enablement (Self/Eval1/Eval2/Reviewer/Calibration/Ack), per-stage field permissions (review_stage_field_permissions), rating scales, sendback cap, normalization setting.
+cfg-calibration (FR-M09-023 / -022 / -010 / -011): calibration parameters, ideal distribution norms, N-grid/lobby toggles, normalization rule selection, custom-formula binding.
+These config screens are referenced extensively by the runtime screens above; the FS does not restate the field semantics fixed in §4.10.9–.16 — it specifies the builder UI controls and the validations (VAL-WSUM, VAL-DISTRIB-100) that gate save.
+3. Interaction & Navigation Flows
+References: Maps screen transitions onto BRD §8.8 (M09 review state machine — now populated with the consolidated goal_plans + review_records diagram, OPEN-FS-M09-08 closed), FR-M09-001 (plan states) and FR-M09-003 (review workflow). The state machine itself is NOT redrawn — only which screen/job drives each transition.
+3.1 Goal plan lifecycle (goal_plans.state — FR-M09-001)
+Transition
+	Driven by
+	Screen / job
+
+PENDING → DRAFT (30d early)
+	JOB-M09-PLAN-OPEN (cron)
+	auto; surfaced on my-goals banner & pa-goal-plans
+
+DRAFT → (author goals) → submit
+	Employee/manager action
+	2.2 add-goal / 2.6 add-goal-for-reportee
+
+submit → L1 approve → APPROVED
+	L1 action
+	2.6 goal-approvals / review-goal-plan
+
+DRAFT/PENDING → ACTIVE (plan_start_date)
+	cron / admin approve
+	2.15 pa-assign-plan
+
+ACTIVE → IN_REVIEW (plan_end_date)
+	JOB-M09-REVIEW-OPEN (cron)
+	auto
+
+ACTIVE → IN_REVIEW (on demand)
+	Admin action (FR-M09-030)
+	2.5 reviews control card / 2.14 pa-review-cycles
+
+IN_REVIEW (paused) ↔ resumed
+	Admin action (FR-M09-030)
+	2.5 / 2.14 (review_hold)
+
+IN_REVIEW → CLOSED
+	JOB-M09-CLOSE on cycle close
+	2.10 calibration / 2.14
+
+any → CANCELLED
+	Admin action
+	2.15 pa-goal-plans
+
+3.2 Review workflow (review_records — FR-M09-003 / §8.8)
+Stage transition
+	Driven by
+	Screen
+
+Self submitted → L1 stage
+	Employee Submit
+	2.3 self-review
+
+L1 submitted → Calibration
+	L1 Submit-to-calibration
+	2.7 appraisal-review
+
+Sendback → Self (discard L1 eval)
+	L1 Sendback (FR-M09-016)
+	2.7 / 2.6
+
+Calibration → Publish
+	HR/Perf Admin (FR-M09-022)
+	2.10 calibration
+
+Publish → Acknowledged / Declined
+	Employee
+	2.1 my-goals (reviews)
+
+Auto-acknowledge on SLA breach
+	JOB-M09-SLA / auto-ack
+	—
+
+Pause / resume at any stage
+	Admin (FR-M09-030)
+	2.5 / 2.14
+
+Cross-module: NOT_CONFIRM probation → M03 separation (referenced); confirmation letter → M11; notifications dispatched via P01 workflow engine (BRD §9 intro).
+4. API Contracts
+References: BRD §6.2–6.3 (response envelope, errors, rate-limit) and §6.4.7 (M09 endpoint inventory) referenced. The contracts below author the full request/response/error schema for each §6.4.7 endpoint. Entities per §4.10.x. Auth/headers/idempotency per BRD §6.2–6.3.
+4.1 Goal plans & goals
+POST /api/v1/performance/goal-plans (ref §6.4.7; satisfies FR-M09-028/-001)
+Request : { employee_id, template_id, plan_start_date, plan_end_date,
+         monthly_cohort, min_goals, max_goals, assignment_source }
+201 : { id, state:‘DRAFT’|‘PENDING’, review_initiation_source:‘CALENDAR’, … }
+Errors : 400 bad dates · 403 not Perf/HR Admin (RBAC §3.7) · 409 overlapping ACTIVE plan
+POST /api/v1/performance/goal-plans/{id}/goals (ref §6.4.7; FR-M09-015/-002)
+Request : { goal_name, measurement, category, weightage, scorecard_pillar,
+         parent_goal_id?, aligned_to? }
+201 : { goal_id, approval_state:‘DRAFT’ }
+Errors : 403 (RBAC) · 422 VAL-WEIGHTAGE/VAL-GOALNAME · 409 plan not editable
+POST /api/v1/performance/goals/{id}/approve | /reject | /sendback | /edit-approve
+(ref §6.4.7; FR-M09-015/-016) body: { decision, comments(req for reject/sendback),
+                                   edited_fields? }
+200 : { goal_id, approval_state } ; 422 VAL-WSUM if plan sum≠100 ; 403 not L1
+4.2 Reviews, calibration, feedback
+POST /api/v1/performance/reviews/{id}/self (ref §6.4.7; FR-M09-003)
+body { per_goal:[{goal_id, self_rating, self_comments, achievement_pct}], overall_comments }
+200 advances to L1 ; 422 VAL-ACHV/VAL-COMMENT ; 409 review_hold=TRUE (paused)
+POST /api/v1/performance/reviews/{id}/l1 (ref §6.4.7; FR-M09-025)
+body { per_goal:[{goal_id, l1_rating, l1_comments, evidence?}], overall_comments, action:‘draft’|‘sendback’|‘submit’ }
+200 ; 422 missing rating/comment ; 409 weightage≠100 / paused
+POST /api/v1/performance/reviews/{id}/publish (ref §6.4.7; FR-M09-022) 403 not HR/Perf Admin
+POST /api/v1/performance/reviews/{id}/acknowledge (ref §6.4.7; FR-M09-003) body { state:‘ACK’|‘ACK_COMMENTS’|‘DECLINED’, reason? }
+POST /api/v1/performance/reviews/{id}/hold | /resume (ref §6.4.7; FR-M09-030) body { scope, reason } 403 not admin
+POST /api/v1/performance/feedback (ref §6.4.7; FR-M09-026) body { employee_id, body }
+POST /api/v1/performance/feedback/{id}/response (ref §6.4.7; FR-M09-027) body { type:‘ACK’|‘CONTEXT’|‘DISAGREE’, body }
+POST /api/v1/performance/msf/invite (ref §6.4.7; FR-M09-004) body { review_id, contributor_user_ids[] }
+4.3 Probation & on-demand cycle control
+POST /api/v1/performance/probation/{employee_id}/recommend (ref §6.4.7; FR-M09-005)
+body { decision:‘CONFIRM’|‘EXTEND’|‘NOT_CONFIRM’, notes } — L1 only
+POST /api/v1/performance/probation/{employee_id}/confirm (ref §6.4.7; FR-M09-005) — HR Admin; triggers M11 letter
+POST /api/v1/performance/cycles/{id}/open (ref §6.4.7; FR-M09-030) body { scope } sets ADMIN_MANUAL
+All list endpoints: cursor pagination + filter per Foundation conventions (BRD §6.3). All mutating endpoints: idempotency-key header; audit entry per BRD Appendix (referenced).
+5. Validation (module-specific)
+References: Global format rules (email, dates, ids) belong in the Foundation FS shared catalogue — referenced by id, not authored here. Below are validations unique to M09 screens. Rule semantics that the BRD fixes (e.g. the 100% weightage rule) are referenced to FR-M09-019, not restated.
+VAL id
+	Applies to
+	Rule (build)
+	BRD source
+
+VAL-WSUM
+	plan submit / goal approve
+	Σ goal_weightage = 100 (hard; no override)
+	FR-M09-019
+
+VAL-SUBWSUM
+	sub-goal save
+	Σ sub-goal weightage = 100 within parent
+	FR-M09-019
+
+VAL-WEIGHTAGE
+	weightage field
+	integer 0–100
+	FR-M09-002/-019
+
+VAL-ACHV
+	achievement %
+	numeric ≥0; raw shown; capped 120 for score
+	FR-M09-019
+
+VAL-GOALNAME
+	goal name
+	required, ≤200 chars
+	FR-M09-002
+
+VAL-COMMENT
+	review/sendback comment
+	required where flagged; non-empty
+	FR-M09-003/-016
+
+VAL-COMMENT-50
+	overall L1 comments
+	50–3000 chars
+	FR-M09-025
+
+VAL-DISTRIB-100
+	calibration norm config
+	distribution tiers sum = 100
+	FR-M09-023
+
+VAL-HOLD-REASON
+	pause review
+	reason required when review_hold=TRUE
+	FR-M09-030
+
+VAL-WSUM-PIP
+	PIP objectives save
+	Σ objective weightage = 100
+	FR-M09-PIP
+
+6. Per-Screen RBAC Projection & Navigation Entitlement
+References: Projects BRD §3.7 (permission matrix), §3.8 (sensitive data), §3.9 (field access) onto M09 screens. The matrix itself is NOT restated — only the per-screen projection is new. Roles per §3.2–3.5.
+6.1 Screen / action → role projection
+Screen (2.x)
+	Key gated actions
+	Roles permitted (ref §3.7)
+
+my-goals (2.1)
+	author goal, respond to feedback
+	Employee (self)
+
+self-review (2.3)
+	submit self review
+	Employee (self)
+
+reviews (2.5)
+	view team reviews
+	L1 Manager (own reports) — NO open/pause/resume here
+
+Review cycle controls (2.14)
+	open / pause / resume review
+	Performance Admin + HR Admin ONLY — L1 Manager and all others excluded (FR-M09-030, §3.7.5)
+
+goal-approvals / review-goal-plan (2.6)
+	approve/reject/sendback/edit-approve
+	L1 Manager (own reports)
+
+appraisal-review (2.7)
+	L1 rating, submit-to-calibration, MSF invite
+	L1 Manager (own reports)
+
+calibration (2.10)
+	calibrate, publish, un-publish, close
+	HR Admin OR Performance Admin (joint); Skip-level view
+
+probation-approval (2.11)
+	confirm probation
+	HR Admin
+
+admin-add-goal (2.12)
+	enable/admin-edit goals anytime
+	Performance Admin + HR Admin (joint, FR-M09-029)
+
+pa-* (2.13–2.17)
+	cycle/plan/calibration ops
+	Performance Admin + HR Admin
+
+cfg-* (2.18)
+	template/calibration config
+	Performance Admin (+ HR Admin)
+
+dept-performance (2.9)
+	view analytics
+	HOD (dept subtree), L1 (reports), HR/Perf Admin
+
+Field-level masking: draft_rating is Reviewer-only pre-publish (FR-M09-003 BR); any PII surfaced on calibration rows is masked per §3.8/§3.9 for roles without PII-tier access. Dotted-line managers have no appraisal access (DM-PF01, referenced).
+6.2 Menu & navigation entitlement (M09 slice)
+This slice belongs in the Foundation FS menu map; included here for completeness and to be lifted later.
+Menu / section
+	Screen id
+	Visible to roles
+	Gating permission (ref §3.7)
+
+Performance › My goals & reviews
+	my-goals
+	All employees
+	performance.self.view
+
+Performance › Team reviews
+	reviews, appraisal-review
+	L1 Manager
+	performance.team.review
+
+Performance › Calibration
+	calibration
+	HR/Perf Admin, Skip-level
+	performance.calibration.*
+
+Performance Admin (module ops)
+	dashboard + pa-*
+	Performance/HR Admin
+	performance.admin.*
+
+Configuration › Performance
+	cfg-*
+	Performance Admin
+	performance.config.*
+
+Probation
+	probation-*
+	L1 (decision), HR Admin (approval/mgmt)
+	performance.probation.*
+
+Permission codes above are the canonical M09 action codes in BRD §3.7.5 (OPEN-FS-M09-02 closed); bind directly to those.
+7. Operational Layer (M09 slice)
+These sections are cross-cutting and normally live in the Foundation FS. The M09 slice is authored here and flagged for lifting (OPEN-FS-M09-03).
+7.1 Scheduled jobs & background processing
+Job id
+	Trigger / cadence
+	Purpose (BRD ref)
+	Reads / writes
+	Idempotency &** failure**
+
+JOB-M09-PLAN-OPEN
+	Daily 00:00 IST
+	Create next plan PENDING; promote→DRAFT 30d before plan_end (FR-M09-001/-028)
+	goal_plans
+	Keyed on (employee, cycle); re-run safe; retry+alert MSG-SYS-JOBFAIL
+
+JOB-M09-REVIEW-OPEN
+	Daily
+	ACTIVE→IN_REVIEW on plan_end_date (FR-M09-001)
+	goal_plans, review_records
+	Skips plans with review_hold; idempotent per plan
+
+JOB-M09-SLA
+	Daily
+	SLA breach escalation; reject-pending-via-cron (FR-M09-021)
+	review_records
+	Escalates once per breach; audit
+
+JOB-M09-AUTOACK
+	Daily
+	Auto-acknowledge on ack-SLA breach (FR-M09-024)
+	review_records
+	Sets auto_acknowledged once; preserves dispute window
+
+JOB-M09-CLOSE
+	On cycle close
+	Mark goals read-only when review_cycles→CLOSED (FR-M09-024)
+	review_cycles, goals
+	One-way; re-open is manual HR Admin override
+
+JOB-M09-PROBATION
+	Daily
+	Detect probation_end_date ≤ today+30; notify L1 (FR-M09-005)
+	employment_history (M01)
+	Idempotent per employee/window
+
+JOB-M09-NOTIFY
+	Per cadence
+	Self/L1 review-due reminders (§9.7)
+	review_records
+	De-dupe per recipient/day
+
+Concurrency: jobs that write goal_plans/review_records take a row-level lock; user writes mid-run yield last-write-wins with audit. Paused reviews (review_hold) are skipped by JOB-M09-REVIEW-OPEN and JOB-M09-SLA (FR-M09-030).
+7.2 Message catalogue — M09
+Notifications (templates; who/when referenced to §9.7)
+Msg id
+	Event (ref §9.7)
+	Channel
+	Trigger source
+
+MSG-M09-PLAN-DUE
+	GOAL_PLAN_DUE
+	In-app+Email
+	JOB-M09-PLAN-OPEN
+
+MSG-M09-GOAL-APPROVED
+	GOAL_APPROVED
+	In-app
+	2.6 approve
+
+MSG-M09-GOAL-EDITAPPROVE
+	(edit-and-approve, FR-M09-015)
+	In-app+Email
+	2.2/2.6 edit-approve
+
+MSG-M09-CYCLE-OPENED
+	REVIEW_CYCLE_OPENED
+	Email
+	2.14 / FR-M09-030 open
+
+MSG-M09-SELF-DUE / -L1-DUE
+	SELF_REVIEW_DUE / L1_REVIEW_DUE
+	In-app+Email
+	JOB-M09-NOTIFY
+
+MSG-M09-CALIB-OPENED
+	CALIBRATION_OPENED
+	In-app
+	2.7 submit-to-calibration
+
+MSG-M09-RATING-PUBLISHED
+	RATING_PUBLISHED
+	Email
+	2.10 publish
+
+MSG-M09-RATING-ACK / -DECLINED
+	RATING_ACKNOWLEDGED / _DECLINED
+	In-app/Email
+	2.1 acknowledge
+
+MSG-M09-PROBATION-DUE / -CONFIRMED
+	PROBATION_CONFIRMATION_DUE / _CONFIRMED
+	In-app+Email/Email
+	JOB-M09-PROBATION / 2.11
+
+MSG-M09-MSF-INVITED
+	MSF_INVITED
+	In-app+Email
+	2.7 MSF invite
+
+MSG-M09-FEEDBACK / -FEEDBACK-RESP
+	FEEDBACK_SHARED / FEEDBACK_RESPONSE (§9.7)
+	In-app
+	2.1 feedback post/response
+
+MSG-M09-REVIEW-HELD / -RESUMED
+	REVIEW_HELD / REVIEW_RESUMED (§9.7)
+	In-app+Email
+	2.5/2.14 pause/resume
+
+MSG-M09-PIP-CREATED / -REVIEW-DUE / -CLOSED
+	PIP_CREATED / PIP_REVIEW_DUE / PIP_CLOSED (§9.7)
+	In-app+Email / Email
+	2.17 PIP create / cadence / close
+
+Error & system messages (referenced by screens §2 and contracts §4)
+Msg id
+	Where shown
+	Message text
+	Recovery
+
+ERR-M09-WSUM
+	plan submit / approve (VAL-WSUM)
+	Total weightage must equal 100% (currently {x}%).
+	Adjust weightages; submit re-enables at 100%
+
+ERR-M09-PAUSED
+	self/L1 submit on paused review
+	This review is on hold by an administrator.
+	Wait for resume; contact HR/Perf Admin
+
+ERR-M09-NOEDIT
+	goal edit when not editable
+	Goals are locked outside the editing window.
+	Request admin editing (FR-M09-029)
+
+ERR-M09-PUBPENDING
+	publish before all calibrated
+	Some employees have no calibration rating.
+	Calibrate remaining or exclude pending (audit)
+
+8. Reference Register
+Makes the whole FS auditable for repetition: a screen row with content but no references is probably duplicating or inventing. (This index normally lives in the Foundation FS.)
+FS screen
+	Prototype id
+	BRD FR ids
+	BRD entities (§4.10)
+	Open items
+
+2.1 My goals & reviews
+	my-goals
+	001,002,003,014,026,027
+	goal_plans, goals, review_records, manager_feedback, feedback_responses
+	—
+
+2.2 Add/Copy/AI goal
+	add-goal, copy-previous-goal, ai-suggest-goals
+	015,013,019
+	goals, goals_history
+	—
+
+2.3 Self review
+	self-review
+	003,008
+	review_records, review_stage_field_permissions
+	—
+
+2.4 Probation (emp)
+	probation-confirmation
+	005
+	employment_history (M01)
+	—
+
+2.5 Goals & review (manager)
+	reviews
+	003
+	review_records
+	—
+
+2.6 Goal approvals
+	goal-approvals, review-goal-plan, add-goal-for-reportee, copy-previous-goal-mgr
+	015,016,019
+	goals, goals_history
+	—
+
+2.7 Appraisal review
+	appraisal-review, start-review
+	025,019,016,004
+	review_records, goals, multi_source_feedback
+	—
+
+2.8 Tasks / probation decision
+	manager-appraisal-tasks, probation-decision
+	021,005
+	review_records, employment_history
+	—
+
+2.9 Dept performance
+	dept-performance
+	§10.2
+	review_records, goals (agg)
+	—
+
+2.10 Calibration
+	calibration
+	009,022,023,024
+	calibration_records, calibration_configurations, review_cycles
+	—
+
+2.11 Probation HR
+	probation-approval, probation-management
+	005
+	employment_history (M01)
+	—
+
+2.12 Admin add goal
+	admin-add-goal
+	029
+	goals, goal_plans
+	—
+
+2.13 PA dashboard
+	dashboard
+	§10.2
+	review_cycles, goal_plans, calibration_records
+	—
+
+2.14 Review cycles
+	pa-review-cycles, pa-cycle-create
+	003,024,030
+	review_cycles
+	—
+
+2.15 Goal plans & assign
+	pa-goal-plans, pa-goal-plan-detail, pa-assign-plan, pa-goal-plan-create
+	028,001,002,006
+	goal_plans, goal_plan_templates
+	—
+
+2.16 Calibration sessions / SLA
+	pa-calibration, pa-review-status
+	009,022,023,021
+	calibration_records, review_records
+	—
+
+2.17 PIP
+	pa-pip
+	FR-M09-PIP
+	performance_improvement_plans (§4.10.19)
+	—
+
+2.18 Config templates
+	cfg-goal-templates, cfg-review-templates, cfg-calibration
+	006,007,008,023,010,011,029
+	goal_plan_templates, review_templates, calibration_configurations, normalization_rules, custom_formulas
+	—
+
+9. Open Items — Closed Register
+All FS v1.0 open items are closed against BRD v6.6 and prototype v20.4, except OPEN-FS-M09-03 (Foundation FS) which is deferred at the product owner’s direction (common/Foundation FS to be authored later).
+Id
+	Type
+	Resolution
+	Status
+
+OPEN-FS-M09-01
+	Gap (API)
+	BRD §6.4.7 ‘M09 Performance Management’ endpoint inventory added; §4 contracts now reference it
+	CLOSED
+
+OPEN-FS-M09-02
+	Gap (RBAC)
+	BRD §3.7.5 ‘M09 Performance — Phase 1 Action Codes’ added (incl. performance.review.open_ondemand, performance.pip.manage); §6 binds to them
+	CLOSED
+
+OPEN-FS-M09-03
+	Architecture
+	Lift operational sections (§7) + menu map (§6.2) into a Foundation FS
+	DEFERRED — common FS later (per owner)
+
+OPEN-FS-M09-04
+	Gap (screen+data)
+	BRD adds FR-M09-PIP (§5.8) + performance_improvement_plans entity (§4.10.19); §2.17 now fully specified; prototype pa-pip retagged FR-M09-PIP
+	CLOSED
+
+OPEN-FS-M09-05
+	Conflict (rule)
+	FR-M09-026 ACs now fix the 4000-char limit and 24-hour edit window (BRD v6.6)
+	CLOSED
+
+OPEN-FS-M09-06
+	Dependency
+	AI goal-generation service contract fixed in FR-M09-013 (endpoint, schema, p95 ≤ 8s, manual fallback); endpoint in §6.4.7
+	CLOSED
+
+OPEN-FS-M09-07
+	Gap (notifications)
+	BRD §9.7 adds FEEDBACK_SHARED, FEEDBACK_RESPONSE, REVIEW_HELD, REVIEW_RESUMED, PIP_CREATED, PIP_REVIEW_DUE, PIP_CLOSED; prototype cfg-notif updated
+	CLOSED
+
+OPEN-FS-M09-08
+	Reference
+	BRD §8.8 now carries the consolidated goal_plans + review_records state machine; §3 references it
+	CLOSED
+
+PrimeSoft HRMS · complements BRD v6.3 · page # Prototype Sync Addendum — Batch 8: Employee-role Performance review (June 2026)
+Reflects the Batch-8 review of the employee performance surface (goals, self-review, acknowledgement) against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Review acknowledgement and disagreement
+Employee performance acknowledgement is a recorded confirmation (“I acknowledge that I have read and understood my performance review”), consistent with the review configuration where Employee Acknowledgement is enabled in all review templates and mandatory in nearly all. In addition to acknowledging, the employee can add context (a comment on the review) and send the review back / disagree, which routes the review back to the manager for discussion (per the “Allow send back to Employee” review setting).
+Goals and self-review
+Employees may add and edit their own goals (enabled across all goal plans) and complete a self-review (self-rating and comments), which they submit to their manager. The self-review form and goal add/edit are present and config-aligned.
+Manager goal-plan approval — approver capabilities
+The Goal Plan Approver is the Manager (config: Goal Plan Approver = Manager, all 40 plans). During plan review/approval the approver can add, edit and delete goals (config: Allow approver to add and edit goals = Yes; Allow employee and approver to delete goals = Yes, all 40), in addition to Approve and Return for redraft (send-back). Goal-plan send-back captures mandatory comments; it depends on the GoalPlan “Enable Sendback” flag, which must be turned on (currently No for all plans — see configuration actions). Manager-created reportee goals are auto-approved because the approver is the manager.
+Probation — manager confirms, HR Admin approves
+Probation is confirmed by the Manager and approved by HR Admin. The manager workspace exposes the manager’s probation steps (decision queue and the probation-confirmation assessment); the HR-Admin approval stage is exposed under HR Admin only and is not part of the manager navigation. The manager’s probation outcomes are Confirm / Extend / Separate, aligned to the Confirmation Workflow (all three outcomes enabled across stages).
+Review submission — mandatory ratings (build note)
+On review submission the evaluator’s mandatory ratings and comments must be captured where ReviewKra marks them mandatory (e.g. Evaluator-1 goal rating is mandatory on 26 of 28 reviews) before the review advances to calibration. Send-back to employee is available where Allow send back to Employee is enabled (24 of 28 reviews). These are per-review, configuration-driven validations.
+Configuration actions (tenant)
+Turn on GoalPlan “Enable Sendback” (currently No, all 40 plans) to allow the approving manager to return a goal plan for redraft.
+Manager-role review (Round 3)
+Terminology: the Manager appraisal task surface is renamed Team appraisals across menu and screen headings (route id unchanged).
+Goal-pending tasks: goal-plan submission, quarterly check-in and review-stage actions are surfaced as task types in the unified Tasks list (Employee and Manager), in addition to the in-module Goals & reviews screens.

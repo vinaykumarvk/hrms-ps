@@ -1,0 +1,595 @@
+FS ��� M17 Assets & IT v2.1
+Table of Contents
+ TOC \z \o "1-2" \u \h
+Contents
+0. Locked FS Decisions (this revision)
+Decisions confirmed for this FS. They are recorded here as FS-level decisions; the BRD has not been edited. Where a decision differs from the current BRD text, the conflict is also tracked in §7.
+#
+	Decision
+	Effect on this FS
+	BRD reconciliation
+
+D1
+	Drop CAB / change management
+	FR-M17-014 (CAB review) is out of scope and not specified. Change Request ticket type stays Phase 1.5 / inactive.
+	BRD §5.12 FR-M17-014 to be marked withdrawn
+
+D2
+	IT Asset is full Phase 1
+	FLOW-AS-001 (Asset Issue) and FLOW-AS-002 (Asset Return) are Phase 1; asset screens are build-now.
+	Supersedes §5.12.11 ‘Phase 2’ tag — see OPEN-M17-01
+
+D3
+	Catalog approver = configurable approval flow
+	Access-request approval routes through a configured approval flow (manager hierarchy by default, L1/L2 configurable). No standalone ‘Approver’ role.
+	Governed by §5.1.1 (P01)
+
+D4
+	Ticket escalation = configurable
+	SLA breach fires the configured escalation/delegation action; not a hardcoded matrix.
+	Uses platform SLA Settings engine
+
+D5
+	Single standalone document
+	Shared crons, message catalogue and menu entitlement are authored inline in §8 of this FS (no separate Foundation FS).
+	n/a
+
+1. Scope & Reference Map
+References — BRD §5.12, §4.13, §3.7.2; prototype M17 pages.
+This table proves non-repetition: it lists what this FS references (owned by the BRD/prototype) versus what it authors. Anything matching a BRD entry is a reference, never re-written content.
+FS screen (prototype id)
+	BRD FR id(s)
+	BRD data entities (§4.13)
+
+my-assets
+	FR-M17-002, 006
+	asset_assignments, asset_acknowledgements
+
+service-catalog
+	FR-M17-010
+	catalog_items, service_tickets
+
+raise-ticket / my-tickets / ticket-detail
+	FR-M17-008, 009
+	service_tickets, ticket_categories, service_queues
+
+knowledge-base / kb-article
+	FR-M17-011
+	kb_articles
+
+team-assets
+	FR-M17-001, 002
+	assets, asset_assignments
+
+it-asset-master / it-masters
+	FR-M17-001, 005, 006
+	assets, manufacturer_master, vendor_master
+
+it-asset-assignment / it-asset-requests
+	FR-M17-002, 007, 010
+	asset_assignments, assets, catalog_items
+
+sd-queue / sd-ticket-work
+	FR-M17-008, 009, 013
+	service_tickets, service_queues
+
+it-cmdb
+	FR-M17-012
+	cmdb_cis, ci_relationships
+
+it-postmortems
+	FR-M17-013
+	service_tickets (P1)
+
+office-assets
+	FR-M17-001
+	assets
+
+cfg-catalog-items / cfg-kb-articles / cfg-sd-config
+	FR-M17-008, 009, 010, 011
+	catalog_items, kb_articles, ticket_categories, service_queues
+
+Authored here (the FS*’*s job): screen layouts and on-screen behaviour, complete API contracts, the M17 validation set, per-screen RBAC projection, scheduled jobs, the message catalogue, and menu entitlement.
+2. Screen Specifications
+One subsection per prototype page, grouped by persona. Each opens with its references. Field/behaviour detail is the authored layer; data fields and rules are referenced to the BRD entity/FR.
+2.1 Employee Self-Service
+My Assets (prototype: my-assets)
+References — BRD FR-M17-002, 006; §4.13 entities; §3.7.2 RBAC; prototype page “my-assets”.
+Purpose.
+Employee view of assets currently assigned to them, with acknowledgement of receipt/return.
+Key fields &** controls. **Asset list (asset_tag, category, make/model, assigned_at, condition); acknowledgement status; Asset Acknowledgement Form viewer.
+Primary actions. Acknowledge receipt (signs asset_acknowledgements row, asset → In Use); view/download acknowledgement PDF.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Service Catalog (prototype: service-catalog)
+References — BRD FR-M17-010; §4.13 entities; §3.7.2 RBAC; prototype now surfaced within prototype page “raise-ticket” (no standalone main-menu screen).
+Purpose.
+Catalog items (hardware, software, access) are requested within Raise Ticket — the service catalogue is no longer a standalone main-menu screen. The request type is chosen from a dropdown sourced from the Service-Catalogue master (owned and configured by the Service Desk Admin).
+Key fields &** controls. **Request-type dropdown (Service-Catalogue master). On select, category, sub-category, asset type and default approver are defaulted from the catalogue item; plus justification (mandatory), urgency, required-by, delivery location. Cost centre / budget code is not shown to or requested from the employee. SLA is an internal metric and is not shown to the employee.
+Primary actions. Submit request (creates Service Request ticket; routes to configured approval flow); track in My Tickets.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Raise Ticket (prototype: raise-ticket)
+References — BRD FR-M17-008; §4.13 entities; §3.7.2 RBAC; prototype page “raise-ticket”.
+Purpose.
+Create an incident, query, access request or IT grievance.
+Key fields &** controls. **Ticket type, category/sub-category (ticket_categories), priority (default from category), description, asset reference (mandatory for HW/SW/Network), attachments; duplicate-suggestion banner. Request-type dropdown (from the Service-Catalogue master) defaults category/sub-category/asset/approver on select. Cost centre / budget code is not displayed to the employee.
+Primary actions. Submit (creates service_tickets, REQ-{YYYY}-{5d}); link to suggested duplicate.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+My Tickets (prototype: my-tickets)
+References — BRD FR-M17-008; §4.13 entities; §3.7.2 RBAC; prototype page “my-tickets”.
+Purpose.
+Employee’s own tickets with status visibility. SLA timers are not shown to the employee.
+Key fields &** controls. **Ticket list (REQ id, type, state, priority, status); filters by state. Response/resolution SLA due is not shown to the employee.
+Primary actions. Open ticket detail; reopen within 3-business-day window; submit CSAT (1–5).
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Ticket Detail (prototype: ticket-detail)
+References — BRD FR-M17-008, 009; §4.13 entities; §3.7.2 RBAC; prototype page “ticket-detail”.
+Purpose.
+Full ticket conversation, timeline, approvals, and resolution. SLA timers are not shown to the employee.
+Key fields &** controls. **Ticket status, priority, approver(s) and approval status (per the configured approval flow), activity log, resolution notes (read-only to employee), CSAT widget on Closed. SLA timers (response/resolution) are not shown to the employee — they remain on the IT/Service-Desk agent view.
+Primary actions. Reply/comment; reopen; confirm resolution; submit CSAT.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Knowledge Base (prototype: knowledge-base)
+References — BRD FR-M17-011; §4.13 entities; §3.7.2 RBAC; prototype page “knowledge-base”.
+Purpose.
+Searchable, audience-scoped self-service article corpus.
+Key fields &** controls. **Search box (p95 < 600 ms), category tree, audience-filtered results (kb_articles).
+Primary actions. Open article; initiate guided self-service (password/MFA reset).
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+KB Article (prototype: kb-article)
+References — BRD FR-M17-011; §4.13 entities; §3.7.2 RBAC; prototype page “kb-article”.
+Purpose.
+Single versioned article with related links.
+Key fields &** controls. **Title, version, last-reviewed, body, prerequisites, related articles, owner role.
+Primary actions. Mark helpful; raise Query/How-To ticket if unresolved (pre-links article).
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+2.2 Manager
+Team Assets (Manager) (prototype: team-assets)
+References — BRD FR-M17-001, 002; §4.13 entities; §3.7.2 RBAC; prototype page “team-assets”.
+Purpose.
+L1 Manager read-only view of assets assigned to direct reportees.
+Key fields &** controls. **Reportee-grouped asset list (asset_assignments scoped to team).
+Primary actions. View only (no edit). Drill to employee asset history.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+2.3 IT Admin / Asset Manager
+IT Asset Master (prototype: it-asset-master)
+References — BRD FR-M17-001, 005, 006; §4.13 entities; §3.7.2 RBAC; prototype page “it-asset-master”.
+Purpose.
+IT Admin / Asset Manager master register and lifecycle control.
+Key fields &** controls. **Asset record (all assets fields), 8-state lifecycle control, internal AST-ID (immutable) + physical ORG tag, capitalisation/tagging flags, audit_exception_flag.
+Primary actions. Create/edit asset; trigger valid state transitions (engine-enforced); initiate tag re-issue; bulk import.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+IT Masters (prototype: it-masters)
+References — BRD FR-M17-001, 006; §4.13 entities; §3.7.2 RBAC; prototype page “it-masters”.
+Purpose.
+Reference masters behind the asset register.
+Key fields &** controls. **Asset categories, manufacturer_master, vendor_master, capitalisation threshold (₹15,000 default, Finance-configurable), tagging threshold.
+Primary actions. Maintain category/manufacturer/vendor masters and thresholds.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+IT Asset Assignment (prototype: it-asset-assignment)
+References — BRD FR-M17-002, 007; §4.13 entities; §3.7.2 RBAC; prototype page “it-asset-assignment”.
+Purpose.
+Assign assets to employees, standalone or from the onboarding provisioning task.
+Key fields &** controls. **Employee selector, asset picker (filtered to In Stock/Reserved at location), bundle resolver (role-family default), assignment_source.
+Primary actions. Assign (asset → ASSIGNED/Reserved; emits acknowledgement form); substitute on stock shortfall.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+IT Asset / Provisioning Requests (prototype: it-asset-requests)
+References — BRD FR-M17-007, 010; §4.13 entities; §3.7.2 RBAC; prototype page “it-asset-requests”.
+Purpose.
+Inbound provisioning tasks (from M02) and procurement/fulfilment requests.
+Key fields &** controls. **Provisioning task queue (m02.it_provisioning_task_assigned), shipped sub-flow tracking (Reserved → In Transit → In Use), procurement tickets.
+Primary actions. Confirm/substitute bundle; mark provisioning complete (emits m17.it_provisioning_complete to M02); open procurement ticket on shortfall.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+2.4 Service Desk Operations
+Service Desk Queue (prototype: sd-queue)
+References — BRD FR-M17-008, 009; §4.13 entities; §3.7.2 RBAC; prototype page “sd-queue”.
+Purpose.
+Agent/Lead queue of tickets routed by category.
+Key fields &** controls. **Queue list (service_queues), priority, SLA timers, pre-breach (80%) and breach flags, unassigned > 60 min flag, round-robin assignment.
+Primary actions. Pick up / assign; re-route (≤ 2 hops); escalate per configured SLA settings.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Service Desk — Ticket Work (prototype: sd-ticket-work)
+References — BRD FR-M17-008, 009, 013; §4.13 entities; §3.7.2 RBAC; prototype page “sd-ticket-work”.
+Purpose.
+Agent working surface for an individual ticket.
+Key fields &** controls. **State control (engine-enforced transitions), Pending Reason sub-field (pauses SLA), Resolution Notes (root cause/steps/parts/follow-up), CSAT result, linked CI/asset.
+Primary actions. Transition states; In Progress → Resolved BLOCKED until Resolution Notes populated; link KB article; trigger post-mortem on P1 Closed.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+CMDB (prototype: it-cmdb)
+References — BRD FR-M17-012; §4.13 entities; §3.7.2 RBAC; prototype page “it-cmdb”.
+Purpose.
+Configuration item store and relationship graph for impact analysis.
+Key fields &** controls. **CI list (cmdb_cis, 6 CI types), relationship graph (ci_relationships: ASSIGNED_TO, LOCATED_AT, RUNS_ON, DEPENDS_ON, AFFECTED_BY, COMPONENT_OF), AST-ID reuse / CI-{8d}.
+Primary actions. View blast radius (AFFECTED_BY); bundle-return check (COMPONENT_OF); change impact assessment.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+P1 Post-Mortems (prototype: it-postmortems)
+References — BRD FR-M17-013; §4.13 entities; §3.7.2 RBAC; prototype page “it-postmortems”.
+Purpose.
+Auto-generated post-mortem records for tickets that held P1.
+Key fields &** controls. **PM-{YYYY}-{4d}, pre-filled timeline/root cause/affected scope/SLA breach, draft-review-signoff state, remediation action links, 7-year retention.
+Primary actions. Draft (Lead); review (IT Director); sign off (CTO); log remediation tickets.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+2.5 Facilities / Office Admin
+Office Assets (Facilities/Office Admin) (prototype: office-assets)
+References — BRD FR-M17-001; §4.13 entities; §3.7.2 RBAC; prototype page “office-assets”.
+Purpose.
+Location-scoped asset inventory view for office/facilities administration.
+Key fields &** controls. **Location-filtered asset list (assets scoped by location_id), condition summary.
+Primary actions. View; flag discrepancies for IT Admin (no edit on IT-owned records).
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+2.6 Configuration (Service Desk Admin / IT Admin)
+Config — Catalog Items (prototype: cfg-catalog-items)
+References — BRD FR-M17-010; §4.13 entities; §3.7.2 RBAC; prototype page “cfg-catalog-items”.
+Purpose.
+Service Desk Admin configuration of catalog items and approval routing.
+Key fields &** controls. **catalog_items (item, audience, approval_chain → approval-flow code, fulfilment SLA/queue, default priority, form_fields, auto_fulfil).
+Primary actions. Create/edit catalog item; bind approval chain to a configurable approval flow (P01).
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Config — KB Articles (prototype: cfg-kb-articles)
+References — BRD FR-M17-011; §4.13 entities; §3.7.2 RBAC; prototype page “cfg-kb-articles”.
+Purpose.
+Authoring and versioning of knowledge base articles.
+Key fields &** controls. **Article authoring (kb_articles), audience scope, version control (published = immutable), owner role.
+Primary actions. Author/publish (creates new version); archive; assign owner.
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+Config — Service Desk (prototype: cfg-sd-config)
+References — BRD FR-M17-008, 009; §4.13 entities; §3.7.2 RBAC; prototype page “cfg-sd-config”.
+Purpose.
+Service Desk Admin configuration of categories, queues, SLA and escalation.
+Key fields &** controls. **ticket_categories, service_queues, SLA defaults per priority (P1–P4), pre-breach %, escalation/delegation targets (via SLA Settings engine), 30-day Lost→Written-Off window. Service-Catalogue master — catalogue items and each item's default category, sub-category, asset type and approver (consumed by Raise Ticket) are configured here by the Service Desk Admin.
+Primary actions. Configure categories/queues; set SLA durations & breach/escalation actions (configurable — references platform SLA Settings).
+States. Empty (no records → guidance + primary CTA), loading (skeleton), error (retry + error id from §8.2), no-permission (hidden per §6), partial-data (badge where a referenced record is unavailable).
+3. Interaction & Navigation Flows
+References — BRD FR-M17-002/003/004/007/008; cross-module M02 §8.5 (onboarding) and M03 §8.4 (separation); M17 state machines now in BRD §8.9 (asset) and §8.10 (ticket).
+These map screen-to-screen transitions; the underlying state changes are governed by the FRs. Job-driven transitions reference §8.1 (scheduled jobs).
+3.1 Provisioning → assignment (new joiner)
+M02 emits m02.it_provisioning_task_assigned (≈5 working days before start) → it-asset-requests.
+IT Asset Manager confirms/substitutes the role-family bundle; stock check; Reserved.
+it-asset-assignment assigns asset(s); acknowledgement form issued → employee acknowledges on my-assets → asset In Use.
+On completion M17 emits m17.it_provisioning_complete → M02 marks onboarding task done (FR-M17-007).
+3.2 Separation → IT clearance → recovery
+M03 reaches LWD-7 → fnf_clearances row (dept = IT) → clearance-it-assets (resolved: M03 FS owns the screen shell + FnF orchestration; M17 owns the asset-return + recovery panel and the clearance event contract).
+IT Admin records each return (returned_at, return_condition). All returned → IT clearance CLEARED.
+Damaged-beyond-repair / missing → recovery exception (assets.clearance_exception) to M03 with recommended value; HR Admin decides waive/partial/full (FR-M17-004).
+3.3 Ticket lifecycle
+raise-ticket / service-catalog → service_tickets → sd-queue (routed by category) → sd-ticket-work.
+In Progress → Resolved is blocked until Resolution Notes populated (FR-M17-008). Resolved auto-closes after the 3-business-day reopen window (job §8.1).
+Pending pauses SLA timers; breach fires the configured escalation action (D4; job §8.1).
+Any ticket that held P1 → on Closed, post-mortem auto-opens on it-postmortems (FR-M17-013).
+4. API Contracts
+References — BRD §6.2–6.3 (conventions, response format, rate limiting) and §6.4.8 (M17 endpoint inventory, adopted in BRD v2) — not restated. Full contracts authored here.
+Contracts follow the BRD §6.2 standard envelope and §6.3 rate limits. Auth and RBAC are referenced (§3.7.2, §6.x), not restated. Validation cells reference §5 ids.
+Method &** path**
+	Purpose
+	Key request → response / errors
+
+POST /api/v1/assets
+	Create asset (FR-M17-001)
+	{asset_tag, asset_category, make, model, serial_number, purchase_*, location_id} → 201 {asset}; 409 VAL-AST-TAG/VAL-AST-SERIAL duplicate; 422 validation; 403 RBAC
+
+PATCH /api/v1/assets/{id}/state
+	Lifecycle transition (FR-M17-005)
+	{to_state, reason} → 200 {asset}; 409 invalid transition; 403 if joint sign-off required (manual write-off)
+
+POST /api/v1/asset-assignments
+	Assign asset (FR-M17-002/007)
+	{asset_id, employee_id, assignment_source} → 201; 409 asset not available; 422
+
+PATCH /api/v1/asset-assignments/{id}/return
+	Record return (FR-M17-003/004)
+	{returned_at, return_condition, recovery_value?} → 200; emits clearance event; 422
+
+POST /api/v1/asset-acknowledgements
+	Acknowledge receipt/return (FR-M17-002)
+	{asset_assignment_id, form_type, signature_method} → 201; asset → In Use
+
+POST /api/v1/tickets
+	Create ticket (FR-M17-008)
+	{ticket_type, category, priority?, description, asset_id?} → 201 {REQ id}; 422 asset_id required for HW/SW/Network; 409 duplicate suggestion
+
+PATCH /api/v1/tickets/{id}/state
+	Transition ticket (FR-M17-008)
+	{to_state, resolution_notes?} → 200; 409 In Progress→Resolved without resolution_notes; 403 RBAC
+
+POST /api/v1/catalog-requests
+	Submit catalog request (FR-M17-010)
+	{catalog_item_id, justification, cost_centre, required_by} → 201; routes to configured approval flow (D3); 422
+
+GET /api/v1/kb/search?q=
+	KB search (FR-M17-011)
+	→ 200 {results[]} p95 < 600 ms; audience-scoped
+
+GET /api/v1/cmdb/{ci_id}/impact
+	Impact / blast radius (FR-M17-012)
+	→ 200 {affected_cis[]} via AFFECTED_BY
+
+5. Validation
+References — Authored here for M17-unique rules; shared format rules (email, phone, dates) reference the platform validation set.
+Validation id
+	Applies to
+	Rule
+
+VAL-AST-TAG
+	asset_tag
+	Unique per tenant; physical tag format ORG-{CAT}-{5d}; internal AST-{entity}-{6d} immutable, 1:1 with physical tag.
+
+VAL-AST-SERIAL
+	serial_number
+	Unique within asset_category (per FR-M17-001).
+
+VAL-AST-STATE
+	asset state change
+	Only transitions in the allowed-transitions table accepted; Disposed / Written Off locked read-only; soft-delete only.
+
+VAL-AST-CAP
+	purchase_value
+	≥ capitalisation threshold (₹15,000 default) → capitalised; ≥ tagging threshold ($100/₹8,500 default) → must be tagged.
+
+VAL-TKT-ASSET
+	ticket.asset_id
+	Mandatory for Hardware/Software/Network categories; optional for Account/Access and Service Request — Account.
+
+VAL-TKT-RESNOTE
+	resolution_notes
+	Non-empty (root cause + steps) required before In Progress → Resolved; no override.
+
+VAL-TKT-DUP
+	ticket creation
+	Flag potential duplicate on creator + category + asset + 30-minute window.
+
+VAL-CAT-JUST
+	catalog request
+	Business justification mandatory; if required_by < fulfilment SLA → set ‘Expedite required’.
+
+VAL-CSAT
+	csat_score
+	Integer 1–5; submission window 72 h after Closed; score < 3 sets low-score flag.
+
+6. Per-Screen RBAC Projection
+References — BRD §3.7.2 (Assets & IT (M17) row: Employee V own · L1 Mgr V team · HRBP V assigned · HR Admin V), §3.10 (capability flags), §5.1.1 (approval flows). The matrix itself stays in the BRD; this projects it to screens.
+Legend: V view · E edit · A approve · — none. IT-side operational roles (IT Admin, IT Asset Manager, Service Desk Admin/Lead/Agent, Finance Admin, CTO/IT Director, CISO) are defined in BRD §3.7.6 (added in v2) as entity-scoped operational roles with §3.10 capability flags. L1 Manager reportee-ticket visibility is confirmed as V (team).
+Screen
+	Employee
+	L1 Mgr
+	HRBP
+	HR Admin
+	IT Admin / SD role
+
+my-assets
+	V (own) · ack
+	—
+	—
+	—
+	—
+
+team-assets
+	—
+	V (team)
+	—
+	—
+	—
+
+office-assets
+	—
+	—
+	—
+	—
+	V (location) — Facilities
+
+raise-ticket / my-tickets / ticket-detail
+	E (own)
+	V (team)
+	—
+	—
+	Agent: E · Lead: A
+
+service-catalog
+	E (request)
+	A (approval flow)
+	—
+	—
+	Fulfilment queue: E
+
+it-asset-master / it-masters
+	—
+	—
+	—
+	—
+	IT Admin / Asset Mgr: E
+
+it-asset-assignment / it-asset-requests
+	—
+	—
+	—
+	—
+	IT Admin: E
+
+sd-queue / sd-ticket-work
+	—
+	—
+	—
+	—
+	Agent: E · Lead/Admin: E·A
+
+it-cmdb / it-postmortems
+	—
+	—
+	—
+	—
+	Lead: E · CTO: A (sign-off)
+
+clearance-it-assets (recovery panel)
+	—
+	—
+	V
+	A (recovery)
+	IT Admin: E
+
+cfg-* (M17 config)
+	—
+	—
+	—
+	—
+	Service Desk Admin / IT Admin: E
+
+6.1 Menu & navigation entitlement (M17 slice)
+Employee: Service Desk (catalog, raise/my tickets, KB) + My Assets.
+Manager: + Team Assets; reportee ticket visibility per projection above.
+IT Admin / Asset Manager / Service Desk roles: IT workspace (asset master, assignment, requests, SD queue, CMDB, post-mortems, masters).
+Service Desk Admin / IT Admin: M17 configuration menu (catalog items, KB authoring, SD config).
+7. Resolved Items & Decisions
+All open items from the v1 cross-reference pass have been resolved as recommended and applied to BRD v2, this FS, and the prototype v2. Recorded here as the decision basis.
+Id
+	Item
+	Resolution applied
+	Status
+
+OPEN-M17-01
+	M17 / asset-flow phase conflict
+	FLOW-AS-001/002 built in Phase 1; BRD §5.12.11 tag changed to Phase 1.
+	Resolved
+
+OPEN-M17-02
+	CAB / change management
+	FR-M17-014 withdrawn in BRD v2; Change Request ticket type stays inactive.
+	Resolved
+
+OPEN-M17-03
+	Missing state machines
+	Asset 8-state and ticket 11-state machines added to BRD §8.9 and §8.10; referenced in §3.
+	Resolved
+
+OPEN-M17-04
+	clearance-it-assets ownership
+	M03 FS owns screen shell + FnF orchestration; M17 owns the asset-return + recovery panel and clearance event contract.
+	Resolved
+
+OPEN-M17-05
+	API inventory gap
+	M17 endpoint set adopted into BRD §6.4.8; §4 contracts no longer marked proposed.
+	Resolved
+
+OPEN-M17-06
+	RBAC roles gap
+	M17 operational roles added to BRD §3.7.6 (entity-scoped + capability flags); L1 Manager reportee-ticket visibility confirmed V (team).
+	Resolved
+
+OPEN-M17-07
+	Recovery → payroll dependency
+	Phase 1 records recovery_value on the FnF clearance for manual handling; recovery_recommended event emitted for Phase 2 M06 wiring.
+	Resolved
+
+OPEN-M17-08
+	Bundle definitions
+	Captured during build configuration (7 role families); not blocking on architecture.
+	Resolved
+
+8. Operational Specifications (inline — single-doc model)
+References — BRD §9 (notification matrices), §5.1.1 (workflow/SLA engine), §11 (migration). Authored here because they are not screen-driven.
+8.1 Scheduled Jobs & Background Processing
+Job
+	Schedule
+	Action
+	FR
+
+Lost → Written-Off auto-transition
+	Daily
+	30 calendar days after Lost-state entry (tenant-configurable): asset → Written Off, notify Finance Admin, trigger insurance claim if capitalised, auto-close loss ticket.
+	FR-M17-005
+
+Reserved auto-revert
+	Daily
+	Reserved → In Stock after 14 days if no assignment completes.
+	FR-M17-005
+
+Ticket auto-close
+	Hourly
+	Resolved → Closed after 3-business-day reopen window unless confirmed/reopened.
+	FR-M17-008
+
+SLA pre-breach & breach
+	Every 5 min
+	Fire 80% pre-breach alert and breach/escalation per CONFIGURED SLA settings (D4); P1 24×7.
+	FR-M17-009
+
+Unassigned-ticket alert
+	Every 15 min
+	Notify queue lead for tickets unassigned > 60 min.
+	FR-M17-009
+
+CSAT window close
+	Daily
+	Close CSAT 72 h after Closed; flag low scores (<3).
+	FR-M17-008
+
+Annual audit cycle
+	Annual (Jan)
+	Publish schedule, export per-HOD asset lists, track 10-/5-day windows, escalate to CTO.
+	FR-M17-006
+
+Post-mortem overdue
+	Daily
+	Notify CTO if a P1 post-mortem is overdue > 10 business days.
+	FR-M17-013
+
+8.2 Message Catalogue (M17)
+Stable ids referenced from screens (§2) and jobs (§8.1). Templates and channel defaults follow BRD §9.1.
+Message id
+	Trigger
+	Recipients
+
+MSG-M17-ASSIGN
+	Asset assigned
+	Employee
+
+MSG-M17-ACK-PENDING
+	Acknowledgement not done in 3 working days
+	IT Admin
+
+MSG-M17-LOST
+	Asset → Lost
+	IT Admin, HR Admin
+
+MSG-M17-WRITEOFF
+	Lost → Written Off (30 d)
+	Finance Admin
+
+MSG-M17-TKT-ASSIGNED
+	Ticket assigned to agent
+	Assignee
+
+MSG-M17-SLA-PREBREACH
+	80% SLA elapsed
+	SD Lead + assignee
+
+MSG-M17-SLA-BREACH
+	SLA breach / configured escalation
+	Assignee, queue lead (+ SD Admin at 2×; CTO for P1)
+
+MSG-M17-CATALOG-APPROVAL
+	Catalog request needs approval
+	Approval-flow approver (D3)
+
+MSG-M17-PM-OPEN
+	P1 post-mortem opened
+	SD Lead
+
+ERR-M17-STATE
+	Invalid state transition
+	On-screen (acting user)
+
+ERR-M17-RESNOTE
+	Resolve blocked — notes required
+	On-screen (agent)
+
+8.3 Migration Notes (M17)
+References — BRD §11 (Darwinbox source, ETL+V, waves).
+Asset master + open assignments migrate as reference data; tickets/KB are seeded (KB 40 articles authored pre-go-live per FR-M17-011), not historically migrated in Phase 1.
+CMDB Asset CIs are derived from the migrated asset master (AST-ID reuse) post-load.
+Page # Prototype Sync Addendum — Batch 9: Employee-role Assets & Tickets review (June 2026)
+Reflects the Batch-9 review of the employee assets and IT-ticket surface against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Asset self-service actions
+The employee’s “My assets” list now supports self-service actions on each assigned asset: acknowledge assignment, report issue / lost, and request return (captured with notes and routed to IT). The list is no longer view-only.
+Ticket subcategory
+On the raise-ticket form, sub-category is a dependent dropdown populated from the selected category (e.g., Hardware Fault → Laptop / Desktop / Monitor / Peripheral / Printer). Priority P1 remains capped (requires Service Desk Admin).
+Knowledge base
+Knowledge-base category browse opens the articles for the chosen category rather than a placeholder. The service-catalog items and knowledge-base categories should be driven from the catalog-items and KB configuration so the employee surface stays in sync with what Service Desk Admin configures.

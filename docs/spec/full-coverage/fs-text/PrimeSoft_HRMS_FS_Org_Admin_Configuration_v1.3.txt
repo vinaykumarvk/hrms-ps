@@ -1,0 +1,282 @@
+PrimeSoft HRMS ��� FS Org Admin Configuration v1.3
+Table of Contents
+ TOC \z \o "1-2" \u \h
+Functional Specification — Org Admin: Configuration & Builders
+
+Version
+	v1.3 (Manager-review R3 follow-up: OPEN-FS-CFG-08 resolved — has-reportees derived; prior v1.2 Manager-review: Notice edit flag, Team-appraisals term, OPEN-FS-CFG-08; prior v1.1 Employee-review: module-admin configurator cross-reference §9A; Service-Catalogue master gap OPEN-FS-CFG-07) — was v1.0
+
+Status
+	Draft for review
+
+Owner
+	Organisation Admin (tenant-level configuration — RBAC §2.1/§2.1.1). This FS authors the builder screens that create the reusable definitions; HR Admin / module admins bind them (HR Admin FS). Platform Super Admin owns cross-tenant provisioning (Platform P04), not these builders.
+
+References
+	Platform Spec v1.1 (W.1 process-flow model, W.2 form model, W.3 notification config, P01 engine, P02 RBAC enforcement, X.1/X.2 infra); RBAC Design Document v1.2 (the model these screens edit); Foundation FS v1.1 (§1 API, §2 VAL-*, §6 menu); BRD §5.1 (P01–P06), §9 (notifications), Appendices D/I (flow patterns & catalog); configuration exports (Workflows, Approval Flow, Skip, SLA, Custom Flow, Custom Fields, Standard Permissions, Leave/Attendance Settings).
+
+Boundary
+	This FS owns the builder screens; the models they write live in Platform W.1/W.2/W.3 and the RBAC doc (referenced, never re-authored). Masters (departments, custom-field definitions, national-ID, geofence fences) are in the Org Admin Master Data FS. Operational binding of a built flow/form to a policy is in the HR Admin FS.
+
+1. Scope & Configurable-Flow Catalog
+The Org Admin configuration surface (prototype “Documents & workflow”, “IAM & security”, and tenant-settings nav groups): workflow builder, approval-flow builder, skip & SLA & decision-matrix, form builder, notification configuration, RBAC administration + entitlement grants, tenant-wide platform settings, and security/access config (SSO, integrations, IP, devices).
+1.1 Configurable process-flow catalog (locked) — workflows + forms + notifications
+Module
+	Feature (event)
+	Process flow
+	Forms (W.2)
+	Notifications
+
+M02 Onboarding
+	onboarding process; sign-off/undertaking/reference clusters; BGV; e-verify; buddy
+	onboarding workflow
+	onboarding form + 3 clusters (App. J)
+	§9.5 auto-init, reminder, BGV, completion
+
+M03 Exits
+	separation → clearance E2–E8; exit interview; absconding; force-separation
+	separation + clearance workflow
+	exit-interview, separation, clearance checklist
+	§9.4 init/appr/rej, FnF, clearance
+
+M11 Documents
+	letter generation; policy sign-off
+	doc-generation + sign-off (23 doc-gen stages)
+	letter templates, sign-off form
+	§9.6 policy-published, letter-issued, sign-off
+
+M17 Assets & IT
+	provisioning→assignment; recovery (FnF); audit certification; service-desk ticket
+	asset + service-desk workflows
+	catalog request, ticket forms
+	M17 assign, SLA, catalog-approval
+
+M01 Employee Master
+	sensitive-field change
+	data-collection + change workflow
+	profile-change forms, custom fields
+	§9.6 change applied
+
+M09 Performance
+	review cycle (self→eval→reviewer→calibration); goal plan
+	review workflow stages
+	review, acknowledgement forms
+	§9.7 cycle, rating, calibration
+
+Cross-module
+	user-defined processes (asset request, role/location change, NC)
+	custom flows (78 stages)
+	custom application forms
+	per-flow config
+
+1.2 Configurable approval-flow catalog (locked) — approval flows + notifications
+Module
+	Feature (transaction)
+	Approval flow
+	Notifications
+
+M04 Leave
+	apply, revoke, encashment, comp-off, optional-holiday
+	leave approval (+ exception)
+	§9.2
+
+M05 Attendance
+	regularization, check-in, WFH
+	attendance approval
+	§9.3
+
+M05 Overtime/Comp-off
+	planned & system OT
+	OT approval + exceptional-by-hours
+	§9.3
+
+M08 Recruitment
+	requisition; offer letter (16); candidate decision
+	requisition + offer approval
+	§9.5
+
+M01 Employee Master
+	position update (1); sensitive-data change
+	position-update + change approval
+	§9.6
+
+M03 Exits
+	separation request; FnF
+	separation + FnF approval
+	§9.4
+
+M02 Probation
+	probation → confirm/extend/separate
+	confirmation approval (10)
+	§9.5/§9.6
+
+M09 Performance
+	goal-plan approval; review send-back
+	goal-plan approval
+	§9.7
+
+M11 Documents
+	offer-letter joint authority; policy sign-off
+	letter approval
+	§9.6
+
+2. Workflow Builder — cfg-workflows
+Writes the Platform W.1 workflow model; executed by P01. Grounded in Workflows (68) + Workflow Stages (189; action types data-collection-form 99 / notification 67 / document-generation 23) + Flow Category (3). List of workflows (filter by module/category/status) + Add. Builder: workflow code, flow category, pattern (Series / Parallel-All / Parallel-Any / Conditional / Dynamic-approver, per Appendix D), then ordered stages — each stage: name, action type (data-collection form → select a W.2 form; notification → select W.3 config; document-generation → select M11 template), assignee resolution, allotted time, skip setting (§4), SLA (§4), visibility & confidential roles, send-back routing, button aliases, per-event email recipients. Validation: ≥1 stage, every stage has assignee resolution, no circular stage reference (VAL-FLOW-NOCYCLE), referenced form/template/notif exist. Versioning: save validates; activation immediate for new instances; in-flight instances pinned to their version; deprecate-not-delete while instances are active (P01).
+3. Approval-Flow Builder — cfg-approval-flows (new — resolves prior gap)
+Writes the Platform W.1 approval-flow model; executed by P01. Grounded in Approval Flow (76) + Approval Flow Stages (104). Approval flows are built separately from workflows because their stage shape differs (approver context + decision matrix vs action-type stages). Builder: flow code, module transaction, ordered approval stages — each: stage name, approvers (named role / reporting-chain position incl. L1-with-fallback / named individual / cost-centre head), approver job-level/grade constraints, action, allotted time, decision matrix (§4), re-route, exception/escalation stage (e.g., offer-letter joint authority; OT exceptional-by-hours), send-back, visibility/confidential roles, button aliases, per-event email recipients. Validation: ≥1 stage, every approver resolvable, exception thresholds valid. Versioning identical to §2. Builder shares the cfg-workflows shell if the design prefers one entry point — see §13.
+4. Skip Settings, SLA Timers & Decision Matrices
+Writes W.1 sub-models; consumed by §2/§3 and by P01 at stage entry. - Skip Settings — cfg-skip (Skip Setting 4 + Stages 6): skip-condition subject/rule, reassign-to-role; resolved at stage entry. - SLA Timers — cfg-sla (SLA Setting + Stages): SLA level, trigger before/after, duration, breach output (delegate / auto-act), delegate-to-roles, cancel-dependent-stages; on breach → escalation event + notification (X.2) + audit. - Decision Matrices — cfg-decisionmatrix: rule table mapping context → routing/decision; referenced by leave routing and approval stages. Validation: VAL-REQUIRED/ENUM; matrix completeness.
+5. Form Builder — cfg-forms (new — resolves prior gap)
+Writes the Platform W.2 form model; assembles fields defined in the Org Admin Master Data FS cfg-custom (40 fields). Builder: form code, target context (onboarding cluster / workflow data-collection stage / leave or attendance request / interview guide / separation / exit-interview / custom application form), field set (add fields from the custom-field library + standard fields), conditional logic (show/required-if), per-role field visibility (reference RBAC §3.9), data-binding + write-back to the entity, translations/i18n, and versioning (a form used by in-flight instances keeps its version). Validation rules attach via Foundation VAL-* ids (never re-authored). Validation: at least one field; bound fields reference an active custom-field/standard field; conditional references resolve.
+6. Notification Configuration — cfg-notif
+Writes the Platform W.3 notification-config model; delivered by X.2; copy lives in the Foundation §5 / module-FS message catalogue (referenced by id). Builder: per event / stage recipient resolution (default recipients / additional recipients / CC roles / CC users), channel selection (IN_APP / EMAIL / SMS per §9.1), reminder cadence vs escalation distinction + escalation targets, role→user expansion, suppression/dedup, digest mode, per-tenant sender config, and template selection by Msg id. Honors §9.9: EMAIL mandatory for approval/statutory events (not suppressible); 5-attempt retry + DLQ (X.2). The builder configures who/which-channel/when; it does not author message copy.
+7. RBAC Administration & Entitlement Grants
+Edits the RBAC model (RBAC Design Document v1.2); enforced by P02. The screens manage the model; they never define enforcement mechanics. - RBAC Roles & Permissions — cfg-rbac (grounded in Standard Permissions exports, 8 policies): view/edit the role taxonomy, the permission matrix (152 × 18) per role × module × action (enable/disable, the as-configured baseline per the Matrix↔Exports reconciliation), field-level access, and the capability-flag registry (4 flags: BGV review, Letter Admin, Asset Custodian, Dept-Head Audit Certify) + the two HOD configurable grants. Every change writes security_audit_log (P05). - Entitlement Grants — cfg-grants: grant/revoke individual entitlements (time-bound, mandatory expiry, audited). Validation: VAL-DATE (expiry mandatory), scope defined. - UAGs are shared with HR Admin and authored in the Org Admin Master Data FS (§2.11) — referenced here, not duplicated.
+8. Tenant-wide Platform Settings
+The tenant behaviour toggles consumed by the operational modules (the policies that bind them are in the HR Admin FS). - Leave Platform Settings — cfg-leave-platform (Leave Settings export, 131 toggles): revocation rules, escalation/SLA, sandwich/clubbing, rounding, balance-display, encashment window, optional-holiday behaviour, combined balance, blackout enablement, etc. - Attendance Platform Settings — cfg-att-platform (Attendance Settings export, 147 toggles): regularization restriction, auto-approve/reject, escalation, exclusions for present-day/late/early, infraction framework, geofencing enablement, overtime display, cycle/freeze, widget visibility, etc. - These are tenant-scope behaviour switches; they do not define policies (that is HR Admin). Changes audited (P05) and cascade per Platform §0.3.
+9. Security & Access Configuration
+SSO & Authentication — cfg-sso: SSO policy, session/expiry (Platform §0.2 / BRD §7.4).
+Integration Credentials — cfg-integrations: encrypted credentials, rotation, per-integration scope (Platform X.3 / P04).
+IP Whitelist — cfg-ip (12 networks), Biometric Devices & Locations — cfg-devices (FR-P04-002), Geofence enablement — cfg-geofence (fences mastered in Org Admin Master Data FS; toggled here). Validation: VAL-REQUIRED/ENUM; credential encryption never returns secrets to the client.
+9A. Module-admin configuration surfaces (Employee-review cross-reference)
+These configurators are owned by module admins, not Org Admin; the Org Admin console only groups/menus them. Listed here so the “who configures” answers from the Employee-role review have a single home.
+Configurator
+	Owner (configures)
+	Where
+	Note
+
+Leave reasons
+	Leave Admin / HR Admin
+	Leave & attendance (leave_reasons_master)
+	User-assignment & group-company scoping toggle.
+
+Attachment-mandatory (per leave policy)
+	Leave Admin / HR Admin
+	Leave policy
+	Attachment Mandatory / …if > X days.
+
+Sandwich rule
+	Leave Admin / HR Admin
+	Leave Settings
+	Apply Sandwich… + sandwich cron, tenant-level.
+
+Service-Catalogue master (new)
+	Service Desk Admin (M17)
+	Service Desk config
+	Catalogue items + default category/sub-category/asset/approver (consumed by Raise ticket). No config export exists yet — to be created (OPEN-FS-CFG-07).
+
+Self-rating scale & dropdown
+	Performance Admin (M09)
+	ReviewKra settings
+	Rating scale, Enable dropdown on rating scale, normalization.
+
+Scorecard pillar — enable & mandatory
+	Performance Admin (M09)
+	Goal plan + Scorecard-pillars screen
+	Goal Scorecard Pillar — Enable per goal plan; mandatory off by default. Goal alignment removed from authoring.
+
+10. Per-Screen RBAC Projection & Menu
+References RBAC v1.2 §2.1 (Org Admin), §2.1.1 (build vs bind), Foundation §6. All §2–§9 screens are Organisation Admin only (the tenant configuration owner; the only cross-entity role). HR Admin / module admins may view and bind the resulting definitions but cannot create/edit them. Platform Super Admin is not involved. RBAC administration (§7) and SSO/integration (§9) are the most sensitive — every change writes security_audit_log (P05). Menu surfaces under Foundation §6 “Settings / Configuration” (Documents & workflow, IAM & security, Tenant & entities, Leave & attendance settings groups).
+11. Operational Layer
+These builders produce configuration consumed by the P01 engine, X.2 notifications, and P02 enforcement — they register no new scheduled jobs. Every create/edit/activate/deprecate writes an audit row (P05); RBAC/SSO/integration changes write security_audit_log. No new message copy (copy lives in Foundation §5).
+12. Reference Register
+Builder screen
+	Prototype page
+	Writes (model)
+	Grounded in
+
+Workflow builder
+	cfg-workflows
+	W.1 workflow
+	Workflows 68 / Stages 189
+
+Approval-flow builder
+	cfg-approval-flows (new)
+	W.1 approval flow
+	Approval Flow 76 / Stages 104
+
+Skip / SLA / Decision matrix
+	cfg-skip / cfg-sla / cfg-decisionmatrix
+	W.1 sub-models
+	Skip 4, SLA, decision matrix
+
+Form builder
+	cfg-forms (new)
+	W.2 form
+	Custom Fields 40
+
+Notification config
+	cfg-notif
+	W.3
+	§9 matrices
+
+RBAC admin / Grants
+	cfg-rbac / cfg-grants
+	RBAC model
+	Standard Permissions (8)
+
+Leave/Attendance settings
+	cfg-leave-platform / cfg-att-platform
+	tenant settings
+	Leave 131 / Attendance 147
+
+SSO / Integrations / IP / Devices
+	cfg-sso / cfg-integrations / cfg-ip / cfg-devices
+	P04 / X.3
+	IP 12
+
+13. Open Items, Conflicts & Recommendations
+Id
+	Type
+	Item
+	Owner
+	PROPOSED resolution (confirm before build)
+
+OPEN-FS-CFG-01
+	Prototype gap (resolving)
+	No dedicated approval-flow builder page in the prototype; this FS specs cfg-approval-flows.
+	Design
+	Add cfg-approval-flows page, OR make Approval-Flow a mode inside cfg-workflows. Recommendation: dedicated, since stage shapes differ (approver-context vs action-type).
+
+OPEN-FS-CFG-02
+	Prototype gap (resolving)
+	No form-builder/assembly page; cfg-custom only defines fields. This FS specs cfg-forms.
+	Design
+	Add cfg-forms (assemble fields → forms, conditional logic, per-role visibility, versioning).
+
+OPEN-FS-CFG-03
+	Boundary
+	Tenant-wide settings (cfg-leave-platform/cfg-att-platform) authored here; operational policies in HR Admin FS (OPEN-FS-HRA-01).
+	Architecture
+	Confirm: settings = Org Admin (here); policies = HR Admin.
+
+OPEN-FS-CFG-04
+	Boundary
+	RBAC admin screen edits the model (RBAC doc); enforcement is P02.
+	Architecture
+	Confirm cfg-rbac edits the model only; P02 enforces. Matrix baseline = the Matrix↔Exports reconciliation (RBAC-04).
+
+OPEN-FS-CFG-05
+	Dependency
+	Builders must exist before HR Admin policies bind them (OPEN-FS-HRA-03) and before module flows run.
+	Product
+	Sequence build before bind; meanwhile bindings reference by id.
+
+OPEN-FS-CFG-07
+	Config gap (new)
+	Service-Catalogue master has no configuration export among the 115; needs an owning screen (Service Desk Admin, M17) with item list + default category/sub-category/asset/approver mapping.
+	Service Desk Admin
+	Create the master + config screen; a sample master is supplied with the Employee-review package.
+
+OPEN-FS-CFG-06
+	Reconcile
+	New VAL ids (VAL-FLOW-NOCYCLE) + the cfg-approval-flows/cfg-forms pages to fold into Foundation §2 and the prototype at Step-6.
+	Architecture
+	Register at reconciliation; add the two prototype pages.
+
+Manager-role review (Round 3)
+Notice configuration: adds a Manager/Reviewer may edit Notice Period flag (separate from …edit Recovery Days). Owner: Org Admin / HR Admin. Default off. Drives the manager Stage-1 separation editable-notice behaviour (M03).
+Terminology: the Manager appraisal surface is renamed Team appraisals (M09 / menu).
+OPEN-FS-CFG-08: the Workspace model (Me / My Team / Admin) availability derives from RBAC role holdings + a has-reportees flag — confirm whether has-reportees is a derived attribute or an explicit configurable flag.
+Manager-role review (Round 3 follow-up)
+OPEN-FS-CFG-08 — RESOLVED. has-reportees (an input to the Me / My Team / Admin Workspace model) is a derived attribute computed from the reporting hierarchy, not a configurable flag. No new configuration object.

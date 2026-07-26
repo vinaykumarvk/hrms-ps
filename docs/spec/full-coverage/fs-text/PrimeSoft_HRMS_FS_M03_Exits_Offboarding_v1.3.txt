@@ -1,0 +1,1104 @@
+PrimeSoft HRMS ��� FS M03 Exits & Offboarding v1.3
+Table of Contents
+ TOC \z \o "1-2" \u \h
+1. Scope & Reference Map
+Opens with its references. This table is the anti-repetition index: it shows, per FS screen, exactly what is referenced (BRD owns it) versus authored here (build layer).
+Module boundary is fixed by BRD §5.4 (M03 module-boundary note): M03 owns the Active → Notice → LWD → Separated transition — resignation, org-initiated termination, absconding-conversion, notice management, separation-workflow execution, exit interview, parallel FnF clearance, letter generation (acceptance/relieving/experience), and FLWD deactivation. Lifecycle state is owned by M01; FnF settlement calculation by M06 (Phase 2); asset clearance by M17; leave-during-notice and PL encashment formula by M04; absconding detection by M05. This FS does not re-specify those — it references them.
+FS screen (prototype id)
+	Purpose
+	BRD FR / Part
+	BRD entities
+	BRD §3.7 / role
+
+initiate-separation
+	Employee self-service resignation
+	FR-M03-001, FR-M03-007
+	separation_records
+	Employee (E*)
+
+separation-stage1
+	Manager Stage-1 review (recommend/object)
+	FR-M03-001; §8.4
+	separation_records
+	Manager L1 (A*)
+
+separation-stage2
+	HR Stage-2 list (final approval / finalise entry)
+	FR-M03-001/003; §8.4
+	separation_records, fnf_clearances
+	HR Admin (Adm)
+
+separation-finalise
+	HR finalisation + exit-document generation
+	FR-M03-003/005; §5.9 (M11 letters)
+	separation_records, document_* (M11)
+	HR Admin (Adm)
+
+force-separation
+	Org-initiated termination / retirement / death
+	FR-M03-002; Part G
+	separation_records
+	HR Admin (Adm)
+
+absconding
+	Absconding queue → convert / restore
+	FR-M03-006
+	separation_records, employees.absconding_flagged_at
+	HR Admin (Adm)
+
+fnf-clearance
+	Manager clearance sign-off (E1)
+	FR-M03-003; Part E
+	fnf_clearances
+	Manager L1
+
+fnf-clearance-hub
+	Aggregated clearance board
+	FR-M03-003; Part E / E.1
+	fnf_clearances
+	HR / Sep Admin
+
+clearance-it-assets / -facilities / -attendance / -leave / -compliance
+	Department clearance action screens (E2–E8)
+	FR-M03-003; Part E
+	fnf_clearances
+	Dept reviewers
+
+exit-interview
+	Schedule / conduct / E9 confirmation
+	FR-M03-004; Part F
+	exit_interviews
+	HRBP
+
+cfg-exit-interview-form
+	Exit-interview questionnaire builder
+	FR-M03-004; Part F; DE20
+	exit_interview_templates
+	Sep Admin / HR Admin
+
+cfg-separation-checklist
+	Clearance / checklist config (E1–E10)
+	Part E; CO08
+	separation_policies, fnf_clearances
+	Sep Admin / HR Admin
+
+cfg-separation-policy
+	Separation policy 5-step wizard
+	FR-M03-007; §4.8.1/.1a/.1b
+	separation_policies, separation_policy_initiators, separation_policy_workflow_map
+	Sep Admin / HR Admin
+
+cfg-separation-workflow
+	Configured 20-stage workflow builder
+	Part E.1; CO02/CO08
+	workflows (P01)
+	Sep Admin / HR Admin
+
+dashboard (Separation Admin)
+	Separation operations dashboard
+	§5.4; §10 (widgets)
+	aggregates above
+	Sep Admin / HR Admin
+
+2. Screen Specifications
+Each screen traces to a prototype id and the BRD FR it satisfies. Field tables author only the Control and On-screen-behaviour columns; Source/Validation/Role are references. Visual styling is the design system*’*s domain, not the FS.
+2.1 Employee resignation — initiate-separation
+References: FR-M03-001, FR-M03-007; data separation_records §4.8.2; RBAC Employee row §3.7; validation §5; notifications MSG-SEP-INIT (§8.2).
+Purpose: employee self-service submission of resignation; on submit the notice clock starts and Stage-1 (Manager) is notified. Layout regions: (a) policy banner (notice period, bond status); (b) capture form; (c) acknowledgement; (d) actions.
+Field
+	Control
+	Source (BRD ref)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Date of resignation
+	Date picker
+	§4.8.2 date_of_resignation
+	VAL-SEP-DOR
+	Employee edit (own)
+	Employee cannot back-date (VAL-SEP-BACKDATE = HR only)
+
+Requested last working day
+	Date picker
+	§4.8.2 (target LWD input)
+	VAL-SEP-LWD
+	Employee edit
+	System recomputes proposed_last_working_day on change (§3)
+
+Recovery days (notice shortfall)
+	Number ≥0
+	§4.8.1 capture_resignation_lwd_recovery
+	VAL-SEP-RECOVERY
+	Visible only when policy capture flag true
+	Shown only if policy enables capture; default 0; feeds FnF (M06)
+
+Reason category
+	Single-select
+	§4.8.2 reason_code
+	VAL-REQUIRED
+	Employee edit
+	Mandatory per §9.4 reason-mandatory setting
+
+Reason details
+	Textarea
+	§4.8.2 reason_narrative
+	—
+	Confidential per §4.8.1
+	Optional; confidential read per §4.8.1
+
+Next employer / KT plan
+	Text / textarea
+	Prototype-only (no BRD home)
+	—
+	Employee edit
+	See OPEN-FS-M03-01
+
+Acknowledgement
+	Checkbox
+	FR-M03-001 rule
+	VAL-REQUIRED
+	Employee
+	Submit disabled until checked
+
+States: empty (no draft) · validation-error (inline VAL ids) · submitted (read-only, pending Stage-1) · blocked (active case exists — 409) · loading per Foundation standard (OPEN-FS-M03-FOUND).
+Actions: Submit → POST /api/v1/separations (§4.1), fires MSG-SEP-INIT; Cancel → My profile.
+2.2 Manager Stage-1 review — separation-stage1
+References: FR-M03-001; §8.4 (SUBMITTED → Stage-2); RBAC Manager L1 (A) §3.7; notifications MSG-SEP-STG1.*
+Purpose: list of reportee resignations awaiting Stage-1; manager recommends or objects with handover comments; final approval is HR Admin (Stage-2). SLA 3 days; escalation to L2 + HRBP + HR Admin per FR-M03-001 edge case.
+Column / control
+	Source (BRD ref)
+	On-screen behaviour
+
+Employee · Resigned · Proposed LWD · Notice
+	§4.8.2
+	Read-only list; one row per pending case in manager scope
+
+Handover comments
+	FR-M03-001 (Stage-1)
+	Captured on action; persisted to case timeline (P05)
+
+Recommend
+	§8.4 Stage-1 approve
+	POST /separations/{id}/approve (stage=1) → HR Admin
+
+Object
+	§8.4 Stage-1 reject
+	approve disposition=OBJECT; rejection reason mandatory §9.4
+
+2.3 HR Stage-2 & finalisation — separation-stage2, separation-finalise
+References: FR-M03-001/003/005; §8.4 (APPROVED→ON_NOTICE; FNF_COMPLETE→SEPARATED); M11 letters §5.9; notifications MSG-SEP-APPR / MSG-FNF-COMPLETE.
+separation-stage2 lists cases ready for HR final action with clearance-completion pills; Finalise opens separation-finalise, which shows the finalisation checklist (LWD, FnF settlement stub, all E1–E9 cleared, personal email on file) and, on Done, generates exit documents (relieving, experience, FnF statement), stores them in M11, and e-mails them to the registered personal email (logged to P05).
+Element
+	Control
+	Source (BRD ref)
+	On-screen behaviour
+
+Finalisation checklist
+	Key-value read-out
+	FR-M03-003; §4.8.3
+	Read-only; Done enabled only when all mandatory fnf_clearances = CLEARED
+
+Done — generate & mail
+	Button
+	FR-M03-005; M11 §5.9
+	Generates LTR_RELIEVING, LTR_EXPERIENCE, FnF statement (provisional, M06); stores in M11; e-mails personal_email
+
+Generated documents
+	Table + view/download/re-send
+	M11 vault
+	Appears post-Done; re-send re-mails (audited)
+
+Rehire eligible
+	Select (Yes/No) + note
+	FR-M03-005 rehire_eligible
+	On separation-finalise; default No for terminations; note required when Not eligible (resolves M03-02)
+
+2.4 Org-initiated termination — force-separation
+References: FR-M03-002 (past-dated FLWD one-way door); Part G; §P.1 DE05 (dedicated Termination Workflow), DE16 (HR Admin + optional CEO; no CHRO/Legal); RBAC HR Admin (Adm).
+Purpose: HR Admin force-initiates termination / layoff / retirement / death / absconding-conversion; on submit the case proceeds directly into the exit / FnF flow, bypassing the L1→HR voluntary approval (manager notified only).
+Field
+	Control
+	Source (BRD ref)
+	Validation
+	On-screen behaviour
+
+Employee
+	Single-select
+	§4.8.2 employee_id
+	VAL-REQUIRED
+	Scoped to entity
+
+Separation type
+	Single-select
+	§4.8.1 category; FR-M03-006
+	VAL-REQUIRED
+	Involuntary set (DEFAULT/VOLUNTARY excluded)
+
+Last working day
+	Date picker
+	§4.8.2 final_last_working_day
+	VAL-SEP-PASTLWD
+	Past-dated → one-way-door warning (FR-M03-002); reason narrative mandatory
+
+Notice waived
+	Single-select
+	Part G
+	—
+	Full / partial / no waiver
+
+Reason details
+	Textarea
+	§4.8.2 reason_narrative
+	VAL-REQUIRED-PASTLWD
+	Mandatory; confidential per §4.8.1
+
+Supporting documents
+	File (multi)
+	M11 vault
+	VAL-FILE
+	Stored against the case
+
+States: draft · one-way-door confirmation modal (MSG-ERR-ONEWAY) · submitted. Rehire eligibility defaults Not eligible for terminations (FR-M03-005; HR override with reason).
+2.5 Absconding queue — absconding
+References: FR-M03-006; M05 detection (employees.absconding_flagged_at; absconding_threshold_calendar_days default 7, §4.6); §P.1 DM-ENPS13 (no auto-clear).
+Purpose: queue of employees flagged absconding by M05 (7 consecutive calendar days, configurable). HR Admin sends notice, then converts to separation (INVOLUNTARY, CONVERTED_FROM_ABSCONDING) or restores to Active. Only HR Admin action resolves; flag does not auto-clear.
+Control
+	Source (BRD ref)
+	On-screen behaviour
+
+Case row (employee · days no contact · contact attempts)
+	FR-M03-006; M05
+	Read-only; urgency styling for SLA
+
+Send notice
+	FR-M03-006
+	Sends absconding notice (MSG-ABSCOND-NOTICE §8.2)
+
+Initiate / convert
+	FR-M03-006; §8.4 CONVERTED_FROM_ABSCONDING
+	Creates INVOLUNTARY case; past-dated FLWD → one-way door
+
+Restore to Active
+	FR-M03-006
+	Clears flag with reason (audited); PROPOSED endpoint §7
+
+Resolved (v1.1): prototype aligned to 7 consecutive calendar days and HR Admin routing (CEO optional); CHRO removed. (was OPEN-FS-M03-03)
+2.6 FnF clearance — fnf-clearance (E1), fnf-clearance-hub, department screens (E2–E8)
+References: FR-M03-003 (parallel); Part E (E1–E10) and Part E.1 (configured 20-stage); §4.8.3 fnf_clearances; §8.4 LWD→FNF_IN_PROGRESS→FNF_COMPLETE; M17 asset; M04 PL encashment; MSG-FNF-PENDING / -ESCALATION.
+fnf-clearance (manager): per-case sign-off (handover received, tasks reassigned, access review complete, comments) → POST /fnf-clearances/{id}/clear (MANAGER_HANDOVER). fnf-clearance-hub (HR/Sep Admin): matrix board, one row per employee in window, one cell per stage (PENDING/IN_PROGRESS/CLEARED/HOLD per §4.8.3); Nudge open stages; Mark ready for settlement (fires FnF-ready once all mandatory clear). Department screens (clearance-it-assets E2/E3, -facilities E5, -attendance E6, -leave E7, -compliance E8) share one canonical pattern: list of employees in window → Clear or Hold; a Hold passes held value to FnF as a deduction (asset Hold owned by IT Admin per M17; extension/write-off by HR Admin).
+Stage / screen
+	Owner (Part E)
+	Action control
+	Clear contract
+
+E1 Manager handover · fnf-clearance
+	L1 Manager
+	Checklist + Sign off
+	POST /fnf-clearances/{id}/clear (MANAGER_HANDOVER)
+
+E2/E3 Asset & IT · clearance-it-assets
+	IT Admin
+	Clear / Hold / Extend / Write-off
+	clear or hold; hold→deduction (M17)
+
+E5 Facilities · clearance-facilities
+	Office Admin
+	Clear / Hold
+	clear (FACILITIES)
+
+E6 Attendance/LOP · clearance-attendance
+	Attendance Admin
+	Reconcile / Clear
+	clear (ATTENDANCE_LOP); feeds M06
+
+E7 Leave encashment · clearance-leave
+	Leave Admin
+	Compute / Clear
+	clear (LEAVE_ENCASHMENT); PL per M04
+
+E8 Compliance/NDA · clearance-compliance
+	HR/Sep Admin
+	Sign-off / Clear
+	clear (COMPLIANCE_NDA)
+
+E9 Exit interview · exit-interview
+	HRBP
+	Mark complete
+	clear (EXIT_INTERVIEW)
+
+E10 Statutory · (Phase 2)
+	Payroll Admin
+	Tracked only
+	Phase 2
+
+States (board): per-cell PENDING/IN_PROGRESS/CLEARED/HOLD/N-A; settlement-blocked banner when any mandatory stage HOLD; empty (no cases). Hold/Extend/Write-off exposed but not in §6.4 → OPEN-FS-M03-04.
+2.7 Exit interview — exit-interview, cfg-exit-interview-form
+References: FR-M03-004 (LWD−7); Part F; DE20; §4.8.4 exit_interviews; confidentiality §4.8.1 + DE11 (HR Admin · Separation Admin · HRBP within UAG; CHRO removed per DE16); M16 anonymised analytics.
+exit-interview (HRBP): scheduled/pending list; Schedule (sends invite), Conduct (opens form), Mark E9 complete. cfg-exit-interview-form (Sep/HR Admin): form settings (template name, mode, schedule trigger LWD−7, submission window, mandatory-for / skipped-for) + versioned question list (text, answer type, analytics dimension, mandatory, confidential) + add/edit form; Publish creates a new version retaining prior.
+Element
+	Control
+	Source (BRD ref)
+	On-screen behaviour
+
+Question list
+	Table (add/edit/delete)
+	Part F; DE20
+	Soft-delete retained read-only; versioned
+
+Answer type
+	Single-select
+	Part F
+	Single/multi-select, rating, NPS, free-text
+
+Confidential (raw)
+	Select
+	§4.8.1; DE11
+	Raw responses restricted to confidential roles
+
+Publish version
+	Button
+	Part F
+	New version; prior retained; PROPOSED endpoint §7
+
+Conduct / submit
+	Form
+	§4.8.4 responses (JSON)
+	SCHEDULED→CONDUCTED; PROPOSED submit endpoint §7
+
+2.8 Separation policy (5-step wizard) — cfg-separation-policy
+References: FR-M03-007; §4.8.1 separation_policies, §4.8.1a separation_policy_initiators, §4.8.1b separation_policy_workflow_map; CO07; §9.4 (suppression). New build screen (prototype v20_4).
+Five steps (stepper): (1) Basic Details — Policy title*, Description, Applicable To; (2) Policy Details — toggles allow_past_dated_resignation, force_separate_on_lwd; (3) Process Details — restrict_lwd_on; Approval Flow Configuration grid (one row per initiator) + capture/revoke toggles + Default Approval Flow On Revoke + Workflow Configuration map; (4) Notification & Advanced — per-policy notification rows + suppression rule; (5) Banner — welcome_message (rich text) + Preview.
+Field / grid
+	Control
+	Source (BRD ref)
+	On-screen behaviour
+
+Title / Description / Applicable To
+	Text / textarea / multi-select
+	§4.8.1 policy_name, applicability
+	Applicable To resolves a UAG per §4.2
+
+Allow past-dated resignation
+	Toggle
+	§4.8.1 allow_past_dated_resignation; DE02
+	HR-only back-dating ≤30 days (VAL-SEP-BACKDATE)
+
+Force separate on LWD
+	Toggle
+	§4.8.1 force_separate_on_lwd; §8.4 row
+	Drives ON_NOTICE→SEPARATED auto-transition
+
+Restrict LWD on
+	Select
+	§4.8.1 restrict_lwd_on
+	Constrains selectable LWD
+
+Approval Flow Configuration
+	Editable grid
+	§4.8.1a (initiator_role, action_form_id, approval_flow_id, approval_flow_on_revoke_id, exclude_capture, exception, confidential)
+	One row per initiator (Self/HR Team/Admin)
+
+Capture DOR/LWD/Recovery
+	Toggle
+	§4.8.1 capture_resignation_lwd_recovery
+	Surfaces recovery capture on §2.1
+
+Do not proceed until revoke approved
+	Toggle
+	§4.8.1 block_until_revoke_approval_complete; §8.4
+	Holds case ON_NOTICE until revoke approved
+
+Default Approval Flow On Revoke
+	Select
+	§4.8.1 default_approval_flow_on_revoke_id
+	Fallback when a row omits its revoke flow
+
+Workflow Configuration
+	Editable grid
+	§4.8.1b (separation_category, workflow_id, on_notice_flag_alias)
+	Maps category→workflow; Open builder → §2.9
+
+Notification rows + suppression
+	Grid + note
+	§9.4
+	Configured events suppress standard notifications
+
+Welcome message
+	Rich text + Preview
+	§4.8.1 welcome_message
+	Shown to separating employee
+
+API gap: §6.4 has no separation-policy CRUD — OPEN-FS-M03-05.
+2.9 Separation workflow builder — cfg-separation-workflow
+References: Part E.1 (configured 20-stage); CO02 (Flow-Builder-mapped per category), CO08 (initiation Series; clearance/letters/reminders Parallel/Conditional); P01 workflow engine; §9.4 triggers. New build screen.
+Standard Configurations (Name, Restriction AND/OR, Applicable To, Restrict LWD On, execution mode Series/Conditional, Enable Custom Escalation, Enable Custom Archival of Tasks + archive-days, Enable Custom Flow Based, Allow Past Date of Resignation, Select Approver Before Admin) + 20-stage table (Order/Stage/Action·form/Assign role/Visibility/Trigger relative to Last Day or Evaluation of Condition) + per-event notification triggers (employee request; manager/reviewer/admin approve; manager/reviewer reject). The stage register and trigger semantics are owned by BRD Part E.1 — this screen edits them; it does not redefine them.
+Engine note: workflow definition, stages, SLA and skip behaviour are owned by P01 Workflow Engine (§5.1 / Appendix I). This screen is the M03 authoring surface over P01; the FS references P01 rather than restating engine behaviour. API gap → OPEN-FS-M03-06.
+2.10 Clearance / checklist config — cfg-separation-checklist
+References: Part E (E1–E10 register, SLAs, mandatory flags); CO08; §4.8.3 fnf_clearances. Cross-links Part E.1 (§2.9).
+Configures the parallel FnF clearance block (stage name, owner role, action type, SLA, execution Parallel/Series, mandatory-gates-FnF, escalation) and the pre-LWD checklist (handover, NDA refresh, separation undertaking). Window opens LWD−7 (DE15, configurable, per-type variation). The configured 20-stage realisation is in §2.9; this screen owns the register/mandatory-flag semantics referenced by the board (§2.6).
+2.11 Separation Admin dashboard (widget spec)
+References: §5.4; widgets §10; §3.7 visibility. Dashboard uses the widget pattern, not a field table.
+Widget
+	Metric / source
+	Drill-down
+	Refresh
+	Visible to
+
+In clearance window
+	count separation_records ON_NOTICE within LWD−window
+	fnf-clearance-hub
+	on load / poll
+	Sep/HR Admin
+
+Clearance holds
+	count fnf_clearances HOLD gating FnF
+	fnf-clearance-hub
+	on load
+	Sep/HR Admin
+
+Exit interviews due
+	count exit_interviews SCHEDULED/to-book
+	exit-interview
+	on load
+	Sep/HR Admin · HRBP
+
+Absconding cases
+	count employees absconding_flagged_at set
+	absconding
+	on load
+	HR Admin
+
+Quick actions
+	static nav (policy, workflow, board, requests, termination)
+	respective screens
+	—
+	Sep/HR Admin
+
+3. Interaction & Navigation Flows
+References: BRD §8.4 separation state machine (authoritative). The FS maps which screen drives each transition; it does not redraw the machine. Job-driven transitions reference §8.1 jobs.
+§8.4 transition
+	Driven by (screen / job)
+	Notes
+
+— → SUBMITTED
+	initiate-separation / force-separation
+	POST /separations; force path bypasses Stage-1
+
+SUBMITTED → Stage-2 pending
+	separation-stage1 Recommend
+	Object → REJECTED
+
+Stage-2 → APPROVED → ON_NOTICE
+	separation-stage2 approve
+	Notice clock; exit interview scheduled at LWD−7 by JOB-M03-EXITINT
+
+Stage-2 → SEPARATED (one-way door)
+	force-separation / stage-2 past-dated FLWD
+	Immediate deactivation; MSG-ERR-ONEWAY confirm
+
+ON_NOTICE → (revoke pending)
+	revoke + block_until_revoke_approval_complete
+	Held in ON_NOTICE until revoke approved (§8.4 row)
+
+ON_NOTICE → SEPARATED (force on LWD)
+	JOB-M03-FORCESEP when force_separate_on_lwd
+	Auto-separation on computed LWD
+
+ON_NOTICE → LWD → FNF_IN_PROGRESS
+	JOB-M03-FNFWINDOW opens clearances LWD−7
+	fnf-clearance-hub active
+
+FNF_IN_PROGRESS → FNF_COMPLETE
+	fnf-clearance-hub Mark ready (all mandatory CLEARED)
+	FnF-ready event to M06 (Phase 2)
+
+FNF_COMPLETE → SEPARATED
+	separation-finalise Done
+	Letters (M11); read_only_until = LWD+180
+
+ABSCONDED → CONVERTED_FROM_ABSCONDING
+	absconding Convert
+	Creates INVOLUNTARY case
+
+4. API Contracts (complete)
+References: §6.4 inventory (endpoint existence, purpose, auth — not restated); §6.2 response envelope; §6.3 rate limiting; §3.7 for 403. Conventions (envelope, pagination, idempotency-key header, error model) are §6.2–6.3 / Foundation FS — referenced, not restated.
+4.1 POST /api/v1/separations — Initiate separation
+Inventory: §6.4 (Employee self-service · HR Admin · Admin force-initiate). Example payload: §7.5.3.
+Request:
+{ separation_policy_code, date_of_resignation (date),
+target_last_working_day (date), reason_code,
+reason_narrative? , recovery_days? (int>=0),
+on_behalf_of_employee_id? (HR/Admin force only) }
+Response 2xx:
+201 { id, employee_id, state:“SUBMITTED”,
+proposed_last_working_day (computed VAL-SEP-LWD),
+approval_flow_id, links{ self } }
+Errors:
+400 — malformed body / VAL-SEP-* failure (§5)
+403 — employee back-dating own resignation (VAL-SEP-BACKDATE; §3.7 Employee E*)
+409 — active separation_records already exists for employee
+422 — policy not applicable / category invalid
+Idempotency: idempotency-key header (Foundation conv.); duplicate returns original 201. proposed_last_working_day is computed server-side (VAL-SEP-LWD) — client value is not trusted.
+4.2 GET /api/v1/separations/{id} — View case
+Inventory: §6.4 (Requestor · approver chain · HR Admin · HRBP).
+Request:
+(none)
+Response 2xx:
+200 { id, employee, category, state, date_of_resignation,
+proposed_last_working_day, final_last_working_day,
+reason_code, reason_narrative (masked unless confidential §4.8.1),
+approvals[], fnf_summary{cleared,total}, read_only_until }
+Errors:
+403 — caller outside requestor/approver/HR/HRBP scope (§3.7)
+404 — id not found in caller entity scope
+reason_narrative masked per §4.8.1 confidential_field_roles + §3.9 projection (§6).
+4.3 POST /api/v1/separations/{id}/approve — Approve / object (stage)
+Inventory: §6.4 (L1 Mgr · HR Admin). Stage drives §8.4 transition.
+Request:
+{ stage: 1|2, disposition: “APPROVE”|“OBJECT”|“REJECT”,
+comments?, rejection_reason? (required when REJECT/OBJECT),
+confirm_one_way_door? (Stage-2 past-dated FLWD) }
+Response 2xx:
+200 { id, state, approval_stage_1_at|approval_stage_2_at, next_state }
+Errors:
+400 — REJECT/OBJECT without rejection_reason (§9.4)
+403 — caller not the stage approver (§3.7 Manager A* / HR Adm)
+409 — stage already actioned / not in approvable state (§8.4)
+422 — Stage-2 past-dated FLWD without confirm_one_way_door (MSG-ERR-ONEWAY)
+Stage-2 APPROVE with past-dated final_last_working_day requires confirm_one_way_door=true (FR-M03-002).
+4.4 POST /api/v1/separations/{id}/revoke — Revoke before LWD
+Inventory: §6.4 (Employee own · HR Admin · HRBP · Admin).
+Request:
+{ reason }
+Response 2xx:
+200 { id, state:“REVOKED”|“ON_NOTICE”, revoke_requested_at,
+revoke_approval_required: bool }
+Errors:
+403 — caller lacks revoke right (§3.7; SeparationRequests custom permission)
+409 — LWD already reached / already separated
+If policy block_until_revoke_approval_complete = true, state stays ON_NOTICE and a revoke approval flow starts (default_approval_flow_on_revoke_id §4.8.1); else REVOKED immediately. System-deducted-leave revoke routes to original approval flow per M04 (reference).
+4.5 GET /api/v1/separations/{id}/fnf-clearances — Clearance status
+Inventory: §6.4 (HR Admin · clearance reviewers).
+Request:
+(none)
+Response 2xx:
+200 { separation_id, lwd, stages:[ { department(E1..E10),
+assigned_to, status(PENDING|IN_PROGRESS|CLEARED|HOLD),
+mandatory, cleared_at, clearance_notes } ], all_mandatory_cleared }
+Errors:
+403 — caller not HR/reviewer in scope
+404 — case not found
+Maps 1:1 to fnf_clearances rows (§4.8.3).
+4.6 POST /api/v1/fnf-clearances/{id}/clear — Mark department clearance
+Inventory: §6.4 (Department reviewer).
+Request:
+{ notes? }
+Response 2xx:
+200 { id, status:“CLEARED”, cleared_at }
+Errors:
+403 — caller not the assigned department reviewer (§3.7)
+409 — already cleared / not in FNF window (§8.4)
+HOLD / EXTEND / WRITE-OFF (prototype) are NOT inventoried — PROPOSED in OPEN-FS-M03-04.
+4.7 GET /api/v1/separations/{id}/exit-interview — Exit interview record
+Inventory: §6.4 (HRBP · HR Admin).
+Request:
+(none)
+Response 2xx:
+200 { separation_id, template_id, scheduled_at, conducted_at,
+status(SCHEDULED|CONDUCTED|DECLINED|NO_SHOW),
+responses (raw — confidential roles only §4.8.1/DE11) }
+Errors:
+403 — caller not in confidential roles for raw responses (§4.8.1)
+404 — no interview scheduled
+Aggregate analytics anonymised in M16 (FR-M03-004); raw responses gated to confidential roles.
+4.8 Configuration & secondary-action endpoints (inventoried in BRD §6.4 v1.6)
+Added to the BRD §6.4 inventory in v1.6, resolving FS items 04–08. Contracts authored here; auth per §3.7; envelope/error model per §6.2–6.3.
+Endpoint
+	Purpose / contract summary
+	Auth
+
+POST /fnf-clearances/{id}/hold
+	{reason, recovery_value} → 200 {id,status:HOLD}; held value flows to FnF as a deduction; 409 if already CLEARED
+	Dept reviewer · HR Admin
+
+POST /fnf-clearances/{id}/extend
+	{new_due} → 200 {id,due_date}; 403 if caller not HR Admin
+	HR Admin
+
+POST /fnf-clearances/{id}/write-off
+	{value} → 200; recorded as FnF deduction; audited (P05)
+	HR Admin
+
+GET·POST·PUT·DELETE /separation-policies[/{id}]
+	CRUD incl. nested initiators (§4.8.1a) & category→workflow map (§4.8.1b); 409 on delete of in-use policy
+	Sep Admin · HR Admin
+
+GET·POST·PUT·DELETE /separation-workflows[/{id}]
+	Thin M03 wrapper over the P01 workflow engine (Appendix I); stage edits delegate to P01 contracts
+	Sep Admin · HR Admin
+
+POST /separations/{id}/exit-interview/schedule
+	{scheduled_at?} → 200 {status:SCHEDULED}; defaults LWD−7 (FR-M03-004); 409 if already scheduled
+	HRBP · Sep Admin
+
+POST /separations/{id}/exit-interview/submit
+	{responses} → 200 {status:CONDUCTED}; raw responses gated to confidential roles (§4.8.1)
+	Employee (own) · HRBP
+
+GET·POST·PUT·DELETE·POST /publish /exit-interview-templates[/{id}]
+	Versioned form; /publish creates a new version, prior retained read-only
+	Sep Admin · HR Admin
+
+POST /employees/{id}/absconding/convert
+	{final_last_working_day?, reason} → creates INVOLUNTARY separation_records; past-dated FLWD invokes one-way door (FR-M03-002)
+	HR Admin
+
+POST /employees/{id}/absconding/restore
+	{reason} → clears absconding flag, restores Active; audited (P05)
+	HR Admin
+
+5. Validation
+References: shared validation library lives in the Foundation FS (OPEN-FS-M03-FOUND); generic rules (VAL-REQUIRED, VAL-DATE, VAL-EMAIL, VAL-FILE) are referenced by id. Authored below: rules unique to M03 screens.
+VAL id
+	Applies to
+	Rule (build detail)
+	BRD source
+
+VAL-SEP-LWD
+	initiate-separation, force-separation
+	proposed_last_working_day = date_of_resignation + notice_period_days counted in working days; if on weekly-off/holiday, roll forward to next working day; computed server-side
+	FR-M03-001; §4.8.2
+
+VAL-SEP-DOR
+	initiate-separation
+	date_of_resignation: employee = today only; not future beyond policy; not back-dated by employee
+	FR-M03-001; DE02
+
+VAL-SEP-BACKDATE
+	force-separation, HR initiate
+	back-dating HR Admin only, ≤30 days, subject to notice rules
+	FR-M03-001; §P.1 DE02
+
+VAL-SEP-PASTLWD
+	force-separation, stage-2
+	FLWD < today ⇒ require confirm_one_way_door=true and reason_narrative present
+	FR-M03-002
+
+VAL-REQUIRED-PASTLWD
+	force-separation
+	reason_narrative mandatory whenever FLWD is past-dated
+	FR-M03-002
+
+VAL-SEP-RECOVERY
+	initiate-separation
+	recovery_days integer ≥ 0; shown only when policy capture_resignation_lwd_recovery = true
+	§4.8.1; FR-M03-007
+
+VAL-SEP-ACTIVEONE
+	POST /separations
+	reject if an active (non-terminal) separation_records row exists for the employee
+	§4.8.2
+
+VAL-FNF-GATE
+	fnf-clearance-hub finalise
+	finalise blocked unless every mandatory fnf_clearances stage = CLEARED
+	FR-M03-003; Part E
+
+6. Per-Screen RBAC Projection & Menu Entitlement
+References: §3.7 matrix (M03 row: Employee E, Manager L1 A*, HOD V, HRBP V·E, HR Admin Adm; legend §3.7), §3.3 Separation Admin (offboarding_admin; HR Admin superset), §3.9 field access, §4.8.1 confidential_field_roles. The matrix is NOT restated; below is its per-screen projection only.*
+Screen
+	Visible to
+	Primary actions (§3.7)
+	Field/role notes
+
+initiate-separation
+	Employee (self)
+	submit own, revoke own (pre-approval)
+	reason_narrative confidential §4.8.1
+
+separation-stage1
+	Manager L1
+	recommend/object (A*)
+	reportee scope only
+
+separation-stage2 / -finalise
+	HR Admin (Adm); Sep Admin oversight
+	final approve, finalise, letters
+	HR Admin superset §3.3
+
+force-separation
+	HR Admin (Adm)
+	force-initiate, one-way-door confirm
+	CEO optional (DE16); no CHRO role
+
+absconding
+	HR Admin (Adm)
+	send notice, convert, restore
+	M05-fed flag
+
+fnf-clearance (E1)
+	Manager L1
+	sign off own reportee
+	—
+
+fnf-clearance-hub
+	HR / Sep Admin
+	nudge, mark ready
+	read for reviewers
+
+clearance-* (E2–E8)
+	Department reviewer
+	clear/hold (own dept)
+	IT/Office/Attendance/Leave/HR per stage
+
+exit-interview
+	HRBP; Sep/HR Admin
+	schedule, conduct, mark E9
+	raw responses: confidential roles only §4.8.1/DE11
+
+cfg-* (policy/workflow/checklist/exit-form)
+	Sep Admin / HR Admin
+	configure (Adm)
+	config surface owned by Sep Admin §3.3
+
+6.1 Menu & Navigation Entitlement (M03 slice)
+References: full role→menu map belongs in the Foundation FS (OPEN-FS-M03-FOUND). Below is the M03 slice as realised in the prototype nav; gating per §3.7.
+Menu item
+	Screen id
+	Visible to roles
+	Gating (§3.7)
+
+My separation
+	initiate-separation
+	All employees (self-service)
+	Employee E*
+
+Separation requests / tasks
+	separation-stage1/2
+	Manager L1; HR/Sep Admin
+	A* / Adm
+
+FnF clearance board
+	fnf-clearance-hub
+	HR/Sep Admin
+	Adm
+
+Exit interviews
+	exit-interview
+	HRBP; HR/Sep Admin
+	V·E / Adm
+
+Clearance stages (oversight)
+	clearance-*
+	Sep Admin (oversight); dept reviewers (own)
+	Adm / dept
+
+Configure → policy / workflow / checklist / exit form
+	cfg-*
+	Sep Admin; HR Admin
+	Adm
+
+Initiate termination · Absconding
+	force-separation · absconding
+	HR/Sep Admin
+	Adm
+
+7. Open Items, Conflicts & Recommendations
+Status after the v1.1 sync: items 01–09 are RESOLVED across BRD v1.7 / prototype v20.4 / this FS. OPEN-FS-M03-FOUND (Foundation FS) and -10 (register vs configured build, documented) remain. Resolutions below are applied, not proposals.
+Id
+	Type
+	What’s missing / in conflict
+	Owner
+	PROPOSED — confirm before build
+
+OPEN-FS-M03-FOUND
+	Open
+	No Foundation FS yet (shared validation, global UI-state, full menu map, message catalogue, scheduled-jobs register)
+	Product Architect
+	Author Foundation FS; migrate §5/§6.1/§8 here into it and replace with references
+
+OPEN-FS-M03-01
+	RESOLVED v1.1
+	Next employer / KT plan had no BRD data home
+	BRD / DB owner
+	Dropped across BRD (no field), FS (§2.1) and prototype v20.4
+
+OPEN-FS-M03-02
+	RESOLVED v1.1
+	rehire_eligible had no prototype control
+	Design / Product
+	Rehire-eligible (Yes/No + note) added to separation-finalise v20.4; default No for terminations
+
+OPEN-FS-M03-03
+	RESOLVED v1.1
+	Absconding copy/route conflicted with BRD
+	Product
+	Prototype aligned to 7 calendar days, HR Admin (CEO optional), no CHRO
+
+OPEN-FS-M03-04
+	RESOLVED v1.1
+	FnF hold/extend/write-off absent from §6.4
+	Eng / Product
+	Added to BRD §6.4 (v1.6); contracts in §4.8
+
+OPEN-FS-M03-05
+	RESOLVED v1.1
+	separation-policy CRUD absent from §6.4
+	Eng / Product
+	Added to BRD §6.4 (v1.6); contracts in §4.8 (incl. initiators §4.8.1a, workflow-map §4.8.1b)
+
+OPEN-FS-M03-06
+	RESOLVED v1.1
+	separation-workflow CRUD absent; engine in P01
+	Eng / Platform
+	Added to BRD §6.4 (v1.6) as a thin wrapper over P01; §4.8
+
+OPEN-FS-M03-07
+	RESOLVED v1.1
+	exit-interview schedule/submit & template publish absent
+	Eng / Product
+	Added to BRD §6.4 (v1.6); contracts in §4.8
+
+OPEN-FS-M03-08
+	RESOLVED v1.1
+	absconding convert/restore & force-initiate not explicit
+	Eng / Product
+	convert/restore added to §6.4 (v1.6); force-init via POST /separations; §4.8
+
+OPEN-FS-M03-09
+	RESOLVED v1.1
+	CHRO named as confidential role but no CHRO role exists
+	Product / RBAC
+	CHRO removed across BRD/prototype/FS; confidential roles = HR Admin · Separation Admin · HRBP (DE16)
+
+OPEN-FS-M03-10
+	Open (note)
+	Part E (E1–E10 register) vs Part E.1 (configured 20-stage build)
+	Product
+	Both retained and cross-linked; mapping documented (§2.6/§2.9/§2.10)
+
+8. Operational Specifications (M03 slice)
+Not screen-driven; normally in the Foundation FS (OPEN-FS-M03-FOUND). Carried here as the M03 slice. Business rules referenced, not restated — only cadence/idempotency/failure/copy is authored.
+8.1 Scheduled Jobs & Background Processing
+Job id
+	Trigger
+	Reads / writes (entities)
+	Idempotency / failure
+
+JOB-M03-FNFWINDOW
+	Daily 00:00; opens clearances at LWD−7 (DE15, configurable, per-type)
+	reads separation_records (ON_NOTICE); writes fnf_clearances (PENDING)
+	skip if rows exist (idempotent); retry next run; MSG-FNF-PENDING
+
+JOB-M03-EXITINT
+	Daily; creates exit_interviews (SCHEDULED) at LWD−7 (FR-M03-004; skip Death/Absconding)
+	reads separation_records; writes exit_interviews
+	one row per case; notify HRBP (MSG-EXITINT)
+
+JOB-M03-FORCESEP
+	Daily; when force_separate_on_lwd & LWD reached
+	reads separation_records (ON_NOTICE); writes SEPARATED; emits M01 transition
+	guard: only if not already SEPARATED; audited P05
+
+JOB-M03-SLA
+	Per SLA; clearance/approval escalation after 5 days inaction (FR-M03-003/001)
+	reads fnf_clearances/approvals; writes escalation
+	reference P01 SLA engine; MSG-FNF-ESCALATION
+
+JOB-M03-AUTOREVOKE
+	On approval beyond LWD (M04 auto_revoke_on_resignation_beyond_lwd)
+	reads leave_applications; writes revoked
+	reference M04; idempotent per application
+
+JOB-M03-ABSCOND
+	Owned by M05 (sets absconding_flagged_at at 7 calendar days)
+	M05
+	Referenced — M05 owns; M03 consumes (§2.5)
+
+8.2 Message Catalogue (M03)
+References: §9.4 (which events notify whom — not restated). Authored: template id + channel + trigger.
+Msg id
+	Event (§9.4 ref)
+	Channel
+	Trigger source
+
+MSG-SEP-INIT
+	SEPARATION_INITIATED / SEPARATION_REQUESTED
+	IN_APP+EMAIL
+	initiate-separation / force-separation
+
+MSG-SEP-STG1
+	Stage-1 routing
+	IN_APP+EMAIL
+	separation-stage1
+
+MSG-SEP-APPR
+	SEPARATION_APPROVED + reviewer/admin-approved
+	EMAIL
+	separation-stage2 approve
+
+MSG-SEP-REJ
+	SEPARATION_REJECTED + reviewer-rejected
+	IN_APP+EMAIL
+	approve disposition REJECT/OBJECT
+
+MSG-SEP-REVOKE
+	SEPARATION_REVOKED
+	EMAIL
+	revoke endpoint
+
+MSG-SEP-PASTDATED
+	SEPARATION_PAST_DATED_FLWD
+	EMAIL+SMS
+	force-separation one-way door
+
+MSG-FNF-PENDING
+	FNF_CLEARANCE_PENDING
+	IN_APP+EMAIL
+	JOB-M03-FNFWINDOW / board
+
+MSG-FNF-ESCALATION
+	FNF_CLEARANCE_ESCALATION
+	EMAIL
+	JOB-M03-SLA
+
+MSG-FNF-COMPLETE
+	FNF_COMPLETE
+	EMAIL
+	fnf-clearance-hub mark ready
+
+MSG-EXITINT
+	EXIT_INTERVIEW_SCHEDULED
+	IN_APP+EMAIL
+	JOB-M03-EXITINT
+
+MSG-LWD-REMINDER
+	LWD_REMINDER
+	EMAIL+SMS
+	Part E.1 reminder stages (12–14,19–20)
+
+MSG-ABSCOND-NOTICE
+	Absconding notice — ABSCONDING_NOTICE_SENT (§9.4)
+	EMAIL+SMS
+	absconding send-notice (FR-M03-006); now in §9.4
+
+Error &** system copy (excerpt):**
+Msg id
+	Where shown
+	Message text
+	Recovery
+
+MSG-ERR-ONEWAY
+	force-separation / stage-2 (past-dated FLWD)
+	Past-dated last working day deactivates the profile immediately and cannot be reversed through the standard flow.
+	Confirm to proceed, or set a future LWD
+
+MSG-ERR-ACTIVEONE
+	initiate-separation (409)
+	An active separation already exists for this employee.
+	Revoke or complete the existing case first
+
+MSG-ERR-FNFGATE
+	fnf-clearance-hub finalise
+	All mandatory clearances must be cleared before settlement.
+	Clear or resolve held stages
+
+9. Reference Register
+Auditable index — if a screen row has content but no references, it is duplicating or inventing. Used to verify non-repetition.
+FS screen
+	Prototype id
+	BRD FR / Part
+	BRD entities
+	Open items
+
+Resignation
+	initiate-separation
+	FR-M03-001/007
+	separation_records
+	—
+
+Stage-1
+	separation-stage1
+	FR-M03-001; §8.4
+	separation_records
+	—
+
+Stage-2 / Finalise
+	separation-stage2/-finalise
+	FR-M03-001/003/005; M11
+	separation_records; M11 docs
+	—
+
+Termination
+	force-separation
+	FR-M03-002; Part G
+	separation_records
+	—
+
+Absconding
+	absconding
+	FR-M03-006
+	employees.absconding_flagged_at
+	—
+
+FnF clearance
+	fnf-clearance(-hub), clearance-*
+	FR-M03-003; Part E/E.1
+	fnf_clearances
+	—
+
+Exit interview
+	exit-interview, cfg-exit-interview-form
+	FR-M03-004; Part F
+	exit_interviews; templates
+	—
+
+Separation policy
+	cfg-separation-policy
+	FR-M03-007; §4.8.1/.1a/.1b
+	separation_policies (+children)
+	—
+
+Separation workflow
+	cfg-separation-workflow
+	Part E.1; CO02/CO08
+	workflows (P01)
+	—
+
+Checklist config
+	cfg-separation-checklist
+	Part E; CO08
+	fnf_clearances
+	10
+
+Dashboard
+	dashboard (Sep Admin)
+	§5.4; §10
+	aggregates
+	—
+
+End of FS — Module M03. Confirm all §7 open items with their named owners before build.
+Page of # Prototype Sync Addendum (June 2026)
+The following clarifications reflect the clickable prototype (v2, M11-synced) and the synced BRD v2. They complement — and do not replace — the body of this specification.
+Timesheet clearance gate
+A Timesheet clearance stage (timesheet / attendance reconciliation) is part of the FnF clearance set. It appears on the FnF clearance board with a clear/pending status and gates Full-and-Final settlement alongside the manager, asset/IT, finance, facilities, attendance/LOP, leave-encashment, compliance/NDA and exit-interview gates. (Ref: BRD §4.8.3 fnf_clearances, §8.4 Separation Workflow.)
+Facilities clearance — configurable per-item checklist
+Facilities exit clearance (owner role: Office Admin) is a configurable per-item checklist — e.g., ID/access card, parking sticker, locker key, corporate card, library card — with each item independently markable clear/pending. Item lists, clearance stages and separation workflow stages are configured and editable in the separation clearance checklist / workflow screens (HR Admin: cfg-separation-checklist, cfg-separation-workflow), each providing a stage/item edit screen.
+Absconding — editable notice dialog
+The absconding ‘Send notice’ action opens an editable notice dialog (notice text plus send-via channel: email / registered post) for review before dispatch, rather than sending a fixed notice silently.
+Terminology note
+The role this FS calls “Separation Admin” is the same role RBAC v1.3 and the prototype label “Offboarding Admin”; “Facilities” clearance is owned by the “Office Admin” role. Align on a single label at reconciliation. # Prototype Sync Addendum — Batch 6: Employee-role Separation review (June 2026)
+Reflects the Batch-6 Employee self-service separation review against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Resignation submission
+The employee resignation reason is drawn from the Deactivation Reasons master (Voluntary type), not a hardcoded list. The notice period is shown from the employee’s assigned Notice policy (not a fixed value), and the last working day is auto-suggested as the resignation date plus the notice period. The employee acknowledges the notice period and FnF clearance requirements before submitting.
+Recovery days — not employee-entered
+The employee resignation form does not capture recovery days (notice shortfall). Recovery days are set by the manager, exit admin or HR Admin and approved by HR Admin — they are surfaced to the employee read-only on the separation status, never entered by the resigning employee.
+Resignation withdrawal
+The employee can request to withdraw a submitted resignation before the last working day, with a reason; the request routes to approval. Withdrawal is an employee self-service action.
+Post-submission visibility
+After submitting, the employee sees a separation status view: stage, submission date, notice, suggested last working day, a read-only clearance progress list (manager handover, IT assets, finance, HR) with owners, and full-and-final status (which begins after the last working day). Clearance and FnF are actioned by HR and the clearance owners — the employee view is read-only.
+Exit interview — not employee self-service
+The employee does not complete an exit interview in-system (out of scope for employee self-service); the exit-interview surface remains with HR / exit administration.
+Manager-role review (Round 3)
+Manager-editable notice period (Stage 1): on manager-initiated separation, when enabled in Notice configuration the manager/reviewer can edit the notice period inline; the Last Working Day recalculates live, a reason is mandatory and the change is audit-logged. Gated by a config flag distinct from the existing edit Recovery Days switch (a corresponding RBAC permission is added). Default off.

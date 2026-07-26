@@ -1,0 +1,945 @@
+PrimeSoft HRMS ��� Consolidated Role Review Record
+Table of Contents
+ TOC \z \o "1-2" \u \h
+PrimeSoft HRMS — Consolidated Role Review Record
+Single audit record of the role-by-role, module-by-module pre-handoff review. For each role it carries the discrepancy log (what was found, severity, resolution) and the independent judgement (opinion, fenced), plus the GO decision; the focused config/RBAC/platform pass also retains its coverage and flow matrices. Change-rationale narrative is intentionally omitted — the prototype and FS carry the resulting state; configuration actions live in the Configuration Actions Register; open build items live in the Final Consolidated Handoff Index worklist and the Configuration Coverage Map. This record supersedes and retires the eight separate role-review summaries.
+Review outcomes
+Role grouping
+	Decision
+
+Employee
+	GO
+
+Manager (L1)
+	GO
+
+HOD
+	GO
+
+HRBP
+	GO
+
+HR Admin + 8 functional admins
+	GO
+
+IT · Asset · Service Desk · Office · CEO
+	GO
+
+Org Admin · Platform Super Admin · Finance · Candidate
+	GO
+
+Config Console · RBAC · Platform (focused)
+	GO
+
+All role groupings are GO for engineering handoff. The Employee role was re-reviewed (Round 2, 11 comments) and re-applied to Prototype v2.1 — still GO. No Critical or High findings remain open. Residual items are scoped or in the documented engineering backlog (Handoff Index §4, Coverage Map Partial/Missing rows, Configuration Actions Register).
+Employee
+Employee review — Round 2 (applied to Prototype v2.1)
+A second Employee-role review (11 comment areas) was actioned. Resolutions:
+#
+	Comment
+	Resolution
+	Artifacts
+
+1
+	Remove Linked accounts & Workspace
+	Removed from employee surface
+	Prototype; Foundation FS; M08
+
+2
+	AI assistant (responsive; app-usage scope; fold KB; roadmap)
+	Renamed AI Assistant; role-scoped policy+app-usage; KB folded (KB menu removed); coming-soon roadmap
+	Prototype; Platform P03; Foundation FS; RBAC
+
+3
+	My Profile (promo flag; ID-card route; peers; HRBP dup; project history; statutory/benefits provenance; doc types)
+	Promo-readiness hidden from self; ID-card→My-letters; peers removed; HRBP single; project events in history; provenance + document-types appendix
+	Prototype; M01; M11; RBAC
+
+4
+	Leaves (reason owner; attachment mandatory; balance dup; sandwich owner)
+	Owners documented (Leave Admin/HR Admin); attachment configurable per policy; balance shown once; sandwich in Leave Settings
+	Prototype; M04; Org Admin Config FS
+
+5
+	Attendance (−Late-MTD; +WFH-MTD; work location)
+	Late-MTD removed, WFH-MTD added, work-location (Home/Office/Others) column
+	Prototype; M05
+
+6
+	Remove Apply-leave & Regularisation from launcher
+	Removed as top-level; remain in-screen actions
+	Prototype; Foundation FS
+
+7
+	Replace Pending-acks with Tasks section
+	Tasks section (manager-style, employee-scoped); policy-ack folded as a task
+	Prototype; Foundation FS; Platform P01; M11
+
+8
+	Service catalog / IT ticket (menu; cost-centre; dropdown; defaults; SLA; approver+status)
+	Catalogue into Raise ticket as dropdown+defaults; cost-centre & SLA hidden from employee; approver+status added; Service-Catalogue master (sample)
+	Prototype; M17; RBAC; Coverage Map; Actions Register
+
+9
+	Notifications — elaborate
+	Notifications centre specified & built
+	Prototype; Foundation FS; Platform P01
+
+10
+	Settings — elaborate
+	Settings (prefs/language/MFA/sessions) specified & built
+	Prototype; Foundation FS; Platform P02
+
+11
+	Goals & review (self-rating owner; remove Respectfully-disagree; pillar/alignment)
+	Self-rating owner = Performance Admin; Respectfully-disagree removed; scorecard pillar made optional (enable-per-plan, mandatory-off); goal alignment removed app-wide
+	Prototype; M09; Org Admin Config FS; Actions Register
+
+Outcome: Round-2 changes applied to Prototype v2.1 (integrity verified — 0 unresolved routes) and propagated to the documents above. Employee role remains GO. Three deferred prototype refinements (HRBP de-dup nuance, provenance note, project-history events) are documented in M01 §2.1.
+Findings register (DISC-EMP-001 … 045)
+Status legend: Fixed = changed in prototype + FS; Documented = scope decided, recorded in FS; Resolved = no change needed (config-aligned); Flagged = deferred to the owning role/reconciliation pass.
+ID
+	Batch
+	Sev
+	Finding
+	Status / resolution
+
+001
+	1
+	Critical
+	Directory exposed HR-style fields
+	Fixed — rebuilt to peer directory + read-only mini-profile; admin roster split out
+
+002
+	1
+	Med
+	Org chart absent
+	Fixed — built + added to navigation
+
+003
+	1
+	Med
+	Tier-1 ID fields editable without approval
+	Fixed — approval-gated change request
+
+004
+	1
+	Med
+	No employee bank-change path
+	Fixed — change request added
+
+005
+	1
+	Low
+	National-ID note not geography/config aware
+	Fixed — config-driven note
+
+006
+	1
+	High
+	No DPDPA consent self-service
+	Fixed — consent history + withdrawal
+
+007
+	1
+	Low
+	Personal mobile not flagged verified-by-HR
+	Fixed — hint added
+
+008
+	1
+	Low
+	Custom fields not noted as config-driven
+	Fixed — note added
+
+009
+	1
+	Low
+	“Separation” vs “Offboarding Admin” label mismatch
+	Resolved — prototype uses “My separation” consistently; 0 user-facing “Offboarding” labels
+
+010
+	2
+	High
+	Leave reasons hardcoded
+	Fixed — from Leave Reasons master
+
+011
+	2
+	Med
+	Reason/attachment mandatory not enforced
+	Fixed — marked mandatory
+
+012
+	2
+	Med
+	Employee revoke was a silent stub
+	Fixed — revocation request wired
+
+013
+	2
+	Med
+	Employee encashment self-apply?
+	Documented — not in scope; HR Admin is initiator + decision maker
+
+014
+	2
+	Med
+	Comp-off employee applicability?
+	Documented — in scope; already supported (avail + credit)
+
+015
+	2
+	Low
+	Holiday list not location-scoped
+	Documented (M04)
+
+016
+	3
+	Med
+	Regularisation reasons hardcoded; reason/message mandatory
+	Fixed — from Attendance Reasons master + mandatory
+
+017
+	3
+	High
+	Shift-change ownership
+	Documented — Manager/Attendance-Admin initiate, HR Admin approves; not employee
+
+018
+	3
+	Med
+	Infraction shown though framework off
+	Fixed — gated
+
+019
+	3
+	Med
+	Overtime shown though no OT feature
+	Fixed — OT removed
+
+020
+	3
+	Med
+	Planned-OT config conflict
+	Resolved — no OT feature
+
+021
+	3
+	Low
+	Clock-in/out a dead stub
+	Fixed — punch state
+
+022
+	3
+	Low
+	OT / comp-off naming conflation
+	Fixed — reframed to comp-off credit
+
+023
+	4
+	Med
+	No letter acknowledgment
+	Fixed — acknowledge with configured text
+
+024
+	4
+	Med
+	Policy ack silent; no sign-off text
+	Fixed — real confirmation (no decline, per decision)
+
+025
+	4
+	Low
+	Documents not by master categories
+	Fixed — aligned + grouped
+
+026
+	4
+	Low
+	Duplicate acknowledge entry points
+	Fixed — deduped to one queue
+
+027
+	5
+	High
+	Offer had no Accept/Decline
+	Fixed — both added (decline → reason)
+
+028
+	5
+	Med
+	Upload not cluster/category/BGV aware
+	Fixed — categories + Verification Package/BGV
+
+029
+	5
+	Low–Med
+	Buddy enabled but not surfaced
+	Fixed — buddy card on pre-joining
+
+030
+	5
+	Low
+	Welcome company-name binding
+	Documented (M02)
+
+031
+	6
+	Med
+	Resignation reasons hardcoded
+	Fixed — from Deactivation Reasons (Voluntary)
+
+032
+	6
+	Med
+	Notice period hardcoded
+	Fixed — policy-driven + LWD auto-suggest
+
+033
+	6
+	High
+	No resignation withdrawal
+	Fixed — withdrawal request added
+
+034
+	6
+	Med
+	Submit-only; no status/clearance/FnF
+	Fixed — separation status view (read-only clearance + FnF)
+
+035
+	6
+	Med
+	Exit interview employee-facing?
+	Documented — out of employee scope
+
+036
+	7
+	High
+	IJP apply / IJP scope
+	Fixed — IJP not in scope; removed (pages, nav, cross-refs); create-job matrix Flagged for recruiter pass
+
+037
+	7
+	Med
+	Referral had no candidate form
+	Fixed — referral form
+
+038
+	7
+	Low–Med
+	Interview interviewee actions?
+	Documented — view-only
+
+039
+	8
+	Med
+	Acknowledgement silent; no disagree
+	Fixed — real ack + send-back to manager
+
+040
+	8
+	Low
+	“View summary” stub
+	Resolved — stub removed; no route targets it
+
+041
+	9
+	Med
+	My-assets view-only
+	Fixed — acknowledge / report issue-lost / request return
+
+042
+	9
+	Med
+	Ticket subcategory static
+	Fixed — dependent on category
+
+043
+	9
+	Low
+	KB category browse stubbed
+	Fixed — opens articles
+
+044
+	10
+	—
+	AI chat reachability
+	Resolved — reachable via chat FAB (FR-P03); no gap
+
+045
+	10
+	Low
+	Dashboard Clock-In stub
+	Fixed — wired to punch-state (all dashboards)
+
+Independent judgement (opinion — separate from the cited findings)
+Profile information architecture — the 15 profile tabs were over-split and conflated; regrouped to five logical groups (addressed).
+Attendance capture — build clock-in and check-in as one configuration-driven component (clockin / check-in / geofence / selfie toggles), not two hardcoded paths.
+Attendance landing — separate self-service (punch, register, requests) from manager-style insight widgets.
+Candidate journey — a visible stage tracker (offer → form → docs → verification → ready-to-join) would orient new hires.
+Recovery days — employee-entered recovery days was inappropriate; removed (recovery days are set by manager / exit admin / HR Admin and HR-approved).
+Service catalog & KB — drive catalog items and KB categories from configuration so the employee surface stays in sync.
+Employee dashboard — light (three widgets); a pending-actions aggregator plus a leave/attendance glance would strengthen the landing.
+Manager (L1)
+Discrepancy log (16 findings)
+ID
+	Lens
+	Sev
+	Finding
+	Status
+
+DISC-MGR-001
+	Config-gating
+	Med
+	team-attendance showed stale OT MTD + Infraction columns (no OT feature; infraction off).
+	Fixed — columns removed; FS M05.
+
+DISC-MGR-002
+	Privacy/RBAC
+	Med-High
+	employee-detail exposed reportee prior Last CTC + BGV status to L1 manager.
+	Fixed — both removed; employment history retained; FS M01.
+
+DISC-MGR-003
+	Fidelity
+	Low
+	calendar prev/next/celebrate and team-assets export/raise are cosmetic stubs.
+	Flagged (leave-as-is).
+
+DISC-MGR-004
+	Consistency
+	Low
+	employee-detail Education table drifted (“Years”, no Specialisation) from the self-profile.
+	Fixed — aligned to Period + Specialisation.
+
+DISC-MGR-005
+	Config
+	Med
+	leave & attendance Reject did not capture the mandatory rejection reason.
+	Fixed — reason modal; FS M04/M05.
+
+DISC-MGR-006
+	Config-display
+	Low
+	checkin-approvals shows an out-of-geofence “Flag” column though geofencing is off.
+	Flagged → HR/Attendance-Admin batch (shared admin page).
+
+DISC-MGR-007
+	Capability
+	Med
+	manager Revoke of approved leave (config allows, incl. past-dated/system-deducted) was not surfaced.
+	Fixed — direct Revoke with mandatory reason on reportee leave history; FS M04.
+
+DISC-MGR-008
+	Capability
+	Med
+	approver could not add/edit/delete goals on review-goal-plan despite config (Goal Plan Approver = Manager; add/edit/delete = Yes).
+	Fixed — “+ Add / edit goal” affordance; FS M09.
+
+DISC-MGR-009
+	Config
+	Low-Med
+	“Return for redraft” present but GoalPlan “Enable Sendback” = No.
+	Resolved by decision — enable send-back; config action raised.
+
+DISC-MGR-010
+	Fidelity/config
+	Med
+	appraisal-review/start-review do not enforce mandatory ratings/comments (ReviewKra 26/28).
+	Documented — build note in FS M09 (leave-as-is).
+
+DISC-MGR-011
+	Fidelity
+	Low
+	add-goal-for-reportee / copy-previous-goal-mgr actions are stubs.
+	Documented (leave-as-is).
+
+DISC-MGR-012
+	Role-bleed/routing
+	Med
+	manager nav “Probation” pointed at the HR-Admin approval stage.
+	Fixed — repointed to manager probation-confirmation; HR stage removed from manager nav; FS M09.
+
+DISC-MGR-013
+	Label/flow
+	Med
+	probation decision used “Reject” vs the Confirmation Workflow outcome “Separate”.
+	Fixed — relabelled “Separate”.
+
+DISC-MGR-014
+	Fidelity
+	Low-Med
+	probation/separation/FnF decision actions (Object/Extend/Separate) do not capture a reason.
+	Documented (leave-as-is).
+
+DISC-MGR-015
+	Consistency
+	Med
+	dashboard inline Reject bypasses the mandatory-reason modal.
+	Flagged (leave-as-is).
+
+DISC-MGR-016
+	Fidelity
+	Low
+	dashboard “Open calendar” snacks instead of routing; my-org/org-chart minor stubs.
+	Flagged (leave-as-is).
+
+Independent judgements (opinion — not defects)
+JUDG-MGR-001 — Manager team views should inherit the same configuration gating as the employee self-views (no OT, infraction off, check-in/geofence config), so one config change moves both.
+JUDG-MGR-002 — Keep the self-profile and reportee-detail information architectures separate by design; align only the overlapping data (field labels, ordering, masking), not the layout.
+JUDG-MGR-003 — Approval-queue filter chips (leave types, attendance reasons) should derive from the configured leave policies and the Attendance-Reason master rather than being hardcoded.
+JUDG-MGR-004 — Review-form field visibility, rating scale and mandatory enforcement should be driven per-review by ReviewKra (send-back enablement alone varies 24/28).
+JUDG-MGR-005 — Probation outcomes and forms should be driven by the Confirmation Workflow config (enabled outcomes, forms, initiate roles).
+HOD
+Discrepancy log
+ID
+	Lens
+	Sev
+	Finding
+	Status
+
+DISC-HOD-001
+	Privacy / RBAC
+	High
+	hod-employees drilled into hr-employee-detail — the HR-Admin full profile (Current CTC + history, salary, bank, BGV, statutory IDs, audit), contradicting the roster’s own “Tier-1 masked, read-only” banner and exceeding HOD authority.
+	Fixed — new read-only, department-scoped hod-employee-detail; Tier-1/statutory/bank/BGV/audit excluded; compensation permission-gated; roster repointed. FS M01.
+
+DISC-HOD-002
+	Fidelity
+	Low
+	hod-employees filter chips (probation / notice / confirmed / whole-dept / reporting-chain) are snack stubs.
+	Flagged (leave-as-is).
+
+DISC-HOD-003
+	Fidelity / nav
+	Low-Med
+	HOD dashboard quick-links were dead stubs with no routing.
+	Fixed (nav) — Headcount plan → dept-headcount, Department org chart → org-chart, Calibration session → dept-performance. Escalation Approve/Open/View and Backfill requests remain stubs (need backend queues) — flagged.
+
+Independent judgement (opinion)
+JUDG-HOD-001 — HOD is an oversight role: every department drill-down should resolve to a read-only, department-scoped detail with the same field gating as the manager reportee view (no compensation/BGV/statutory/bank/audit), with compensation shown only under an explicit permission — never the HR-Admin full profile.
+HRBP
+Discrepancy log
+ID
+	Lens
+	Sev
+	Finding
+	Status
+
+DISC-HRBP-001
+	Privacy / RBAC
+	Med-High
+	hrbp-my-employees drilled into the full hr-employee-detail (compensation + audit).
+	Fixed — new scoped hrbp-employee-detail: full HR profile, Tier-1 masked, §3.9 categories, BGV; compensation hidden, audit excluded. Roster repointed. FS M01.
+
+DISC-HRBP-002
+	Fidelity
+	Low
+	escalations Review and pip-cases View are stubs.
+	Flagged (leave-as-is).
+
+DISC-HRBP-003
+	Role-bleed / RBAC
+	Med
+	“BGV status” opens the editable onboarding-admin BGV console (View · Modify / Save / Sync).
+	Recorded — CFG-006 (HRBP BGV read-only).
+
+DISC-HRBP-004
+	Role-bleed / RBAC
+	Med
+	“Probation (view)” opens the Manager’s probation-decision with Confirm / Extend / Separate actions.
+	Recorded — CFG-007 (HRBP probation read-only).
+
+DISC-HRBP-005
+	Role-bleed / RBAC
+	Med
+	“Performance reviews” reuses the Manager review surface (editable appraisal form; drills to the manager reportee detail).
+	Recorded — CFG-008 (HRBP reviews read-only; drill to scoped detail).
+
+DISC-HRBP-006
+	Fidelity
+	Low
+	Transactional stubs across sensitive-changes (Approve/Reject), joining-forms-approval, exit-interview, separation-stage2 (Open), recruitment (View/Comment). Reject-reason recommended on sensitive-changes and joining-forms.
+	Flagged (leave-as-is).
+
+Independent judgements (opinion)
+JUDG-HRBP-001 — HRBP assigned-employee access is legitimately broader than HOD/manager (BGV, statutory, §3.9 categories, documents), but compensation should be hidden and the audit log admin-only; the drill-down resolves to an HRBP-scoped detail.
+JUDG-HRBP-002 — HRBP is an oversight/casework role. Where the prototype reuses manager / HR-admin / onboarding screens, RBAC must gate them to read-only for HRBP and resolve people drill-downs to the HRBP-scoped detail. Screen reuse is acceptable only if action-gating is enforced.
+HR Admin (+ functional admins)
+Batches and outcomes
+Batch
+	Domain (admin folded)
+	Outcome
+
+1
+	Employee master & data ops
+	GO — national-id drill repointed to hr-employee-detail
+
+2
+	Leave (Leave Admin)
+	GO — PL encashment = HR Admin decision only (CFG-001 revised)
+
+3
+	Attendance (Attendance Admin)
+	GO — geofence “Flag” column removed (closes DISC-MGR-006)
+
+4
+	Performance (Performance Admin)
+	GO — config-aligned, no change
+
+5
+	Documents (Document Admin)
+	GO — config-aligned, no change
+
+6
+	Onboarding (Onboarding Admin)
+	GO — validates CFG-006 (BGV edit correct for owner)
+
+7
+	Recruitment (Recruiter + Recruitment Admin)
+	GO — IJP posting matrix removed from create-job (closes deferred IJP)
+
+8
+	Separation (Separation Admin)
+	GO — config-aligned; validates manager-confirms/HR-approves
+
+Independent judgements (opinion)
+JUDG-HRA-001 — hr-employee-detail is the canonical full profile, correctly hidden from HOD/HRBP; this review validates the earlier scoping.
+JUDG-HRA-002 — Sensitive Tier-1 field changes should enforce maker-checker segregation (initiator ≠ approver in sensitive-changes).
+JUDG-HRA-003 — Leave/attendance/performance/document/onboarding/recruitment/separation config screens should be fully config-driven (round-trip the tenant’s actual configuration), not representative subsets.
+JUDG-HRA-004 — Performance Admin opening the editable review form should be gated/audited so admins oversee but do not silently alter evaluator ratings.
+IT · Asset · Service Desk · Office · CEO
+Discrepancy log
+ID
+	Lens
+	Sev
+	Finding
+	Status
+
+DISC-ITSD-001
+	Config-completeness
+	Low
+	Asset/SD screens are representative but aligned to M17 (asset classes, SLAs, catalog, KB categories).
+	Build note.
+
+DISC-ITSD-002
+	Fidelity
+	Low
+	Asset/ticket/config actions are stubs; reject-reason recommended on it-asset-requests and sd-queue rejects.
+	Leave-as-is.
+
+DISC-OFC-001
+	Config-completeness
+	Low
+	Office screens (access/visitor/biometric/assets) representative but aligned.
+	Build note.
+
+DISC-CEO-001
+	Role-bleed / RBAC
+	Low
+	CEO “Requisition sign-off” reuses the HR requisition-approval page, which includes the HR-side “Send to CEO” escalation action.
+	Recorded — CFG-009 (CEO Approve/Reject only).
+
+Org Admin · Platform Super Admin · Finance · Candidate
+1. Org Admin — the tenant configuration hub · GO
+Org Admin owns the per-tenant cfg-* configuration console — a dedicated managing screen for nearly every domain (legal entities, business units, departments, designations/grades/bands, workforce classification, regions/locations, custom fields, assignment rules, RBAC roles & permissions, national ID, leave/attendance/performance platform settings, shifts, weekly-off, infraction, goal/review templates, calibration, rating, PIP, hiring leads, external recruiters, sources, duplicity, BGV checklist, document settings, templates, letterheads, signers, workflows, approval flows, forms, skip, SLA, notifications), plus cross-entity reports and the audit log.
+Config surface fully audited in the Configuration Ownership & Coverage Map (115 files → 79 Present · 35 Partial · 1 Missing). Org Admin is the home of the overwhelming majority of these screens; functional admins provide the operational, in-context view of the same configuration.
+DISC-ORG-001 (cross-ref CFG-MAP-100): the single Missing config — Assign_Assessments_Export.csv (assessment assignment) — has no managing screen. It belongs to Recruitment Admin, not Org Admin; recorded in the handoff index as the one screen to add.
+No prototype changes. Org Admin is GO; its coverage is established by the Coverage Map.
+2. Platform Super Admin — SaaS-operations keystone · GO
+Platform Super Admin is cross-tenant SaaS operations and platform enforcement — distinct from per-tenant Org Admin config. The psa-* surface aligns to the Platform Specification (P01–P06):
+Platform area
+	Screen(s)
+
+Tenant management & provisioning
+	psa-tenants, psa-provisioning, psa-tenant-detail
+
+Licensing & feature control
+	psa-licenses, psa-feature-flags
+
+Migration toolkit (P06)
+	psa-migration, psa-migration-detail
+
+Platform master data
+	psa-master-data
+
+Monitoring & security (incl. RBAC enforcement)
+	psa-monitoring, psa-security
+
+Environments & releases
+	psa-environments, psa-releases
+
+Cross-tenant analytics & audit
+	psa-analytics, cross-tenant audit-log
+
+RBAC enforcement boundary: the role/permission gates recorded across this engagement (CFG-005–009 — HRBP compensation/audit/BGV/probation/reviews scoping, CEO requisition sign-off) are enforced here and in cfg-rbac. The per-tenant role model lives in Org Admin’s cfg-rbac; cross-tenant enforcement lives in psa-security. Boundary is clean.
+No prototype changes. Platform Super Admin is GO.
+3. Finance Admin · GO
+Compact finance role: FnF clearance, PF / UAN, TDS / Tax, Payroll export, Reimbursements, plus standard self-service.
+DISC-FIN-001 (resolution: shared-page reuse, not a defect): the FnF clearance item resolves through the shared-page fallback (ADMIN_SHARED_PAGES → fnf-clearance) rather than a finance-local copy. The route resolves correctly; Finance Admin lands on the clearance screen and acts on the finance clearance line. Recorded as an RBAC scope note (Finance sees/acts on the finance clearance task only) — no broken route, no change required.
+Integration boundary (note): the Finance Admin screens are the HRMS-side configuration, clearance and export surfaces; the payroll engine itself is downstream/external. The handoff stops at the export and clearance hand-off point — consistent with the BRD’s payroll-integration boundary.
+No prototype changes. Finance Admin is GO.
+4. Candidate (external) · GO
+External pre-hire / pre-join experience: Welcome, My onboarding form, Document upload, My offer letter, Pre-joining info, with candidate profile and stakeholder workflow forms reachable in-flow.
+All surfaces are real and FR-tagged: offer-letter (FR-M08-004), pre-joining (FR-M02-001), onboarding-form / document-upload, onboarding-workflow-forms (Appendix J), candidate-profile.
+Correctly external in scope — no internal/admin pages bleed into the candidate panel; the experience is confined to the candidate’s own onboarding and offer artifacts.
+No prototype changes. Candidate is GO.
+Outcome
+All four roles GO for handoff with zero prototype edits. The only build item arising is the one Missing screen (assessment assignment, CFG-MAP-100), carried to the handoff index for Recruitment Admin. One independent-judgement item from the prior CEO review is resolved in the handoff index (CEO analytics scope).
+Config Console · RBAC · Platform (focused)
+1. Coverage matrix
+Screen (page id)
+	Built
+	Connectivity
+	Result
+
+RBAC roles & permissions (cfg-rbac)
+	roles list + all-module × key-action matrix
+	+ New role → editor; Edit permissions → editor (per role)
+	VERIFIED
+
+Role permission editor (cfg-rbac-role)
+	role definition + 11 module sections, toggles + scope
+	Cancel/Save; reachable from cfg-rbac and cfg-hub fallback
+	VERIFIED
+
+Workflow builder (cfg-workflow-builder)
+	flow def + stage list + all 8 component groups
+	Cancel→list; form component → form builder
+	VERIFIED
+
+Approval flow builder (cfg-approval-builder)
+	flow def + levels + exception levels + controls + notifications + aliases
+	Add/Edit from list → builder
+	VERIFIED
+
+Form builder (cfg-form-builder)
+	form def + field builder + per-field logic
+	standalone + from workflow stage
+	VERIFIED
+
+Workflows list (cfg-workflows)
+	capability overview + Configured-workflows list
+	+ New workflow → builder; row Edit → builder (fixed)
+	VERIFIED
+
+Approval flows list (cfg-approval-flows)
+	list + Add/Edit/Delete
+	Add & Edit → builder
+	VERIFIED
+
+Forms list (cfg-forms)
+	list + Add/Edit/Delete
+	Add & Edit → builder
+	VERIFIED
+
+Skip settings (cfg-skip)
+	list + editor (cfg-skip-edit)
+	Add/Edit → editor
+	VERIFIED (fixed)
+
+SLA timers (cfg-sla)
+	defaults + editor (cfg-sla-edit)
+	+ Add / row Edit → editor
+	VERIFIED (fixed)
+
+Platform: tenants / provisioning / tenant-detail / licenses / feature-flags
+	list + forms + detail
+	inter-linked
+	VERIFIED
+
+Platform: security (psa-security)
+	posture + findings + RBAC-enforcement note
+	display dashboard
+	VERIFIED (display)
+
+Platform: migration · master-data · monitoring · environments · releases · analytics
+	representative ops surfaces
+	nav-reachable
+	Representative — scoped (DISC-PLAT-001)
+
+Org Admin cfg-* console (≈50 masters/settings)
+	—
+	—
+	VERIFIED via Coverage Map (79 Present · 35 Partial · 1 Missing)
+
+2. Flow coverage matrix
+Flow
+	Status
+
+Modify an RBAC role (cfg-rbac → Edit permissions → cfg-rbac-role → save)
+	Complete
+
+Read “who has access to what” (role × permission matrix)
+	Complete
+
+Create a custom form (list → Add → builder; and from a workflow stage’s form component)
+	Complete
+
+Create an approval flow (list → Add/Edit → builder)
+	Complete
+
+Create a workflow (cfg-workflows → + New → builder)
+	Complete
+
+Edit an existing workflow from the list
+	Complete — row Edit → builder (DISC-CFG-001 fixed)
+
+Platform tenant provisioning (psa-tenants → provisioning → tenant-detail)
+	Complete
+
+Platform migration / ops (P06 / X)
+	Partial — representative (DISC-PLAT-001)
+
+Note: builder Save/Preview/Add-field/Add-stage/Add-level/Enable-all/⚙/✕ resolve to representative confirmations rather than persisting — expected under the source-of-truth convention (prototype = shape & behaviour; values & persistence are the engineering build). Logged once as DISC-CFG-003, not per control.
+3. Discrepancy log
+ID
+	Screen/Flow
+	Lens
+	Severity
+	Description
+	Expected (source)
+	Current
+	Recommendation
+	Proto change
+	Impacted docs
+
+DISC-CFG-001
+	cfg-workflows list
+	Engineering/UX
+	Medium → Fixed
+	List was a capability overview with no per-row Edit, so existing workflows could not be opened in the builder
+	A list of configured items must allow opening each for edit (consistent with cfg-approval-flows/cfg-forms)
+	Resolved — added a Configured-workflows list with row Edit → cfg-workflow-builder
+	Applied
+	Prototype
+
+DISC-CFG-002
+	cfg-skip, cfg-sla
+	Engineering
+	Low → Fixed
+	Add/Edit were toast stubs; no editor screens
+	An add/edit surface per the skip/SLA models
+	Resolved — built cfg-skip-edit (conditions) and cfg-sla-edit (levels + calculation basis); list Add/Edit wired
+	Applied
+	Prototype
+
+DISC-CFG-003
+	All builders
+	Implementation
+	Low
+	Save/Preview/Add-row/Enable-all/⚙/✕ are representative confirmations, not persistence
+	Prototype conveys shape & behaviour; persistence is engineering
+	toasts
+	Accept by convention; engineering builds persistence + full field set from the named config files (Partial rows)
+	No
+	—
+
+DISC-PLAT-001
+	psa-migration, psa-master-data, psa-monitoring, psa-environments, psa-releases, psa-analytics
+	Engineering/Scope
+	Medium
+	SaaS-ops screens are representative/placeholder, not deeply built
+	Platform Spec P06 (migration toolkit) & X (cross-cutting ops) own the depth
+	representative surfaces
+	Keep representative; ensure Platform Spec P06/X carries the build depth; not an HR-handoff blocker
+	No
+	Platform Spec P06/X
+
+No Critical or High findings.
+5. Independent judgement (opinion — not requirements)
+ID
+	Topic
+	Observation
+	Why it matters
+	Confidence
+	Suggested action
+
+JUDG-CFG-001
+	Builder depth
+	Builders are representative-deep by design (enough to settle UX; exhaustive field sets deferred to the config files/FS)
+	Right call — keeps prototype legible without becoming a second source of truth; but the 35 Partial rows are the real field-completeness worklist
+	High
+	Treat the Coverage Map Partial rows as the build backlog
+
+JUDG-CFG-002
+	Form ⊂ Workflow
+	The form builder is reachable both standalone and from a workflow stage’s form component
+	Models the real relationship (a form is a stage artifact); reduces the chance engineers build forms as a disconnected module
+	High
+	Keep the linkage explicit in the M-series FS that consume forms
+
+JUDG-PLAT-001
+	Platform ops fidelity
+	Several psa-* screens are representative
+	Appropriate — deep SaaS-ops UI is engineering-owned and not an HR-comprehension goal; only flag so it isn’t mistaken for “complete”
+	Medium
+	Ensure Platform Spec P06/X is the depth reference; no proto build needed
+
+Manager › Manager review — Round 3
+#
+	Item
+	Resolution (applied to Prototype v2.2)
+
+1
+	Approvals multi-select
+	Bulk approve/reject/delegate added to volume queues (Leave, Regularisation, Check-in, Comp-off); decision queues excluded pending confirmation
+
+2
+	Rename Manager appraisal
+	→ Team appraisals (menu + heading; route id stable)
+
+3
+	Goal pending tasks in Tasks
+	Goal-plan / check-in / review-stage actions added as task types (Employee + Manager)
+
+4
+	Probation Extend UX
+	Extend by (1/2/3 mo) with live new-end-date preview; Extend disabled until chosen
+
+5
+	Manager separation notice period
+	Manager-editable (config-gated) with live LWD recompute, mandatory reason, audit
+
+6
+	Reportee profile tabs
+	Attendance / Leave / Performance relocated to Team screens (not removed)
+
+7
+	Team menu vs Self; Performance heading
+	Heading removed; items folded (reviews→Tasks; probation-confirmation & FnF→Team); Team mirrors Self
+
+8
+	Workspace model
+	Me / My Team / Admin switcher; Employee+Manager co-exist; Admin exclusive; RBAC-driven; single task routing; reportee → Team default
+
+GO — applied to Prototype v2.2 and the impacted FS / Platform / RBAC / Org-Admin-Config set. Open: OPEN-FS-FND-05 (BRD §3.4 vs Admin exclusivity); decision-queue bulk scope.
+Manager › Manager review — Round 3 follow-up
+Resolved open items and refined the reportee view:
+OPEN-FS-FND-05 → Admin exclusive. Select an entitled admin role → only admin functions; Self self-service suppressed in admin workspaces (retained for Me / My Team / CEO).
+OPEN-FS-CFG-08 → has-reportees derived.
+Decision-queue bulk → high-volume only (confirmed).
+Reportee view rebuilt to mirror the employee's own profile (Personal, Employment + Project history, Statutory & benefits, Qualifications & experience, Documents, Attendance, Leave, Performance) under an employee-context banner; full information parity except intentional Tier-1/bank/statutory masks. Supersedes Round-3 item-6. Applied to Prototype v2.3.
+Manager › Manager review — Round 3 follow-up B (action completeness)
+Manager action-completeness review of the Team surface. Outcome:
+G1 send-back on leave/attendance queues — out of scope (not added).
+G2 manager Overtime approval queue — out of scope (OT stays comp-off-only on the manager surface).
+G3 Team attendance — enriched. Added per-member attendance history + manager actions, mirroring Team leave.
+G4 delegate — out of scope. Removed the stray bulk-Delegate buttons so all queues are consistent (Clear / Approve all / Reject all).
+G5 regularise on behalf — included (reportee Attendance tab + per-member attendance history).
+G6 reportee leave actions — made consistent across the reportee Leave tab and per-member leave history (apply-on-behalf, revoke, balance adjustment).
+Education placement — corrected to Qualifications & experience (not Employment) in manager and HR-Admin views; consistent with self and HOD. Applied to Prototype v2.4.
+Cross-role › Employee-profile-view consistency (applied to Prototype v2.5)
+Objective: make the HOD, HRBP and HR-Admin employee-detail views structurally consistent with the Manager (L1) canonical view, tab by tab and field by field, without violating any role's entitlement. Grounded in RBAC §3.9 / §6.1 field projection and §6 PII ceiling; the prototype was treated as illustrative, not authoritative.
+Canonical structure now shared by all four views. Personal · Employment · Statutory & benefits · Qualifications & experience · Documents · Attendance · Leave · Performance · Org chart · Feedback & notes, plus two entitlement-driven tabs — Compensation (HR full; HOD/HRBP permission-gated; absent for Manager) and Audit (HR only). HOD was converted from a card layout to the tabbed structure; HRBP likewise; HR-Admin's merged tabs were split (Personal | Statutory, and Attendance | Leave) and Feedback added.
+Entitlements enforced (no structure change carries extra access):
+Manager L1 — unchanged. Aadhaar/PAN masked, bank last-4, statutory as applicability flags, no Compensation tab (compensation stays hidden — confirmed), on-behalf actions retained.
+HOD — read-only (all on-behalf/approve/rate controls stripped); Aadhaar/PAN masked; bank and statutory IDs suppressed (conservative, per the established HOD product rule); Compensation permission-gated (off by default, RBAC §6); competency/skills profile retained (management chain, §3.9); no Audit tab.
+HRBP — scoped to assigned employees; Aadhaar/PAN masked, bank last-4; statutory IDs (PF/ESIC/UAN) not shown — restricted to the employee and authorised HR/Finance roles (BRD §3.10 · RBAC); BGV status visible; competency/skills profile suppressed (§3.9); Compensation permission-gated (senior-HRBP grant); performance read-only (HRBP is not the reviewer — the stray "Add goal" control was removed); on-behalf leave/attendance actions retained.
+HR-Admin — full master record: Aadhaar/PAN/bank/statutory unmasked (Tier-1 edits route AR), Compensation (full) and Audit tabs present; competency/skills profile suppressed (§3.9 — HR sees education and certifications, not the competency profile); edit/manage actions.
+Key nuance recorded. §3.9 makes the competency/skills profile management-chain-only — visible to Manager/skip/HOD, suppressed for HRBP and HR-Admin; education and certifications remain visible to all. This is the one place where HR-Admin sees less than the management chain.
+Open item raised. OPEN-FS-M01-09 — §2.13 ("Tier-1 masked" for the read-only tier) vs §6.1 (HOD/HRBP national IDs projected H / hidden): engineering to confirm masked-vs-hidden and align the wording. RBAC required no change — it was the grounding source and the build was reconciled to it.
+Follow-up decision (HRBP statutory). A later check against BRD §3.10 and the RBAC PII restriction found that statutory IDs (PF/EPS/ESIC, UAN, PT, TDS) are restricted to the employee and authorised HR/Finance roles — HRBP is not in that set, and statutory visibility is a fixed restriction, not a configurable default. The interim HRBP statutory visibility was therefore removed (Prototype v2.6, M01 v1.7): HRBP now sees bank to last-4 (per FR-M01-020) but no statutory identifiers. Bank masking and Aadhaar/PAN masking are unchanged.
+Outcome — GO. All four views verified: 321 pages, structure balanced; per-role masking, actions and role-only tabs checked against §6.1. No entitlement violation found.

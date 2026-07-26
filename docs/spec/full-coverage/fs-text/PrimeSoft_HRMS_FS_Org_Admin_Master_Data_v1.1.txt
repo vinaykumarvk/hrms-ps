@@ -1,0 +1,255 @@
+PrimeSoft HRMS - FS Org Admin Master Data (v1.1)
+Table of Contents
+ TOC \z \o "1-2" \u \h
+PrimeSoft HRMS · Functional Specification — Org Admin: Master Data · v1.0 · Confidential
+Functional Specification — Org Admin: Master Data
+Version
+	v1.1
+
+Reconciliation
+	Adds the cfg-classification screen (Contribution Level, Employee Group, Notice Period, Appraisal Period). Closes OPEN-FS-ORG-01.
+
+Status
+	Draft for review
+
+Owner
+	Organisation Admin (org structure — RBAC §2.1). UAG creation is shared with HR Admin; custom-field and national-ID definitions are Org-Admin build (RBAC §2.1.1).
+
+References
+	BRD v7.5/v2 §4.2 (org & tenancy entities), §4.3–§4.5 (department/location/designation/statutory masters), §3.6 (data scoping), §4.13 (assignment/UAG); RBAC Design Document v1.2 (§2.1 Platform Roles, §3.5 UAGs, §2.1.1 build-vs-bind); Foundation FS v1.1 (§1 API, §2 VAL-*, §6 menu, §4 jobs); Platform Spec v1.1 (W.2 form/custom-field model, P05 audit); Prototype v2 (cfg-* org-structure pages); master exports (Department, Location, Grade/Band, Designation, Region, Contribution Level, Weekly-Off, Holiday, Assignment, Custom Fields, National ID).
+
+Single source
+	The BRD owns the entity field tables and scoping rules; this FS references them and authors the master-maintenance screens, contracts, validation, per-screen RBAC projection, and the operational layer.
+
+1. Scope & Reference Map
+1.1 Coverage
+Master-data maintenance owned by Org Admin: legal entities / group company, business units, departments, the job-architecture set (designations, grades, bands, contribution levels), geography (regions, locations), workforce-classification masters (employee group, notice-period, appraisal-period), custom fields, national-ID configuration, holidays + holiday groups, weekly-off patterns, projects, and User Assignment Groups (UAGs / assignment rules). Operational binding of these masters to employees/policies is owned by HR Admin / module admins (RBAC §2.1.1) and lives in the operational module FS.
+1.2 Screen → master → reference register
+FS screen
+	Prototype page (data-page)
+	Master export (evidence)
+	BRD ref
+	Key entities
+
+Entities / Group Company
+	cfg-tenant
+	(tenant config)
+	§4.2
+	tenants, legal entities
+
+Business Units
+	cfg-bu
+	—
+	§4.2
+	business_units
+
+Departments
+	cfg-depts
+	Department (148)
+	§4.3
+	departments
+
+Designations · Grades · Bands
+	cfg-grades
+	Designation (527), Grade (14), Band
+	§4.4
+	designations, grades, bands
+
+Contribution Levels
+	cfg-classification
+	Contribution Level / Neev (8)
+	§4.4
+	contribution_levels
+
+Regions & Locations
+	cfg-geo
+	Location (12), Region (5)
+	§4.3
+	locations, location_regions
+
+Workforce classification
+	cfg-classification
+	Employee Group (9), Notice-Period (5), Appraisal-Period (13)
+	§4.13
+	classification masters
+
+Custom Fields
+	cfg-custom
+	Custom Fields (40)
+	§4 / W.2
+	custom_field_defs
+
+National ID Configuration
+	cfg-nid
+	National ID (8)
+	§4.5
+	national_id_configurations
+
+Holidays & Holiday Groups
+	cfg-holiday / cfg-holiday-calendars
+	Holiday (156)
+	§4 (calendar)
+	holidays, holiday_groups
+
+Weekly-Off Patterns
+	cfg-weeklyoff
+	Weekly-Off (19)
+	§4
+	weekly_off_patterns
+
+Projects & UAGs
+	hr-project-master / cfg-assign
+	Assignment (97×162)
+	§4.13, §3.5
+	projects, user_assignment_groups
+
+2. Screen Specifications
+Common pattern (authored once, applies to every master screen below): list view with filter + Import (CSV/XLSX with preview + row-level validation) + Export + Add; an add/edit form; row actions Edit / Activate-Deactivate (soft, never hard delete — status flag); every create/edit/import writes audit (P05). The five UI states per Foundation §3. Only the master-specific fields, keys, and validations are noted per screen.
+2.1 Entities / Group Company — cfg-tenant
+Purpose: define the tenant’s legal entities / group companies and the tenant model (Standalone / Multi-Tenant / Group-Company). Key fields: entity name, code, registered office, country, tenant-model toggle. Standalone→Multi/Group is a config change (no migration) per Platform P04. Actions: master CRUD.
+2.2 Business Units — cfg-bu
+Purpose: business-unit master under the entity. Fields: BU name, code, parent entity, head, status.
+2.3 Departments — cfg-depts
+Purpose: department hierarchy (Department export, 148 rows). Key fields: company, business unit, department name + code, parent department code, HOD, Head HR / Group HR Head, hierarchy Level 1–9, top-department flag, status. Validations: code unique (VAL-ENUM/REQUIRED), parent reference must not create a cycle (master-unique: VAL-ORG-NOCYCLE), HOD/Head-HR resolve to active employees. The HOD set here feeds RBAC §3.4 manager-hierarchy and the capability grants (RBAC §4.3).
+2.4 Designations · Grades · Bands (+ Contribution Levels) — cfg-grades
+Purpose: job-architecture masters on one screen with tabs. Designations (527; name, code, status, effective-from — effective-dated per VAL-EFFECTIVE), Grades (14; grade, code, mapped band), Bands (band, code), Contribution Levels are maintained on the dedicated cfg-classification screen (§2.6). Validations: code unique per type; grade→band mapping references an active band (VAL-ENUM); designation effective-dating staged via JOB-M01-EFFDATE.
+2.5 Regions & Locations — cfg-geo
+Purpose: geography masters. Regions (5; region name, code, member states). Locations (12; company, office area, address, city/state/country + codes, pincode, work-area code, location head, registered-office flag, status; plus statutory SSO fields where the geography requires them, e.g. Thailand SSO branch). Validations: VAL-PINCODE, city/state/country consistency against the geo master (VAL-ENUM), work-area code unique. Region↔state mapping drives location-region scoping (RBAC §3.6).
+2.6 Workforce Classification masters — cfg-classification
+Purpose: classification masters used as assignment dimensions: Employee Group (9), Notice-Period-from-Employee (5), Appraisal-Period (13). Each: name, code, status. Referenced by UAG criteria (§2.10) and operational policies.
+2.7 Custom Fields — cfg-custom
+Purpose: define custom fields (40 configured). Fields: field name, field id, type, display-in (target screen/section), FOR (entity — Employee/HR Documents/Recruitment Requisition/Performance/Separation), is-required, is-editable, allow-decimals, number-separator. This screen is the Org-Admin build surface for the Platform W.2 form/custom-field model — it defines fields; modules consume them. Validation rules attach via Foundation VAL-* ids. Per RBAC §2.1.1, Org Admin builds; modules bind.
+2.8 National ID Configuration — cfg-nid
+Purpose: configure national/statutory identity fields (8). Per ID: code, option, applicable-for, enable/disable, alias, temporary-ID enable+alias, issued-from/till enable+alias+mandatory, ID-document enable+mandatory, mandatory-for-activation, mandatory-for-addition, is-unique, masking. Validations: statutory formats reference Foundation VAL-PAN/VAL-AADHAAR/etc.; masking + PII tier per RBAC §3.9 / Appendix B (enforced at serialization, Platform P02).
+2.9 Holidays & Holiday Groups — cfg-holiday / cfg-holiday-calendars
+Purpose: holiday master (156) + holiday groups/calendars. Holiday fields: name, code, date, day, repeat-next-year, type (Mandatory/Optional/National), assigned location + work-area code, assignments, recurrence (static date / day-of-month, occurrence/month/day). Holiday groups bundle holidays for assignment. Validations: VAL-DATE, recurrence consistency (VAL-HOL-RECUR), national-holiday flag drives OT/leave rules downstream (M04/M05 bind). Definition is Org-Admin; assignment to employees is operational (Leave/Attendance Admin).
+2.10 Weekly-Off Patterns — cfg-weeklyoff
+Purpose: weekly-off master (19). Fields: name, description, non-working days, status. Consumed by attendance/shift binding (M05).
+2.11 Projects & User Assignment Groups (UAGs) — hr-project-master / cfg-assign
+Purpose: project master + UAG / assignment rules (Assignment export, 97 groups × 162 columns). A UAG is a saved population defined by include criteria across many dimensions (business unit, employee type/subtype, company, department, designation, grade, band, location, region, contribution level, employee group, notice/appraisal period, gender, on-probation/notice, manager-level, is-HOD/HRBP, experience/age/tenure ranges, included employees) and exclude criteria + excluded employees. UAGs are the reusable scoping primitive consumed by policies, workflows, reviews, and RBAC scoping (RBAC §3.5, §3.6). Validations: criteria reference active masters (VAL-ENUM); range criteria validated (VAL-NO/VAL-DATE); a UAG must resolve to ≥0 members without error. UAG creation is shared Org Admin + HR Admin (RBAC §2.1).
+3. Interaction & Navigation Flows
+Masters are mostly CRUD, but three cross-master dependencies matter: (1) Department hierarchy edits (HOD/Head-HR/levels) propagate to RBAC manager-hierarchy resolution and the org-chart refresh (JOB-M01-ORGVIEW). (2) Designation effective-dating stages via JOB-M01-EFFDATE rather than writing live. (3) UAG definition → consumption: a saved UAG is referenced by leave/attendance/performance policies and workflows; deactivating a master value used by an active UAG is blocked or warns (VAL-ENUM + dependency check). The cascade platform→tenant→entity (Platform §0.3) governs which masters inherit vs override.
+4. API Contracts
+Generic master pattern + import/export; auth/idempotency/pagination/error-envelope per Foundation §1.
+GET    /api/v1/masters/{type}            — list (cursor paging, filter, sort)
+POST   /api/v1/masters/{type}            — create        (409 duplicate code; 422 VAL)
+PUT    /api/v1/masters/{type}/{id}       — update        (412 if referenced & change disallowed)
+POST   /api/v1/masters/{type}/{id}/status— activate/deactivate (soft; never hard delete)
+POST   /api/v1/masters/{type}/import     — CSV/XLSX import (preview → validate rows → commit)  [job for large files]
+GET    /api/v1/masters/{type}/export     — export
+where {type} ∈ entities | business-units | departments | designations | grades | bands |
+  contribution-levels | regions | locations | employee-groups | notice-periods |
+  appraisal-periods | custom-fields | national-ids | holidays | holiday-groups |
+  weekly-offs | projects
+POST   /api/v1/uags  + PUT /{id} + POST /{id}/resolve   — UAG define / preview membership (§2.11)
+Errors reference Foundation ERR-* + master-unique (ERR-ORG-CYCLE, ERR-MASTER-INUSE).
+5. Validation
+Reference Foundation §2 ids; author only master-unique rules. Referenced: VAL-REQUIRED, VAL-LEN, VAL-ENUM, VAL-DATE, VAL-EFFECTIVE, VAL-PINCODE, VAL-PAN/AADHAAR/IFSC (national-ID), VAL-NO, VAL-FILE (import). Master-unique (authored): VAL-ORG-NOCYCLE (department/BU parent must not cycle), VAL-MASTER-UNIQUE (code unique within type+tenant), VAL-GRADE-BAND (grade maps to an active band), VAL-REGION-STATE (region states valid & non-overlapping), VAL-HOL-RECUR (holiday recurrence fields consistent), VAL-UAG-CRITERIA (UAG criteria reference active masters; ranges valid), VAL-MASTER-INUSE (deactivation blocked/ warned when referenced by an active UAG/policy/employee).
+6. Per-Screen RBAC Projection & Menu Entitlement
+References: RBAC v1.2 §2.1 (Org Admin = org structure, cross-entity), §3.5 (UAGs shared with HR Admin), §2.1.1 (build vs bind), §3.6 (scoping); Foundation §6 menu. All master screens are Org Admin (create/edit/import/deactivate). UAGs: Org Admin + HR Admin (shared). Custom fields / National-ID config: Org Admin build only. Org Admin has the only cross-entity visibility (RBAC §2.1); HR Admin/module admins see/bind masters within their entity but do not edit definitions. Platform Super Admin is not involved (tenant-level config). Menu: all under Foundation §6 “Settings / Configuration → Org structure” group (Tenant settings, Business units, Departments, Designations·Grades·Bands, Regions & locations, Custom fields, Assignment rules) + National ID, Holiday groups, Weekly-off patterns. Every action audited to P05; imports audited with row counts.
+7. Operational Layer (Org Admin Masters slice)
+7.1 Jobs (index + standard in Foundation §4)
+Job
+	Trigger
+	Purpose
+	Notes
+
+JOB-M01-EFFDATE
+	daily
+	Apply effective-dated designation/master changes due today
+	shared with M01; idempotent
+
+JOB-M01-ORGVIEW
+	on dept/HOD change + daily
+	Rebuild org chart / consolidated org view
+	shared with M01
+
+JOB-MASTER-IMPORT
+	on large import
+	Process bulk master import with per-row validation + result report
+	per-row idempotency; partial-failure report
+
+7.2 Messages
+Master changes are primarily audit events (P05), not notifications. The few notifications (HOD reassignment, UAG affecting a population) reuse shared families; no master-unique notification copy beyond MSG-SYS and audit. Errors: ERR-ORG-CYCLE, ERR-MASTER-INUSE, ERR-MASTER-DUP (+ Foundation shared ERR-*).
+8. Reference Register
+FS screen
+	Prototype page
+	Master export
+	Shared ids
+
+Departments
+	cfg-depts
+	Department (148)
+	VAL-ORG-NOCYCLE, JOB-M01-ORGVIEW
+
+Designations·Grades·Bands
+	cfg-grades
+	Designation (527)/Grade (14)/Band
+	VAL-GRADE-BAND, VAL-EFFECTIVE, JOB-M01-EFFDATE
+
+Regions & Locations
+	cfg-geo
+	Location (12)/Region (5)
+	VAL-PINCODE, VAL-REGION-STATE
+
+Custom Fields
+	cfg-custom
+	Custom Fields (40)
+	Platform W.2
+
+National ID
+	cfg-nid
+	National ID (8)
+	VAL-PAN/AADHAAR, RBAC §3.9
+
+Holidays
+	cfg-holiday(-calendars)
+	Holiday (156)
+	VAL-HOL-RECUR
+
+Weekly-off
+	cfg-weeklyoff
+	Weekly-Off (19)
+	M05 bind
+
+Projects & UAGs
+	hr-project-master/cfg-assign
+	Assignment (97×162)
+	VAL-UAG-CRITERIA, RBAC §3.5
+
+9. Open Items, Conflicts & Recommendations
+Id
+	Type
+	Item
+	Owner
+	PROPOSED resolution (confirm before build)
+
+OPEN-FS-ORG-01
+	RESOLVED
+	Contribution Level, Employee Group, Notice-Period and Appraisal-Period masters now have a dedicated maintenance screen cfg-classification (prototype v2).
+	—
+	Closed in v1.1.
+
+OPEN-FS-ORG-02
+	Ownership boundary
+	Holidays and weekly-off are authored here as Org-Admin masters, but their assignment to employees is operational (Leave/Attendance Admin).
+	Product
+	Confirm: definition = Org Admin (this FS); binding = operational module FS (M04/M05).
+
+OPEN-FS-ORG-03
+	Reconcile
+	Master-unique VAL ids (VAL-ORG-NOCYCLE, VAL-MASTER-UNIQUE, VAL-GRADE-BAND, VAL-REGION-STATE, VAL-HOL-RECUR, VAL-UAG-CRITERIA, VAL-MASTER-INUSE) to fold into Foundation §2 at Step-6 reconciliation.
+	Architecture
+	Register in Foundation §2.
+
+OPEN-FS-ORG-04
+	Boundary
+	This FS authons master definition screens; the Platform W.2 model owns the custom-field/form engine.
+	Architecture
+	Confirm cfg-custom references W.2 and does not re-author the form model.
+
+OPEN-FS-ORG-05
+	Scope
+	UAG creation is shared Org Admin + HR Admin (RBAC §2.1); the heavy 162-column criteria set is summarised here by dimension, not enumerated.
+	Product
+	Confirm the dimension list is complete against the Assignment export; full enumeration lives in the data dictionary, not this FS.

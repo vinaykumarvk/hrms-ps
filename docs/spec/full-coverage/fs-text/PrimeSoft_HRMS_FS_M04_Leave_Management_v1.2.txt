@@ -1,0 +1,2415 @@
+PrimeSoft HRMS ��� FS M04 Leave Management v1.2
+Table of Contents
+ TOC \z \o "1-2" \u \h
+0. About this document
+References BRD Base 6 (whole); Prototype v20_1_2_1 (leave screens); functional-spec-author non-repetition protocol.
+This Functional Specification adds the build layer for Leave Management: screen specifications, complete API contracts, validation, per-screen RBAC projection, interaction states, and the operational layer (scheduled jobs, message catalogue, menu entitlement, dashboard widgets). It does not restate anything the BRD already fixes. Every business rule, data field, permission-matrix cell, NFR target, state transition and glossary term lives in the BRD and is referenced here by section number.
+The single-source-of-truth contract Already in the BRD (a business rule, data-field definition, locked decision, NFR, permission, state transition) → referenced here as “BRD §X”, never copied. New build-layer detail (screen layout, field control + behaviour, request/response/error schema, validation format, per-screen role projection, UI states, micro-copy) → authored here. This is the FS’s job. A conflict (prototype contradicts the BRD) or a gap (neither covers it) → surfaced in §8 with the agreed resolution and where it was actioned (BRD / FS / prototype); never silently decided in the body.
+
+Document architecture. The full programme architecture is a Foundation FS (shared validation, API conventions, global UI states, scheduled jobs, message catalogue, menu map) plus one FS per module. No Foundation FS exists in the project yet, so the leave-relevant slices of those cross-cutting sections are authored here (§5, §7) and explicitly marked as belonging in the Foundation FS when it is created; module teams must not duplicate them.
+Leave-type vocabulary. The canonical leave-type catalogue is BRD §4.5.1 (SL, PL, PL_CC, WWC, WL, PATL, ML, ADL, MCL, SPL, SBL, OH_*_26, Unpaid/LOP). The prototype’s sample data used alternative codes (CL, EL, LWP, BL, SAB, COMP, PAT); the prototype has been re-skinned to the canonical codes and this FS uses the BRD codes throughout (§8 OPEN-02).
+1. Scope & Reference Map
+References BRD §3.7 (Time Management permissions), §4.5 (leave entities), §5.5 (FR-M04-001..020, D01–D29), §6.4.2 (API inventory), §8.2 (state machine), §9.2 (notifications), §12.5 (glossary).
+This table is the anti-repetition index. It lists what this FS references from the BRD and prototype versus what it authors. If a screen row below carries authored content but no reference, that is a duplication risk to investigate.
+1.1 In scope
+All leave-management prototype screens: employee apply/balance/history, manager & HOD team-leave surfaces, the leave-approval queue, admin operations (encashment, revocation, balance adjustment, comp-off tasks), and the Org-Admin configuration set (platform settings, leave policies, comp-off policies, decision matrices, holiday groups, holiday entries, blackout windows).
+Complete API contracts for the eleven endpoints in BRD §6.4.2.
+Leave-specific scheduled jobs, notification templates, error-message copy, menu entitlement, and dashboard widgets.
+1.2 Out of scope (referenced, owned elsewhere)
+Business rules, eligibility logic, encashment formula, cycle definition, and all 29 locked decisions — owned by BRD §5.5.
+The leave data model and all field definitions/defaults — owned by BRD §4.5.
+The RBAC role × action matrix — owned by BRD §3.7 / §3.8 / RBAC Design Document.
+NFR targets (performance, availability, security) — owned by BRD §7.
+Comp-off accrual computation from attendance/overtime — owned by M05 (BRD §4.6 / §5.6); M04 consumes the credited balance only.
+Payroll/LOP downstream settlement — Phase 2 (M06).
+1.3 Reference map (referenced vs authored)
+Topic
+	Single source
+	FS treatment
+	What the FS adds
+
+Leave data model & field definitions
+	BRD §4.5.1–§4.5.18
+	Referenced
+	Screens map fields to controls + behaviour only
+
+Functional rules & acceptance criteria
+	BRD §5.5 FR-M04-001..020
+	Referenced
+	Screens/contracts that satisfy each FR
+
+Locked decisions (D01–D29)
+	BRD §5.5 M04.FS1
+	Referenced
+	Cited inline where a screen enforces one
+
+RBAC role × action matrix
+	BRD §3.7 Time Management
+	Referenced
+	Per-screen projection in §6, not restated
+
+Field-level access / PII tiers
+	BRD §3.8, §3.9, App. B
+	Referenced
+	Masking noted per field in §2
+
+API endpoint inventory
+	BRD §6.4.2
+	Referenced
+	Full contracts authored in §4
+
+API conventions (response, errors, rate-limit)
+	BRD §6.2–§6.3
+	Referenced
+	Cited once; not restated
+
+Leave state machine
+	BRD §8.2
+	Referenced
+	Screen→transition mapping in §3
+
+Notification events & recipients
+	BRD §9.2
+	Referenced
+	Templates authored in §7.2
+
+NFR targets
+	BRD §7
+	Referenced
+	Never restated
+
+Glossary terms
+	BRD §12.5
+	Referenced
+	Never redefined
+
+Screen inventory, fields, navigation, states
+	Prototype v20_1_2_1
+	Referenced
+	Specs extracted, not invented
+
+Screen control types & UI behaviour
+	—
+	Authored
+	§2
+
+Complete request/response/error schemas
+	—
+	Authored
+	§4
+
+Leave validation catalogue
+	—
+	Authored
+	§5 (belongs in Foundation FS)
+
+Scheduled jobs / message catalogue / widgets
+	—
+	Authored
+	§7 (belongs in Foundation FS)
+
+2. Screen Specifications
+One subsection per prototype leave screen. Each opens with its prototype id and references, then layout regions, a field table (new content is the Control and On-screen behaviour columns; the other columns are references), interaction states, and an actions table that points at the API contract in §4 and message ids in §7.2.
+Global UI state standard. Unless a screen overrides it below, every screen follows the standard loading (skeleton rows / spinner), error (inline banner with retry, message id from §7.2), and no-permission (screen not in menu per §6; deep-link returns 403 with FORBIDDEN copy) patterns. These belong in the Foundation FS once created.
+2.A Employee self-service screens
+2.1 Apply for leave
+Prototype screen id apply-leave
+References FR-M04-001 (form), FR-M04-009 (sandwich), FR-M04-010 (decision matrix), FR-M04-013 (combined), FR-M04-017 (hourly); entity leave_applications §4.5.4; POST /leave-applications §4 (4.1); state §8.2; D04, D09, D10, D19, D29.
+The employee’s leave application form. Submits a new leave_applications row and enters the §8.2 state machine at SUBMITTED. Per FR-M04-001 the form surfaces only employee-relevant fields; sandwich/eligibility mechanics are evaluated server-side and surfaced only on rejection.
+Layout regions
+Header: breadcrumb (Dashboard › Leave › Apply), title, the approval-flow explainer line.
+Form card: leave type, unit, half-day session (conditional), hours (conditional), from/to dates, reason, message, attachment.
+Application-impact panel (read-only, server-computed): days requested, sandwich impact, balance debit/after-balance, and the Unpaid/LOP portion when paid balance is insufficient.
+Approval-flow preview (read-only): resolved Stage-1 approver; Stage-2 pool note for two-stage types.
+Footer actions: Save draft, Submit application.
+Field specification
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Leave type
+	Single-select dropdown
+	leave_types §4.5.1
+	VAL-LV-TYPE
+	Per FR-M04-001 selector rules (D09/D19/D29)
+	Options filtered server-side to types with available_balance>0; Unpaid/LOP always listed; SPL/SBL hidden until credited; gender/marital/employment filters applied. Selecting a type refreshes the impact panel.
+
+Unit
+	Segmented control: Full / Half / Hourly
+	half_day_allowed, is_hourly_leave §4.5.1
+	VAL-LV-UNIT
+	Hourly only shown when type.is_hourly_leave=TRUE (FR-M04-017)
+	Half reveals Half-day session; Hourly reveals Hours and hides date-range end as needed.
+
+Half-day session
+	Single-select: First half / Second half
+	half_day_session §4.5.4; half_day_sessions §4.5.1
+	VAL-LV-HALF
+	Per type half_day_sessions (BOTH/FIRST_ONLY/SECOND_ONLY)
+	Required when Unit=Half. Each half debits 0.5 day; worked session preserved for attendance.
+
+Hours
+	Number + minute stepper
+	hourly_leave_* §4.5.1
+	VAL-LV-HOURS
+	Visible only for hourly types (FR-M04-017)
+	Rounded to multiple-of-minutes per policy; min duration enforced; across-midnight gated by policy flag.
+
+From / To date
+	Date pickers
+	from_date,to_date §4.5.4
+	VAL-LV-DATERANGE
+	Past-dated bounded by max_past_dated_days; bypass per D-bypass roles
+	To ≥ From; future bound by max_future_dated_days; blackout overlap blocked at submit (FR-M04-007).
+
+Reason
+	Single-select dropdown
+	reason_code §4.5.4; leave_reasons_master §4.5.15
+	VAL-LV-REASON
+	Mandatory per platform setting
+	Reason list filtered by leave type; some reasons mandate attachment / route to HRBP. Leave reasons are configured by Leave Admin / HR Admin (Org Admin ▸ Leave & attendance; leave_reasons_master; user-assignment & group-company scoping toggle).
+
+Message to approver
+	Multi-line text
+	message §4.5.4
+	VAL-LV-MSG
+	Mandatory per platform setting
+	Free text; mandatory flag from leave_platform_settings.
+
+Attachment
+	File upload
+	attachment_document_id §4.5.4
+	VAL-FILE (Foundation)
+	—
+	Configurable per leave policy (Leave Admin / HR Admin): Attachment Mandatory and Attachment Mandatory if > X days. Becomes mandatory after attachment_required_after_days for the type (e.g. SL>3d, ML, ADL).
+
+Application impact
+	Read-only computed panel
+	FR-M04-009/013
+	—
+	—
+	Shows days requested, sandwich-counted days, per-type debit + after-balance, and the Unpaid/LOP portion when paid balance is insufficient. Populated by a dry-run validate call; never editable. Balance debited-from and balance-after are each shown once (no duplication).
+
+Approval flow
+	Read-only preview
+	approver_chain (resp. §4.1)
+	—
+	—
+	Renders resolved Stage-1 approver; for ML/ADL/MCL/SPL/SBL shows the mandatory Stage-2 pool (HRBP/HR Admin/Leave Admin).
+
+Configuration ownership (who configures what). Leave reasons — Leave Admin / HR Admin (leave_reasons_master). Attachment-mandatory — per leave policy, Leave Admin / HR Admin. Sandwich rule — Leave Settings (Apply Sandwich Leave Based On Intervening Weekly Off and Holidays + sandwich cron), Leave Admin / HR Admin, tenant-level. All are surfaced in the Org Admin ▸ Leave & attendance configuration console.
+States
+State
+	Specified behaviour
+
+Empty / first load
+	Type dropdown shows only eligible types; impact panel shows “Select a leave type to preview impact”.
+
+Loading
+	Impact panel and approver preview show inline spinners while the validate dry-run runs.
+
+Validation error
+	Inline field errors; blackout/blocked-window and profile-incompleteness shown as a top banner (msg ids LV-ERR-BLACKOUT, LV-ERR-PROFILE).
+
+Insufficient balance
+	Impact panel warns; per D10, once paid balance is exhausted only Unpaid/LOP is offered and the employee must explicitly select it before submit — the system never auto-deducts LOP.
+
+No-permission
+	Screen reached only from own menu; on-behalf entry is a different surface (§6).
+
+Actions
+Action / control
+	What it triggers
+	API · Msg id
+
+Save draft
+	Persists status=DRAFT; no notification; no balance hold
+	POST /leave-applications (status=DRAFT) §4.1
+
+Submit application
+	Server re-validates; creates SUBMITTED row; fires LEAVE_SUBMITTED to Stage-1 approver
+	POST /leave-applications §4.1 · msg LEAVE_SUBMITTED
+
+Prototype change — resolved (§8 OPEN-01) The prototype text said “Auto-approves after 3 days … escalates to HRBP” and showed “SLA 2d remaining”. This contradicted BRD D04/D06 and FR-M04-003. Built behaviour follows the BRD: no auto-approval anywhere, 10-day escalation. The prototype copy has been corrected.
+
+2.2 My leave (balances, history, combined balance)
+Prototype screen id my-leave
+References FR-M04-001 (history/balance display), FR-M04-013 (combined balance); entities employee_leave_balances §4.5.3, leave_applications §4.5.4; GET /leave-balances/{employee_id} §4.7, GET /leave-applications §4.3.
+The employee’s leave home: per-type balance cards, leave history, pending applications, cancelled applications, and the combined-balance panel (FR-M04-013).
+Layout regions
+Balance cards row: one card per eligible leave type (balance, carry-forward note + expiry, reset/lapse note).
+Tabs / counters: History, Pending, Cancelled.
+History table: Applied date, Type, From–To, Days, Status, Approver, Sandwich-applied flag.
+Pending list: application summary, approver, SLA-remaining, View / Revoke-request actions.
+Combined-balance panel (conditional on FR-M04-013 being enabled): pooled balance, cap per cycle, usable-now, component breakdown.
+Field / column specification
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Balance card
+	Read-only card
+	available_balance,carry_forward_* §4.5.3
+	—
+	Own data; masking n/a
+	Shows available + CF note + expiry/reset; CF expiry visibility per platform setting (Show CF validity).
+
+History row
+	Read-only table row
+	leave_applications §4.5.4
+	—
+	Own data only
+	Status chip from §8.2; Sandwich column shows “Applied” when sandwich debit occurred (FR-M04-009).
+
+Pending row → Revoke
+	Action button
+	employee revoke request (D26)
+	—
+	Employee may request revoke; not direct
+	Raises an employee revocation request that notifies Leave Admin first (D26); does not revoke directly.
+
+Combined balance panel
+	Read-only computed
+	FR-M04-013; combined_* §4.5.7
+	—
+	—
+	Pooled = Σ components; usable = min(pool, cap). Per-type contribution shown; hidden entirely when enable_combined_leave_balance=FALSE.
+
+States
+State
+	Specified behaviour
+
+Empty history
+	“No leave applications yet.”
+
+Combined disabled
+	Combined-balance panel not rendered (feature flag off).
+
+Loading
+	Balance cards show skeletons; history shows shimmer rows.
+
+Error
+	Inline banner with retry; cards fall back to last-cached values where available.
+
+Actions
+Action / control
+	What it triggers
+	API · Msg id
+
+Apply leave
+	Navigates to apply-leave (2.1)
+	client route
+
+Holiday calendar
+	Navigates to holiday-calendar (2.3)
+	client route
+
+Revoke (pending)
+	Raises employee revocation request
+	POST /leave-applications/{id}/revoke (request mode) §4.6 · msg LEAVE_REVOKE_REQUESTED (proposed §7.2)
+
+2.3 Holiday calendar (employee view)
+Prototype screen id holiday-calendar
+References FR-M04-006 (holiday calendar/optional), FR-M04-015 (flexible date change); entities holiday_calendars §4.5.6, holiday_calendar §4.5.6.1.
+The employee’s resolved holiday list with type filters and entry points for optional-holiday application and flexible-date-change request.
+Layout & columns
+Type filter chips: All / Mandatory / Optional / National.
+Calendar table: Date, Day, Holiday, Type, Locations, Action (Apply for OPTIONAL rows only).
+Header actions: Apply for optional holiday → 2.4; Request flexible date change (FR-M04-015).
+Columns
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Holiday row
+	Read-only row
+	holiday_calendar §4.5.6.1
+	—
+	Resolved to employee’s group (§4.5.6 resolution rule)
+	National entries always shown; Optional rows expose an Apply action; past optional dates non-actionable (FR-M04-006).
+
+Type filter
+	Chip toggle
+	holiday_type §4.5.6.1
+	—
+	—
+	Client-side filter over the resolved set.
+
+States
+State
+	Specified behaviour
+
+No optional remaining
+	Optional Apply actions disabled with “Optional-holiday quota exhausted for this year.”
+
+Probation / notice
+	Optional-holiday Apply hidden entirely (D17/D18).
+
+Loading / Error
+	Standard skeleton / inline banner.
+
+Actions
+Action / control
+	What it triggers
+	API · Msg id
+
+Apply for optional holiday
+	Navigates to 2.4 with date pre-fillable
+	client route → POST /leave-applications (OH type)
+
+Request flexible date change
+	Opens flexible-date-change request (FR-M04-015)
+	POST /leave-applications/flexible-holiday (§4; BRD §6.4)
+
+2.4 Apply for optional holiday
+Prototype screen id apply-optional-holiday
+References FR-M04-006; entities leave_applications §4.5.4 (OH type), holiday_calendars §4.5.6; D17/D18.
+Lets an eligible employee opt into an optional holiday from the remaining quota. Optional holiday is modelled as a leave type (BRD §4.5.6).
+Field specification
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Optional holiday
+	Single-select dropdown
+	holiday_calendar (OPTIONAL) §4.5.6.1
+	VAL-LV-OH
+	Hidden in probation/notice (D17/D18)
+	Lists only remaining-quota optional dates for the employee’s resolved group; past dates and next-calendar-year dates excluded (FR-M04-006).
+
+Message to approver
+	Multi-line text
+	message §4.5.4
+	VAL-LV-MSG
+	Mandatory per platform setting
+	Mandatory flag from leave_platform_settings (optional-holiday message-mandatory).
+
+States & actions
+State
+	Specified behaviour
+
+Quota exhausted
+	Dropdown empty; banner “No optional holidays remaining this calendar year.”
+
+Concurrency
+	If the date already has an approved leave/holiday, submit is blocked with LV-ERR-OH-CONFLICT (FR-M04-006 edge case).
+
+Action / control
+	What it triggers
+	API · Msg id
+
+Apply
+	Creates an OH leave_applications row; routes through approval
+	POST /leave-applications §4.1 · msg LEAVE_SUBMITTED
+
+2.B Manager, HOD & approver screens
+2.5 Leave approvals queue (Manager / eligible approvers)
+Prototype screen id approvals
+References FR-M04-003 (approval flow & 10-day escalation), D04/D05; state §8.2; POST /approve §4.4, POST /reject §4.5; RBAC §3.7 (approve actions).
+The approver’s queue of pending leave applications (prototype nav item “Leave”, badge count). Acts on the §8.2 state machine via approve/reject.
+Layout & columns
+Queue table: Applicant, Leave type, From–To, Days, Applied-on, SLA-remaining, Stage, Approve / Reject.
+Row expand: impact summary (sandwich impact), message, attachment, approver chain.
+Columns
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Queue row
+	Read-only row + actions
+	leave_applications §4.5.4
+	—
+	Visible to eligible approver pool per §3.7
+	SLA-remaining computed from applied_on_date + 10 days (FR-M04-003); shows ESCALATED chip when escalation_fired_at set.
+
+Approve
+	Action button
+	state §8.2
+	—
+	Any eligible role at any level (D04)
+	Single-stage → APPROVED + balance debit; two-stage Stage-1 → STAGE_1_APPROVED routed to Stage-2 pool.
+
+Reject
+	Action button + reason
+	rejection_reason §4.5.4
+	VAL-LV-REJECT
+	Eligible approver
+	Reason mandatory (D04/FR-M04-003); blocked without reason.
+
+States
+State
+	Specified behaviour
+
+Empty queue
+	“No leave requests pending your action.”
+
+Escalated
+	Escalated rows badged; visible to original approver + next-level + HRBP/HR Admin (FR-M04-003).
+
+Two-stage Stage-2
+	After Stage-1, item appears in the Stage-2 pool’s queue only; Stage-1 approver sees it as STAGE_1_APPROVED.
+
+Actions
+Action / control
+	What it triggers
+	API · Msg id
+
+Approve
+	Advances state per §8.2; fires LEAVE_APPROVED_STAGE_1 or LEAVE_APPROVED
+	POST /leave-applications/{id}/approve §4.4
+
+Reject
+	Sets REJECTED with reason; fires LEAVE_REJECTED
+	POST /leave-applications/{id}/reject §4.5 · msg LEAVE_REJECTED
+
+2.6 Team leave overview (Manager / L1)
+Prototype screen id team-leave
+References FR-M04-008; D22, D23; GET /leave-applications?scope=team §4.3; widget WID-M04-TEAM (§7.3).
+Manager’s dedicated team-leave dashboard (BRD D22/D23 — team leave is hidden from the manager calendar and shown only here). Default fields exclude the leave reason by design.
+Layout & columns
+KPI strip: on-leave today, on-leave this week, approved this month, average balance.
+Team calendar grid: employee rows × day columns with leave/OD/WFH overlays; per-employee “Leave history →” link to 2.7.
+Columns
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Team grid row
+	Read-only overlay grid
+	leave_applications §4.5.4
+	—
+	Visible to L1 Manager / HOD / UAG Head (D23)
+	Default fields per D23: name, type, from/to, status, reporting-chain position. Leave reason NOT shown (privacy by design).
+
+Leave history →
+	Row link
+	—
+	—
+	Direct reportees only
+	Opens team-member-leave-history (2.7) for that reportee.
+
+States
+State
+	Specified behaviour
+
+No reportees
+	Empty state “No team members assigned.” (FR-M04-008 edge case).
+
+Reason hidden
+	Reason column never rendered, regardless of role (D23).
+
+2.7 Team member leave history (Manager)
+Prototype screen id team-member-leave-history
+References FR-M04-008; entities employee_leave_balances §4.5.3, leave_applications §4.5.4; field-access/PII masking §3.8/§3.9/App. B.
+Drill-down on a single direct reportee: per-type balances, 12-month patterns/flags, and filterable leave records. Medical-certificate contents are masked to managers.
+Layout regions
+Reportee header (identity, DOJ, reports-to), per-type balance cards, patterns-&-flags panel, filterable records table, Export.
+Columns
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Balance cards
+	Read-only
+	employee_leave_balances §4.5.3
+	—
+	Direct reportee scope
+	Used / pending shown per type.
+
+Records table
+	Read-only filterable
+	leave_applications §4.5.4
+	—
+	Reportee scope; reasons visible to manager
+	Filter by type & status; export of visible rows.
+
+Medical cert
+	Masked link
+	attachment_document_id §4.5.4
+	—
+	Masked to manager per §3.8/§3.9
+	Clinical content masked — “contact HRBP for context” per prototype + field-access rule.
+
+States
+State
+	Specified behaviour
+
+No records
+	Empty state per filter.
+
+No-permission (non-direct reportee)
+	403; managers see direct reportees only.
+
+2.8 Department leave (HOD / UAG Head)
+Prototype screen id dept-leave
+References FR-M04-008; D27, D28; GET /leave-applications?scope=department §4.3.
+HOD view of department leave. Per D27 the HOD uses the same dedicated dashboard fields as the manager, with a default reporting-chain filter and a toggle to the entire department.
+Prototype change — resolved (§8 OPEN-07) The prototype tagged this screen FR-M04-022, which does not exist in the BRD. Re-tagged in the prototype to the correct anchor FR-M04-008 + D27/D28.
+
+Columns & toggle
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Department leave row
+	Read-only row
+	leave_applications §4.5.4
+	—
+	HOD scope (D27)
+	Same fields as D23; reason not shown.
+
+Scope toggle
+	Segmented: Reporting chain / Entire department
+	D27
+	—
+	HOD only
+	Default = reporting chain; toggling to department shows all employees in the assigned department regardless of reporting line.
+
+States
+State
+	Specified behaviour
+
+Calendar exclusion
+	HOD calendar does not show team leave (D28); this dashboard is the sole access point.
+
+Empty
+	“No upcoming leave in your department.”
+
+2.C Admin & operations screens
+2.9 PL encashment — case-by-case (HR Admin)
+Prototype screen id pl-encashment
+References FR-M04-004, FR-M04-018 (formula engine); D15, D20, D21, D24, D25; entity leave_encashment_records §4.5.5; POST /leave-encashments §4.9; RBAC §3.7 (Leave Encashment).
+HR Admin’s case-by-case PL encashment authorisation queue and action. Per D15/D21 HR Admin is the sole authoriser; Leave Admin can view but cannot authorise; the employee has no role.
+Layout & columns
+Pending-encashment queue: employee, days, current balance, after-balance, reason, Approve / Reject.
+Authorisation form: employee, days (3–30), formula preview, computed amount, context (INTERMITTENT/FNF).
+Field specification
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Employee
+	Lookup/select
+	employee_id §4.5.5
+	—
+	HR Admin only (D15)
+	Encashment UI visible only to HR Admin; Leave Admin sees data, no authorise control.
+
+Days encashed
+	Number
+	days_encashed §4.5.5
+	VAL-LV-ENCASH-RANGE
+	HR Admin
+	Range 3–30 (FR-M04-004); blocked during probation with explicit error.
+
+Formula / amount
+	Read-only computed
+	encashment_formula §4.5.1; FR-M04-018
+	—
+	—
+	amount = basic_pay/30 × days (D25); custom formula via engine (FR-M04-018); amount deferred if basic_pay unavailable in Phase 1.
+
+Context
+	Single-select
+	context §4.5.5
+	VAL-ENUM
+	HR Admin
+	INTERMITTENT (default) or FNF; FNF path used during M03 settlement.
+
+States
+State
+	Specified behaviour
+
+Probation block
+	Authorise disabled; LV-ERR-ENCASH-PROBATION shown (FR-M04-004).
+
+Phase-1 amount deferral
+	If basic_pay absent, record created with formula, amount marked “pending M06”.
+
+Leave Admin view
+	Read-only; no Authorise/Approve control rendered (D15).
+
+Actions
+Action / control
+	What it triggers
+	API · Msg id
+
+Authorise encashment
+	Creates leave_encashment_records with authorised_by_user_id (HR Admin); fires LEAVE_ENCASHMENT_AUTHORISED
+	POST /leave-encashments §4.9 · msg LEAVE_ENCASHMENT_AUTHORISED
+
+Prototype change — resolved (§8 OPEN-08) The prototype showed an encashment row “Awaiting HRBP sign-off” with Approve/Reject. That pre-step is dropped: HR Admin is the sole authoriser per D15 and no HRBP gate is added. The prototype is updated to remove the sign-off step.
+
+2.10 Leave revocations (Leave Admin)
+Prototype screen id leave-revocation
+References FR-M04-005; D26; entity leave_applications §4.5.4 (revoked_by_user_id); POST /leave-applications/{id}/revoke §4.6; state §8.2 (APPROVED→REVOKED); RBAC §3.7.
+Leave Admin’s revocation review queue and processing form. Per D26 managers cannot revoke; HRBP/Leave Admin/HR Admin can revoke directly or approve employee revoke requests.
+Prototype change — resolved (§8 OPEN-07) The prototype tagged this screen FR-M04-009 (Sandwich Leave). Re-tagged to the correct anchor FR-M04-005 + D26 in the prototype.
+
+Layout & columns
+Pending-revocations queue: employee, original leave, initiated-by (manager/employee), reason, balance-restore preview, Approve.
+Process-revocation form (Phase-1 full revoke): employee, original leave, reason category, detailed reason, balance-restore preview.
+Field specification
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Original leave
+	Read-only select from queue
+	leave_applications §4.5.4
+	—
+	HRBP/Leave Admin/HR Admin (D26)
+	Lists employee’s approved/past-dated applications eligible for revoke.
+
+Revocation type
+	Read-only (fixed)
+	—
+	—
+	Eligible revoker
+	Phase-1 is full revoke only (FR-M04-005); Partial and Replace-with-other-type are deferred to a future FR and hidden in Phase-1 (§8 OPEN-04).
+
+Reason for revocation
+	Single-select + detailed text
+	audit reason (FR-M04-005)
+	VAL-LV-REVOKE-REASON
+	Mandatory
+	Reason mandatory; audit log captures reason + original application reference.
+
+Refund handling
+	Read-only (fixed)
+	balance reversal §4.5.4
+	—
+	Eligible revoker
+	Phase-1 reverses the full debit back to the original leave type. Cross-type / adjust-as-unpaid refunds are deferred to a future FR and hidden in Phase-1 (§8 OPEN-04).
+
+States
+State
+	Specified behaviour
+
+Manager-initiated awaiting review
+	Shown in queue with initiated-by=Manager; Leave Admin reviews before balance restore.
+
+Payroll-cycle crossing
+	If revocation crosses a locked payroll cycle, flag for Payroll Admin ack before reversal (FR-M04-005 edge case; Phase 2).
+
+Actions
+Action / control
+	What it triggers
+	API · Msg id
+
+Process revocation
+	Sets REVOKED; restores balance; audit-logs reason; fires LEAVE_REVOKED
+	POST /leave-applications/{id}/revoke §4.6 · msg LEAVE_REVOKED
+
+2.11 Leave balance adjustments (HR Admin)
+Prototype screen id leave-balance-adjust
+References FR-M04-021 (Manual Leave Balance Adjustment); entity employee_leave_balances §4.5.3 (adjusted_to_date); RBAC §3.7 (“Edit Leave Balance on leave page”).
+HR Admin’s manual balance-adjustment form (credit/debit/reset). Per FR-M04-021 this is HR-Admin-only; drives the adjusted_to_date column; every adjustment is audit-logged with a mandatory reason and is reversible.
+Prototype change — resolved (§8 OPEN-05, OPEN-07) The prototype tagged this screen FR-M04-007 (Blackout windows) and asserted a “>5 days needs HR Admin co-approval” rule. Resolved: the screen is now anchored to the new FR-M04-021, restricted to HR Admin only, with a mandatory reason and full audit. No co-approval gate is built. Prototype re-tagged and the co-approval assertion removed.
+
+Field specification
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Employee
+	Lookup
+	employee_id §4.5.3
+	—
+	HR Admin only (FR-M04-021)
+	Search by name/ID within scope.
+
+Leave type
+	Single-select
+	leave_type_id §4.5.3
+	VAL-LV-TYPE
+	HR Admin
+	Lists the employee’s balance-holding types.
+
+Adjustment type
+	Single-select
+	adjusted_to_date §4.5.3
+	VAL-ENUM
+	HR Admin
+	Credit / Debit / Reset-to-value; writes to adjusted_to_date and recomputes available_balance.
+
+Adjustment amount
+	Number (days)
+	adjusted_to_date §4.5.3
+	VAL-LV-ADJ-AMOUNT
+	HR Admin
+	Signed quantity; effective from the chosen date. No co-approval gate (FR-M04-021).
+
+Reason category + detail
+	Select + text
+	audit reason
+	VAL-LV-ADJ-REASON
+	Mandatory
+	Reason mandatory; audit-logged.
+
+Notify employee + manager
+	Toggle
+	—
+	—
+	HR Admin
+	Optional notification on apply.
+
+States
+State
+	Specified behaviour
+
+Reversal
+	Any adjustment can be reversed; the reversal is itself an audit-logged adjustment (FR-M04-021).
+
+Audit
+	Every adjustment writes an audit_log entry (BRD App. C); no silent edits.
+
+2.12 Comp-off tasks (Manager / Leave Admin)
+Prototype screen id compoff-approvals
+References Entity leave_compoff_policies §4.5.8; D20 (HR Admin initiates comp-off payout); RBAC §3.7 (“Pay out in comp-off history”, “Comp off credited history”); comp-off accrual M05 §4.6.
+Comp-off credit requests (earned via weekend/holiday/overtime working) and comp-off leave applications awaiting approval. M04 consumes the credited comp-off balance; accrual computation is owned by M05.
+Columns
+Field
+	Control
+	Source (BRD)
+	Validation
+	Role behaviour
+	On-screen behaviour
+
+Comp-off credit request
+	Read-only row + actions
+	leave_compoff_policies §4.5.8
+	—
+	Eligible approver pool (§3.7)
+	Shows worked-on date and credit days; approve credits the comp-off balance per policy.
+
+Comp-off leave application
+	Read-only row + actions
+	leave_applications §4.5.4
+	—
+	Eligible approver
+	Approve debits comp-off balance; lapse per policy (e.g. 90 days).
+
+Pay out
+	Action (HR Admin)
+	D20
+	—
+	HR Admin only; not visible to employee
+	Comp-off payout initiated by HR Admin (D20).
+
+States
+State
+	Specified behaviour
+
+Empty
+	“No comp-off requests pending.”
+
+Expiring
+	Comp-off nearing lapse surfaces a Smart-Suggestion (FR-M04-016, §7.1 JOB-M04-SMART).
+
+2.13 Leave-encashment exit clearance (cross-module — reference only)
+Prototype screen id clearance-leave
+References Owned by M03 (BRD §5.4 / E7); consumes FR-M04-004, leave_encashment_records §4.5.5 (context=FNF). Spec lives in the M03 FS.
+Computes the encashable PL balance to pass into M03 FnF. This screen belongs to M03 Exits & Offboarding; it is referenced here because it consumes M04 encashment rules (FR-M04-004 formula, encashable types).
+No M04 screen spec is authored here. M04 contributes: the encashable balance (§4.5.3), the encashment formula (FR-M04-004/D25), and the FNF-context encashment record (§4.5.5). The clearance screen and its SLA are specified in the M03 FS.
+2.D Configuration screens (Org Admin · Leave Admin · HR Admin)
+Prototype change — resolved (§8 OPEN-03) The prototype contained two parallel leave-config surfaces: the Org-Admin cfg-* set specified below (aligned to BRD §4.5 entities, Assignment Frameworks and canonical leave codes) and a legacy Leave-Admin set (leave-config, leave-policies, leave-reasons, holiday-calendar-config, holiday-admin) using non-canonical codes and FY-based years. The cfg-* set is canonical for build; the legacy set has been retired / redirected to cfg-* in the prototype.
+
+Configuration access is shared by Leave Admin, HR Admin and Org Admin (D08) and is RBAC-configurable per BRD §3.7. Each screen follows the same list → add/edit-drawer pattern with Import / Export.
+2.14 Leave platform settings
+Prototype screen id cfg-leave-platform
+References Entity leave_platform_settings §4.5.7 (Clusters 1–20); FRs gated by flags here — FR-M04-007/009/010/013/014/015/016; D08 (who configures); state/cron in §7.1.
+Tenant-level leave configuration (singleton). Surfaces the 20 setting clusters of leave_platform_settings as a list + add/edit drawer. Drives global defaults that policies can override.
+Representative settings (referenced, not restated)
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Allow previous-year applications
+	Toggle
+	Cluster 1 §4.5.7
+	—
+	Maps to allow_previous_year flag.
+
+Reason / Message mandatory
+	Toggle
+	Cluster 1 §4.5.7
+	—
+	Drives mandatory flags on apply-leave (2.1).
+
+Apply sandwich rule
+	Toggle
+	Cluster 11 §4.5.7; FR-M04-009
+	—
+	Default FALSE; enabling activates the sandwich engine + month-end cron (§7.1).
+
+Enable encashment window
+	Toggle + dates
+	Cluster 7 §4.5.7; D24
+	—
+	HR Admin opens/closes on demand; no fixed dates at setup.
+
+Cron jobs & auto-actions
+	Toggles
+	Cluster 8 §4.5.7
+	—
+	Drives reject/auto-approve crons; act_on_requests_based_on. Auto-approve remains globally disabled per D06.
+
+Combined leave balance
+	Toggle + policy picker + cap
+	Cluster 18 §4.5.7; FR-M04-013
+	—
+	Enables the combined panel on my-leave (2.2).
+
+Holiday pay policy
+	Toggle
+	Cluster 17 §4.5.7; FR-M04-014
+	—
+	Activates holiday-pay tracking.
+
+States
+State
+	Specified behaviour
+
+Singleton
+	Exactly one row per tenant; “Add” edits the singleton rather than creating duplicates.
+
+Audit
+	Each change audit-logged; last-changed shown.
+
+2.15 Leave policies (per leave type)
+Prototype screen id cfg-leave-policy
+References Entities leave_policies §4.5.2, leave_types §4.5.1, assignment_rules §4.2.17; FR-M04-001; D08; resolution rule §4.5.6.
+Maps leave types to entitlements and targets them to populations via Assignment Frameworks. Leave-type definitions themselves are read-only here (created on the Leave types surface).
+Layout regions
+Read-only leave-type reference list (entitlement, carry-forward, encashable, status).
+Policy-assignment table: policy set, Assignment Framework, Group Company, employees matched, status, View/Edit.
+Assign/edit drawer: policy set, assignment type (Assignment Framework / Group-company-wise).
+Field specification
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Leave type reference
+	Read-only list
+	leave_types §4.5.1
+	—
+	Edited on Leave types page, not here.
+
+Policy set
+	Single-select
+	leave_policies §4.5.2
+	Yes
+	e.g. Standard Full-Time, Contract, Optional-Holiday-Location.
+
+Assignment Framework
+	Single-select
+	assignment_rules §4.2.17
+	Yes
+	Frameworks are mutually exclusive by employment type → one policy per type per employee (§4.5.6).
+
+Group Company
+	Single-select
+	entities §4.2.2
+	—
+	Optional scope on top of the framework.
+
+Annual entitlement / accrual
+	Number
+	annual_entitlement_days, accrual_amount_per_period §4.5.2
+	Yes
+	Per population; tenure slabs via leave_tenure_brackets §4.5.9.
+
+States
+State
+	Specified behaviour
+
+Overlap risk
+	Mutual exclusivity is a config responsibility; a disjointness check is recommended (§4.5.6 risk note).
+
+Read-only type card
+	Type fields are not editable on this screen.
+
+2.16 Comp-off policies
+Prototype screen id cfg-compoff
+References Entity leave_compoff_policies §4.5.8; D20; overtime_indexing_rules §4.5.18.
+Defines comp-off accrual frequency, minimum durations, lapse days and approval flow. Consumed by the comp-off tasks screen (2.12).
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Comp-off policy name / code
+	Text
+	leave_compoff_policies §4.5.8
+	Yes
+	Unique code within tenant.
+
+Calculation frequency
+	Single-select
+	Calculation Frequency §4.5.8
+	Yes
+	Weekly / Bi-weekly / Monthly etc.
+
+Min duration to credit one day
+	Duration
+	§4.5.8
+	—
+	Drives accrual thresholds.
+
+Comp-off lapse (days)
+	Number
+	§4.5.8
+	Yes
+	e.g. 90; feeds Smart-Suggestion lapse alerts (FR-M04-016).
+
+Allow half-day / Approval flow
+	Toggle / picker
+	§4.5.8
+	—
+	Approval flow references the workflow library.
+
+2.17 Decision matrices
+Prototype screen id cfg-decisionmatrix
+References FR-M04-010; leave_policies.decision_matrix_config §4.5.2; platform flag enable_decision_matrix_for_policy §4.5.7.
+Configures the multi-input eligibility decision matrix used by leave (FR-M04-010): a lookup table combining employee dimensions (tenure, designation, location, etc.) that yields an eligibility/allotment/accrual/validity outcome per row.
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Matrix name / code
+	Text
+	decision_matrix_config §4.5.2
+	Yes
+	Unique; e.g. DM-LEAVE-PL-ELIGIBILITY.
+
+Used by module
+	Single-select
+	FR-M04-010
+	Yes
+	Leave policy / employee master etc.
+
+Rows (input vector → outcome)
+	Matrix editor
+	FR-M04-010
+	Yes
+	≥10 input dimensions; first match in sort_order wins; default fallback. Lookup ≤100ms (NFR §7 — referenced).
+
+States
+State
+	Specified behaviour
+
+Re-evaluation
+	On employment-history change, matrix re-evaluates for affected employees (FR-M04-010, §7.1).
+
+2.18 Holiday groups (calendar master)
+Prototype screen id cfg-holiday-calendars
+References Entity holiday_calendars §4.5.6; assignment_rules §4.2.17; FR-M04-006; resolution rule §4.5.6.
+Defines holiday groups (calendars) and targets them via Assignment Frameworks. Groups are configured mutually exclusive so each employee resolves to exactly one optional-holiday group.
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Group name / code
+	Text
+	holiday_calendars §4.5.6
+	Yes
+	e.g. Mumbai – Project A.
+
+Group type
+	Single-select
+	scope_type §4.5.6
+	Yes
+	Project/client · Location default · Cohort.
+
+Work location
+	Single-select
+	location_label_id §4.5.6
+	—
+	Descriptive label only; does not drive selection.
+
+Assignment Framework
+	Single-select
+	served_uag_ids → assignment_rules §4.5.6
+	Yes
+	Mutually exclusive; default Group-Company+location groups maintained manually.
+
+Calendar year / status
+	Number / toggle
+	calendar_year, status §4.5.6
+	—
+	NULL year = perennial.
+
+2.19 Holiday entries
+Prototype screen id cfg-holiday
+References Entity holiday_calendar §4.5.6.1; FR-M04-006, FR-M04-015 (flexible).
+Per-holiday entries within a selected group, with recurring-rule support and multi-group assignment. National holidays apply to every group automatically.
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Holiday name / code / date
+	Text / date
+	holiday_calendar §4.5.6.1
+	Yes
+	Unique code; date is first occurrence for recurring.
+
+Holiday type
+	Single-select
+	holiday_type §4.5.6.1
+	Yes
+	Mandatory / Optional / National.
+
+Assign to calendars
+	Multi-select
+	calendar_id §4.5.6.1
+	Yes
+	One holiday may belong to several groups.
+
+Recurring rule
+	Conditional fields
+	is_recurring + recurring_* §4.5.6.1
+	—
+	Static-date or day-of-month (e.g. 2nd Saturday).
+
+Repeat next year / Half day
+	Toggles
+	repeat_next_year, is_half_day §4.5.6.1
+	—
+	Half-day holiday config = No per migrated config (FR-M04-006).
+
+2.20 Blackout windows
+Prototype screen id cfg-blackout
+References FR-M04-007; entity leave_platform_settings §4.5.7 (Cluster 5/6).
+Configures leave-application blackout windows with applicability and per-type blocking. Applications overlapping a window are blocked at submit; admin bypass per FR-M04-007.
+Field / control
+	Control type
+	Source (BRD)
+	Mandatory
+	Behaviour
+
+Blackout name
+	Text
+	Cluster 5 §4.5.7
+	Yes
+	e.g. Year-end freeze.
+
+From / To date
+	Date pickers
+	FR-M04-007
+	Yes
+	Stored as global from/to; multiple windows supported.
+
+Applies to
+	Multi-select
+	FR-M04-007
+	—
+	All employees or a population scope.
+
+Leave types blocked
+	Multi-select
+	FR-M04-007
+	—
+	Leaves applications with dates in window blocked; partial overlap blocks entire application (edge case).
+
+States
+State
+	Specified behaviour
+
+Already-approved leave
+	Blackout affects new applications only; approved leave inside a window is untouched (FR-M04-007).
+
+Bypass
+	Platform Super Admin / permission role holders bypass; audit-flagged with bypass_reason (FR-M04-007). L1/HRBP bypass disabled per migrated config.
+
+3. Interaction & Navigation Flows
+References State machine BRD §8.2 (leave application workflow); screens §2; scheduled jobs §7.1. The state machine is owned by §8.2 and is not redrawn — the table below maps which screen/job drives each transition.
+3.1 Screen-driven transitions on the §8.2 state machine
+From state (§8.2)
+	Driven by
+	To state (§8.2)
+	Screen / API · notes
+
+— (new)
+	Employee / on-behalf submit
+	SUBMITTED
+	apply-leave (2.1) · POST /leave-applications §4.1 · LEAVE_SUBMITTED
+
+SUBMITTED
+	Eligible approver approves
+	STAGE_1_APPROVED or APPROVED
+	approvals (2.5) · POST …/approve §4.4
+
+SUBMITTED
+	Approver rejects
+	REJECTED
+	approvals (2.5) · POST …/reject §4.5 · reason mandatory
+
+SUBMITTED
+	10-day inaction (job)
+	ESCALATED
+	JOB-M04-ESCALATE §7.1 · LEAVE_ESCALATED
+
+SUBMITTED / STAGE_1_APPROVED
+	Employee withdraws
+	WITHDRAWN
+	my-leave (2.2) · POST …/withdraw §4.5b · balance not deducted
+
+STAGE_1_APPROVED
+	Stage-2 pool approves
+	APPROVED
+	approvals (2.5) Stage-2 · balance deducted
+
+STAGE_1_APPROVED
+	Stage-2 pool rejects
+	REJECTED
+	approvals (2.5) · reason mandatory
+
+APPROVED (past-dated)
+	HRBP/Leave Admin/HR Admin revokes
+	REVOKED
+	leave-revocation (2.10) · POST …/revoke §4.6 · balance restored
+
+3.2 Primary navigation paths
+Employee: Dashboard → My leave (2.2) → Apply leave (2.1); My leave → Holiday calendar (2.3) → Apply optional holiday (2.4).
+Manager: Dashboard → Leave approvals (2.5) act; Team → Team leave (2.6) → Team member history (2.7).
+HOD: Dashboard → Department leave (2.8) with reporting-chain / department toggle.
+Leave Admin: Leave revocations (2.10), Balance adjustments (2.11), Comp-off tasks (2.12).
+HR Admin: PL encashment (2.9); plus all Leave Admin surfaces.
+Org Admin: Configuration set 2.14–2.20.
+3.3 Job-driven transitions
+Transitions not driven by a user action are driven by scheduled jobs in §7.1: 10-day escalation (JOB-M04-ESCALATE), month-end sandwich re-evaluation (JOB-M04-SANDWICH), accrual/carry-forward (JOB-M04-ACCRUAL/JOB-M04-CARRYFWD), LOP feed at cutoff (JOB-M04-LOP), Smart-Suggestion expiry alerts (JOB-M04-SMART), and optional auto-reject cron (JOB-M04-AUTOREJECT, gated; auto-approve remains disabled per D06).
+4. API Contracts (complete)
+References Inventory BRD §6.4.2 (referenced — purpose/auth not restated); conventions BRD §6.2 (response/error model) and §6.3 (rate limiting); entities §4.5; RBAC §3.7. Auth column from the inventory is the source of truth; the contracts below add request/response/error/idempotency.
+Conventions (referenced once — BRD §6.2/§6.3) All endpoints return JSON; success = 2xx with resource payload; errors use the standard { error.code, error.message, error.field, error.details } model (§6.2). Rate limits: 600/min read, 60/min write, 429 + Retry-After on breach (§6.3). All write endpoints require an Idempotency-Key header; replays return the original result. Auth/tenancy/audit are platform middleware (BRD §7.4 / App. C) and are not re-specified per endpoint.
+
+4.1 POST /api/v1/leave-applications — submit / save draft
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+leave_type_code
+	string(20)
+	Y
+	Must be eligible for employee (FR-M04-001); VAL-LV-TYPE
+
+unit
+	enum FULL·HALF·HOURS
+	Y
+	HOURS only if type.is_hourly_leave; VAL-LV-UNIT
+
+from_date / to_date
+	date (ISO)
+	Y
+	VAL-LV-DATERANGE; blackout overlap → 422
+
+half_day_flag / half_day_session
+	boolean / enum
+	N
+	Session required if half_day_flag; VAL-LV-HALF
+
+hours
+	integer (minutes)
+	N
+	Required for HOURS unit; VAL-LV-HOURS
+
+reason_code
+	string(50)
+	Y
+	From leave_reasons_master; VAL-LV-REASON
+
+message
+	text
+	Y*
+	Mandatory per platform setting; VAL-LV-MSG
+
+attachment_document_id
+	uuid
+	N
+	Mandatory after type threshold (e.g. SL>3d)
+
+status
+	enum DRAFT·SUBMITTED
+	N
+	DRAFT saves without routing; default SUBMITTED
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+id
+	uuid
+	New application id
+
+application_number
+	string(30)
+	Auto LV-YYYY-NNNNNN
+
+total_days
+	decimal(5,2)
+	Computed incl. sandwich (FR-M04-009)
+
+status
+	enum
+	SUBMITTED (or DRAFT)
+
+applied_on_date
+	date
+	Drives SLA (FR-M04-003)
+
+approver_chain
+	array
+	Resolved Stage-1 approver; Stage-2 pool for two-stage types
+
+impact
+	object
+	sandwich_days, lop_portion, after_balance
+
+Errors
+HTTP · code
+	When
+
+400 VALIDATION_FAILED
+	Malformed payload / missing required field
+
+403 FORBIDDEN
+	Type not eligible / on-behalf without §3.7 right
+
+409 DUPLICATE_APPLICATION
+	Idempotency replay or overlapping non-concurrent application
+
+422 LV_BLACKOUT / LV_PROFILE_INCOMPLETE / LV_PAST_DATED_EXCEEDED
+	Blackout overlap; profile below minimum; past-dated beyond bound
+
+A pre-submit dry-run uses the same schema with a validate=true query param to populate the impact panel (2.1) without persisting.
+4.2 GET /api/v1/leave-applications/{id} — view one
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+id (path)
+	uuid
+	Y
+	Application id
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+(full application)
+	object
+	leave_applications §4.5.4 fields scoped by viewer; medical attachment masked per §3.8
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Viewer not requestor/approver-chain/HR Admin
+
+404 RECORD_NOT_FOUND
+	Unknown / soft-deleted id
+
+4.3 GET /api/v1/leave-applications — list / search
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+scope
+	enum self·team·department·all
+	N
+	team/department require manager/HOD; all requires admin (§3.7)
+
+status / leave_type_code / from / to
+	filters
+	N
+	Standard filters
+
+page / page_size
+	integer
+	N
+	Cursor pagination per Foundation conventions
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+items
+	array
+	Scoped rows; reason omitted on team/department scope (D23)
+
+page_info
+	object
+	next cursor, total
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Requested scope exceeds caller’s §3.7 rights
+
+4.4 POST /api/v1/leave-applications/{id}/approve — approve current stage
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+id (path)
+	uuid
+	Y
+	Application id
+
+comment
+	text
+	N
+	Optional approver note
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+status
+	enum
+	STAGE_1_APPROVED / APPROVED per §8.2
+
+stage_x_decision_at
+	timestamp
+	Set per stage
+
+balance_debited
+	decimal
+	On final approval only
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Caller not in eligible approver pool for the stage (§3.7/D04/D05)
+
+409 STAGE_CONFLICT
+	Stage already actioned / state changed
+
+422 INSUFFICIENT_BALANCE_AT_APPROVAL
+	Balance changed since submit and Unpaid/LOP not explicitly selected (D10)
+
+Two-stage types (ML/ADL/MCL/SPL/SBL) route to the Stage-2 pool on Stage-1 approval; balance is deducted only at Stage-2 (D05, §8.2).
+4.5 POST /api/v1/leave-applications/{id}/reject — reject with reason
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+id (path)
+	uuid
+	Y
+	Application id
+
+rejection_reason
+	text
+	Y
+	Mandatory (D04); VAL-LV-REJECT
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+status
+	enum REJECTED
+	Balance not deducted / hold released
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Caller not eligible approver
+
+422 REASON_REQUIRED
+	Empty rejection_reason
+
+4.5b POST /api/v1/leave-applications/{id}/withdraw — employee withdraws
+Inventory BRD §6.4.2 (within applications resource) — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+id (path)
+	uuid
+	Y
+	Own application before final approval
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+status
+	enum WITHDRAWN
+	Reversible; balance not deducted (§8.2)
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Not the requestor
+
+409 ALREADY_FINALISED
+	Already APPROVED/REJECTED
+
+4.6 POST /api/v1/leave-applications/{id}/revoke — revoke past-dated
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+id (path)
+	uuid
+	Y
+	Approved (incl. past-dated) application
+
+mode
+	enum direct·request
+	Y
+	request = employee revoke request (D26)
+
+revocation_reason
+	text
+	Y
+	Mandatory; audit-logged; VAL-LV-REVOKE-REASON
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+status
+	enum REVOKED
+	Balance restored to source type
+
+revoked_by_user_id
+	uuid
+	Set (HRBP/Leave Admin/HR Admin)
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Caller is a Manager (managers cannot revoke — D26) or lacks §3.7 right
+
+409 PAYROLL_CYCLE_LOCKED
+	Crosses locked payroll cycle — requires Payroll Admin ack (Phase 2)
+
+Phase-1 is full revoke only (FR-M04-005, single revoked_by_user_id model). Partial-revoke / replace-with-other-type / cross-type refund are deferred to a future FR and hidden in Phase-1 (§8 OPEN-04).
+4.7 GET /api/v1/leave-balances/{employee_id} — view balances
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+employee_id (path)
+	uuid
+	Y
+	Self / approver / HR Admin / Leave Admin
+
+leave_year
+	integer
+	N
+	Defaults current cycle
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+balances
+	array
+	Per-type employee_leave_balances §4.5.3 rows
+
+combined
+	object
+	Present only if FR-M04-013 enabled
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Caller outside self/approver/admin scope
+
+4.8 GET /api/v1/holiday-calendar — resolved holiday list
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+year
+	integer
+	N
+	Defaults current year
+
+type
+	enum
+	N
+	Filter Mandatory/Optional/National
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+holidays
+	array
+	Employee’s resolved set (§4.5.6 resolution); national always included
+
+Errors
+HTTP · code
+	When
+
+401 UNAUTHENTICATED
+	No valid session
+
+4.9 POST /api/v1/leave-encashments — authorise encashment
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+employee_id
+	uuid
+	Y
+	Target employee
+
+leave_type_code
+	string
+	Y
+	Must be encashable=TRUE (PL Phase 1)
+
+days_encashed
+	decimal(5,2)
+	Y
+	3–30 (FR-M04-004); VAL-LV-ENCASH-RANGE
+
+context
+	enum INTERMITTENT·FNF
+	Y
+	Default INTERMITTENT
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+id
+	uuid
+	leave_encashment_records id
+
+amount
+	decimal(12,2)
+	basic_pay/30×days (D25); deferred if basic_pay absent
+
+authorised_by_user_id
+	uuid
+	Must be HR Admin
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Caller not HR Admin (D15 — Leave Admin cannot authorise)
+
+422 ENCASH_PROBATION_BLOCK
+	Employee in probation (FR-M04-004)
+
+422 ENCASH_RANGE
+	days outside 3–30
+
+4.10 POST /api/v1/leave-types — create / edit leave type
+Inventory BRD §6.4.2 — purpose & auth per inventory, not restated.
+Request
+Field
+	Type / format
+	Req?
+	Notes (validation ref)
+
+(leave_types fields)
+	object
+	Y
+	Per §4.5.1; code unique within tenant
+
+Response (2xx)
+Field
+	Type
+	Notes
+
+id
+	uuid
+	Created/updated type
+
+status
+	enum
+	ACTIVE/INACTIVE
+
+Errors
+HTTP · code
+	When
+
+403 FORBIDDEN
+	Caller not Leave Admin/HR Admin/Org Admin (D08)
+
+409 DUPLICATE_CODE
+	leave_code already exists
+
+5. Validation
+References Shared/global formats (email, file, dates) live in the Foundation FS validation library and are referenced by id; only leave-specific rules are authored below. The catalogue ids are referenced from §2 and §4.
+This catalogue belongs in the Foundation FS once it exists; it is authored here so M04 build is unblocked. Each rule has a stable id used across screens and contracts.
+Validation id
+	Applies to
+	Rule (build-layer; business rule referenced)
+
+VAL-LV-TYPE
+	Leave type select (2.1, 4.1)
+	Value must be an ACTIVE leave_types code AND pass the FR-M04-001 eligibility filter for the employee at submit time. Server-authoritative.
+
+VAL-LV-UNIT
+	Unit (2.1, 4.1)
+	FULL·HALF·HOURS; HALF requires half_day_allowed=TRUE; HOURS requires is_hourly_leave=TRUE (FR-M04-017).
+
+VAL-LV-HALF
+	Half-day session
+	Required when unit=HALF; must respect type.half_day_sessions (BOTH/FIRST_ONLY/SECOND_ONLY).
+
+VAL-LV-HOURS
+	Hours (2.1, 4.1)
+	≥ hourly_leave_min_duration_minutes; multiple of hourly_leave_multiple_minutes; across-midnight per flag (FR-M04-017).
+
+VAL-LV-DATERANGE
+	From/To (2.1, 4.1)
+	To ≥ From; future ≤ max_future_dated_days; past ≤ max_past_dated_days (bypass roles excepted); no blackout overlap (FR-M04-007).
+
+VAL-LV-REASON
+	Reason (2.1, 4.1)
+	Must be an active leave_reasons_master entry valid for the chosen type; mandatory per platform setting.
+
+VAL-LV-MSG
+	Message (2.1, 2.4)
+	Mandatory length ≥1 when platform message-mandatory is on; else optional.
+
+VAL-LV-REJECT
+	Rejection (2.5, 4.5)
+	Non-empty rejection_reason mandatory (D04).
+
+VAL-LV-REVOKE-REASON
+	Revocation (2.10, 4.6)
+	Non-empty reason mandatory; persisted to audit log with original application reference (FR-M04-005).
+
+VAL-LV-ENCASH-RANGE
+	Encashment (2.9, 4.9)
+	Integer/decimal days in [3,30]; blocked in probation (FR-M04-004).
+
+VAL-LV-ADJ-AMOUNT
+	Adjustment (2.11)
+	Non-zero signed days; reset-to-value ≥0. HR-Admin-only; no co-approval gate (FR-M04-021).
+
+VAL-LV-ADJ-REASON
+	Adjustment reason (2.11)
+	Reason category + detail mandatory; audit-logged.
+
+VAL-LV-OH
+	Optional holiday (2.4)
+	Date in employee’s resolved OPTIONAL set; within remaining quota; not past; not next-calendar-year (FR-M04-006).
+
+VAL-ENUM
+	All enum selects
+	Value must be in the entity-defined enumeration (§4.5).
+
+6. Per-Screen RBAC Projection & Menu Entitlement
+References Role × action matrix BRD §3.7 (Time Management) — authoritative, not restated; field/PII access §3.8/§3.9/App. B; conflict-resolution rule §12.6 (most-restrictive wins). The new content here is the per-screen projection and the menu slice.
+6.1 Screen × role access projection
+Projection of the §3.7 matrix onto each M04 screen. Full = view + act; View = read-only; — = not entitled (screen hidden from menu per §6.3, deep-link 403). Where two roles collide, the most-restrictive applies (§12.6).
+Screen
+	Empl
+	L1 Mgr
+	HOD
+	Leave Admin
+	HR Admin
+	Org Admin
+	Source row (§3.7)
+
+apply-leave (2.1)
+	Full
+	On-behalf
+	—
+	On-behalf
+	On-behalf
+	—
+	Apply leave in one view / Raise on behalf
+
+my-leave (2.2)
+	Full(own)
+	—
+	—
+	View
+	View
+	—
+	Leave history / View Leave Page
+
+holiday-calendar (2.3)
+	Full(own)
+	View
+	View
+	View
+	View
+	View
+	—
+
+apply-optional-holiday (2.4)
+	Full(own)
+	—
+	—
+	On-behalf
+	On-behalf
+	—
+	Optional Holiday Import / on-behalf
+
+approvals — leave queue (2.5)
+	—
+	Full
+	Full
+	Full
+	Full
+	—
+	Approve/Reject (D04/D07)
+
+team-leave (2.6)
+	—
+	Full
+	Full
+	View
+	View
+	—
+	Team dashboard (FR-M04-008/D23)
+
+team-member-history (2.7)
+	—
+	View
+	View
+	View
+	View
+	—
+	Leave history (scoped)
+
+dept-leave (2.8)
+	—
+	—
+	Full
+	View
+	View
+	—
+	Dept view (D27)
+
+pl-encashment (2.9)
+	—
+	—
+	—
+	View
+	Full
+	—
+	Leave Encashment (D15)
+
+leave-revocation (2.10)
+	Request
+	—
+	—
+	Full
+	Full
+	—
+	Revoke (D26)
+
+leave-balance-adjust (2.11)
+	—
+	—
+	—
+	—
+	Full
+	—
+	Edit Leave Balance (HR Admin only — FR-M04-021)
+
+compoff-approvals (2.12)
+	—
+	Full
+	—
+	Full
+	Full
+	—
+	Comp-off credited/pay out (D20)
+
+cfg-* config (2.14–2.20)
+	—
+	—
+	—
+	Full
+	Full
+	Full
+	Leave Settings (D08)
+
+Note. “On-behalf” means the role can raise/act for another employee via the §3.7 on-behalf actions, not on its own self surface. PL-encashment authorise control is HR-Admin-only even though Leave Admin can view (D15). Managers never get a Revoke control anywhere (D26).
+6.2 Field-level masking projection
+Per §3.8/§3.9/App. B, the only leave-screen masking of note: on team-member-leave-history (2.7) the medical-certificate attachment content is masked to managers (clinical context via HRBP). All other leave fields are non-PII-tier-1 and follow standard visibility. No leave screen exposes Tier-1 identifiers; those remain masked per the employee-master field-access rules.
+6.3 Menu & navigation entitlement (leave slice)
+References The full role→menu map belongs in the Foundation FS; the leave slice is authored here, gated by §3.7. Field/action entitlement is §6.1; this is the layer above it.
+Menu item
+	Maps to screen
+	Visible to roles
+	Gating permission (§3.7)
+
+My leave
+	my-leave (2.2)
+	All employees
+	Self leave page
+
+Apply leave
+	apply-leave (2.1)
+	All employees + on-behalf roles
+	Apply / Raise on behalf
+
+Holiday calendar
+	holiday-calendar (2.3)
+	All employees
+	—
+
+Leave (approvals queue, badge)
+	approvals (2.5)
+	L1 Mgr, HOD, Leave/HR Admin
+	Approve/Reject
+
+Team leave
+	team-leave (2.6)
+	L1 Mgr, HOD, UAG Head
+	Team dashboard (D23)
+
+Comp-off
+	compoff-approvals (2.12)
+	L1 Mgr, Leave/HR Admin
+	Comp-off actions
+
+Department leave
+	dept-leave (2.8)
+	HOD / UAG Head
+	Dept view (D27)
+
+Leave revocations
+	leave-revocation (2.10)
+	Leave Admin, HRBP, HR Admin
+	Revoke (D26)
+
+Balance adjustments
+	leave-balance-adjust (2.11)
+	HR Admin
+	Edit Leave Balance (FR-M04-021)
+
+PL encashment
+	pl-encashment (2.9)
+	HR Admin (view: Leave Admin)
+	Leave Encashment (D15)
+
+Leave configuration
+	cfg-* (2.14–2.20)
+	Leave Admin, HR Admin, Org Admin
+	Leave Settings (D08)
+
+7. Operational Layer (Foundation-FS-bound)
+These sections are not screen-driven and belong in the Foundation FS; the leave slice is authored here so M04 is buildable. Business rules are referenced (BRD §5.5/§8.2/§9.2); the new content is cadence, idempotency, failure handling, templates, and binding.
+7.1 Scheduled jobs & background processing (leave)
+References Rules: BRD §5.5 (FR-M04-002 cycle, -009 sandwich, -016 smart suggestions), §8.2 (escalation), leave_platform_settings Cluster 8 (cron flags §4.5.7), background jobs entity §4.14.8. Cadence/idempotency/failure authored here; rules referenced.
+Job id
+	Trigger / cadence
+	Reads / writes
+	Logic (rule ref) · idempotency · failure
+
+JOB-M04-ESCALATE
+	Hourly scan
+	leave_applications
+	Sets ESCALATED + escalation_fired_at after 10 days inaction (FR-M04-003/§8.2). Idempotent on escalation_fired_at null-check. Failure: retry next run; emits LEAVE_ESCALATED.
+
+JOB-M04-ACCRUAL
+	Per accrual_frequency (quarterly/monthly) at 00:00 IST
+	leave_policies → employee_leave_balances
+	Credits accrual per policy (§4.5.2/§4.5.1). Idempotent per (employee,type,period) key. Failure: per-employee retry; partial-failure isolated.
+
+JOB-M04-CARRYFWD
+	Year-end (leave cycle boundary)
+	employee_leave_balances
+	Computes carry_forward_to_next_year within carry_forward_cap_days (§4.5.1/§4.5.3). Idempotent per (employee,type,year). Locks balance rows during run.
+
+JOB-M04-LOP
+	25th of month (cutoff, calendar-based)
+	leave_applications → LOP feed (M06 Phase 2)
+	Emits LOP records for 26th–25th window (FR-M04-002). Runs even if 25th is weekend/holiday. Idempotent per (employee,cycle).
+
+JOB-M04-SANDWICH
+	Month-end window (sandwich_auto_cron_from/till)
+	leave_applications, holiday/weekly-off
+	Re-evaluates approved leave for sandwich debit when enabled (FR-M04-009). Gated by apply_sandwich_leave. Idempotent re-compute; audit-logged.
+
+JOB-M04-SMART
+	Daily at configured time
+	employee_leave_balances, comp-off
+	Generates CF/comp-off expiry suggestions (FR-M04-016). Fires once per balance per lead-time threshold (no daily spam). Honours notification prefs.
+
+JOB-M04-AUTOREJECT
+	Configured date each month (gated)
+	leave_applications
+	Auto-rejects pending per reject_pending_via_date_cron (Cluster 8). Auto-APPROVE remains disabled platform-wide (D06). Idempotent per cycle.
+
+JOB-M04-DECISION-REEVAL
+	On employment-history change (event)
+	leave_policies.decision_matrix_config
+	Re-evaluates matrix outcome for affected employees (FR-M04-010); invalidates cached cycle result.
+
+7.2 Message catalogue (leave)
+References Notification events & recipients: BRD §9.2 (referenced — which events notify whom). Authored here: the per-channel template and the user-facing error copy that screens (§2) and contracts (§4) reference by id.
+7.2.1 Notifications
+Msg id (§9.2)
+	Channel(s)
+	Recipients (§9.2)
+	Template (merge fields) · trigger
+
+LEAVE_SUBMITTED
+	IN_APP+EMAIL
+	Stage-1 approver
+	“{applicant} applied {leave_type} {from}–{to} ({days}d). Review: {link}.” · apply-leave / POST §4.1
+
+LEAVE_APPROVED_STAGE_1
+	IN_APP+EMAIL
+	Stage-2 pool
+	“Stage-1 approved for {applicant} ({leave_type}). Your Stage-2 action: {link}.” · §4.4 (two-stage)
+
+LEAVE_APPROVED
+	IN_APP+EMAIL
+	Requestor
+	“Your {leave_type} {from}–{to} is approved. Balance after: {after_balance}.” · §4.4 final
+
+LEAVE_REJECTED
+	IN_APP+EMAIL
+	Requestor
+	“Your {leave_type} request was rejected. Reason: {reason}.” · §4.5
+
+LEAVE_ESCALATED
+	IN_APP+EMAIL
+	Approver + next-level + HRBP + HR Admin
+	“{application_number} pending {days_outstanding}d — escalated.” · JOB-M04-ESCALATE
+
+LEAVE_REVOKED
+	EMAIL
+	Requestor + L1 Manager
+	“{leave_type} {from}–{to} revoked. Reason: {reason}. Balance restored: {restored}.” · §4.6
+
+LEAVE_WITHDRAWN
+	IN_APP
+	Stage-1 approver
+	“{applicant} withdrew {application_number}.” · §4.5b
+
+LEAVE_ENCASHMENT_AUTHORISED
+	EMAIL
+	Employee
+	“PL encashment authorised: {days}d, {formula}, {amount}. Settlement timeline (Phase 2).” · §4.9
+
+LEAVE_REVOKE_REQUESTED
+	IN_APP+EMAIL
+	Leave Admin (then HRBP/HR Admin)
+	Employee-initiated revoke request (D26) · my-leave (2.2) · now in BRD §9.2
+
+7.2.2 Error & system messages
+Msg id
+	Shown where
+	Copy · recovery
+
+LV-ERR-BLACKOUT
+	apply-leave / 422 LV_BLACKOUT
+	“These dates fall within a blackout window and can’t be applied. Choose different dates or contact HR.”
+
+LV-ERR-PROFILE
+	apply-leave / 422 LV_PROFILE_INCOMPLETE
+	“Complete your profile (missing: {fields}) before applying for leave.”
+
+LV-ERR-PAST-DATED
+	apply-leave / 422 LV_PAST_DATED_EXCEEDED
+	“This date is older than the allowed back-dated window for {leave_type}.”
+
+LV-ERR-OH-CONFLICT
+	apply-optional-holiday
+	“You already have approved leave/holiday on this date.”
+
+LV-ERR-ENCASH-PROBATION
+	pl-encashment / 422 ENCASH_PROBATION_BLOCK
+	“Encashment isn’t available during probation.”
+
+LV-ERR-ENCASH-RANGE
+	pl-encashment / 422 ENCASH_RANGE
+	“Encashment days must be between 3 and 30.”
+
+LV-ERR-REASON-REQ
+	approvals reject / 422 REASON_REQUIRED
+	“A rejection reason is required.”
+
+LV-ERR-REVOKE-FORBIDDEN
+	leave-revocation / 403
+	“Managers can’t revoke leave. Contact Leave Admin / HRBP / HR Admin.” (D26)
+
+LV-ERR-PAYROLL-LOCKED
+	leave-revocation / 409
+	“This revocation crosses a locked payroll cycle and needs Payroll Admin acknowledgement (Phase 2).”
+
+7.3 Dashboard & widget specifications (leave)
+References Widget catalogue & role-awareness: BRD §10.2 (referenced); team dashboard rule FR-M04-008/D23. Authored: data binding, refresh, drill-down, per-role composition.
+Widget id
+	Purpose (§10.2)
+	Data source (§4)
+	Refresh
+	Drill-down · roles · empty
+
+WID-M04-BAL
+	My leave balances
+	GET /leave-balances §4.7
+	On load + post-txn
+	→ my-leave (2.2) · Employee · “No balances yet”
+
+WID-M04-PENDING
+	My pending applications
+	GET /leave-applications?scope=self §4.3
+	On load
+	→ my-leave (2.2) · Employee · “Nothing pending”
+
+WID-M04-TEAM
+	Team leave overview (week)
+	GET /leave-applications?scope=team §4.3
+	5-min cache
+	→ team-leave (2.6) · L1/HOD/UAG Head · reason hidden (D23) · “No team members assigned”
+
+WID-M04-APPROVALS
+	Leave approvals badge/queue
+	GET /leave-applications?scope=team&status=SUBMITTED §4.3
+	Real-time on action
+	→ approvals (2.5) · approver roles · “No pending approvals”
+
+WID-M04-UPCOMING-HOL
+	Upcoming holidays
+	GET /holiday-calendar §4.8
+	Daily
+	→ holiday-calendar (2.3) · all · “No upcoming holidays”
+
+WID-M04-SMART
+	CF/comp-off expiry nudges
+	JOB-M04-SMART output
+	Daily
+	→ apply-leave (2.1) prefilled · Employee · hidden when none
+
+Per-role composition: employees see WID-M04-BAL/PENDING/UPCOMING-HOL/SMART; managers/HODs additionally see WID-M04-TEAM and WID-M04-APPROVALS (gated by §3.7 / §6.1). Layout grid and personalisation follow the Foundation dashboard standard.
+8. Resolved Decisions & Build Directives
+Every prototype/BRD/RBAC conflict or gap from the cross-reference pass has now been resolved. The decisions below are settled and actioned — the BRD (Base 6.1) and this FS have been updated to match, and the prototype changes are listed against each. “Lands in” shows where the authoritative change was made.
+Id
+	What it was
+	Resolution (agreed &** actioned)**
+	Lands in
+
+OPEN-01
+	apply-leave prototype copy said “auto-approve after 3 days, escalate to HRBP, SLA 2d” — contradicts D04/D06 + FR-M04-003.
+	Build BRD behaviour: no auto-approval; 10-day escalation to next-level manager + HRBP/HR Admin/Leave Admin. Prototype copy corrected.
+	Prototype (copy); BRD already correct
+
+OPEN-02
+	Prototype sample data used non-canonical codes (CL/EL/LWP/BL/SAB/COMP/PAT).
+	Build against §4.5.1 canonical codes (SL/PL/PL_CC/WWC/WL/PATL/ML/ADL/MCL/SPL/SBL/OH/Unpaid-LOP). Prototype sample data re-skinned to canonical codes.
+	Prototype (data)
+
+OPEN-03
+	Two parallel config surfaces: Org-Admin cfg-* set vs legacy Leave-Admin set.
+	cfg-* set (§2.14–2.20) is canonical (aligns to §4.5 + Assignment Frameworks). Legacy Leave-Admin screens retired / redirected to cfg-*.
+	Prototype (retire legacy)
+
+OPEN-04
+	leave-revocation prototype offered partial revoke, replace-with-other-type, cross-type refund — beyond FR-M04-005.
+	Phase-1 = full revoke only (FR-M04-005). Partial/replace/cross-type hidden in the prototype and deferred to a future FR.
+	Prototype (hide modes); FS §2.10
+
+OPEN-05
+	leave-balance-adjust had no dedicated FR; prototype asserted a “>5 days HR co-approval” rule absent from BRD.
+	New FR-M04-021 (Manual Leave Balance Adjustment) added to BRD: HR-Admin-only, mandatory reason, fully audited, reversible. No co-approval gate (per confirmed decision).
+	BRD FR-M04-021; FS §2.11
+
+OPEN-06
+	FR-M04-015 flexible-holiday-date change had a screen but no endpoint.
+	POST /api/v1/leave-applications/flexible-holiday added to BRD §6.4 inventory and FS §4.
+	BRD §6.4; FS §4
+
+OPEN-07
+	Prototype FR tags were wrong on several screens.
+	Re-tag: leave-revocation→FR-M04-005; leave-balance-adjust→FR-M04-021; dept-leave→FR-M04-008/D27.
+	Prototype (tags)
+
+OPEN-08
+	pl-encashment prototype showed an “Awaiting HRBP sign-off” pre-step; D15 makes HR Admin the sole authoriser.
+	HRBP pre-step dropped entirely. HR-Admin-only authorisation per D15; no new gate.
+	Prototype (remove step); FS §2.9
+
+OPEN-09
+	Employee-initiated revoke-request notification (D26) had no §9.2 event.
+	LEAVE_REVOKE_REQUESTED added to BRD §9.2 (IN_APP + EMAIL; Leave Admin first, then HRBP/HR Admin) and FS §7.2.
+	BRD §9.2; FS §7.2
+
+OPEN-10
+	Project H 8-day optional-holiday quota vs 1-day default (BRD ON-LV04) — value unconfirmed.
+	Config supports the per-group quota either way (cfg-holiday-calendars §2.18). Business confirms the 8-day vs 1-day value at go-live; no structural change.
+	Config value (business)
+
+CASCADE
+	Overutilisation cascade (former OPEN-11/-12): no fallback-chain storage, and FR-M04-011 conflicted with D10.
+	Feature removed. FR-M04-011 and its two platform settings deleted from BRD; FR-M04-013/FR-M04-020/D10 reworded to drop the orphaned term. FS §2.1/2.2/2.17/4 updated. Insufficient-balance behaviour now follows D10 (explicit Unpaid/LOP selection, no auto-deduction).
+	BRD; FS
+
+Inherited BRD open items (ON-LV01..05) and migration gates (MG-LV01) remain owned by BRD §5.5 M04.FS2; they are not duplicated here beyond the config-affecting ON-LV04 (now OPEN-10) above.
+Appendix A — Reference Register
+Auditable map of every FS screen to the prototype id, BRD FR ids, BRD entities, §3.7 rows, and open items it draws on. A screen row with authored content but no references would indicate duplication/invention.
+FS screen
+	Prototype id
+	BRD FR ids
+	BRD entities
+	§3.7 row
+	Open items
+
+2.1 Apply leave
+	apply-leave
+	FR-M04-001/009/010/011/013/017
+	leave_applications §4.5.4
+	Apply / on-behalf
+	M04-01,02
+
+2.2 My leave
+	my-leave
+	FR-M04-001/013
+	employee_leave_balances §4.5.3
+	Leave history
+	M04-02
+
+2.3 Holiday calendar
+	holiday-calendar
+	FR-M04-006/015
+	holiday_calendar §4.5.6.1
+	—
+	M04-06
+
+2.4 Apply optional holiday
+	apply-optional-holiday
+	FR-M04-006
+	leave_applications §4.5.4
+	Optional Holiday
+	—
+
+2.5 Leave approvals
+	approvals
+	FR-M04-003
+	leave_applications §4.5.4
+	Approve/Reject
+	M04-01
+
+2.6 Team leave
+	team-leave
+	FR-M04-008
+	leave_applications §4.5.4
+	Team dashboard
+	—
+
+2.7 Team member history
+	team-member-leave-history
+	FR-M04-008
+	employee_leave_balances §4.5.3
+	Leave history
+	—
+
+2.8 Department leave
+	dept-leave
+	FR-M04-008 (D27)
+	leave_applications §4.5.4
+	Dept view
+	M04-07
+
+2.9 PL encashment
+	pl-encashment
+	FR-M04-004/018
+	leave_encashment_records §4.5.5
+	Leave Encashment
+	M04-08
+
+2.10 Leave revocation
+	leave-revocation
+	FR-M04-005
+	leave_applications §4.5.4
+	Revoke
+	M04-04,07,09
+
+2.11 Balance adjustments
+	leave-balance-adjust
+	(none — §4.5.3)
+	employee_leave_balances §4.5.3
+	Edit Leave Balance
+	M04-05,07
+
+2.12 Comp-off tasks
+	compoff-approvals
+	FR-M04 (D20)
+	leave_compoff_policies §4.5.8
+	Comp-off
+	—
+
+2.13 Exit clearance
+	clearance-leave
+	FR-M04-004 (M03-owned)
+	leave_encashment_records §4.5.5
+	—
+	—
+
+2.14 Leave platform settings
+	cfg-leave-platform
+	FR-M04-007/009/013/014
+	leave_platform_settings §4.5.7
+	Leave Settings
+	M04-03
+
+2.15 Leave policies
+	cfg-leave-policy
+	FR-M04-001
+	leave_policies §4.5.2
+	Leave Settings
+	M04-03
+
+2.16 Comp-off policies
+	cfg-compoff
+	FR-M04 (D20)
+	leave_compoff_policies §4.5.8
+	Leave Settings
+	M04-03
+
+2.17 Decision matrices
+	cfg-decisionmatrix
+	FR-M04-010/011
+	leave_policies §4.5.2
+	Leave Settings
+	—
+
+2.18 Holiday groups
+	cfg-holiday-calendars
+	FR-M04-006
+	holiday_calendars §4.5.6
+	Optional Holiday Policy
+	M04-10
+
+2.19 Holiday entries
+	cfg-holiday
+	FR-M04-006/015
+	holiday_calendar §4.5.6.1
+	Leave Settings
+	—
+
+2.20 Blackout windows
+	cfg-blackout
+	FR-M04-007
+	leave_platform_settings §4.5.7
+	Leave Settings
+	—
+
+End of Functional Specification — M04 Leave Management v1.0. All business rules, data definitions, permissions, NFRs and state transitions remain owned by BRD Base 6; this document is the build layer only.
+Build layer over BRD Base 6 · confidential · Page of # Prototype Sync Addendum — Batch 2: Employee-role Leave review (June 2026)
+Reflects the Batch-2 Employee-role Leave review against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Config-driven application lists
+The leave-application screen draws its reason list from the Leave Reasons master (assignment / group-company scoped) and its leave-type list from the active leave policies — neither is hardcoded. Reason is mandatory (Leave settings) and an attachment is required beyond the policy-defined day threshold; both are enforced at submit.
+Employee leave revocation
+An employee may request revocation of an approved leave application, including past-dated approved leave, which routes to the approval flow and refunds the balance on approval. System-deducted leave is not employee-revocable (Leave settings). The employee-side “Revoke” action opens a revocation request — it is not a silent action.
+Optional holidays & holiday calendar
+The holiday calendar distinguishes Mandatory / Optional / National holidays and is scoped to the employee’s location / assignment (holiday master Assigned-location / Work-area). Employees can apply for optional holidays and request flexible-holiday date changes where enabled.
+Leave encashment — not employee self-service (Phase 1 decision)
+Leave encashment is not an employee self-service action in Phase 1. HR Admin is both the initiator and the decision maker: HR Admin initiates and authorises encashment, either case-by-case during employment (HR Ops) or as part of full-and-final on exit (E7 clearance computes the encashable balance and passes it to FnF). Encashment is config-gated (encashment window; “encashable on exit” per policy) and may be delegated via the encashment-authorisation capability. The employee sees only the resulting balance / history entry — there is no employee-facing apply screen.
+Comp-off — in scope for employees (Phase 1 decision)
+Comp-off is in scope for employees. Two employee-facing paths exist: (1) availing — the employee applies for comp-off as a selectable leave type on the leave-application screen, subject to the comp-off policy (half-day, past-dated, lapse, auto-approve); and (2) credit — the employee raises a comp-off credit request (earned via weekend / holiday / overtime working) from the attendance screen. Both route to the comp-off approval queue; credit, lapse and clubbing are governed by the tenant comp-off / overtime policy.
+Manager leave approval — reject & direct revoke
+When a manager rejects a leave request a rejection reason is mandatory (config: Make Rejection Reason Mandatory For Leave Requests = Yes). A manager may also directly revoke an approved leave — including past-dated and system-deducted leave (config: Allow Managers/Approvers To Revoke … Past-Dated / System-Deducted Approved Leave = Yes; the “otherwise only admins” restriction is off) — with a mandatory reason, after which the employee is notified. Revoke is surfaced on every approved row of the reportee’s leave history.
+PL encashment — HR Admin decision only
+PL encashment is an HR Admin decision (Approve / Reject), taken case-by-case during employment and at FnF. It is not an employee self-service action and is not raised as a separately-initiated request — the encashment screen is the HR Admin decision queue. Leave Admin does not have access to PL encashment (it is an HR Admin authoritative action).
+Manager-role review (Round 3 follow-up B)
+Reportee leave actions consolidated. The manager's reportee Leave surface and the per-member Leave history now carry a consistent action set: apply leave on behalf, revoke approved leave (reason + audit), request balance adjustment (to Leave Admin), and a link to the full leave history. Resolves the earlier divergence between the two leave surfaces.

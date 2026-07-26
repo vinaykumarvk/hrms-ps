@@ -1,0 +1,1128 @@
+PrimeSoft HRMS ��� FS M02 Onboarding v1.4
+Table of Contents
+ TOC \z \o "1-2" \u \h
+0. How to read this specification
+This Functional Specification is the build layer on top of the BRD. It specifies what the BRD deliberately leaves out — screen composition, field-level UI behaviour, complete API contracts, validation, per-screen role projection, interaction states, scheduled jobs, and the message catalogue — for the Onboarding module (M02). It does not repeat business rules, data-field definitions, the permission matrix, NFR targets, state-machine transitions, or glossary terms that the BRD already fixes; those are referenced by section number.
+Each section opens with a References block identifying the BRD sections and prototype screens it builds on, so any fact is traceable to its single source. Where the prototype and BRD conflict, or where neither covers something the build needs, the item is not silently decided inside the spec body — it is recorded in §8 (Open Items, Conflicts & Recommendations) with a named owner and a proposed resolution marked PROPOSED — confirm before build.
+Foundation FS dependency. PrimeSoft does not yet have a published Foundation FS. The cross-cutting build content this module relies on — the shared validation/regex catalogue (§5), the global UI-state standard, the API conventions, the role→menu entitlement map, the scheduled-jobs register, and the message catalogue (§7) — properly lives once in a Foundation FS. Until that document exists, the M02 slices of those registers are authored here and tracked as accepted follow-on OPEN-FS-M02-12 (§8). On Foundation FS publication, the entries in §5 and §7 marked “Foundation-owned” move there and are referenced from here.
+1. Scope & Reference Map
+References BRD §5.3, §4.7, §3.7, §8.5, §9.5, §5.12.2, Appendix J · Prototype onboarding screens.
+This table proves non-repetition: it shows, per FS screen, exactly which BRD facts are referenced (never restated) and which prototype screen the build is extracted from. “—” in the Open items column means no conflict found in the cross-reference pass; an OPEN-FS id points to §8.
+FS screen (this doc)
+	Prototype data-page
+	BRD FR / decision
+	BRD entities (§4.7)
+	BRD RBAC (§3.7)
+	Open items (§8)
+
+2.1 Pre-joining pipeline
+	onboarding-oversight
+	FR-M02 (all); §8.5
+	onboarding_instances
+	Onboarding · View
+	—
+
+2.2 Initiate onboarding
+	onboarding-initiate
+	FR-M02-001; DO25, DO02, DO04
+	onboarding_instances, onboarding_processes, document_clusters, bgv_packages
+	Manage Onboarding
+	OPEN-FS-M02-01/02/03
+
+2.3 Candidate onboarding form
+	onboarding-form
+	FR-M02-002; DO19, DO03, DO21, DO24; App. J
+	onboarding_form_responses, onboarding_instances
+	n/a (candidate self)
+	OPEN-FS-M02-06/14
+
+2.4 Stakeholder workflow forms
+	onboarding-workflow-forms
+	DO08; App. J; §5.1.1 P01
+	onboarding_tasks
+	n/a (stakeholder)
+	—
+
+2.5 Candidate document upload
+	document-upload
+	FR-M02-003; DO14
+	cluster_documents, onboarding_instances
+	n/a (candidate self)
+	OPEN-FS-M02-11
+
+2.6 Document clusters (config + status)
+	document-clusters
+	FR-M02-003; DO02, DO04, DO13, DO14
+	document_clusters, cluster_documents
+	Manage Onboarding
+	OPEN-FS-M02-02/03/04
+
+2.7 BGV — cases & case detail (single screen)
+	bgv-reports
+	FR-M02-004; DO17; §3.10 BGV review
+	bgv_results, bgv_packages, bgv_checklist_master
+	Manage Onboarding + BGV review flag
+	M02-01/09/16 (§8)
+
+2.8 / 2.9 (merged into 2.7)
+	—
+	—
+	—
+	—
+	M02-16 (§8)
+
+2.10 Candidate pre-joining checklist
+	pre-joining
+	FR-M02-001/005; DO22
+	onboarding_instances
+	n/a (candidate self)
+	OPEN-FS-M02-10
+
+2.11 BGV checklist master (config)
+	cfg-bgv-checklist
+	§4.7.6.1; FR-M02-004
+	bgv_checklist_master
+	Org Admin
+	—
+
+2.12 Joining-pipeline widget
+	(oversight header)
+	§10.2 widgets; FR-M02
+	onboarding_instances
+	Onboarding · View
+	—
+
+Module boundary (reference, not restated): M02 owns candidate-to-employee transition from M08 handover through admin completion; on completion the lifecycle advances Pre-joining → Active(probation) per BRD §8.1/§8.5. Probation confirmation is M01/M09, out of scope. Governed by BRD §5.3 module-boundary note.
+2. Screen Specifications
+One subsection per prototype screen. Field tables author only the Control and On-screen behaviour columns; Source, Validation and Role columns are references. Every screen carries the four standard UI states (empty, loading, error, no-permission) plus partial-data where relevant; states the prototype omits are marked Authored.
+2.1 Pre-joining pipeline (onboarding-oversight)
+References FR-M02 (all); state machine BRD §8.5; entity onboarding_instances §4.7.2; RBAC Onboarding·View §3.7.
+Purpose. Onboarding Admin / HR Admin work-queue listing every in-flight onboarding instance with cluster, BGV and document progress, filtered by stage, joining window, department and cluster completion. Read/triage surface; row actions deep-link to the case.
+Layout regions
+Header band: title, count summary (e.g. “47 candidates · 7 ready to join”), Export action, primary “+ Initiate onboarding” (→ 2.2).
+Filter rail: Stage (maps 1:1 to onboarding_instances.state per §8.5 + derived “Ready to join”, “Joined”), Joining window, Department, Cluster completion bucket; Reset / Apply.
+Results table: one row per instance; Stage column reflects state machine; Action = Open (→ case) or Resolve (when a BGV discrepancy is pending, → 2.7).
+Column table
+Column
+	Source (BRD ref)
+	On-screen behaviour
+
+Candidate · code
+	onboarding_instances.candidate_id → candidates (M08) §4.9.3
+	Display name + CAN_ code; link opens case.
+
+Position · Joining
+	candidates / target_date_of_joining §4.7.2
+	Static; joining date drives Joining-window filter and “Overdue” badge when < today.
+
+Cluster status
+	derived from cluster completion (§4.7.4/4.7.5)
+	“Undertaking n/7 · Sign-off n/4”; <100% renders amber, 100% teal.
+
+BGV
+	bgv_results.status §4.7.7
+	Clear / In progress / Discrepancy / Not started / Waived (rehire); Discrepancy renders red and switches Action to Resolve.
+
+Documents
+	cluster_documents completion
+	“n/11” count; click filters case to pending docs.
+
+Stage
+	onboarding_instances.state §8.5
+	Label per state; never editable here.
+
+Action
+	—
+	Open / Resolve button; gated by Manage Onboarding (§6).
+
+States
+Empty (Authored): no instances match filters → “No candidates in this stage” with Reset-filters link.
+Loading (Authored): skeleton rows while GET pipeline resolves.
+Error (Authored): list fetch failure → MSG-ERR-LOADFAIL banner with Retry.
+No-permission (Authored): role lacks Onboarding·View → menu item hidden (§6); deep link returns 403 / MSG-ERR-FORBIDDEN.
+Actions → contracts / messages
+Export → GET /api/v1/onboarding/instances?…&format=csv (§4); rate-limited per Foundation conventions (BRD §6.3).
+Open → routes to the relevant case surface (2.3 form review / 2.6 clusters / 2.7 BGV) by current state.
+Initiate onboarding → 2.2.
+2.2 Initiate onboarding (onboarding-initiate)
+References FR-M02-001; decisions DO25 (auto-init basis/lead), DO02 (mandatory attributes), DO04 (sign-off mandatory); entities onboarding_processes §4.7.1, onboarding_instances §4.7.2, document_clusters §4.7.4, bgv_packages §4.7.6; RBAC Manage Onboarding §3.7.
+Purpose. Manual initiation wizard for ad-hoc joiners (campus, transfers, candidates outside the auto-initiation window). Auto-initiation for countersigned candidates is the scheduled job JOB-M02-AUTOINIT (§7); this screen is the manual equivalent and produces the same onboarding_instances row. Four steps.
+Step → field table
+Step / field
+	Control
+	Source (BRD ref)
+	Validation (ref)
+	On-screen behaviour
+
+1 · Source mode
+	Radio (3)
+	FR-M02-001; M08 handover §5.3
+	—
+	Countersigned (M08) │ Cross-entity (M01) │ Ad-hoc. Selection changes the Candidate picker’s data source.
+
+1 · Candidate
+	Searchable select
+	candidates §4.9.3 / employees §4.4.1
+	VAL-REQUIRED
+	Lists countersigned candidates not yet initiated; shows code, role, joining date.
+
+1 · Confirmed joining date
+	Date
+	target_date_of_joining §4.7.2
+	VAL-DATE-FUTURE
+	Pre-filled from offer; editable; drives auto-init window & due-date math.
+
+1 · Joining location
+	Select
+	locations §4.2.6
+	VAL-REQUIRED
+	Day-1 mode hint (in-person/remote) is display only.
+
+2 · Sign-off cluster
+	Checklist (read-only set)
+	document_clusters §4.7.4; DO04
+	—
+	Mandatory, non-removable (DO04). Contents per cluster master — see OPEN-FS-M02-03.
+
+2 · Undertaking cluster
+	Checklist
+	document_clusters §4.7.4; DO02
+	—
+	Enabled, NOT mandatory per DO02 — v20.2 conforms (finalized M02-02, §8).
+
+2 · Optional documents
+	Multi-select toggles
+	cluster_documents §4.7.5
+	—
+	Adds optional docs to the instance’s requirement set.
+
+3 · BGV vendor / package
+	Select
+	bgv_packages §4.7.6
+	—
+	Confirmed Phase-1 vendor: OnGrid (v20.2 dropdown collapsed) — M02-01 (§8).
+
+3 · Education / employment years
+	Select
+	bgv_checklist_master §4.7.6.1
+	—
+	Tunes the package scope; persisted on the BGV case.
+
+3 · BGV initiation timing
+	Radio
+	FR-M02-004
+	—
+	On document submission (auto) │ Manual │ On consent. Default per process config.
+
+4 · Welcome email template
+	Select
+	letter_templates (M11) §4.11.3; DO22
+	—
+	Welcome page template (group-company branded) — see 2.10 / OPEN-FS-M02-10.
+
+4 · Pre-joining portal access
+	Radio
+	FR-M02-001
+	—
+	Immediate │ 3 days │ 1 week before DOJ; sets portal-activation timing.
+
+4 · Buddy assignment
+	Radio
+	onboarding_tasks §4.7.8; FLOW-OB-004
+	—
+	Auto from team │ Manual │ None → seeds a BUDDY_ASSIGNMENT task.
+
+States & actions
+Confirm dialog on Initiate restates the side effects from §8.5 (portal activated · clusters surfaced · BGV initiated · welcome email sent). Authored.
+Initiate → POST /api/v1/onboarding/instances (§4); on 201 routes to 2.1 with the new row in INITIATED. Save draft persists wizard state without creating the instance.
+Error: process/cluster config missing → MSG-ERR-NOPROCESS; candidate already has an open instance → 409 MSG-ERR-DUP-INSTANCE.
+2.3 Candidate onboarding form (onboarding-form)
+References FR-M02-002 (auto-save), DO19 (30s), DO03 (BGV Form Standard 33 template), DO21 (OCR), DO24 (rehire sync); Appendix J (form catalog & sections); entity onboarding_form_responses §4.7.3.
+Purpose. Candidate self-fill form rendered from the assigned template. Two variants per Appendix J (BGV Form Standard — experienced/lateral; BGV Form – Associates — fresh hires). Section skeleton (12 sections in the Standard variant) is extracted from the prototype and matches Appendix J; the field-to-M01 mapping is the DO12 workbook, referenced not restated.
+Field catalogue (reference). The complete field list, types, mandatory flags and M01 column mapping live in the DO12 “BGV Form Standard (33)” mapping workbook (BRD §5.3 N.1, open). This FS specifies the rendering and interaction contract over that catalogue; it does not re-enumerate fields. Section structure governed by Appendix J.
+Section skeleton (per Appendix J — extracted, not invented)
+#
+	Section
+	Repeatable
+	Variant note (App. J)
+
+1
+	Personal details
+	No
+	Middle name mandatory in Associates variant.
+
+2
+	Disability
+	Yes
+	Kind · % · proof attachment.
+
+3
+	Contact
+	No
+	Marital status, mobile(s).
+
+4
+	Address (current + permanent)
+	No
+	Country/State/City cascading selects.
+
+5
+	Emergency contact
+	No
+	—
+
+6
+	Education
+	Yes
+	Verification emphasis in Associates.
+
+7
+	Personal identity (PAN/Aadhaar/Passport)
+	No
+	OCR extract-and-confirm affordance added in v20.2 per DO21 — M02-06 (§8).
+
+8
+	Previous employer (+ references, docs)
+	Yes
+	Standard variant only; reduced in Associates.
+
+9
+	Visa
+	Yes
+	—
+
+10
+	Vaccination
+	No
+	—
+
+11
+	Personal documents
+	No
+	Aadhaar/PAN/photo uploads.
+
+12
+	Others
+	No
+	Source, preferred location, notice period.
+
+Interaction contract
+Auto-save: every 30s while focused with unsaved changes; writes onboarding_form_responses rows at field_status=DRAFT. Cadence governed by DO19 / FR-M02-002 — not restated. PUT /api/v1/onboarding/instances/{id}/form-responses (§4).
+“Last saved at HH:MM:SS” indicator: required by FR-M02-002; added to v20.2 onboarding-form — M02-14 (§8).
+Submit: validates server-side, transitions field_status DRAFT→SUBMITTED, advances instance FORM_IN_PROGRESS→DOCUMENTS_PENDING (§8.5). POST …/form/submit.
+Rehire pre-fill (DO24): non-sensitive fields sync from M01; sensitive fields (per M01 §3.9 flag) require re-entry for consent freshness — eligibility derived automatically, no M02 list.
+Variant switch: hides/shows the Previous-employer section and Middle-name mandatory flag per Appendix J population rules.
+States
+Partial-data: section progress chip “n of 12 complete”; resuming restores DRAFT values. Network failure during auto-save holds state client-side, retries on reconnect, then updates the saved-at indicator (FR-M02-002 edge case). Loading/empty/error/no-permission per Foundation standard.
+2.4 Stakeholder workflow forms (onboarding-workflow-forms)
+References DO08 (mandatory-tasks completion gate = Yes); Appendix J (7 workflow forms); P01 workflow engine BRD §5.1.1; entity onboarding_tasks §4.7.8.
+Purpose. Seven stakeholder-fill forms embedded in onboarding workflow stages (Admin, IT, IT Assets, HR Induction, Manager Induction, Manager Induction Checklist, External BGV). Identity fields are profile-synced read-only from M01; the action field on each form is the stakeholder input that drives stage completion. Each form maps to one onboarding_tasks row; completion of mandatory tasks gates instance COMPLETED per DO08.
+Workflow form
+	Tagged stage (App. J)
+	Action field(s) — the build input
+	Maps to task_type §4.7.8
+
+Admin Form
+	Admin Task
+	Cubicle / Welcome kit / ID card / Bank / Parking (all mandatory) + comments
+	CUSTOM
+
+IT Form
+	IT Induction
+	IT induction status
+	IT_PROVISIONING
+
+IT Assets Form
+	IT asset allocation (M17)
+	Access card / ID / laptop(s) / mobile / other
+	IT_PROVISIONING
+
+HR Induction Form
+	HR Induction
+	HR induction / POSH explained / office tour / introductions
+	INDUCTION
+
+Manager Induction Form
+	Manager Induction
+	10-item checklist (all mandatory)
+	INDUCTION
+
+Manager Induction Checklist
+	Manager Induction Checklist
+	Induction comments
+	INDUCTION
+
+External BGV
+	BGV
+	BGV status (read by 2.7/2.8)
+	CUSTOM
+
+Read-only identity fields render disabled, sourced from M01 (no edit, no validation). Authored behaviour; data per M01 §4.4.
+Submit on each form → POST /api/v1/onboarding/tasks/{id}/complete (§4); mandatory-task completion contributes to the §8.5 ADMIN_REVIEW → COMPLETED gate (DO08).
+States: Blocked task (dependency unmet) shows disabled submit + reason; otherwise standard states.
+2.5 Candidate document upload (document-upload)
+References FR-M02-003 (cluster completion); DO14 (auto-reject on DOJ change); entities cluster_documents §4.7.5, document_clusters §4.7.4.
+Purpose. Candidate-facing list of required documents (the Undertaking-cluster / optional items assigned at initiation) with per-document upload status. Surfaces during DOCUMENTS_PENDING.
+Field/column
+	Control
+	Source (BRD ref)
+	Validation (ref)
+	On-screen behaviour
+
+Document
+	Label
+	cluster_documents §4.7.5
+	—
+	One row per required document for the instance.
+
+Status
+	Pill
+	field/document status
+	—
+	Uploaded (teal) │ Pending (amber); drives cluster completion %.
+
+Action
+	Upload / Replace / View
+	—
+	VAL-FILE
+	Upload accepts PDF/JPG/PNG ≤10MB (Authored constraint → shared catalogue); Replace re-versions; View opens viewer.
+
+On DOJ change, documents in clusters with auto_reject_on_doj_change=TRUE reset to Pending (DO14) — surfaced here as re-upload required. Reference DO14; do not restate which clusters.
+Upload → POST /api/v1/onboarding/instances/{id}/documents (§4). 2.5 is the candidate view of the configurable cluster set; 2.6 is admin config — both kept by design (M02-11, §8).
+2.6 Document clusters — config & per-candidate status (document-clusters)
+References FR-M02-003; DO02 (mandatory matrix), DO04 (sign-off mandatory), DO13 (employer signature), DO14 (auto-reject); entities document_clusters §4.7.4, cluster_documents §4.7.5; M11 document master.
+Purpose. Onboarding Admin surface to (a) define/edit cluster templates and (b) monitor per-candidate cluster completion. The cluster master and document content are M11-owned (DO15); M02 consumes assignments.
+Create / edit cluster template — field table
+Field
+	Control
+	Source (BRD ref)
+	On-screen behaviour
+
+Cluster name
+	Text
+	document_clusters.cluster_name §4.7.4
+	VAL-REQUIRED; unique within tenant.
+
+Cluster type
+	Radio
+	cluster_type enum SIGN_OFF/UNDERTAKING/REFERENCE §4.7.4
+	REFERENCE type added and Hybrid (non-BRD) removed in v20.2 — M02-03 (§8).
+
+Signature method
+	Select
+	DO13 (employer signature scope)
+	e-sign vs upload-only; employer signature enabled per DO13 doc list.
+
+Completion gate
+	Radio
+	mandatory_at_process_level §4.7.4; DO02/DO04
+	Sign-off mandatory (DO04, non-editable); Undertaking not-mandatory by default (DO02) — v20.2 conforms (M02-02, §8).
+
+Auto-reject on DOJ change
+	Toggle
+	auto_reject_on_doj_change §4.7.4; DO14
+	Toggle added to v20.2 cluster editor; writes auto_reject_on_doj_change — M02-04 (§8).
+
+Documents to include
+	Multi-select
+	cluster_documents §4.7.5 (from M11 master)
+	Pulls from M11 document register; persists cluster_documents rows with sort_order.
+
+Applicable for / SLA / escalation
+	Select / number
+	assignment_rules §4.2.17; FLOW-OB-002 §5.12.2
+	Scope + SLA reminder cadence; escalation target per flow library.
+
+Per-candidate status table & bulk assignment
+Status table: per candidate, Sign-off n/4 and Undertaking n/7 with overall %; Action = View / Remind / Escalate (Escalate fires the FLOW-OB-002 escalation, §7 message MSG-OB-CLUSTER-ESC).
+Bulk assignment: apply a cluster template to a candidate set (all PRE_JOINING, manual select, or by department) → POST /api/v1/document-clusters/assign (§4).
+States: standard; “stale” badge (no movement > SLA) is Authored, driven by cluster activation timestamp.
+2.7 BGV — cases & case detail (single screen: bgv-reports)
+References FR-M02-004; DO17 (no hard gate); capability flag BGV review §3.10; entities bgv_results §4.7.7, bgv_packages §4.7.6, bgv_checklist_master §4.7.6.1; state §8.5 BGV_IN_PROGRESS; API BRD §7.4.5a (incl. GET case detail).
+Purpose. One consolidated BGV surface shared by HR Admin and Onboarding Admin (both with the BGV-review flag, §3.10). It is a master–detail screen: a grid of BGV cards (one per case); selecting a card opens the case detail in place — showing every verification check / document status, the third-party report upload, the per-step update form, and (for discrepancy cases only) the resolution form. This replaces the former three separate surfaces — cases list, per-candidate upload screen, and HR-Ops acknowledge list (consolidation M02-16, §8). Onboarding may complete with BGV in progress (DO17) — the screen warns, does not block.
+Master — BGV cards (grid)
+Card element
+	Source (BRD ref)
+	On-screen behaviour
+
+Candidate · role · code
+	bgv_results.candidate_id → candidates (M08)
+	Card title; one card per case.
+
+Overall status pill
+	bgv_results.status §4.7.7
+	Clear / In progress / Discrepancy / Waived (rehire); colour-coded; Discrepancy renders red.
+
+Vendor · TAT
+	bgv_packages.vendor §4.7.6
+	OnGrid (confirmed Phase-1 vendor, M02-01); TAT bucket drives the SLA-breach badge.
+
+Check progress
+	derived from per-check bgv_results
+	“n/5 verified · m discrepancies” summary.
+
+Click target
+	—
+	Whole card is clickable → opens the case detail (openBgv); no separate row actions.
+
+Detail — opened on card click (shows every check & document status)
+Region / field
+	Source (BRD ref)
+	On-screen behaviour
+
+Verification steps table
+	bgv_results per-check §4.7.7; checklist §4.7.6.1
+	One row per check (Identity · Education · Prior employment · Criminal · Address): Particulars, Document (View), Status pill (Pending/In progress/Verified/Discrepancy/Unable to verify), Verified-on, Modify. This is the ‘every document status’ view.
+
+Third-party report
+	bgv_results.vendor_reference §4.7.7
+	Vendor (OnGrid, fixed), reference no., date, overall outcome, mandatory PDF upload (VAL-FILE). Manual-entry fallback when the OnGrid webhook is down (FR-M02-004 edge case).
+
+Update verification step
+	bgv_results.status §4.7.7
+	Per-check status update form; Discrepancy status surfaces the resolution form below. All writes audit-logged (Appendix C).
+
+Discrepancy resolution
+	bgv_results.disposition enum §4.7.7
+	Shown only for discrepancy cases. Resolution decision persists the BRD enum RETAIN · INVESTIGATE · INITIATE_SEPARATION (M02-09); ‘escalate to HRBP’ is a separate routing toggle, not a disposition. Revised CTC + mandatory notes; visible to confidential roles per §3.9.
+
+Back to cards
+	—
+	Returns to the card grid (closeBgv) without leaving the screen.
+
+Single screen, both roles: hosted once; HR Admin reaches it via its ‘BGV status’ menu (HR-Admin operational superset, §3.1.1), Onboarding Admin via its own menu. Whole-screen visibility is gated by the BGV-review capability flag (§3.10) — not a role; reference §3.10, do not restate the grant.
+APIs (§4 / BRD §7.4.5a): card grid → GET /api/v1/bgv/instances; card click → GET /api/v1/bgv/instances/{id} (returns all per-check statuses); Save report → POST /bgv/results/{id}/report; per-step update → PATCH step status; Confirm resolution → POST /bgv/results/{id}/disposition. Inbound OnGrid webhook (POST /bgv/results) auto-populates the same per-check rows; manual entry is the fallback. INITIATE_SEPARATION post-completion triggers the M03 workflow with the BGV reference (FR-M02-004 edge case).
+States: empty (no cases) — “No BGV cases”; loading skeleton on grid + detail fetch; error — MSG-ERR-LOADFAIL; no-permission — BGV-review flag absent → screen hidden (§6) / 403 MSG-ERR-FORBIDDEN. Detail for a clear case hides the resolution form; HR acknowledgement of a clear case is an action within the detail.
+2.8 (merged into 2.7) BGV report upload & step verification
+Merged into the 2.7 case detail as the ‘Third-party report’ and ‘Verification steps / Update step’ regions (consolidation M02-16, §8). Heading retained only to preserve existing cross-references.
+2.9 (merged into 2.7) BGV acknowledge — HR Ops
+Merged into 2.7. Acknowledging a clear case is an action inside the case detail; HR Admin opens the single BGV screen via its ‘BGV status’ menu (HR-Admin operational superset). Heading retained for cross-references.
+2.10 Candidate pre-joining checklist (pre-joining)
+References FR-M02-001 (portal access), FR-M02-005 + DO22 (welcome page, group-company branding); entity onboarding_instances §4.7.2.
+Purpose. Candidate landing surface after portal activation: a checklist (accept offer · upload documents · sign onboarding forms · BGV consent) deep-linking to 2.3/2.5. The branded Welcome page from FR-M02-005/DO22 (group-company name primary, legal-entity secondary; Standalone shows legal entity only) is rendered as a branded welcome banner above this checklist in v20.2 (welcome_page_template_id §4.7.1) — M02-10 (§8).
+Checklist rows derive status from instance state + cluster/BGV progress; each row links to its surface. Standard states; portal-access timing per the 2.2 setting / FR-M02-001.
+2.11 BGV document checklist master (cfg-bgv-checklist)
+References entity bgv_checklist_master §4.7.6.1; FR-M02-004; RBAC Org Admin §3.7.
+Purpose. Org-Admin master of verification checks and the documents each requires; drives the per-step statuses in 2.7/2.8 and feeds bgv_packages. Tenant-configurable.
+Field
+	Control
+	Source (BRD ref)
+	On-screen behaviour
+
+Check name
+	Text
+	check_name §4.7.6.1
+	VAL-REQUIRED.
+
+Required documents
+	Multi/tag
+	required_documents (json) §4.7.6.1
+	Free list of document labels.
+
+Mandatory
+	Toggle
+	is_mandatory §4.7.6.1
+	Drives whether the step blocks package completion.
+
+Applicable to
+	Select
+	applicable_to enum §4.7.6.1
+	ALL / EXPERIENCED_HIRES / FRESHERS / SPECIFIC_UAG (+ UAG picker).
+
+Status
+	Select
+	status enum §4.7.6.1
+	ACTIVE / INACTIVE.
+
+Save → POST/PUT /api/v1/bgv/checklist (§4). Standard config states.
+2.12 Joining-pipeline widget (oversight header)
+References BRD §10.2 role-aware dashboard widgets; §10.4 freshness/cache; FR-M02; entity onboarding_instances §4.7.2.
+Dashboard widget on the Onboarding Admin overview summarising joiners by week (count + department split). Specified with the widget pattern, not a field table.
+Attribute
+	Specification
+
+Widget id
+	WID-M02-JOINPIPE
+
+Purpose (BRD ref)
+	Joining-pipeline-by-week summary; reference BRD §10.2 (do not restate report def).
+
+Data source
+	onboarding_instances grouped by ISO week of target_date_of_joining; via GET /api/v1/onboarding/instances?group=week (§4).
+
+Aggregation
+	Count of instances per week + department breakdown.
+
+Refresh & cache
+	Per Foundation/§10.4 convention (near-real-time, short TTL); reference, not restated.
+
+Drill-down
+	Week → 2.1 pre-filtered by joining window.
+
+Visible to roles
+	Onboarding Admin, HR Admin (Onboarding·View §3.7).
+
+Empty / loading / error
+	“No upcoming joiners” / skeleton / MSG-ERR-LOADFAIL.
+
+3. Interaction & Navigation Flows
+References State machine BRD §8.5 (referenced, not redrawn); flow library §5.12.2 (FLOW-OB-001…005); scheduled jobs §7.
+This section maps screens onto the §8.5 onboarding state machine — it does not redraw it. Each row shows which screen (or scheduled job) drives each transition and the side effects the BRD already fixes.
+§8.5 transition
+	Driven by (screen / job)
+	FS reference
+
+— → INITIATED
+	2.2 Initiate (manual) OR JOB-M02-AUTOINIT (§7)
+	Side effects per §8.5: instance created, portal activated, welcome email (MSG-OB-AUTOINIT).
+
+INITIATED → FORM_IN_PROGRESS
+	2.3 candidate starts form
+	Auto-save writes DRAFT responses (FR-M02-002).
+
+FORM_IN_PROGRESS → DOCUMENTS_PENDING
+	2.3 Submit
+	Responses → SUBMITTED; 2.5 document tasks surfaced.
+
+DOCUMENTS_PENDING → BGV_IN_PROGRESS
+	2.5/2.6 all required docs uploaded
+	BGV case created (2.7/2.8 populated).
+
+BGV_IN_PROGRESS → ADMIN_REVIEW
+	2.7/2.8 all checks VERIFIED or disposition complete
+	Onboarding Admin notified (MSG-OB-ADMIN-REVIEW).
+
+ADMIN_REVIEW → COMPLETED
+	2.x admin completion (Manage Onboarding)
+	Sign-off acks + mandatory tasks (DO08) verified; M01 → Active; MSG-OB-COMPLETED.
+
+(any) → CANCELLED
+	HR Admin cancel
+	Record soft-deleted; portal access revoked (§8.5).
+
+Flow-library alignment (reference §5.12.2): FLOW-OB-001 Pre-joining form submission drives 2.3→2.5; FLOW-OB-002 Document upload verification drives 2.5/2.6 + escalation; FLOW-OB-003 BGV initiation drives 2.7/2.8; FLOW-OB-004 Buddy assignment seeds an onboarding_tasks row from 2.2; FLOW-OB-005 DOJ reschedule surface added to v20.2 pre-joining — M02-13 (§8).
+4. API Contracts
+References Conventions BRD §6.2 (response format), §6.3 (rate limiting), §6.4 (endpoint inventory); auth model §3.7; entities §4.7.
+Inventory now in the BRD (v6.3). The M02 onboarding endpoint inventory — absent from base 6.2 — has been added to BRD v6.3 §7.4.5a (closing former OPEN-FS-M02-05). This FS references that inventory and authors the FULL contract per endpoint (request/response/error schemas), which the inventory only names. Conventions are referenced, not restated: standard response format (§6.2), error model and rate limits (§6.3). Paths use the /api/v1 prefix consistent with the inventory.
+4.1 Endpoint inventory (now BRD v6.3 §7.4.5a)
+Method · Path
+	Purpose
+	Auth (ref §3.7)
+
+POST /api/v1/onboarding/instances
+	Initiate onboarding (manual or system)
+	Manage Onboarding · System
+
+GET /api/v1/onboarding/instances
+	Pipeline list / search / export / group=week
+	Onboarding·View; scoped
+
+GET /api/v1/onboarding/instances/{id}
+	Retrieve a case
+	Onboarding·View; scoped
+
+PUT /api/v1/onboarding/instances/{id}/form-responses
+	Auto-save / batch field upsert (DRAFT)
+	Candidate (own case)
+
+POST /api/v1/onboarding/instances/{id}/form/submit
+	Submit candidate form
+	Candidate (own case)
+
+POST /api/v1/onboarding/form-responses/{id}/approve │ /reject
+	Field-level approve/reject
+	Manage Onboarding
+
+POST /api/v1/onboarding/instances/{id}/documents
+	Upload required document
+	Candidate (own) · Manage Onboarding
+
+POST /api/v1/onboarding/tasks/{id}/complete
+	Complete a stakeholder workflow task
+	Task assignee
+
+POST /api/v1/onboarding/instances/{id}/complete
+	Admin completion → M01 Active
+	Manage Onboarding
+
+POST /api/v1/onboarding/instances/{id}/cancel
+	Cancel onboarding
+	HR Admin
+
+GET│POST /api/v1/onboarding/processes
+	Process config CRUD
+	Manage Onboarding · Org Admin
+
+GET│POST /api/v1/document-clusters[/assign]
+	Cluster config + bulk assignment
+	Manage Onboarding
+
+POST /api/v1/bgv/instances/{id}/initiate
+	Initiate BGV vendor case
+	Manage Onboarding
+
+GET /api/v1/bgv/instances
+	BGV card grid (2.7 master) — list/filter cases
+	BGV review flag
+
+GET /api/v1/bgv/instances/{id}
+	BGV case detail (2.7) — all per-check / per-document statuses
+	BGV review flag
+
+POST /api/v1/bgv/results (webhook)
+	Inbound vendor results
+	Vendor API key (HMAC)
+
+POST /api/v1/bgv/results/{id}/report
+	Upload report / set per-check status
+	BGV review flag
+
+POST /api/v1/bgv/results/{id}/disposition
+	Disposition a discrepancy
+	BGV review flag
+
+GET│POST /api/v1/bgv/checklist
+	BGV checklist master CRUD
+	Org Admin
+
+4.2 Full contracts (key endpoints)
+POST /api/v1/onboarding/instances — initiate (drives §8.5 — → INITIATED)
+Request:
+{ source_mode: ‘COUNTERSIGNED’|‘CROSS_ENTITY’|‘AD_HOC’,
+candidate_id?: uuid, // required unless AD_HOC
+employee_id?: uuid, // CROSS_ENTITY rehire/transfer
+process_id: uuid, // FK onboarding_processes §4.7.1
+target_date_of_joining: date, // VAL-DATE-FUTURE
+joining_location_id: uuid,
+bgv_package_id?: uuid, bgv_initiation_timing?: enum,
+welcome_page_template_id?: uuid, portal_access_timing: enum,
+buddy_mode: ‘AUTO’|‘MANUAL’|‘NONE’,
+optional_document_ids?: uuid[] }
+Response 201: { id, state:‘INITIATED’, initiated_by_user_id, target_date_of_joining,
+cluster_summary, bgv_case_id, portal_access_at }
+Errors: 400 missing process/candidate for mode · 403 lacks Manage Onboarding (ref §3.7) · 409 open instance already exists for candidate (MSG-ERR-DUP-INSTANCE) · 422 validation (field-level per §6.2). Idempotency: client may send Idempotency-Key; a duplicate key returns the original 201. Side effects per §8.5.
+PUT /api/v1/onboarding/instances/{id}/form-responses — auto-save (FR-M02-002 / DO19)
+Request: { responses: [ { field_name, field_value } ], save_reason:‘AUTOSAVE’|‘MANUAL’ }
+Response 200: { saved_at: timestamp, draft_count, server_validation: [ {field_name, code} ] }
+Behaviour: upserts onboarding_form_responses at field_status=DRAFT; never blocks on validation (errors returned inline, save still succeeds) per FR-M02-002 edge case. Auth: candidate on own case only (403 otherwise). Rate limit: write tier per §6.3; auto-save batches every 30s (DO19) so it stays within limits. saved_at powers the “Last saved at” indicator (OPEN-FS-M02-14).
+POST /api/v1/onboarding/instances/{id}/complete — admin completion (§8.5 ADMIN_REVIEW → COMPLETED)
+Request: { confirm_bgv_in_progress?: boolean } // required true if BGV not clear (DO17)
+Response 200: { state:‘COMPLETED’, employee_id, m01_lifecycle_state:‘ACTIVE’ }
+Pre-conditions enforced server-side (referenced, not restated): all Sign-Off acknowledgements ACKNOWLEDGED (FR-M02-003) and all mandatory workflow tasks COMPLETED (DO08). 409 PRECONDITION_NOT_MET with the failing gate(s); 422 if confirm_bgv_in_progress omitted while BGV incomplete (DO17 — warn-not-block). Emits ONBOARDING_COMPLETED (§9.5 / MSG-OB-COMPLETED) and the M01 handover event.
+POST /api/v1/bgv/results — inbound vendor webhook (FR-M02-004)
+Request (vendor): { vendor_reference, onboarding_instance_id, checks:[ {check_code, status, report_url?} ] }
+Response 200: { accepted: true, updated: n }
+Auth: vendor API key + HMAC signature (integration_credentials §4.14.6). Idempotent on (vendor_reference, check_code) — re-delivery updates in place. Populates bgv_results §4.7.7; DISCREPANCY rows surface on 2.7. Emits BGV_RESULT_RECEIVED (§9.5 / MSG-OB-BGV-RESULT). Manual-entry fallback uses 4.2 report endpoint when the vendor is unavailable (FR-M02-004 edge case).
+POST /api/v1/bgv/results/{id}/disposition
+Request: { disposition: ‘RETAIN’|‘INVESTIGATE’|‘INITIATE_SEPARATION’, notes: string } // notes mandatory
+Response 200: { disposition, disposition_by_user_id, disposition_at }
+Auth: BGV review capability flag (§3.10) — 403 FIELD_ACCESS_DENIED otherwise. INITIATE_SEPARATION post-completion triggers the M03 workflow with the BGV reference (FR-M02-004). Note the enum here is the BRD §4.7.7 vocabulary; the prototype’s resolution options differ — OPEN-FS-M02-09 must reconcile before build.
+5. Validation
+References Shared catalogue is Foundation-owned (OPEN-FS-M02-12); statutory formats per Appendix A; field definitions per §4.7 and the DO12 mapping workbook.
+Screens reference catalogue entries by id. The entries below are the M02 slice; on Foundation FS publication they move there. Only validation genuinely specific to onboarding screens is authored here; statutory-field rules (PAN, Aadhaar) are the same shared entries used by M01 and must not diverge.
+Catalogue id
+	Applies to (screen/field)
+	Rule (authored / referenced)
+	Owner
+
+VAL-PAN
+	2.3 §7 PAN
+	10-char PAN format [A-Z]{5}[0-9]{4}[A-Z]; shared with M01 statutory_identities §4.4.5.
+	Foundation
+
+VAL-AADHAAR
+	2.3 §7 Aadhaar
+	12-digit, Verhoeff checksum; masked display per §3.9; shared.
+	Foundation
+
+VAL-EMAIL
+	2.3 personal/prev-employer emails
+	RFC-5322 lite; shared.
+	Foundation
+
+VAL-MOBILE
+	2.3 contact mobiles
+	E.164 / Indian 10-digit with country code; shared.
+	Foundation
+
+VAL-PINCODE
+	2.3 §4 address
+	6-digit Indian PIN; non-India addresses skip; shared.
+	Foundation
+
+VAL-DATE-FUTURE
+	2.2 joining date
+	Must be ≥ today (manual init); DOJ revision rules per FR-M02-001 (referenced).
+	Foundation
+
+VAL-DATE-RANGE
+	2.3 §8 prev-employer from/to
+	from < to; to optional (current employer).
+	M02
+
+VAL-FILE
+	2.5/2.8 uploads
+	PDF/JPG/PNG ≤ 10 MB; AV-scan before accept; report PDF mandatory on 2.8.
+	M02
+
+VAL-PERCENT
+	2.3 §2 disability %
+	0–100 numeric; required only if a disability row is added.
+	M02
+
+VAL-REQUIRED
+	all mandatory fields
+	Per template mandatory flags (DO12 workbook) — not re-enumerated here.
+	Foundation
+
+6. Per-Screen RBAC Projection & Menu Entitlement
+References Permission matrix BRD §3.7 (Onboarding, Workflows), field access §3.9, capability flags §3.10 (BGV review). The matrix itself is NOT restated — this projects it onto screens.
+6.1 Screen → action projection
+Screen
+	Visible to (ref §3.7)
+	Editable / action gated by
+	Notes
+
+2.1 Pipeline
+	Platform Super Admin, HR Admin, Onboarding Admin, Org Admin (Onboarding·View, §3.7 v6.3)
+	Row actions need Manage Onboarding
+	Org Admin now holds Onboarding·View (granted in BRD v6.3 §3.7) and Manage — resolves former OPEN-FS-M02-08.
+
+2.2 Initiate
+	HR Admin, Onboarding Admin, Org Admin (Manage Onboarding)
+	Initiate = Manage Onboarding
+	—
+
+2.3 Candidate form
+	Candidate (own case)
+	Candidate edits own DRAFT; HR/Onboarding Admin approve/reject fields
+	BGV review flag does NOT grant field edit (§3.10 ‘NOT granted’).
+
+2.4 Workflow forms
+	Task assignee (IT/HR/Manager/Admin)
+	Submit = assignee of the onboarding_task
+	Identity fields read-only (M01).
+
+2.5 Doc upload
+	Candidate (own case)
+	Upload = candidate; admin may upload on behalf (Manage Onboarding)
+	—
+
+2.6 Clusters
+	HR Admin, Onboarding Admin (Manage Onboarding)
+	Template edit + bulk assign = Manage Onboarding
+	Cluster master content is M11-owned (DO15).
+
+2.7 BGV (single screen, cards → detail)
+	Onboarding Admin + HR Admin (+ HRBP), only with BGV review flag (§3.10)
+	Disposition / step status / report upload = BGV review flag
+	One screen for both roles (M02-16); approve onboarding completion is NOT granted by the flag (§3.10).
+
+2.10 Pre-joining
+	Candidate (own case)
+	—
+	—
+
+2.11 BGV checklist master
+	Org Admin
+	CRUD = Org Admin
+	Tenant-level config.
+
+Field masking: any sensitive field rendered on these screens (e.g. Aadhaar, DOB) is masked per BRD §3.9 for roles without PII-tier access; the FS does not restate the field-access matrix — it points to §3.9.
+6.2 Menu & navigation entitlement (M02 slice — Foundation-owned)
+References Foundation FS role→menu map (OPEN-FS-M02-12); gating actions per §3.7.
+Menu / section
+	Maps to screen
+	Visible to roles
+	Gating permission (§3.7)
+
+Onboarding › Pre-joining pipeline
+	2.1
+	HR Admin, Onboarding Admin
+	Onboarding·View
+
+Onboarding › Initiate
+	2.2
+	HR Admin, Onboarding Admin, Org Admin
+	Manage Onboarding
+
+Onboarding › Document clusters
+	2.6
+	HR Admin, Onboarding Admin
+	Manage Onboarding
+
+Onboarding › BGV (“BGV status”)
+	2.7 (single screen)
+	Onboarding Admin, HR Admin, HRBP (with BGV review flag)
+	Manage Onboarding + §3.10 flag
+
+Settings › BGV checklist
+	2.11
+	Org Admin
+	Org Admin
+
+Candidate portal › Pre-joining / Form / Documents
+	2.10/2.3/2.5
+	Candidate (own case)
+	n/a (self-scope)
+
+7. Operational Specifications
+Scheduled jobs and the message catalogue are cross-cutting and Foundation-owned; the M02 slices are authored here pending the Foundation FS (OPEN-FS-M02-12).
+7.1 Scheduled Jobs & Background Processing
+References FR-M02-001 (auto-init), DO23 (reminders every 3 days), DO14 (auto-reject on DOJ change), DM04 sign-off cron (M11), FLOW-OB-002 SLA; entities §4.7; audit Appendix C.
+Attribute
+	JOB-M02-AUTOINIT
+	JOB-M02-REMINDER
+	JOB-M02-DOJ-REJECT
+
+Trigger
+	Daily 00:00 IST
+	Daily 00:00 IST
+	On DOJ-change event + nightly sweep
+
+Purpose (FR ref)
+	Auto-initiate onboarding for candidates with DOJ ≤ today+lead (FR-M02-001, DO25)
+	Candidate reminders every 3 days; tighten copy in final 3 days (DO23)
+	Reset documents to PENDING in clusters with auto_reject_on_dob_change=TRUE (DO14)
+
+Reads / writes
+	reads candidates/offers; writes onboarding_instances (INITIATED), portal access
+	reads onboarding_instances; writes notifications
+	reads document_clusters; writes cluster_documents status
+
+Logic (ref)
+	Rule per FR-M02-001 (not restated)
+	Cadence per DO23
+	Toggle scope per DO14
+
+Idempotency
+	Skip candidates with an existing open instance; safe to re-run
+	Dedup on (instance, day); one reminder/instance/run
+	Re-run safe; only resets non-reset docs
+
+Failure / alerting
+	Per-candidate try/catch; partial success logged; MSG-OB-AUTOINIT-FAIL to Onboarding Admin
+	Retry next run
+	Alert Onboarding Admin on bulk reset
+
+Concurrency
+	Row-level lock per instance
+	None (read-mostly)
+	Lock cluster rows during reset
+
+Observability
+	Audit per instance (Appendix C); count metrics
+	Notification log
+	Audit reset events
+
+Auto-save is client-driven (30s, DO19), not a server cron — see 2.3 / 4.2.
+BGV SLA / TAT reminders and sign-off surfacing reuse the M11 sign-off cron (every 12h, DM04) and the FLOW-OB-002/003 SLA timers — referenced, not re-implemented in M02.
+7.2 Message Catalogue (M02 slice)
+References Notification events & recipients BRD §9.5 (referenced); templates authored here; error copy backs §2 states and §4 error codes.
+Notifications (templates over §9.5 events)
+Msg id
+	Event (§9.5)
+	Channel
+	Recipients (ref §9.5)
+	Template (merge fields)
+	Trigger
+
+MSG-OB-AUTOINIT
+	ONBOARDING_AUTO_INITIATED
+	Email
+	Candidate + Onboarding Admin
+	“Welcome {{candidate_name}} — start your onboarding for {{group_company_name}}” + portal link
+	JOB-M02-AUTOINIT / 2.2
+
+MSG-OB-FORM-SUBMIT
+	ONBOARDING_FORM_SUBMITTED
+	In-app
+	Onboarding Admin
+	“{{candidate}} submitted the onboarding form — review queue”
+	2.3 submit
+
+MSG-OB-BGV-RESULT
+	BGV_RESULT_RECEIVED
+	In-app + Email
+	BGV review flag holders
+	“BGV result for {{candidate}}: {{check}} = {{status}}”
+	webhook /bgv/results
+
+MSG-OB-COMPLETED
+	ONBOARDING_COMPLETED
+	Email
+	Employee + L1 + HRBP + IT Admin + Buddy
+	“{{employee}} joins {{doj}} — Day-1 induction details”
+	2.x completion
+
+MSG-OB-BUDDY
+	BUDDY_ASSIGNED
+	In-app + Email
+	Buddy + new joiner
+	“You’re {{joiner}}’s onboarding buddy” + profile summary
+	FLOW-OB-004
+
+MSG-OB-CLUSTER-ESC
+	(FLOW-OB-002 escalation)
+	In-app + Email
+	Onboarding Admin + HRBP
+	“Cluster overdue for {{candidate}} ({{pct}}%)”
+	2.6 Escalate / SLA
+
+Error & system messages
+Msg id
+	Where shown
+	Severity
+	Message text
+	Recovery
+
+MSG-ERR-LOADFAIL
+	2.1/2.7 list error
+	Error
+	“Couldn’t load the list. Please retry.”
+	Retry button refetches.
+
+MSG-ERR-FORBIDDEN
+	any (403)
+	Error
+	“You don’t have access to this onboarding record.”
+	Contact HR Admin.
+
+MSG-ERR-DUP-INSTANCE
+	2.2 (409)
+	Warning
+	“This candidate already has an onboarding case in progress.”
+	Open the existing case.
+
+MSG-ERR-NOPROCESS
+	2.2 (400)
+	Error
+	“No active onboarding process is configured for this employment type.”
+	Configure in Settings (Org Admin).
+
+MSG-ERR-PRECOND
+	4.2 complete (409)
+	Error
+	“Can’t complete: {{gate}} not satisfied.”
+	Resolve the listed gate(s) then retry.
+
+MSG-OB-AUTOINIT-FAIL
+	ops alert
+	Error
+	“Auto-initiation failed for {{n}} candidate(s).”
+	Initiate manually (2.2).
+
+8. Decisions Register (finalized)
+All items from the cross-reference pass are now finalized — none remain open. Two were decided per the product owner’s direction (M02-11, M02-15); the rest adopt this FS’s recommended resolutions. Three were folded into BRD v6.3 at source and are marked Closed-in-BRD; the remainder are settled design/product/content decisions for build. The Status column carries the final disposition.
+Id
+	Status
+	Original gap / conflict
+	Owner
+	FINAL decision (settled)
+
+OPEN-FS-M02-01
+	Finalized
+	BRD locks OnGrid as the Phase-1 BGV vendor (FR-M02-004 sample; §5.3 open item). Prototype named different vendors across screens (First Advantage, AuthBridge, Veritas, HireRight, SpringVerify).
+	Product Architect · Procurement
+	Adopt the BRD-locked single Phase-1 vendor (OnGrid); bind bgv_packages.vendor to it; relabel all BGV screens (2.2/2.7/2.8/2.9) to that vendor. Procurement confirms the contract before go-live (execution, not a design decision).
+
+OPEN-FS-M02-02
+	Finalized
+	DO02 sets the Undertaking cluster Enabled, NOT mandatory. Prototype (2.2/2.6) marked Undertaking mandatory (blocks joining).
+	Product
+	Honour DO02: Undertaking is not-mandatory by default; the per-tenant Completion-gate control may raise it to mandatory where HR requires. Sign-Off stays mandatory (DO04). Build to DO02.
+
+OPEN-FS-M02-03
+	Finalized
+	BRD §4.7.4 defines three cluster types incl. REFERENCE; DO04 fixes Sign-Off = POSH/CoC/IT AUP. Prototype showed only Sign-Off + Undertaking (no Reference) and a Sign-Off set of NDA/Confidentiality/CoC/InfoSec (NDA & Confidentiality are Undertaking-type w/ employer signature per DO13).
+	HR · Legal (DO15)
+	Build per BRD: add the REFERENCE cluster type to 2.6; align Sign-Off membership to DO04; move NDA/Confidentiality to the employer-signature Undertaking set (DO13). Exact document contents come from the DO15 cluster inventory (HR+Legal content workstream — tracked there, not a build blocker).
+
+OPEN-FS-M02-04
+	Finalized
+	auto_reject_on_doj_change (§4.7.4, DO14) had no configuration surface in the 2.6 cluster editor (field + cron existed; flag was un-settable).
+	Design · Product
+	Add the per-cluster ‘Auto-reject on DOJ change’ toggle in 2.6 beside the Completion-gate. Default per DO14 (ON for date-bearing clusters, OFF for policy acknowledgements). Wire to auto_reject_on_doj_change → JOB-M02-DOJ-REJECT → 2.5 ‘re-upload required’ + MSG-OB-DOJ-RESET. DECIDED: already-APPROVED docs DO reset (DO14 literal); e-signed sign-offs require re-acknowledgement of the new-dated version (FR-M02-003).
+
+OPEN-FS-M02-05
+	Closed in BRD v6.3
+	Base 6.2 §6.4 published no M02 onboarding endpoints.
+	Product Architect · Backend
+	CLOSED. M02 inventory added to BRD v6.3 §7.4.5a (17 endpoints). FS §4 references it and authors the full per-endpoint contracts.
+
+OPEN-FS-M02-06
+	Finalized
+	DO21 (OCR extract-and-confirm on ID fields) had no surface on 2.3.
+	Product Architect · Design
+	Add OCR extract → candidate-confirm on PAN/Aadhaar/Passport in 2.3, conditional on the platform OCR service being wired (DO21). If OCR is not wired at build, ship without it and reopen as Phase-1.5 per DO21 (conditional path is part of the decision).
+
+OPEN-FS-M02-08
+	Closed in BRD v6.3
+	§3.7 granted Org Admin ‘Manage Onboarding’ but not ‘Onboarding · View’ — could act without a list.
+	Product · Security
+	CLOSED. Org Admin granted Onboarding·View in BRD v6.3 §3.7 (matrix updated). FS §6 projection updated accordingly.
+
+OPEN-FS-M02-09
+	Finalized
+	bgv_results.disposition enum (§4.7.7) = RETAIN/INVESTIGATE/INITIATE_SEPARATION; prototype 2.7 offered different options (revise offer / evidence / hold / escalate / withdraw).
+	Product
+	The BRD §4.7.7 enum is the persisted disposition. Map prototype actions onto it: withdraw offer → INITIATE_SEPARATION (pre-join); revise offer → RETAIN + M08 offer revision; hold/request evidence → INVESTIGATE; escalate-HRBP is a routing action, not a disposition. Pre-join (candidate) vs post-join (employee) lifecycle noted in 2.7.
+
+OPEN-FS-M02-10
+	Finalized
+	FR-M02-005 / DO22 branded Welcome page had no dedicated prototype screen.
+	Design
+	Render the welcome banner above 2.10 from welcome_page_template_id (§4.7.1): {{group_company_name}} primary, {{legal_entity_name}} secondary; Standalone shows legal entity only (DO22).
+
+OPEN-FS-M02-11
+	Resolved — by design
+	Documents appeared on both the candidate ‘document-upload’ screen (2.5) and the Undertaking cluster (2.6).
+	Product owner
+	CLOSED (owner direction). Clusters are configurable, so both surfaces are intended: 2.6 = admin config + monitor; 2.5 = candidate uploading against the configured set. Single source = document_clusters; nothing removed.
+
+OPEN-FS-M02-12
+	Accepted
+	No Foundation FS exists; shared validation catalogue, menu map, scheduled-jobs register and message catalogue are sliced into this module FS.
+	Product Architect
+	ACCEPTED as a follow-on action: stand up the Foundation FS, then move the entries marked Foundation-owned (§5, §6.2, §7) there and reference them from M02. Not a build blocker for M02; the sliced entries are complete and usable as-is meanwhile.
+
+OPEN-FS-M02-13
+	Finalized
+	FLOW-OB-005 (DOJ Reschedule Request, §5.12.2) had no prototype screen.
+	Design
+	Add a candidate DOJ-reschedule request surface routing through FLOW-OB-005 (Onboarding Admin L1 → HR Admin L2). On approval, re-evaluate auto-reject clusters (DO14) and reminder cadence.
+
+OPEN-FS-M02-14
+	Finalized
+	FR-M02-002 requires a ‘Last saved at HH:MM:SS’ indicator; absent from 2.3.
+	Design
+	Add the indicator bound to saved_at from PUT …/form-responses (§4.2); update on each successful auto-save, incl. retroactive update after a reconnect.
+
+OPEN-FS-M02-15
+	Closed in BRD v6.3
+	Two BRD column names used ‘dob’ where ‘doj’ (Date of Joining) was meant: onboarding_instances.current_dob_revision_count and document_clusters.auto_reject_on_dob_change.
+	Product owner / BRD data-model owner
+	CLOSED (owner-identified). Renamed in BRD v6.3: current_doj_revision_count (§4.7.2), target_doj (sample), auto_reject_on_doj_change (§4.7.4). FS adopts the corrected names throughout.
+
+OPEN-FS-M02-16
+	Implemented (v1.3 / v20.2)
+	BGV was split across three surfaces (cases list, per-candidate upload, HR-Ops acknowledge list), and HR Admin vs Onboarding Admin saw different screens.
+	Product owner / Design
+	CLOSED (owner direction). Consolidated to ONE master–detail BGV screen (2.7): a grid of BGV cards; clicking a card opens the case detail with every check/document status, report upload, per-step update, and the discrepancy resolution form. Single screen shared by HR Admin and Onboarding Admin (BGV-review flag). Folded into prototype v20.2 and BRD v6.3 §7.4.5a (added GET /bgv/instances and GET /bgv/instances/{id}).
+
+OPEN-FS-M02-07 is intentionally unused (BRD DO07 permanently excludes E-Verify; the prototype correctly omits it — no conflict).
+Residual external workstreams (not FS decisions): the DO15 cluster-content inventory (HR/Legal), the OnGrid contract confirmation (Procurement), and the DPDPA consent-flow review (Legal/DPO) per BRD §5.3 N.1 continue in their own tracks; none blocks M02 build.
+Page — Build layer; references BRD v6.3. Not a source of truth for business rules. # Prototype Sync Addendum — Batch 5: Candidate / new-hire onboarding review (June 2026)
+Reflects the Batch-5 review of the candidate (pre-joining) surface against the clickable prototype (v2). Complements — does not replace — the body of this FS. The candidate surface is the dedicated candidate role (Welcome · My onboarding form · Document upload · My offer letter · Pre-joining info).
+Offer acceptance
+The candidate’s offer letter supports Accept and Decline in-system, in addition to PDF download. Accept confirms the offer terms and joining date and unlocks onboarding; Decline requires a reason and notifies the recruiter. Offer acceptance is the entry gate to the pre-joining flow.
+Document upload — clusters, categories and verification
+Required-document upload is classified by the Document Categories (Personal Identification, Education & Training Certificates, Employment Documents, etc.) and is presented as part of the candidate’s Verification Package, which feeds Background Verification (BGV) (BGV is enabled). OCR is off, so candidates enter document details manually where prompted. The enabled document clusters (Sign-off / Undertaking / Reference) and the Verification Package govern which documents appear.
+Buddy
+The onboarding buddy is enabled and is surfaced to the candidate on the pre-joining screen (buddy name, role and contact, with an introduction action), so the new hire can connect before joining.
+Configuration-driven behaviour
+The candidate surface tracks onboarding configuration: the onboarding form is mandatory with explicit save (auto-save is off); E-Verify and ID-Verification packages are disabled and are correctly absent from the candidate experience; and the Welcome-page company name is bound to the legal entity (Display Group Company as Company Name = No).
+Joining-date changes — admin only
+Joining-date changes are performed by HR / admins only. The candidate has no self-service joining-date change request on the pre-joining screen; any reschedule is initiated and approved by the appropriate admin.
+Manager-role review (Round 3)
+Probation extension UX: the manager Probation decision improves the Extend flow — an Extend by selector (1/2/3 months) renders a live new-end-date preview before submission, and the Extend action is disabled until a period is selected. Bounds and defaults are sourced from Probation configuration (Show in Probation Extension, Extend Confirmation).

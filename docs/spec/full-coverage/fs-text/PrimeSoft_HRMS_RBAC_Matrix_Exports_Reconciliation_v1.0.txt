@@ -1,0 +1,26 @@
+RBAC Matrix - Exports Reconciliation
+Table of Contents
+ TOC \z \o "1-2" \u \h
+PrimeSoft HRMS · RBAC §5.1 ↔ Standard Permissions Reconciliation (reference) · v1.0
+RBAC §5.1 Matrix ↔ Standard Permissions Exports — Reconciliation Reference
+Purpose
+	Resolves open item OPEN-RBAC-04. Records the as-configured, enforced permissions for the manager-hierarchy and HRBP tier, taken from the 8 Standard Permissions exports (STDPERM_1–8).
+
+Resolution stance (confirmed)
+	These enabled grants are the authoritative baseline; the RBAC §5.1 matrix narrative is read as intent. Where the two differ, the export reflects what is enforced. Per-row alignment is configurable later by Org Admin — no build-time decision is forced here.
+
+Totals
+	85 enabled / 1048 disabled across the 8 policies. Enabled grants concentrate in Core (profile view), Time Management (attendance/leave), and Workflows (lifecycle view).
+
+Enabled-permission baseline by role
+Manager (L1) — 36 enabled. Core: view personal/employment details, download profile PDF, future transactions, view profile flag. Workflows (view): lifecycle, probation confirmation, separation, contract. Time Management — Attendance (view + edit/action): view attendance/leave one-view, overview page, attendance page, overtime credited list; edit attendance (one-view, page), edit shift & weekly-off, assign shift/shift-block/weekly-off/attendance-policy/fair-workweek; roster import (+ calendar). Leave (view + edit/action): leave history, comp-off credited history, view employee leave page; apply leave one-view, raise leave on behalf, comp-off pay-out. Scheduling: view schedule page + open-shift board, on-behalf open-shift, assign cover shift. Timesheets: view. Travel & Expense (view): trip summary, travel requests. Manager Hub.
+HRBP (direct) — 22 enabled. Core: view personal/employment details, download profile PDF, future transactions. Workflows (view): lifecycle, probation confirmation, separation, contract. Time Management — Attendance: view one-view/overview/attendance page, overtime credited list; edit attendance one-view/page, edit shift & weekly-off, on-behalf attendance, assign shift/attendance-policy/weekly-off. Leave: leave history, comp-off history, view employee leave page; raise leave on behalf, comp-off pay-out.
+HOD — 6 enabled. Core: view profile flag, view personal/employment details, download profile PDF. Workflows: lifecycle (view). Attendance: view overview page.
+L2 Manager — 5 enabled. Core: view personal/employment details, download profile PDF. Workflows: lifecycle (view). Attendance: view overview page.
+L3 / L4 / L5+ Manager — 4 enabled each. Core: view personal/employment details, download profile PDF. Attendance: view overview page. (No workflow-view grant beyond L2.)
+Dotted-line Manager — 4 enabled. Core: view personal/employment details, download profile PDF. Workflows: lifecycle (view).
+Notes for configuration
+The L3–L5+ tiers are intentionally thin (view-only Core + attendance overview). Confirm this matches the intended escalation visibility, or widen at config time.
+Manager and HRBP carry the heaviest operational (edit/on-behalf) grants — consistent with the RBAC doc’s manager-hierarchy intent.
+Travel & Expense, Scheduling, Timesheets grants in the Manager policy touch Phase-2 / time-management surfaces; confirm against module activation before relying on them.
+This reference is the single place the enforced manager-tier grants are listed; the RBAC doc references it rather than restating per-row enablement.

@@ -1,0 +1,1567 @@
+PrimeSoft HRMS ��� FS M05 Attendance v1.3
+Table of Contents
+ TOC \z \o "1-2" \u \h
+How to read this document
+This Functional Specification is the build layer on top of the PrimeSoft HRMS BRD v7.4 BASE. It does exactly one job: it adds the screens, complete API contracts, validation, per-screen role projection and interaction states that the BRD deliberately leaves out — while referencing the BRD for every business rule, data field, decision, permission and NFR the BRD already owns. The governing principle is single source of truth: a fact lives in exactly one document.
+Two visual conventions are used throughout. Muted italic text in this colour is a reference — it points to a fact owned by the BRD (e.g. BRD §4.6.2) or by the Foundation FS, and is never restated here. Upright text is content authored by this FS. Every section opens with a References band listing the BRD sections, prototype screens and Foundation FS sections it builds on, so any fact is traceable to its origin.
+Where the prototype and the BRD disagree, or where neither covers something needed to build, this FS does not silently choose. It records the gap in §7 (Open Items, Conflicts & Recommendations) with a named owner and a proposed resolution marked PROPOSED — confirm before build. The BRD wins until an open item is resolved.
+Naming: entity and field names are quoted verbatim from the BRD data model (§4.6) so engineering can bind screens to columns without translation. Screen ids in §2 match the prototype data-page attribute exactly.
+1. Scope & Reference Map
+References — BRD §5.6 (FR-M05-001…020) · BRD §5.6 M05.FS1 (DA01–DA22) · BRD §4.6 (entities) · BRD §3.7 (RBAC) · BRD §7.4.3 (API inventory) · BRD §8.3 (state machine) · BRD §9.3 (notifications) · BRD §10.1–10.2 (reports/widgets) · BRD §5.12.5 (flows) · BRD §12.5 (glossary)
+This section is the proof of non-repetition. It lists what this FS references versus what it authors. Nothing in the right-hand “FS adds” column restates the BRD; it names only the new build-layer detail. The Reference Register that maps each screen to its BRD/prototype sources is the canonical index and will live in the Foundation FS (§ Reference Register); the per-screen slice for M05 is reproduced inline at the head of §2.
+1.1 BRD coverage map (what is referenced, never restated)
+BRD topic
+	BRD section
+	FS treatment (what this FS adds)
+
+Functional requirements & acceptance criteria
+	§5.6 FR-M05-001…020
+	Reference the FR id; author the screen + contract that satisfies it.
+
+Locked decisions register (DA series)
+	§5.6 M05.FS1 DA01–DA22
+	Reference the DA code as the binding rule; never paraphrase it into the spec body.
+
+Attendance entities & field definitions
+	§4.6.1–4.6.18
+	Reference per entity/field for type, required, default; author only the UI control + per-screen behaviour.
+
+attendance_platform_settings (24 clusters)
+	§4.6.8
+	Reference cluster/field; author the config-screen mapping (§2 cfg-att-platform) and which toggle drives which screen behaviour.
+
+RBAC — Core operational (Own/Team attendance)
+	§3.7.1
+	Reference the matrix cell; project onto each screen in §6.
+
+RBAC — Time Management permission grain
+	§3.7.4 (Time Management)
+	Reference the permission row; map to screen actions in §6.
+
+Sensitive-data restriction (biometric: no UI)
+	§3.8
+	Reference; enforce in §2 (biometric-mgmt, checkin-approvals selfie handling) and §6.
+
+Modality field on M01 profile
+	§4.6.x attendance_modality; FR-M05-020; §3.9
+	Reference the field & field-level access; author the picker behaviour on Add-Employee / Employment tab (cross-ref M01 FS).
+
+API endpoint inventory (8 endpoints)
+	§7.4.3
+	Reference the inventory; author the complete request/response/error contract per endpoint in §4.
+
+API conventions (response, errors, rate limit)
+	§6.2–6.3
+	Reference once; do not restate. Foundation FS holds the canonical copy.
+
+Attendance Request state machine
+	§8.3
+	Reference the transitions; map screen actions onto them in §3 — do not redraw.
+
+Notification matrix (8 events)
+	§9.3
+	Reference event codes; author template copy in the Foundation Message Catalogue (slice in §M05 ops).
+
+Workflow flows FLOW-AT-001…007
+	§5.12.5
+	Reference flow id, default approvers, SLA; bind to screens in §3.
+
+Reports & dashboard widgets
+	§10.1, §10.2
+	Reference which report/widget; author data binding, refresh, drill-down, per-role composition in §2 (dashboard variant).
+
+NFR — register load < 5s; punch latency
+	§7.1, FR-M05-012
+	Reference targets; never restate.
+
+Glossary (Regularisation, Out Duty, Geofence, ATPY_*)
+	§12.5
+	Reference terms; never redefine.
+
+1.2 What this FS authors (the build layer)
+Screen specifications for every M05 prototype screen — layout regions, field tables (control + on-screen behaviour), and the five states (empty, loading, error, no-permission, partial-data).
+Complete API contracts for the eight §7.4.3 endpoints — full request/response schemas, every error code, idempotency and pagination — plus PROPOSED contracts for endpoints the FRs imply but the inventory omits.
+Per-screen RBAC projection — visible / editable / masked / hidden per role, by reference to §3.7; and the M05 slice of menu & navigation entitlement.
+Module operational specs — the M05 slice of scheduled jobs, the message catalogue and dashboard widgets (canonical home: Foundation FS).
+Open items &** conflicts** — every prototype/BRD mismatch found in the cross-reference pass, each with an owner and a PROPOSED resolution.
+1.3 Module boundary (what belongs to other modules)
+Several attendance-adjacent surfaces in the prototype are owned by other modules. This FS references them and specifies only the M05 contribution:
+Surface (prototype)
+	Owning module
+	M05 contribution (referenced from this FS)
+
+absconding
+	M03 Exits (queue, send-notice, convert/restore — FR-M03-006)
+	M05 owns detection only (FR-M05-005 daily job sets lifecycle_state=ABSCONDED). Queue + actions are M03.
+
+clearance-attendance
+	M03 Exits (E6 attendance/LOP exit clearance)
+	M05 supplies the locked attendance + LOP feed the clearance reconciles.
+
+compoff-approvals / Request comp-off form
+	M04 Leave (comp-off credit, balance, encashment)
+	M05 owns the OT that earns comp-off and the planned-OT request (FR-M05-008); credit/encashment are M04 (see OPEN-FS-M05-09).
+
+Attendance modality picker on Add-Employee
+	M01 Employee Master profile
+	M05 owns the modality semantics (FR-M05-020); the field renders on the M01 form (cross-ref M01 FS).
+
+Biometric punch ingestion → payroll LOP feed
+	M06 Payroll (Phase 2)
+	M05 produces attendance_records & the LOP feed; consumption is Phase 2.
+
+2. Screen Specifications
+References — Prototype v20.7 (data-page ids) · BRD §5.6 FRs · BRD §4.6 entities · BRD §3.7/§3.8 RBAC · Foundation FS (states, controls, validation, message ids)
+One subsection per M05 prototype screen. Each gives: the screen id (matching the prototype data-page), purpose, the BRD FR(s) it satisfies, layout regions, a field/control table, and its states. The field table columns Source, Validation and Role behaviour are references; Control and On-screen behaviour are the only authored columns. Visual styling (pixels, colour, type) belongs to the design system, not here.
+Global state patterns (empty / loading / error / no-permission / partial-data) and the control vocabulary are defined once in the Foundation FS; each screen below names only its screen-specific deviations. User-facing copy is referenced by message id (e.g. MSG-AT-…) from the Foundation Message Catalogue; the M05 slice is in §8 of this document.
+2.0 Reference Register — M05 slice
+Maps each FS screen to its BRD FR ids, BRD entities, BRD RBAC rows and prototype id. A screen row with content but no references would indicate duplication or invention — none here. The canonical register lives in the Foundation FS.
+FS screen
+	Prototype id
+	BRD FR ids
+	BRD entities (§4.6)
+	BRD RBAC (§3.7)
+
+My Attendance
+	attendance
+	001/012/017/018/019
+	attendance_records, attendance_requests, overtime_slabs
+	§3.7.1 Own attendance (E)
+
+Request Regularisation
+	(attendance ▸ regularisation form)
+	003/007
+	attendance_requests, attendance_reasons_master
+	§3.7.1 Own attendance (E)
+
+Request Comp-off / Planned OT
+	(attendance ▸ request comp-off)
+	008
+	attendance_requests; M04 comp-off
+	§3.7.4 (employee self)
+
+Team Attendance
+	team-attendance
+	001/004/007
+	attendance_records, attendance_requests
+	§3.7.1 Team attendance (E·A)
+
+Attendance Regularisation Approvals
+	attendance-approvals
+	003/007
+	attendance_requests
+	§3.7.1 Team attendance (A); §3.7.4 approve
+
+Check-in Approvals
+	checkin-approvals
+	019
+	attendance_requests, checkin_settings, geofencing_master
+	§3.7.1 Team attendance (A)
+
+Department Attendance
+	dept-attendance
+	001/012
+	attendance_records
+	§3.7.1 HOD (V)
+
+Office Attendance
+	office-attendance
+	018/019
+	attendance_records, biometric_devices
+	§3.7.4 (Office Admin view)
+
+Attendance Lock
+	attendance-lock
+	006
+	attendance_records, attendance_platform_settings (cl.17)
+	§3.7.4 lock/unlock (Att Admin·HR Admin)
+
+Shift Management
+	attendance-shifts
+	003/020
+	shifts, shift_blocks, employee_shift_assignments
+	§3.7.4 Assign Shift / shift block
+
+Attendance Policies (ops)
+	attendance-policies
+	001/002
+	attendance_policies
+	§3.7.4 Assign Attendance Policy
+
+Attendance Reasons
+	attendance-reasons
+	003/005
+	attendance_reasons_master
+	§3.7.4 (reason master)
+
+Geofencing & Sites
+	geofencing
+	002/019
+	geofencing_master, locations (M01)
+	§3.7.4 Assign Fencing
+
+Biometric Devices
+	biometric-mgmt
+	006
+	biometric_devices, biometric_employee_mapping
+	§3.7.4 (devices); §3.8 (no biometric PII UI)
+
+Platform Settings (config)
+	cfg-att-platform
+	008–017 toggles
+	attendance_platform_settings (24 clusters)
+	Org Admin
+
+Shifts master (config)
+	cfg-shifts
+	—
+	shifts
+	Org Admin
+
+Weekly-off patterns (config)
+	cfg-weeklyoff
+	—
+	weekly_off_patterns
+	Org Admin
+
+IP whitelist (config)
+	cfg-ip
+	018
+	attendance_ip_whitelist
+	Org Admin
+
+Geofencing (config)
+	cfg-geofence
+	002
+	geofencing_master
+	Org Admin
+
+Infraction policies (config)
+	cfg-infraction
+	009
+	attendance_platform_settings (cl.7)
+	Org Admin
+
+OT indexing slabs (config)
+	cfg-ot-slabs
+	017/010
+	overtime_slabs, overtime_thresholds
+	Org Admin
+
+Comp-off policies (config)
+	cfg-compoff
+	008 (M04 owns)
+	leave_compoff_policies (M04)
+	Org Admin (joint M04)
+
+Biometric devices (config)
+	cfg-devices
+	006
+	biometric_devices
+	Org Admin
+
+2.1 My Attendance
+Screen id: attendance* · Role: Employee (own) · Platform: web + mobile*
+References — FR-M05-001 (both-punch present rule) · FR-M05-018 (Clock-In/Out) · FR-M05-019 (Check-In/Out) · FR-M05-012 (register) · FR-M05-017 (OT indexing) · FR-M05-009 (infractions) · entities attendance_records, attendance_requests, overtime_slabs §4.6.4/.5/.13 · RBAC §3.7.1 Own attendance = E · widget §10.2 My Attendance
+Purpose. The employee’s single attendance home: punch action, month-to-date metrics, the attendance register, the employee’s own requests, and read-only Overtime and Infraction views. The capture buttons shown are governed by the employee’s assigned modality (FR-M05-020 / attendance_modality) — Clock-In only, Check-In only, or both. Never the platform.
+Layout regions
+Action bar — primary punch button (CLOCK IN / CLOCK OUT and/or CHECK IN per modality), current-punch status line, links: Request regularisation, Request comp-off.
+Metric strip — Present days MTD, WFH MTD, OT this month, Continuous working days. Each is a computed read-only tile.
+Tab region — Register · My requests · Overtime · Infractions.
+Fields & controls
+Field / control
+	Control
+	Source (BRD)
+	Validation
+	On-screen behaviour (authored)
+
+CLOCK IN / CLOCK OUT
+	Primary button
+	FR-M05-018; attendance_records.clock_in_time/clock_out_time
+	VAL-AT-IP (Foundation)
+	Records second-precision timestamp directly (no approval). Toggles to CLOCK OUT after in-punch. Disabled if modality excludes Clock-In. Blocked off-network → MSG-AT-IP-BLOCK. Duplicate in-punch → MSG-AT-DUP.
+
+CHECK IN / CHECK OUT
+	Primary button (mobile-first)
+	FR-M05-019; clock_in_method=APP_CHECK_IN
+	VAL-AT-GPS (Foundation)
+	Captures GPS + optional selfie; in-fence auto-present, outside-fence routes to approval per checkin_settings. Shown only if modality includes Check-In. GPS denied → MSG-AT-GPS-DENY.
+
+Punch status line
+	Read-only text
+	attendance_records.clock_in_time, late_by_minutes, clock_in_in_geofence
+	—
+	“Clocked in at 09:02:14 · 2m late · IP verified · ”. Late delta computed at zero grace per FR-M05-001.
+
+Present days MTD
+	Metric tile
+	attendance_records.status=PRESENT count
+	—
+	n/working-days and %. Excludes day classes per platform cluster 5 toggles.
+
+WFH MTD
+	Metric tile
+	attendance_records.work_location=HOME count
+	—
+	Count of work-from-home days month-to-date.
+
+OT this month
+	Metric tile
+	overtime_minutes sum; FR-M05-008
+	—
+	Hidden if cluster 24 hide_overtime_widget=TRUE.
+
+Continuous WD
+	Metric tile
+	FR-M05-015; continuous_working_days_notify_threshold
+	—
+	Shows streak vs threshold; amber when ≥ threshold.
+
+Register tab
+	Data table
+	attendance_records per day; FR-M05-012
+	—
+	Columns: Date, Shift, Punch in/out, Work duration, Late, Work location (Home/Office/Others), Status. Composition per cluster 22 toggles. Row → regularisation deep-link if INCOMPLETE/ABSENT. Load < 5s (NFR §7.1).
+
+My requests tab
+	List
+	attendance_requests where employee=self
+	—
+	Each row shows type, status chip (DRAFT/SUBMITTED/…), SLA countdown, View. Mirrors §8.3 states.
+
+Overtime tab
+	Read-only breakdown + indexing table
+	overtime_slabs §4.6.13; FR-M05-017
+	—
+	Weekday/Weekly-off/Holiday OT split; indexing table (slab, hours range, multiplier, hours in slab, indexed value). See OPEN-FS-M05-07 (slab model).
+
+Infractions tab
+	Read-only points view
+	FR-M05-009; cluster 7
+	—
+	Points accumulated of threshold; rolling window. Hidden if hide_infraction_policy_details=TRUE.
+
+States
+Empty — no punches yet today: action bar shows CLOCK IN / CHECK IN enabled; register shows month rows with status from system (WEEKLY_OFF / HOLIDAY / ABSENT).
+Partial-data — single punch present: status line shows INCOMPLETE; register row flagged; inline prompt to regularise (FR-M05-001).
+No-permission — not applicable for own attendance (always E). If modality unassigned (migrated gap), default to Clock-In and surface HR Admin follow-up flag (FR-M05-020 edge case).
+Error — punch network failure on mobile: queued locally, synced on reconnect; sync > 30 min flagged for review (FR-M05-018 edge case) → MSG-AT-SYNC-LATE.
+2.2 Request Attendance Regularisation
+Screen id: attendance ▸ regularisation form* · Role: Employee (own)*
+References — FR-M05-007 (monthly limit 7) · FR-M05-003 (request types, no auto-approval) · DA01/DA02/DA15 · entity attendance_requests §4.6.5 · reason master §4.6.9 · state machine §8.3 · flow FLOW-AT-001
+Purpose. Employee corrects an incomplete or absent record. Submission counts against the calendar-month limit (FR-M05-007: 7 for ATPY_4/5; unlimited for ATPY_1). Auto-approval is platform-locked OFF (FR-M05-003 / DA02) — every request routes to L1 Manager with the eligible-approver pool able to act from stage 1 (DA15).
+Fields & controls
+Field
+	Control
+	Source (BRD)
+	Validation
+	On-screen behaviour (authored)
+
+Date *
+	Date picker
+	attendance_requests.from_date
+	VAL-AT-BACKDATE (≤ back_dating_window_days §4.6.2)
+	Picker max = today; min = today − window (32 for ATPY_4/5, 30 for ATPY_1). Out of window → MSG-AT-WINDOW.
+
+Type *
+	Segmented control
+	attendance_requests.request_type
+	enum REGULARISATION subtypes
+	Missed punch out / Missed punch in / Wrong time / WFH / Out-duty. See OPEN-FS-M05-04 (WFH & Out-duty type placement).
+
+Punch in / Punch out
+	Time pickers
+	claimed_clock_in_time / claimed_clock_out_time
+	VAL-AT-TIME-ORDER
+	out ≥ in; second precision optional per hide_seconds toggle.
+
+Reason *
+	Select (from reason master)
+	attendance_reasons_master §4.6.9
+	required unless make_reason_non_mandatory=TRUE
+	Options filtered to reason_type=REGULARISATION & assignment scope. Frequency cap enforced per reason.
+
+Comments
+	Textarea
+	attendance_requests.message
+	required unless make_message_non_mandatory
+	Free text.
+
+Attachment
+	File upload
+	attachment_document_id
+	VAL-FILE (Foundation)
+	Optional unless reason mandates documentation (per reason master).
+
+Submit
+	Primary button
+	§8.3 — SUBMITTED
+	FR-M05-007 count check
+	On submit: count this month’s regularisations; if ≥ limit → block with MSG-AT-LIMIT (REGULARISATION_LIMIT_EXCEEDED). Else create attendance_requests row, notify L1 (ATTENDANCE_REQUEST_SUBMITTED).
+
+States
+Limit reached — Submit disabled with MSG-AT-LIMIT and a note that HR Admin / Attendance Admin can raise on-behalf as an exception (FR-M05-007 edge case).
+Conflict — Out-duty selected on a day with an approved leave → blocked per disallow_attendance_and_leave_same_day (cluster 8); half-day/short leave not blocked (FR-M05-003).
+2.3 Request Comp-off / Planned Overtime
+Screen id: attendance ▸ request comp-off form* · Role: Employee (own); on-behalf by L1/HRBP/Att Admin*
+References — FR-M05-008 (planned OT) · DA07/DA17 · entity attendance_requests §4.6.5 · M04 comp-off (credit/encashment) · flow FLOW-AT-005
+Purpose. Employee pre-plans an overtime window; on approval the window is pre-approved and auto-links to actual OT within tolerance (FR-M05-008). The earned comp-off credit and encashment are owned by M04 — this screen submits the OT request only. See OPEN-FS-M05-09 for the M04/M05 comp-off boundary.
+Fields & controls
+Field
+	Control
+	Source (BRD)
+	Validation
+	On-screen behaviour (authored)
+
+Date *
+	Date picker
+	attendance_requests.from_date
+	VAL-AT-BACKDATE
+	Planned OT typically future-dated; past allowed within comp-off back-dating (DA08, 31 days).
+
+Hours *
+	Number
+	overtime_minutes intent
+	VAL-AT-OT-CAP (policy caps)
+	Validated against OT policy daily/weekly/monthly caps (FR-M05-008 processing).
+
+Start / End time
+	Time pickers
+	planned window
+	VAL-AT-TIME-ORDER
+	End ≥ start; window must fall outside shift if Weekdays-only OT configured (DA-driven, policy).
+
+Reason *
+	Select
+	attendance_reasons_master
+	required
+	Sprint cutover / Customer escalation / Production incident / Release support (sample).
+
+Comments
+	Textarea
+	message
+	per global toggle
+	Free text.
+
+Submit
+	Primary button
+	§8.3 SUBMITTED; FR-M05-008
+	DA02/DA07 no auto-approval
+	Routes to configured OT approval flow; auto-approval disabled (DA07). On-behalf entry path for L1/HRBP/Att Admin per DA17.
+
+2.4 Team Attendance
+Screen id: team-attendance* · Role: L1 Manager (reporting chain)*
+References — FR-M05-001/004/007 · entities attendance_records, attendance_requests · RBAC §3.7.1 Team attendance = E·A · widget §10.2 Team Attendance Summary
+Purpose. Manager’s daily roster view across direct reportees: today’s status, punches, late MTD, OT MTD and infraction points. Read + approve scope per §3.7.1 (E·A). Data scoped to the reporting chain (§3.6).
+Fields & controls
+Column / control
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Employee
+	Row label
+	employees (M01)
+	Click → employee attendance detail (scoped, read).
+
+Today
+	Status chip
+	attendance_records.status
+	PRESENT / OUT_DUTY / LEAVE / WFH / LATE / ABSENT. OUT_DUTY counts present (FR-M05-004).
+
+Punch in / out
+	Time text
+	clock_in_time / clock_out_time
+	“—” when not punched; INCOMPLETE flagged.
+
+Late MTD / OT MTD
+	Numbers
+	late_by_minutes / overtime_minutes
+	Aggregated month-to-date.
+
+Infraction pts
+	Number
+	FR-M05-009
+	Hidden if infraction framework disabled.
+
+Row action
+	Approve link
+	§3.7.1 A; §8.3
+	Deep-links to the relevant pending request in attendance-approvals.
+
+States
+Empty — manager with no reportees: friendly empty state; no roster.
+No-permission — calendar team-leave is hidden by policy (M04 D22); team attendance remains visible to the manager.
+2.5 Attendance Regularisation Approvals
+Screen id: attendance-approvals* · Role: L1 Mgr · HRBP · HR Admin · Attendance Admin*
+References — FR-M05-003 (5 types, no auto-approval) · FR-M05-007 · DA01/DA15 (any-stage approval) · entity attendance_requests §4.6.5 · state machine §8.3 · notifications §9.3 · flow FLOW-AT-001
+Purpose. The approver’s queue of pending attendance requests, sorted by urgency with SLA badges. Any eligible role can act from stage 1 (DA15); rejection reason is mandatory (reject_reason_mandatory, cluster 4). Escalation fires at 5 days, overriding to 2-hourly on the 24th–25th (DA13 / FR-M05-003).
+Fields & controls
+Element
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Queue summary
+	Counters
+	attendance_requests.status=SUBMITTED/ESCALATED
+	“N total · M SLA breached”; updated timestamp; Export action.
+
+Type filter
+	Filter chips
+	request_type enum
+	All / Missed punch / Late waiver / Out-duty / Shift… Shift-change excluded from employee-facing flow (DA18).
+
+Request card
+	List item
+	attendance_requests row
+	Shows requestor, subtype, claimed times, reason, message, SLA badge.
+
+Approve
+	Action button
+	§8.3 → APPROVED; POST /approve §7.4.3
+	Updates attendance_records (PRESENT / OUT_DUTY per type); fires ATTENDANCE_REQUEST_APPROVED.
+
+Reject
+	Action button
+	§8.3 → REJECTED
+	Opens mandatory reason field; blocks empty (MSG-AT-REJ-REASON); record stays unchanged; fires ATTENDANCE_REQUEST_REJECTED.
+
+States
+SLA-breached — breached cards pinned to top with red badge; on 24th–25th, badge reflects 2-hourly cadence (DA13).
+No-permission — a manager outside the eligible pool sees view-only; Approve/Reject hidden per §6 projection.
+2.6 Check-in Approvals
+Screen id: checkin-approvals* · Role: L1 Manager (field reportees)*
+References — FR-M05-019 (Check-In, GPS/selfie) · DA05 (check-in needs L1 approval, 500m fence, comments mandatory; ATPY_1 disabled) · entities checkin_settings §4.6.15, geofencing_master §4.6.12, attendance_requests · RBAC §3.7.1 (A) · §3.8 (biometric/selfie PII tier-2)
+Purpose. Approver queue for field/remote check-ins — geo-tagged or outside-geofence or manual punches needing sign-off (FR-M05-019). Approval routing is policy-level only (DA05: no per-employee/per-role override). Selfie + GPS are PII tier-2 (§3.8, FR-M05-019: encrypted at rest, access-logged, 90-day retention) — thumbnails render to the approver only, never downloaded outside the access-logged context.
+Element
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Pending list
+	Counter + table
+	attendance_requests where check-in & pending
+	Columns: Employee, Date·time, Location, Flag (Outside geofence / Manual / No selfie), Action.
+
+Flag chip
+	Status chip
+	clock_in_in_geofence; default_tag_for_outside_geofence
+	Outside-fence tagged “Off-site” on approve (FR-M05-019).
+
+Selfie thumbnail
+	Image (gated)
+	FR-M05-019; §3.8 biometric/selfie
+	Visible to approver only; access-logged; not downloadable. show_facial_recognition_image toggle (cluster 24).
+
+Approve / Reject
+	Action buttons
+	§8.3; DA05 comments mandatory
+	Comments mandatory on both (DA05). Rejected check-ins do not count present (FR-M05-019).
+
+Mining note. In the prototype, checkin-approvals renders as one combined Tasks page concatenating Check-in, Comp-off, Manager-appraisal and Joining-forms sections. Only the Check-in (and Comp-off, §2.7) sections are M05/M04-attendance; the rest are M09/M02 and are referenced from their own FS.
+2.7 Comp-off Approvals (M04 boundary)
+Screen id: compoff-approvals* · Role: L1 Manager / approver*
+References — FR-M05-008 (OT that earns comp-off) · M04 comp-off credit/leave (owns this surface) · entity attendance_requests; M04 leave_compoff
+Purpose. Two request kinds: comp-off credit (earned via weekend/holiday/OT working — originates in M05 OT) and comp-off leave application (consumes the M04 balance). This surface is owned by M04; M05 supplies the OT event that triggers the credit. Spec’d in full in the M04 FS — referenced here only to make the boundary explicit (OPEN-FS-M05-09).
+2.8 Department Attendance
+Screen id: dept-attendance* · Role: HOD (department scope)*
+References — FR-M05-001/012 · entity attendance_records · RBAC §3.7.1 HOD = V (department scope §3.6)
+Purpose. HOD’s read-only department roll-up: present-today count, on-leave split, pending regularisations, average work hours, and a team-wise breakdown. Scope is the assigned department (§3.6; §3.7.1 HOD = View); no approve action.
+Element
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Present today
+	Metric tile
+	attendance_records.status=PRESENT
+	n of headcount, %.
+
+On leave
+	Metric tile
+	status=LEAVE; M04
+	Split by leave type (read).
+
+Pending regularisations
+	Metric tile
+	attendance_requests pending in dept
+	Count only; no action (HOD = V).
+
+Team-wise table
+	Data table
+	attendance_records grouped by team
+	Present / Leave / WFH / Absent per team.
+
+2.9 Office Attendance
+Screen id: office-attendance* · Role: Office Admin (site scope)*
+References — FR-M05-018/019 · entities attendance_records, biometric_devices §4.6.6 · RBAC §3.7.4 (Office Admin) · §3.8 (no biometric PII UI)
+Purpose. Site-level presence for a physical office: in-office count, visitors, desk occupancy, peak hour and floor-wise presence. Office Admin sees site operational data only; biometric punch identifiers are never displayed (§3.8) — only device health and aggregate presence.
+2.10 Attendance Lock
+Screen id: attendance-lock* · Role: Attendance Admin · HR Admin*
+References — FR-M05-006 (lock/unlock two modes) · DA03 (cycle 26→25, LOP cutoff 25th) · DA19 (unlock modes, no approval, immutable log) · entity attendance_records.is_locked; platform cluster 17 · audit §App C / P05
+Purpose. Freeze a prior period for payroll. Lock fires by scheduled job at the payroll cutoff (FR-M05-006: 25th; JOB-M05-LOCK); this screen lets Attendance Admin / HR Admin run/confirm a lock and unlock in two modes (DA19: full period or single record, no approval workflow, immutably logged). Managers can never unlock (FR-M05-006).
+Conflict flagged. The prototype states lock runs on the 5th of the month with a 5-Jun deadline for April; the BRD fixes the cutoff at the 25th (DA03/FR-M05-006). The BRD value governs — see OPEN-FS-M05-05.
+Element
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Lock readiness
+	Summary card
+	attendance_records for period
+	Total employee-days, pending regularisations, locked status, deadline.
+
+Resolution mode
+	Radio group
+	FR-M05-006 pending handling
+	Roll forward (admin resolves post-lock) / Auto-deny / Auto-approve. Pending Stage-1 items roll forward as unlocked exceptions.
+
+Payroll handoff
+	Radio
+	M06 Phase 2; cluster 17
+	Auto-trigger M06 on lock / Manual. Phase 2 dependency noted.
+
+Lock note
+	Textarea
+	audit reason; DA19 immutable log
+	Required; written to P05 audit with admin identity + scope.
+
+Acknowledge + Lock
+	Confirm + primary
+	§ lock job
+	Irreversible without HR Admin co-sign; confirmation gate. Fires ATTENDANCE_LOCK_FIRED.
+
+Unlock
+	Action
+	DA19; POST /attendance/unlock §7.4.3
+	Two modes — full period / single record + date range. No approval; immutable log.
+
+2.11 Shift Management
+Screen id: attendance-shifts* · Role: Attendance Admin · HR Admin*
+References — FR-M05-003/020 · DA09 (21 shifts, IST, no shift blocks — assigned at employee level) · DA18 (shift change admin-only) · entities shifts §4.6.1, shift_blocks §4.6.17, employee_shift_assignments §4.6.3
+Purpose. Manage shift patterns and employee-to-shift assignment. Per DA09 shift blocks are not configured in Phase 1 — shifts are assigned at employee level directly; the shift-block builder is dormant. Shift change is admin-only (DA18: employees cannot initiate; no employee-facing approval flow).
+Conflict flagged. The prototype shows employee-initiated “Shift swap requests” with Approve actions; DA18 makes shift change admin-only with no employee-facing flow. BRD governs — see OPEN-FS-M05-06.
+Element
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Shift list
+	Data table
+	shifts §4.6.1
+	Shift, hours, days, roster size, rotation, Edit.
+
+Create/edit shift
+	Form
+	shifts fields §4.6.1
+	Name*, code*, start*, end*, overnight (computed is_overnight_shift), WFH flag, OT-policy, standard hours, weekly-off pattern.
+
+Assign to employee
+	Action
+	employee_shift_assignments §4.6.3; DA09
+	Effective-dated assignment; attendance_policy_id bound. Direct assignment (no block) per DA09.
+
+Shift change
+	Admin action
+	DA18; request_type=SHIFT_CHANGE
+	Admin performs directly; reason ATRN_8 admin-facing only; not shown to employee.
+
+2.12 Attendance Policies (operational)
+Screen id: attendance-policies* · Role: Attendance Admin · HR Admin*
+References — FR-M05-001 (zero grace) · FR-M05-002 · DA21 (3 migrated policies ATPY_4/5/1; ATPY_2 excluded) · DA22 (leave-deduction triggers) · entity attendance_policies §4.6.2
+Purpose. View and edit attendance policies. The migrated Phase-1 set is exactly three: ATPY_4 (All Employees), ATPY_5 (Probation), ATPY_1 (CEO) — DA21/§4.6.2. Policy JSON clusters (check-in, regularisation, out-duty, shift-change, deduction, display) map to §4.6.2 json fields.
+Conflicts flagged. (1) The prototype lists 6 policies here (and 14 under cfg-att-policy) with non-zero late-grace values (15/10/5 min); the BRD mandates zero grace time for all migrated policies (FR-M05-001) and only three migrated policies (DA21). (2) The prototype shows two separate policy surfaces (operational vs config) — likely the same entity. See OPEN-FS-M05-01, -02, -03.
+2.13 Attendance Reasons
+Screen id: attendance-reasons* · Role: Attendance Admin · HR Admin*
+References — FR-M05-003/005 · DA10 (8 active reasons: 5 regularisation, 2 out-duty, 1 shift-change; company-wide, unlimited frequency) · entity attendance_reasons_master §4.6.9
+Purpose. CRUD on the reason catalogue. Per DA10 there are 8 active reasons, all company-wide and unlimited frequency. Reason_type drives which request form surfaces the reason; shift-change reason (ATRN_8) is admin-facing only (DA18).
+Conflict flagged. The prototype marks several reasons “Auto-approve eligible: Yes” and applies frequency caps (3/month, 5/month); DA02/DA10 lock auto-approval OFF for all attendance request types and set reasons to unlimited frequency. BRD governs — see OPEN-FS-M05-03.
+Field
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Reason name *
+	Text
+	attendance_reasons_master.reason
+	Display label.
+
+Reason code *
+	Text
+	reason_code (unique)
+	Unique within tenant.
+
+Reason type *
+	Select
+	reason_type enum
+	Drives form placement; SHIFT_CHANGE → admin-only.
+
+Frequency / limit
+	Number + select
+	frequency, limit_value
+	Per DA10 default unlimited; cap only if enable_frequency_for_reason_limits (cluster 12).
+
+Status
+	Toggle
+	status enum
+	ACTIVE / INACTIVE.
+
+2.14 Geofencing & Office Sites
+Screen id: geofencing* · Role: Attendance Admin · HR Admin*
+References — FR-M05-002 (outside-fence approval) · FR-M05-019 · DA04 (15 active fences; Mumbai/Bengaluru/Hyderabad) · entity geofencing_master §4.6.12; locations (M01)
+Purpose. Define coordinate-centred fences (centre lat/long + radius) per office/work-area (geofencing_master §4.6.12; FR-M05-019). In-fence check-ins auto-present; outside-fence route to approval (FR-M05-002). Also handles geofence exception requests for legitimate off-site work.
+Note. DA04 fixes 15 active fences and DA05 a 500m check-in fence radius; the prototype shows 4 sites at 200–250m and cfg-geofence shows 150–200m, while geofencing_master defaults to 100m. The radius conflict is the build-relevant one (see OPEN-FS-M05-08a); the fence inventory must be reconciled to the migrated set before go-live (OPEN-FS-M05-08b).
+2.15 Biometric Devices
+Screen id: biometric-mgmt* · Role: Office Admin (view); Org Admin / Platform Super Admin (register)*
+References — FR-M05-006 · entities biometric_devices §4.6.6, biometric_employee_mapping §4.6.7 · RBAC §7.4.3 (register: Org Admin/PSA) · §3.8 (no biometric PII UI for any role)
+Purpose. Device register and health. Devices must first be registered in P04 by Org Admin / Platform Super Admin before employee mapping is activated (§4.6.6). The screen shows device id, location, type, last heartbeat and status — never biometric identifiers or facial data (§3.8: managed at the device integration layer only).
+Element
+	Control
+	Source (BRD)
+	On-screen behaviour (authored)
+
+Device list
+	Table
+	biometric_devices §4.6.6
+	Device id, location, type, last sync, status (Online/Offline).
+
+Register device
+	Form (gated)
+	POST /biometric/devices §7.4.3
+	Org Admin / PSA only; binds to a location.
+
+Offline alert
+	Status banner
+	BIOMETRIC_DEVICE_OFFLINE §9.3
+	Heartbeat missed > threshold → notify Attendance Admin + IT Admin.
+
+2.16 Configuration screens (Org Admin · Settings)
+References — entity attendance_platform_settings §4.6.8 (24 clusters) · shifts §4.6.1, weekly_off_patterns, attendance_ip_whitelist §4.6.11, geofencing_master §4.6.12, overtime_slabs §4.6.13, overtime_thresholds §4.6.14 · FR-M05-008/009/010/017
+These are the tenant master/configuration CRUD surfaces under Settings. Each is an import/export + add/edit grid bound to one entity. They share the standard config-list pattern (Import · Export · Add; table; add/edit drawer) defined in the Foundation FS. Only the entity binding and the M05-specific fields are authored here. Several duplicate the operational surfaces in §2.11–2.15 (e.g. cfg-att-policy vs attendance-policies) — flagged as OPEN-FS-M05-02.
+Config screen
+	Prototype id
+	Bound entity (BRD)
+	Authored notes (M05-specific)
+
+Attendance platform settings
+	cfg-att-platform
+	attendance_platform_settings §4.6.8 (24 clusters)
+	Singleton per tenant. Each toggle drives a behaviour referenced from §2 screens (e.g. enable_geofencing → check-in routing; enable_infraction_framework → infraction tab). Add/edit exposes the active subset; full cluster set per §4.6.8.
+
+Shifts master
+	cfg-shifts
+	shifts §4.6.1
+	Master CRUD; 10 of 23 fields active in current data (design-phase note). Overnight computed.
+
+Weekly-off patterns
+	cfg-weeklyoff
+	weekly_off_patterns
+	Pattern name, non-working days, status. Referenced by shifts.weekly_off_pattern_id.
+
+IP whitelist
+	cfg-ip
+	attendance_ip_whitelist §4.6.11
+	Network ranges for Clock-In IP validation (FR-M05-018); DA06 6 entries, dual-WAN per location.
+
+Geofencing
+	cfg-geofence
+	geofencing_master §4.6.12
+	Config-side CRUD; same entity as operational geofencing (§2.14). Reconcile duplication + §4.2.15 ref drift (OPEN-FS-M05-08c).
+
+Infraction policies
+	cfg-infraction
+	attendance_platform_settings cluster 7
+	Points system, absconding inclusion toggles (FR-M05-009).
+
+OT indexing slabs
+	cfg-ot-slabs
+	overtime_slabs §4.6.13, overtime_thresholds §4.6.14
+	Slab name, multiplier, threshold %. Prototype models slabs by day-class; entity models by cumulative-hours band — model mismatch (OPEN-FS-M05-07).
+
+Comp-off policies
+	cfg-compoff
+	leave_compoff_policies (M04)
+	M04-owned; surfaced here for OT→comp-off config. Boundary per OPEN-FS-M05-09.
+
+Biometric devices
+	cfg-devices
+	biometric_devices §4.6.6
+	Config-side device CRUD; duplicates §2.15. Section ref drift in prototype (§4.2.16) — should be §4.6.6 (OPEN-FS-M05-10).
+
+3. Interaction & Navigation Flows
+References — BRD §8.3 (Attendance Request state machine) · BRD §5.12.5 (FLOW-AT-001…007) · BRD §9.3 (notification events) · Foundation FS (scheduled jobs)
+This section maps screen-to-screen transitions onto the BRD’s attendance state machine (§8.3) — it does not redraw the machine. For each transition it names the screen that drives it and the job (Foundation FS) that drives system transitions. The approval flows and SLAs themselves are owned by §5.12.5 (FLOW-AT-001…007).
+3.1 Request lifecycle → screen mapping
+BRD §8.3 transition
+	Driven by (screen/action)
+	Resulting state
+	Screen the user lands on / effect (authored)
+
+— → SUBMITTED
+	Request Regularisation §2.2 / Comp-off §2.3 Submit
+	SUBMITTED
+	Returns to My Attendance ▸ My requests; row shows SUBMITTED + SLA countdown. L1 notified (§9.3 ATTENDANCE_REQUEST_SUBMITTED).
+
+SUBMITTED → APPROVED
+	Attendance Approvals §2.5 / Check-in Approvals §2.6 Approve
+	APPROVED
+	attendance_records updated (PRESENT / OUT_DUTY). Requestor sees APPROVED; ATTENDANCE_REQUEST_APPROVED.
+
+SUBMITTED → REJECTED
+	Approvals §2.5 Reject (reason mandatory)
+	REJECTED
+	Record unchanged; requestor sees REJECTED + reason; ATTENDANCE_REQUEST_REJECTED.
+
+SUBMITTED → ESCALATED
+	JOB-M05-ESCALATE (5d; 2-hourly 24–25th)
+	ESCALATED
+	Surfaces in approver queue with breach badge; ATTENDANCE_ESCALATION_STANDARD / _PAYROLL_CUTOFF (§9.3).
+
+SUBMITTED/APPROVED → WITHDRAWN
+	My requests ▸ Withdraw
+	WITHDRAWN
+	If was APPROVED, record reverts to prior status. Still counts toward monthly limit (FR-M05-007).
+
+— → (blocked)
+	Submit when limit reached §2.2
+	(blocked)
+	MSG-AT-LIMIT (REGULARISATION_LIMIT_EXCEEDED). No row created.
+
+3.2 System-driven transitions (jobs, not user actions)
+These transitions are driven by scheduled jobs (specified in the Foundation FS; M05 slice in §7 of this document), not screens:
+Daily attendance close classifies each day (PRESENT/LATE/INCOMPLETE/ABSENT…) and feeds infractions (FR-M05-009) — JOB-M05-CLOSE.
+Absconding detection sets lifecycle_state=ABSCONDED after 7 consecutive calendar days (FR-M05-005) — JOB-M05-ABSCOND; surfaces on the M03 absconding queue (§2 boundary).
+Period lock sets is_locked=TRUE at the payroll cutoff (FR-M05-006) — JOB-M05-LOCK; surfaces on Attendance Lock §2.10.
+LOP report generates and emails the LOP feed (FR-M05-014) — JOB-M05-LOP.
+3.3 Cross-screen navigation
+My Attendance register row (INCOMPLETE/ABSENT) → Request Regularisation pre-filled with date + missing-punch type.
+Team Attendance row action → Attendance Approvals filtered to that reportee’s pending request.
+Outside-fence Check-In → Check-in Approvals queue (L1) → on approve, returns the employee’s record to PRESENT off-site tag.
+Attendance Lock pending-items → Attendance Approvals (resolve Stage-1 items before lock).
+4. API Contracts (complete)
+References — BRD §7.4.3 (endpoint inventory — purpose & auth referenced, not restated) · BRD §6.2 (response format) · BRD §6.3 (rate limiting) · BRD §6.1 (auth) · Foundation FS (conventions, pagination, idempotency)
+For each endpoint in the §7.4.3 inventory this section authors the full request schema, response schema and every error code. Purpose and auth are owned by §7.4.3 and are not restated. The standard error envelope { error.code, error.message, error.field, error.details } (§6.2), rate limits (§6.3: 600 read / 60 write rpm) and pagination conventions are owned by the Foundation FS and apply to every endpoint below. All paths are versioned under /api/v1.
+4.1 POST /attendance/punch
+Inventory: §7.4.3 (Clock in / clock out · Employee own) — purpose & auth referenced there, not restated.
+Request
+{
+“action”: “CLOCK_IN | CLOCK_OUT | CHECK_IN | CHECK_OUT”,
+“modality”: “CLOCK | CHECK”, // per FR-M05-020 assignment
+“captured_at”: “2026-05-26T09:02:14Z”, // client second-precision
+“geo”: { “lat”: 12.9698, “lng”: 77.7500, “accuracy_m”: 18 }, // CHECK only
+“selfie_document_id”: “{uuid}”, // optional, CHECK only
+“source_ip”: “10.0.0.42”, // CLOCK only, for whitelist check
+“device_id”: “BIO-BNG-01” // optional
+}
+Response (2xx)
+{
+“attendance_date”: “2026-05-26”,
+“status”: “PRESENT | INCOMPLETE | OUT_DUTY”,
+“clock_in_time”: “2026-05-26T09:02:14Z”,
+“clock_out_time”: null,
+“late_by_minutes”: 2, // zero-grace per FR-M05-001
+“clock_in_in_geofence”: true,
+“requires_approval”: false, // true when outside-fence CHECK
+“modality_used”: “CHECK”
+}
+Errors
+400 malformed payload / missing action.
+403 modality not assigned to employee, or CLOCK from non-whitelisted IP (FR-M05-018) → FIELD/IP_ACCESS_DENIED. Reference RBAC §3.7.1 / §7.4.3.
+409 duplicate punch — already clocked in (FR-M05-018) → MSG-AT-DUP.
+422 GPS denied / selfie required-but-missing (FR-M05-019) → VALIDATION_FAILED.
+Idempotency / pagination: Idempotent on (employee, action, captured_at minute) — replays within the same minute return the existing record, not a second punch (handles mobile retry). Outside-fence CHECK creates an attendance_requests row (OVERNIGHT_OUTSIDE_FENCE / check-in) rather than a committed record.
+4.2 GET /attendance-records/{employee_id}
+Inventory: §7.4.3 (View records · Self · L1 · HRBP · HR Admin · Att Admin) — purpose & auth referenced there, not restated.
+Request
+Query params:
+from=2026-05-01 & to=2026-05-31 // bounded range, max 366 days
+page=1 & page_size=50 // Foundation pagination
+status=PRESENT,LEAVE // optional filter
+Response (2xx)
+{
+“employee_id”: “{uuid}”,
+“period”: { “from”: “2026-05-01”, “to”: “2026-05-31” },
+“records”: [{
+"attendance_date": "2026-05-24", "shift_code": "GS_KW",
+
+"clock_in_time": "...", "clock_out_time": "...",
+
+"work_duration_minutes": 552, "status": "PRESENT",
+
+"late_by_minutes": 2, "early_out_minutes": 0,
+
+"overtime_minutes": 0, "is_locked": false }],
+“page”: 1, “page_size”: 50, “total”: 31
+}
+Errors
+403 caller outside the scoped pool for this employee — reference RBAC §3.7.1 + data scope §3.6.
+404 employee not found / not in caller scope.
+422 range exceeds 366 days or from > to.
+Idempotency / pagination: Read-only; cacheable per Foundation freshness rules (§10.4). Biometric identifiers never returned (§3.8).
+4.3 POST /attendance-requests
+Inventory: §7.4.3 (Submit request, 5 types · Employee or on-behalf by approver) — purpose & auth referenced there, not restated.
+Request
+{
+“request_type”: “REGULARISATION | OUT_DUTY | PLANNED_OVERTIME |
+               OVERNIGHT_OUTSIDE_FENCE | SHIFT_CHANGE",
+“from_date”: “2026-05-20”, “to_date”: null,
+“claimed_clock_in_time”: “2026-05-20T09:00:00Z”, // REGULARISATION
+“claimed_clock_out_time”: “2026-05-20T18:00:00Z”,
+“reason_code”: “MISS”, “message”: “Forgot to punch”,
+“attachment_document_id”: null,
+“on_behalf_employee_id”: null // set by approver per DA17/DA15
+}
+Response (2xx)
+{
+“request_number”: “AT-2026-001234”,
+“request_type”: “REGULARISATION”, “status”: “SUBMITTED”,
+“applied_on_date”: “2026-05-21”,
+“approver_pool”: [“L1_MANAGER”,“HRBP”,“HR_ADMIN”,“ATTENDANCE_ADMIN”],
+“sla_due_at”: “2026-05-26T00:00:00Z” // 5d; 2-hourly on 24-25th
+}
+Errors
+403 caller may not raise this type / not in on-behalf scope (DA17). SHIFT_CHANGE from employee → blocked (DA18).
+409 REGULARISATION monthly limit reached (FR-M05-007) → REGULARISATION_LIMIT_EXCEEDED.
+422 date outside back_dating_window (§4.6.2); reason/message missing when mandatory; out-duty on a leave day (cluster 8).
+Idempotency / pagination: Auto-approval is platform-locked OFF for all five types (FR-M05-003/DA02) — server never sets APPROVED on create. Idempotent on (employee, type, from_date, claimed times) within a short window to absorb double-submit.
+4.4 POST /attendance-requests/{id}/approve
+Inventory: §7.4.3 (Approve · L1 · HRBP · HR Admin · Att Admin) — purpose & auth referenced there, not restated.
+Request
+{
+“decision”: “APPROVE | REJECT”,
+“rejection_reason”: “…” // mandatory when decision=REJECT
+}
+Response (2xx)
+{
+“request_number”: “AT-2026-001234”, “status”: “APPROVED”,
+“decision_at”: “2026-05-22T11:04:00Z”,
+“attendance_record_effect”: { “date”: “2026-05-20”, “new_status”: “PRESENT” }
+}
+Errors
+403 caller not in eligible approver pool (DA15) — reference RBAC §3.7.4 approve.
+409 request already decided / withdrawn (state ≠ SUBMITTED/ESCALATED) — reference §8.3.
+422 decision=REJECT without reason (reject_reason_mandatory, cluster 4) → MSG-AT-REJ-REASON.
+Idempotency / pagination: Single decision per request; any eligible role may act from stage 1 (DA15). Approval mutates attendance_records and writes one audit entry (App C).
+4.5 POST /attendance/lock
+Inventory: §7.4.3 (Lock period · Att Admin · HR Admin) — purpose & auth referenced there, not restated.
+Request
+{
+“entity_id”: “{uuid}”, “period”: “2026-04”,
+“pending_resolution”: “ROLL_FORWARD | AUTO_DENY | AUTO_APPROVE”,
+“payroll_handoff”: “AUTO | MANUAL”,
+“lock_note”: “April reconciled; 2 missed-swipe items roll forward”
+}
+Response (2xx)
+{
+“period”: “2026-04”, “locked”: true,
+“locked_by”: “{uuid}”, “locked_at”: “2026-05-25T18:42:00Z”,
+“employee_days”: 26094, “pending_at_lock”: 2,
+“pending_disposition”: “ROLL_FORWARD”
+}
+Errors
+403 caller not Att Admin / HR Admin (FR-M05-006) — Managers always denied.
+409 period already locked.
+422 lock_note missing (mandatory for audit, DA19).
+Idempotency / pagination: Lock is a privileged write; immutably logged in P05 (DA19). Cutoff cadence owned by JOB-M05-LOCK (Foundation). Irreversible without HR Admin co-sign.
+4.6 POST /attendance/unlock
+Inventory: §7.4.3 (Unlock full or single-record · Att Admin · HR Admin) — purpose & auth referenced there, not restated.
+Request
+{
+“mode”: “FULL_PERIOD | SINGLE_RECORD”,
+“entity_id”: “{uuid}”, // FULL_PERIOD
+“employee_id”: “{uuid}”, // SINGLE_RECORD
+“from_date”: “2026-04-10”, “to_date”: “2026-04-12”, // SINGLE_RECORD
+“reason”: “Payroll correction — missed OD approval”
+}
+Response (2xx)
+{
+“mode”: “SINGLE_RECORD”, “unlocked”: true,
+“scope”: { “employee_id”: “{uuid}”, “from”: “2026-04-10”, “to”: “2026-04-12” },
+“unlocked_by”: “{uuid}”, “unlocked_at”: “…” }
+Errors
+403 Manager attempt — always denied (FR-M05-006).
+422 SINGLE_RECORD without employee_id/date range; reason missing (DA19).
+409 post-payroll-feed unlock requires Payroll Admin ack next cycle (FR-M05-006 edge / Phase 2).
+Idempotency / pagination: No approval workflow (DA19); direct + immutably logged. Both modes audited with admin identity, scope, reason.
+4.7 POST /biometric/devices
+Inventory: §7.4.3 (Register device · Org Admin · Platform Super Admin) — purpose & auth referenced there, not restated.
+Request
+{
+“device_id”: “BIO-BNG-03”, “device_name”: “HQ · 5th floor”,
+“location_id”: “{uuid}”, “device_type”: “FACIAL | FINGERPRINT | CARD | HYBRID”
+}
+Response (2xx)
+{
+“device_id”: “BIO-BNG-03”, “status”: “ACTIVE”,
+“registered_at”: “2026-06-03T10:00:00Z” }
+Errors
+403 caller not Org Admin / PSA (§7.4.3).
+409 device_id already registered.
+422 unknown location_id / invalid device_type.
+Idempotency / pagination: Device must exist in P04 before biometric_employee_mapping is activated (§4.6.6). No biometric data stored here (§3.8).
+4.8 POST /biometric/punches (webhook)
+Inventory: §7.4.3 (Inbound device punch · Device API key) — purpose & auth referenced there, not restated.
+Request
+Headers: X-Device-Key: // device API key auth (§7.4.3)
+{
+“device_id”: “BIO-BNG-01”, “biometric_user_id”: “00123”,
+“punch_at”: “2026-05-26T09:02:14+05:30”, “direction”: “IN | OUT”
+}
+Response (2xx)
+{ “accepted”: true, “resolved_employee_id”: “{uuid}”,
+“attendance_date”: “2026-05-26”, “applied_status”: “PRESENT|INCOMPLETE” }
+Errors
+401 invalid / missing device key (HMAC).
+404 biometric_user_id not mapped to an employee (§4.6.7) → queued for HR Admin follow-up.
+409 duplicate punch (same device, user, timestamp).
+Idempotency / pagination: Idempotent on (device_id, biometric_user_id, punch_at). Maps device id → employee via biometric_employee_mapping; never exposes biometric identifiers downstream (§3.8).
+4.9 Endpoints implied by FRs but absent from the §7.4.3 inventory (PROPOSED)
+The following are needed by the screens above but not listed in the BRD inventory. They are recorded as PROPOSED here and mirrored in §9 open items; do not build until the inventory is reconciled.
+Proposed endpoint
+	Serves (screen / FR)
+	Note
+
+POST /attendance-requests/{id}/withdraw
+	My requests §2.1 (§8.3 WITHDRAWN)
+	Inventory has approve but no withdraw; §8.3 requires the transition. PROPOSED.
+
+GET /attendance-requests?scope=approver
+	Approvals queue §2.5/§2.6
+	Queue read endpoint not listed; PROPOSED with Foundation pagination.
+
+CRUD /shifts, /attendance-reasons, /geofences, /ip-whitelist
+	Config screens §2.11–2.16
+	Master CRUD endpoints not in inventory; PROPOSED, Org Admin / Att Admin auth.
+
+POST /attendance/lop-report/run
+	LOP report (FR-M05-014)
+	On-demand trigger beyond the cron; PROPOSED.
+
+5. Validation
+References — Foundation FS shared validation library (canonical) · BRD §4.6 (field types/required/defaults) · FR-M05-001/002/007
+The shared validation catalogue is authored once in the Foundation FS; screens above reference entries by id. The table below registers the catalogue entries this module relies on (to be created in the Foundation FS) and authors only the validation genuinely unique to M05 screens.
+5.1 Catalogue entries referenced (defined in Foundation FS)
+Catalogue id
+	Applies to
+	Rule summary (authored in Foundation FS — referenced here)
+
+VAL-AT-BACKDATE
+	Regularisation/OD date
+	Date within back_dating_window_days (32 ATPY_4/5; 30 ATPY_1) (§4.6.2).
+
+VAL-AT-TIME-ORDER
+	claimed punch times, OT window
+	out ≥ in; end ≥ start.
+
+VAL-AT-IP
+	Clock-In punch
+	source_ip ∈ attendance_ip_whitelist range (FR-M05-018).
+
+VAL-AT-GPS
+	Check-In punch
+	geo present; accuracy ≤ 100m soft-warn (FR-M05-019).
+
+VAL-AT-OT-CAP
+	Planned OT hours
+	≤ policy daily/weekly/monthly caps (FR-M05-008).
+
+VAL-FILE
+	Attachments
+	type/size per Foundation file policy.
+
+5.2 M05-unique validation (authored here)
+Rule
+	Definition (authored)
+
+Monthly regularisation limit
+	On Regularisation submit, count attendance_requests of type REGULARISATION for (employee, calendar month). If ≥ monthly_regularisation_limit (7 for ATPY_4/5; null=unlimited for ATPY_1) → block (REGULARISATION_LIMIT_EXCEEDED). Withdrawn/cancelled still count (FR-M05-007). Counter resets midnight day 1.
+
+Both-punch present rule
+	status=PRESENT only when both clock_in_time and clock_out_time populated; otherwise INCOMPLETE (treated absent until regularised). Zero grace for all migrated policies (FR-M05-001).
+
+Attendance/leave same-day conflict
+	Block Out-Duty on a day with approved leave when disallow_attendance_and_leave_same_day=TRUE (cluster 8); half-day & short leave exempt (FR-M05-003).
+
+Shift-change initiator
+	request_type=SHIFT_CHANGE rejected when initiator is the employee (DA18) — admin-only.
+
+Outside-fence routing
+	Check-In with clock_in_in_geofence=FALSE must create an approval request, never a committed PRESENT record (FR-M05-002/019).
+
+6. Per-Screen RBAC Projection
+References — BRD §3.7.1 (Core operational matrix) · BRD §3.7.4 (Time Management permission grain) · BRD §3.8 (sensitive-data restrictions) · BRD §3.6 (data scoping) · Foundation FS (full role→menu map)
+This section projects the BRD permission matrix onto each M05 screen — it does not restate the matrix. The authoritative cells live in §3.7.1 (Own attendance = E; Team attendance = E·A for L1/HRBP, V for HOD; Adm for HR Admin) and the §3.7.4 Time Management permission grain (Attendance Admin holds the assign/import/edit actions). Data scope follows §3.6.
+6.1 Screen → action projection
+Screen
+	View
+	Edit / Submit
+	Approve / Admin
+
+My Attendance §2.1
+	Employee (own)
+	Employee (own punches, requests)
+	—
+
+Regularisation / Comp-off §2.2–2.3
+	Employee (own)
+	Employee; on-behalf: L1/HRBP/Att Admin (DA17)
+	—
+
+Team Attendance §2.4
+	L1 (chain), HOD (dept, V), HRBP
+	L1/HRBP edit team attendance (§3.7.1 E)
+	L1/HRBP approve (A)
+
+Regularisation Approvals §2.5
+	eligible pool
+	—
+	L1·HRBP·HR Admin·Att Admin (DA15)
+
+Check-in Approvals §2.6
+	L1 (field reportees)
+	—
+	L1 approve/reject (DA05)
+
+Department Attendance §2.8
+	HOD (dept, V)
+	—
+	—
+
+Office Attendance §2.9
+	Office Admin (site)
+	—
+	—
+
+Attendance Lock §2.10
+	Att Admin · HR Admin
+	—
+	Att Admin · HR Admin lock/unlock (FR-M05-006); Manager never
+
+Shift Management §2.11
+	Att Admin · HR Admin
+	Att Admin assign shift/policy/W-off (§3.7.4)
+	Att Admin shift change (DA18)
+
+Policies / Reasons / Geofencing §2.12–2.14
+	Att Admin · HR Admin
+	Att Admin · HR Admin
+	—
+
+Biometric Devices §2.15
+	Office Admin (V)
+	Org Admin · PSA register
+	— (no biometric PII, §3.8)
+
+Config screens §2.16
+	Org Admin
+	Org Admin
+	Org Admin
+
+6.2 Field masking & sensitive-data projection
+Biometric identifiers / facial data — never rendered on any screen, any role (§3.8). Device screens show device metadata + health only.
+Selfie &** GPS (Check-In)** — PII tier-2 (FR-M05-019, §3.8); thumbnail visible to the approving L1 only, access-logged, not downloadable; 90-day routine retention.
+Compensation / payroll figures — not shown on attendance screens; OT pay value display gated to HR Admin / Finance Admin (§3.8 salary restriction).
+6.3 Menu & navigation entitlement — M05 slice
+The full role→menu map lives in the Foundation FS; this is the M05 slice (menu items, the screen each maps to, and the roles that see it). Deep-link access is gated by the §3.7 action permissions; this layer governs only menu visibility.
+Menu item (label)
+	Screen id
+	Visible to roles
+	Gating permission (BRD §3.7 ref)
+
+My attendance
+	attendance
+	Employee (all)
+	§3.7.1 Own attendance = E
+
+Attendance regularisation
+	attendance ▸ reg.
+	Employee (all)
+	§3.7.1 Own attendance = E
+
+Team attendance
+	team-attendance
+	L1 Mgr
+	§3.7.1 Team attendance = E·A
+
+Regularization
+	attendance-approvals
+	L1·HRBP·HR Admin·Att Admin
+	§3.7.4 View/Edit Attendance
+
+Check-in
+	checkin-approvals
+	L1 Mgr (field)
+	§3.7.1 Team attendance = A
+
+Department attendance
+	dept-attendance
+	HOD
+	§3.7.1 HOD = V
+
+Office attendance
+	office-attendance
+	Office Admin
+	§3.7.4 Office Admin
+
+Attendance lock
+	attendance-lock
+	Att Admin · HR Admin
+	§3.7.4 One View Access / lock
+
+Shifts & rosters
+	attendance-shifts
+	Att Admin · HR Admin
+	§3.7.4 Assign Shift
+
+Attendance policies
+	attendance-policies
+	Att Admin · HR Admin
+	§3.7.4 Assign Attendance Policy
+
+Attendance reasons
+	attendance-reasons
+	Att Admin · HR Admin
+	§3.7.4
+
+Geofencing
+	geofencing
+	Att Admin · HR Admin
+	§3.7.4 Assign Fencing
+
+Biometric devices
+	biometric-mgmt
+	Office Admin (V); Org Admin/PSA (E)
+	§7.4.3 register auth
+
+Attendance platform settings + config
+	cfg-att-*
+	Org Admin
+	Org Admin (config)
+
+7. M05 Operational Specifications
+References — Foundation FS (canonical home for jobs, message catalogue, widgets) · BRD §9.3 (notification events) · BRD §10.1–10.2 (reports/widgets) · BRD §5.6 FRs
+These three operational layers are not screen-driven and are easy to miss. Their canonical home is the Foundation FS; reproduced here is the M05 slice so the module is buildable. The business rule each job implements is owned by its FR and is referenced, not restated — the authored content is cadence, idempotency, failure handling and observability.
+7.1 Scheduled jobs & background processing (M05 slice)
+JOB-M05-CLOSE — Daily attendance close
+Attribute
+	Content
+
+Trigger
+	End-of-day, 00:30 IST (Foundation cadence)
+
+Purpose / FR
+	Classify each day & feed infractions — FR-M05-001/009
+
+Reads / writes
+	reads punches; writes attendance_records.status, late_by/early_out, infraction points (§4.6.4)
+
+Logic summary
+	Per FR-M05-001 both-punch rule; per FR-M05-009 classification — not restated
+
+Idempotency
+	Keyed on (employee, attendance_date); re-run recomputes the same row (last-write-wins on derived fields only).
+
+Failure handling
+	Per-employee isolation; failed rows retried next run; alert MSG-AT-JOB-FAIL to Att Admin.
+
+Concurrency
+	Skips dates already is_locked=TRUE; defers to user punches mid-run via row lock.
+
+Observability
+	Audit entries per status change (App C); run summary emitted.
+
+JOB-M05-ABSCOND — Absconding detection
+Attribute
+	Content
+
+Trigger
+	Daily (FR-M05-005)
+
+Purpose / FR
+	Flag 7 consecutive calendar days unauthorised absence — FR-M05-005 / DA20
+
+Reads / writes
+	reads attendance_records; writes employees.absconding_flagged_at, lifecycle_state=ABSCONDED
+
+Logic summary
+	7 calendar days incl. Weekly Off; holidays excluded; only approved leave pauses counter (FR-M05-005) — not restated
+
+Idempotency
+	Flag set once; clock-in on day 8+ does not auto-clear (FR-M05-005 edge); re-run does not duplicate the flag.
+
+Failure handling
+	Retry next day; queue surfaces on M03 absconding screen.
+
+Observability
+	ABSCONDING_FLAGGED notification (§9.3) to HR Admin queue with last-seen + counter.
+
+JOB-M05-LOCK — Period lock
+Attribute
+	Content
+
+Trigger
+	Payroll cutoff = 25th (DA03/FR-M05-006)
+
+Purpose / FR
+	Freeze period for payroll — FR-M05-006
+
+Reads / writes
+	writes attendance_records.is_locked=TRUE for the period/entity
+
+Idempotency
+	No-op if already locked; pending items dispositioned per the lock screen choice.
+
+Failure handling
+	Partial lock rolls back; ATTENDANCE_LOCK_FIRED (§9.3) on success.
+
+Observability
+	Immutable P05 entry with scope + admin/system identity (DA19).
+
+JOB-M05-LOP — LOP report generation
+Attribute
+	Content
+
+Trigger
+	lop_report_send_date (cluster 16); FR-M05-014
+
+Purpose / FR
+	Generate & email LOP feed — FR-M05-014
+
+Reads / writes
+	reads attendance_records; writes report artefact; emails lop_report_send_to_user_ids
+
+Idempotency
+	Re-runnable on demand (proposed endpoint §4.9); same cycle → same output.
+
+Failure handling
+	Delivery retried; recipients get attachment within 30 min of cron (FR-M05-014 AC).
+
+JOB-M05-ESCALATE — Request SLA escalation
+Attribute
+	Content
+
+Trigger
+	5 days inaction; 2-hourly on 24–25th (FR-M05-003/DA13)
+
+Purpose / FR
+	Escalate stale attendance requests — §8.3 ESCALATED
+
+Reads / writes
+	reads attendance_requests SUBMITTED; writes escalation_fired_at; status=ESCALATED
+
+Failure handling
+	*ATTENDANCE_ESCALATION_STANDARD / _PAYROLL_CUTOFF (§9.3)*
+
+7.2 Message catalogue (M05 slice)
+Notification events and recipients are owned by §9.3; the Foundation Message Catalogue authors the template per channel. Below: the M05 notification ids (template authored in Foundation) and the user-facing error/system messages this FS introduces.
+Notifications (events owned by §9.3; templates in Foundation FS)
+Event code (§9.3)
+	Channel(s) / recipients (ref §9.3)
+	Trigger source
+
+ATTENDANCE_REQUEST_SUBMITTED
+	IN_APP+EMAIL → L1 (eligible pool)
+	Request submit §2.2/2.3
+
+ATTENDANCE_REQUEST_APPROVED / _REJECTED
+	IN_APP(+EMAIL) → requestor
+	Approvals §2.5
+
+ATTENDANCE_ESCALATION_STANDARD / _PAYROLL_CUTOFF
+	EMAIL(+SMS) → approver chain + admins
+	JOB-M05-ESCALATE
+
+ABSCONDING_FLAGGED
+	EMAIL → HR Admin queue
+	JOB-M05-ABSCOND
+
+BIOMETRIC_DEVICE_OFFLINE
+	IN_APP+EMAIL → Att Admin · IT Admin
+	Device heartbeat monitor
+
+ATTENDANCE_LOCK_FIRED
+	IN_APP → Att Admin · HR Admin
+	JOB-M05-LOCK
+
+Error & system messages (authored here)
+Msg id
+	Where shown
+	Message text &** recovery (authored)**
+
+MSG-AT-LIMIT
+	Regularisation submit §2.2
+	“You have reached the monthly regularisation limit (7). HR Admin or Attendance Admin can raise an exception on your behalf.” (API: REGULARISATION_LIMIT_EXCEEDED)
+
+MSG-AT-WINDOW
+	Date picker §2.2/2.3
+	“This date is outside the regularisation window of {n} days.”
+
+MSG-AT-IP-BLOCK
+	Clock-In §2.1
+	“Clock-In is only available on the office network. Use Check-In if assigned.”
+
+MSG-AT-GPS-DENY
+	Check-In §2.1
+	“Enable location to Check-In, or contact HR Admin for office network Clock-In.”
+
+MSG-AT-DUP
+	Punch §2.1
+	“You are already clocked in. Did you mean CLOCK OUT?”
+
+MSG-AT-SYNC-LATE
+	Mobile punch §2.1
+	“This punch synced {n} minutes after capture and is flagged for review.”
+
+MSG-AT-REJ-REASON
+	Approvals reject §2.5
+	“A rejection reason is required.”
+
+7.3 Dashboard & widget specifications (M05 slice)
+Which widgets and their role-awareness are owned by §10.2; report definitions by §10.1. Authored here: data binding, refresh, drill-down and per-role composition.
+Widget (ref §10.2)
+	Data source (entities/API)
+	Metric
+	Refresh
+	Drill-down → screen
+
+My Attendance
+	attendance_records; GET /attendance-records §4.2
+	Week punches, Late/Early, reg count vs 7
+	Daily (§10.4)
+	→ attendance §2.1
+
+Team Attendance Summary
+	attendance_records (chain)
+	Presence count, exceptions, pending regs
+	Daily
+	→ team-attendance §2.4
+
+Pending Approvals (attendance slice)
+	attendance_requests pending
+	Unified pending count + SLA
+	Real-time
+	→ attendance-approvals §2.5
+
+Pre-built reports referenced from §10.1: ATTENDANCE_SUMMARY, ATTENDANCE_EXCEPTIONS, REGULARISATION_USAGE, ABSCONDING_FLAGGED — the FS adds export composition (FR-M05-012 register export preserves visible cells; WCAG AA colour-coding) but does not restate the report definitions.
+8. Open Items, Conflicts & Recommendations — Resolution Register
+References — Cross-reference pass: prototype v20.9 × BRD v7.4 BASE · Closed register — each item resolved & applied · Disposition points to the BRD v7.4 BASE M05 FS-reconciliation amendment
+This register is now closed. Every prototype/BRD mismatch found in the cross-reference pass has been resolved and applied — to BRD v7.4 BASE (the M05 FS-reconciliation amendment, accepted as body text) and to prototype v20.9. Each row records its disposition. Two residual items are external and remain open by design: 08b (fence/IP inventory reconciliation — a migration/ETL gate, not code) and the encashment-window sub-point of 09 (tracked as ON-AT05 in M04). These are shaded amber below.
+Id
+	Status
+	What was in conflict
+	Owner
+	Disposition (Resolved · v7.4 BASE / proto v20.9)
+
+OPEN-FS-M05-01
+	Resolved
+	Prototype attendance policies show non-zero late grace (15/10/5 min); FR-M05-001 mandates zero grace for all migrated policies.
+	Product · Att Admin
+	Resolved — prototype set to zero grace (FR-M05-001) on all migrated policies; BRD was already locked. Applied: prototype v20.9; v7.4 BASE amendment.
+
+OPEN-FS-M05-02
+	Resolved
+	Two policy/geofence/device surfaces over the same entities. Geofence-specific detail: OPEN-FS-M05-08c.
+	Product · Design
+	Resolved — config (cfg-*) is the master CRUD under Settings; operational surfaces are read+assign working views, enforced via §3.7.4 RBAC. v7.4 BASE amendment.
+
+OPEN-FS-M05-03
+	Resolved
+	Prototype reasons marked “auto-approve eligible” with frequency caps; DA02 locks auto-approval OFF; DA10 sets reasons company-wide.
+	Att Admin · Product
+	Resolved — every reason auto-approve set to “No (DA02)” in prototype; frequency is the migrated set (DA10). v7.4 BASE amendment.
+
+OPEN-FS-M05-04
+	Resolved
+	Prototype exposed WFH as a request subtype/flow; FR-M05-003 enumerates five types and WFH is not one.
+	Product
+	Resolved — WFH kept out of the five request types; handled as an attendance reason and the is_wfh_shift attribute (§4.6.1). v7.4 BASE amendment.
+
+OPEN-FS-M05-05
+	Resolved
+	Prototype attendance-lock states lock runs on the 5th; DA03/FR-M05-006 fix the cutoff at the 25th.
+	Att Admin · Payroll
+	Resolved — prototype lock copy set to the 25th payroll cutoff (DA03) on both screens. v7.4 BASE amendment.
+
+OPEN-FS-M05-06
+	Resolved
+	Prototype showed employee-initiated shift-swap requests; DA18 makes shift change admin-only.
+	Att Admin · Product
+	Resolved — shift change set to admin-only (DA18); swap UI relabelled as admin-performed (“Apply”, not “Approve”). v7.4 BASE amendment.
+
+OPEN-FS-M05-07
+	Resolved
+	Prototype conflated day-class OT multipliers with hour-band indexing slabs (§4.6.13).
+	Product · Engineering
+	Resolved — prototype split into day-class multipliers (FR-M05-010) and hour-band indexing slabs (FR-M05-017 · §4.6.13). v7.4 BASE amendment.
+
+OPEN-FS-M05-08a
+	Resolved
+	Fence radius conflict: DA05 500m vs prototype 250/200m vs entity default 100m.
+	Att Admin · Product
+	Resolved — prototype check-in fence set to 500m (DA05); per-site radius cells aligned. v7.4 BASE amendment.
+
+OPEN-FS-M05-08b
+	Open — migration gate
+	Fence inventory mismatch: DA04 = 15 fences vs prototype 4/2 vs CSV 29 rows; IP whitelist DA06 = 6 vs prototype 2.
+	Att Admin · Migration
+	Doc resolved (prototype now states 15 active fences / representative sites). Inventory reconciliation to 15 fences + 6 IP entries remains a migration/ETL go-live gate (config, not code) — tracked with the BRD migration gates.
+
+OPEN-FS-M05-08c
+	Resolved
+	Two fence surfaces over geofencing_master §4.6.12; cfg-geofence cited §4.2.15 (ref drift).
+	Product · Design
+	Resolved — cfg-geofence is master, operational geofencing is read + exception view; prototype ref corrected to §4.6.12. v7.4 BASE amendment.
+
+OPEN-FS-M05-08d
+	Resolved
+	Cluster 11 ships per-employee fence merge / auto-fence toggles with no managing screen; Phase-1 fencing is location-level only (DA04).
+	Product · Engineering
+	Resolved — per-employee fence merge & auto-fence confirmed out of scope for Phase 1; cluster-11 toggles dormant; per-employee fence screen deferred to Phase 2. v7.4 BASE amendment.
+
+OPEN-FS-M05-09
+	Resolved
+	Comp-off request appears on the attendance page but credit/balance/encashment is M04.
+	HR Admin
+	Resolved — two-leg split: earning request → M05 (FR-M05-008); balance, application, expiry & encashment → M04 (tenant_leaves_compoff); credit hand-off contract between them. v7.4 BASE amendment. Encashment-window sub-point remains ON-AT05 (M04).
+
+OPEN-FS-M05-10
+	Resolved
+	§7.4.3 lacked withdraw, approver-queue read and master-CRUD endpoints; cfg-devices cited §4.2.16.
+	Product · Engineering
+	Resolved — four endpoints added to §7.4.3 (withdraw, approver-queue read, on-demand LOP run, master config CRUD); prototype device ref corrected to §4.6.6. v7.4 BASE amendment.
+
+OPEN-FS-M05-11
+	Resolved
+	Absconding screen labelled FR-M03-006 only; detection is FR-M05-005 (M05), queue is M03.
+	HR Admin · Product
+	Resolved — prototype now cites FR-M05-005 (detection) alongside FR-M03-006 (queue); split documented (M05 detection job; M03 queue + convert/restore). v7.4 BASE amendment.
+
+Appendix A — Authoring notes & traceability
+Prototype screens consumed: attendance, attendance-approvals, checkin-approvals, compoff-approvals, team-attendance, dept-attendance, office-attendance, attendance-lock, attendance-shifts, attendance-policies, attendance-reasons, geofencing, biometric-mgmt, cfg-att-platform, cfg-att-policy, cfg-shifts, cfg-weeklyoff, cfg-ip, cfg-geofence, cfg-infraction, cfg-ot-slabs, cfg-compoff, cfg-devices.
+BRD v7.4 BASE sections referenced (never restated): §3.6, §3.7.1, §3.7.4, §3.8, §3.9, §4.6.1–4.6.18, §5.6 (FR-M05-001…020), §5.6 M05.FS1 (DA01–DA22), §5.12.5, §6.1–6.3, §7.1, §7.4.3, §8.3, §9.3, §10.1, §10.2, §10.4, §12.5.
+Forward references to the Foundation FS (to be authored): shared validation library (VAL-* entries), global UI state standard, control vocabulary, scheduled-jobs canonical register, Message Catalogue (notification templates + error copy), full role→menu entitlement map, and the cross-module Reference Register.
+This FS adds no business rules. Every rule, field, permission, NFR and notification trigger remains owned by the BRD; every screen traces to a prototype id; every conflict is surfaced in §8 rather than silently resolved.
+    Confidential — complements BRD v7.4 BASE    Page  of
+Prototype Sync Addendum — Batch 3: Employee-role Attendance review (June 2026)
+Reflects the Batch-3 Employee-role Attendance review against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Attendance regularisation
+The regularisation reason list is drawn from the Attendance Reasons master (typed: Regularisation / Out-duty / Shift-change), not hardcoded. Reason and comments are both mandatory (Attendance settings), and regularisation is permitted only within the configured window (“During fixed duration” / defined days from cycle end). The correction type (missed punch in/out, wrong time, etc.) remains a separate structural field.
+Overtime — not in scope
+There is no overtime feature. The employee attendance page does not display overtime, there is no overtime request, and planned overtime is not offered. The earlier Enable Planned Overtime vs Allow self planned-OT configuration conflict is therefore moot. Overtime-related approver and configuration surfaces — the Overtime approvals queue, the OT indexing slabs configuration, and the Overtime navigation item — have been removed.
+Comp-off credit
+Comp-off remains in scope. The employee raises a comp-off credit request based on working on a weekly-off or holiday (worked date + hours + reason); comp-off is credited on approval per the comp-off policy (full / half day, lapse). Availing comp-off is via the leave-application screen (see M04). No overtime is involved in either path.
+Infraction display
+Infraction history is gated on Enable Infraction Framework and is hidden when the framework is off (off for this tenant). Basic late-mark counts (within grace) remain visible independently of the infraction framework.
+Shift-change — not employee self-service
+A shift-change request is initiated by the Manager or Attendance Admin and approved by HR Admin; it is not an employee self-service action and is therefore absent from the employee screens by design. Shift master eligibility (Show For Shift Change Request) and the “Shift Change” reason type support the initiator-side flow, specified in the Manager / Attendance-Admin scope.
+Clock-in / check-in capture
+Clock-in / clock-out is modelled as a punch state (IP-verified against the attendance IP networks). Check-in, selfie capture and geofencing are configuration-gated (Enable image capture (selfie), Disable Clockin / show Check In, Enable geofencing) and are off for this tenant; the build must keep clock-in and check-in a single capture component switched by these flags rather than two hardcoded paths.
+Manager team views inherit attendance gating
+The manager’s Team attendance view inherits the same configuration gating as the employee attendance page: it shows no overtime column (no overtime feature) and no infraction column (infraction framework off for this tenant), surfacing presence, punch-in / punch-out and late-mark (within-grace) counts only. A single configuration change must move both the self-view and the manager team view.
+Manager attendance approval — reject reason
+Rejecting an attendance-regularisation request requires a mandatory reason (config: Reject reason mandatory for attendance-related requests = Yes). Shift-change is not present in the manager’s attendance-approval queue — it is initiated by the Manager / Attendance Admin and approved by HR Admin (as specified above).
+Check-in approvals — no geofence flag (enforcement off)
+Check-in is approved by the manager (Check In Approval Setting = Manager Approval). The check-in approval queue does not show an out-of-geofence flag because geofencing enforcement is off for this tenant (Enable geofencing at location / work-area level = No; selfie capture = No). Geofence sites remain configurable on the Geofencing screen, but check-ins are not geofence-flagged — the check-in queue shows Employee, Date·time, Location and Action only. This closes the previously-deferred stale-flag finding.
+Manager-role review (Round 3 follow-up B)
+Team attendance enriched. Team attendance now lists reportees with drill-in to a per-member attendance history (mirroring Team leave): summary, daily records, pending regularisations. Manager actions: raise attendance regularisation on behalf of a reportee and approve/reject pending regularisations (on-behalf, audit-logged), plus private note and pattern report. Closes the prior Team-attendance stub gap.

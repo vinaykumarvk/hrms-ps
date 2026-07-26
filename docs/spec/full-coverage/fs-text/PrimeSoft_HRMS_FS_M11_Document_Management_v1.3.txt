@@ -1,0 +1,307 @@
+FS ��� M11 Document Management v1.3
+Table of Contents
+ TOC \z \o "1-2" \u \h
+Functional Specification — Document Management (M11)
+Version
+	v1.3 (Employee-review: policy-ack as Task type; Document-Types appendix added) — was v1.2
+
+Reconciliation
+	Aligned to BRD v2 (§4.11 canonical entity names) and Prototype v2 (real data-page anchors). Global Document Settings page added to the prototype as cfg-document-settings. All §10 open items resolved.
+
+Status
+	Draft for review
+
+References
+	M11_Document_Management_Requirements (Parts A–L); BRD v7.5 §4.11 (Document Mgmt entities), §5.12.10 (Document-Issue flows), §9.6 (M01/M11 notification matrix), §3.7.2 (HR Documents permissions), the embedded BRD “M11 FS v1 / DM-decision register”; RBAC Design Document v1.1 (Letter Admin flag §4.3; vault access); Foundation FS v1.0 (VAL-*, message catalogue, jobs index, menu); Platform Spec v1.0 (P01 workflow, P05 audit/retention, W.1 flows, W.2 forms, X.2 notifications).
+
+Single source
+	The BRD and the M11 Requirements own document types, retention classes, the DM-decision register, and the notification events; this FS references them and authors only screens, complete API contracts, validation, per-screen RBAC projection, and the operational layer.
+
+1. Scope & Reference Map
+References: BRD §4.11, §5.12.10, §9.6, §3.7.2; M11 Requirements Parts A–L.
+1.1 BRD / Requirements coverage map (referenced, not restated)
+Topic
+	Source
+	FS treatment
+
+Document Management entities
+	BRD §4.11 (policy_documents, employee_documents, letter_templates, signoff_transactions, …)
+	Reference fields; FS maps to screens + contracts
+
+Document-type catalogue (18 types), retention classes
+	M11 Req Part C, H
+	Reference; FS authors the vault screen + upload behaviour
+
+Vault access matrix (role × view/upload/replace/delete)
+	M11 Req Part C.2
+	Reference; FS projects onto vault screen §6
+
+Letter template inventory (LTR_OFFER…LTR_TRLOC), merge fields, signatures
+	M11 Req Part D
+	Reference; FS authors template-builder + generate-letter screens + contracts
+
+Sign-off & acknowledgement engine, decline handling, pending report
+	M11 Req Part E
+	Reference; FS authors sign-off task UI + report
+
+Policy library register, lifecycle states
+	M11 Req Part B
+	Reference; FS authors policy screens
+
+Policy Sign-Off action in workflows; lifecycle-driven generation
+	M11 Req Part G; BRD §5.12.10
+	Reference P01 / W.1; FS maps screen triggers
+
+Versioning, retention, disposal, DPDPA erasure
+	M11 Req Part H; BRD §5.1.5/Appendix C
+	Reference P05/W.1; FS authors version panel + disposal action
+
+Notification events (POLICY_PUBLISHED, sign-off, letter-issued)
+	BRD §9.6
+	Reference; templates in Foundation §5 / M11 slice §8.2
+
+DM-decision register (27 decisions)
+	BRD M11 FS v1 / Req Part L
+	Reference by DM-code; never restated
+
+1.2 Screen → requirement reference register (M11)
+FS screen
+	Prototype page (v2 data-page)
+	Requirement / BRD ref
+	Key entities (BRD §4.11)
+
+doc-settings
+	cfg-document-settings (added in v2)
+	Req Part A (A.1–A.3)
+	tenant config
+
+policy-library
+	policies
+	Req Part B
+	policy_documents, policy_categories
+
+policy-detail / acknowledgement
+	policies / policy-ack
+	Req Part B.2–B.3, F.4
+	policy_documents — acknowledgement also surfaced as a Task in the employee Tasks section (Foundation/P01); the standalone “Pending acknowledgements” menu item is retired.
+
+doc-templates (letter template builder)
+	da-templates / cfg-doc-templates
+	Req Part D.1–D.2
+	letter_templates, document_template_formats
+
+letterheads / signers
+	cfg-letterheads / cfg-signers
+	Req Part D.3
+	letter_head_management, signing_authorities, letter_auto_numbering
+
+generate-letter (single + bulk)
+	da-bulk-letters / da-letter-queue / letters
+	Req Part D.4
+	letter_templates, employee_documents
+
+employee-vault
+	da-vault / da-doc-master (Add/Edit document types)
+	Req Part C
+	employee_documents, document_categories
+
+upload document
+	upload-document
+	Req Part C (employee/HR upload)
+	employee_documents
+
+document categories
+	da-categories
+	Req Part C; §4.11.8
+	document_categories
+
+signoff-tracker / pending report
+	da-signoff-tracker
+	Req Part E
+	signoff_transactions
+
+2. Screen Specifications
+Each screen: purpose, the requirement/BRD ref it satisfies, layout regions, field behaviour, the five states (§3 Foundation FS), actions → contracts (§4) / message ids (Foundation §5 / §8.2). Visual styling is the design system’s.
+2.1 doc-settings — Global Document Settings (Org Admin)
+Purpose: module-wide toggles, global sign-off + acknowledgement text, storage/encryption (Req A.1–A.3). Regions: toggles · sign-off text editor · acknowledgement text editor · storage/encryption summary (read-only, per P05). Fields: HR-policy sign-off text (VAL-REQUIRED, VAL-LEN), HR-letter acknowledgement text (VAL-REQUIRED), block-HR-policy-on-mobile (toggle), CTC font/size/padding (letter rendering). Actions: Save → PUT /api/v1/document-settings.
+2.2 policy-library / 2.3 policy-detail — Policy Library (Document Admin / HR Admin)
+Purpose: register, version, publish, assign policies; tag forms (Req B, F.4). List regions: filter by category/status + “New policy” + “Assign policy”. Detail: master attributes (name, category VAL-ENUM, owner, effective date VAL-DATE, version), lifecycle state (DRAFT→PUBLISHED→ARCHIVED per B.3), assignment (UAG/role scope per F.1), tagged sign-off form (W.2 form id). Publish triggers POLICY_PUBLISHED notification (§9.6) to in-scope employees. Actions: New/Edit → POST/PUT /api/v1/policies; Publish → POST /api/v1/policies/{id}/publish; Assign → POST /api/v1/policies/{id}/assignments.
+2.4 doc-templates — Letter Template Builder (Letter Admin flag · Document Admin / HR Admin)
+Purpose: author/manage letter templates + merge-field bindings + versioning (Req D.1–D.2; RBAC §4.3 Letter Admin). Regions: template list (inventory: LTR_OFFER, LTR_APPT, LTR_NDA, LTR_CONF, LTR_CONFM, LTR_PROBX, LTR_INC, LTR_PROMO, LTR_TRLOC …) · template editor (body + merge fields ${…}) · signature config (D.3) · activate/publish. Merge fields validated against the entity merge catalogue (Req D.2); unknown token → ERR (M11 slice). Actions: POST/PUT /api/v1/letter-templates, POST …/{id}/publish.
+2.5 letterheads — Letterhead & Signer Configuration (Org Admin / HR Admin)
+Purpose: letterheads (HTML + DOCX), default signing authorities (up to 4) and signatures (Req D.3; Self-Generate Settings). Fields: letterhead HTML/DOCX upload (VAL-FILE), signer 1–4 (employee picker), signature image per signer (VAL-FILE). Actions: PUT /api/v1/letterheads.
+2.6 generate-letter — Generate Letter (HR Admin; bulk per D.4)
+Purpose: generate a letter for one or many employees from a template, with serial numbering and signature (Req D.4). Regions: template select · recipient select (single/bulk) · preview (merged) · serial (${SYS.letter_serial} per name-format) · generate. Bulk generation runs as a background job (§8.1). Generated letters write to the employee vault and trigger LETTER_ISSUED notification. Actions: POST /api/v1/letters (single) / POST /api/v1/letters/bulk (job).
+2.7 employee-vault — Employee Document Vault
+Purpose: per-employee document repository across the 18 document types (Req Part C), categorised, version-chained (Part H.1), with retention class. Regions: category tabs · document list (type, version, status, retention) · upload/replace · view (PII-masked per tier). Field behaviour per the vault access matrix (Req C.2) — projected in §6. Sensitive uploads route to the M01 sensitive-field approval gate (P01). Actions: POST /api/v1/employees/{id}/documents, GET …, POST …/{docId}/versions, POST …/{docId}/disposal.
+2.8 signoff-tracker / 2.9 signoff-pending-report — Sign-off & Acknowledgement (Req E)
+Purpose: track policy/letter sign-off tasks, capture acknowledgement, handle decline, and surface the pending report (E.1–E.4). The prototype shows the aggregate (“412 sign-offs · 218 policy · 194 letter”). Sign-off task list (status, due, employee), acknowledgement record (timestamp, version acknowledged), decline path (reason → routing per E.3). Pending report filterable by policy/letter/UAG. Actions: POST /api/v1/signoffs/{id}/acknowledge, POST …/{id}/decline; report GET /api/v1/signoffs?status=PENDING.
+3. Interaction & Navigation Flows
+References: BRD §5.12.10 (4 Document-Issue flows), §8 (lifecycle state machines), M11 Req Part G/K. The state machine is referenced, not redrawn; this shows which screen/job drives each transition.
+Four document-issue flows (BRD §5.12.10), each mapping a lifecycle event → letter generation → vault → sign-off: 1. Onboarding sign-off cluster — M02 completion → generate LTR_APPT/NDA/LTR_CONF (W.1 onboarding workflow) → vault → sign-off tasks (E.1). 2. Probation confirmation/extension — M01 lifecycle Active(probation)→Active(confirmed) → LTR_CONFM / LTR_PROBX on HR Admin action. 3. Lifecycle letters — increment (LTR_INC), promotion (LTR_PROMO), transfer (LTR_TRLOC) generated on the respective approval event (M09/M10/M01); LTR_INC/LTR_PROMO depend on M10 Compensation — Phase 2 (see §10). 4. Separation/experience letter — M03 separation → LTR (experience/relieving) → terminal vault version. Policy Sign-Off action embeds in any workflow stage (W.1; Req G.1); lifecycle-driven generation per G.2; M02 cluster delegation per G.3.
+4. API Contracts
+Inventory referenced from BRD §6.4; full contracts authored here. Auth/idempotency/pagination/error-envelope per Foundation §1. Errors reference Foundation/M11 message ids.
+POST /api/v1/letters — generate a letter (Req D.4) Request: { template_code, employee_id, merge_overrides{}, letterhead_id, signers[] } Response: { letter_id, serial, document_id, pdf_url } Errors: 403 (ref P02) · 404 template/employee · 409 duplicate (Idempotency-Key) · 422 unknown merge token / missing required merge field (VAL per Req D.2)
+POST /api/v1/letters/bulk — bulk generate (background job JOB-M11-BULKLTR §8.1) Request: { template_code, employee_filter{} | employee_ids[], letterhead_id } Response: { job_id, count } (progress polled; completion notifies issuer)
+POST /api/v1/employees/{id}/documents — upload to vault (Req C) Request: multipart { document_type, file, effective_date? } (VAL-FILE; PII tier per Appendix B) Response: { document_id, version, status } Errors: 403 (vault matrix §6) · 422 type/retention invalid · 409 sensitive-pending (M01 gate)
+POST /api/v1/signoffs/{id}/acknowledge | /decline — sign-off engine (Req E) Request: acknowledge { version_acknowledged } · decline { reason (VAL-REQUIRED) } Response: { signoff_id, status } Errors: 403 · 409 already-actioned · 422 reason required (ERR-REASON-REQ)
+POST /api/v1/policies + /{id}/publish + /{id}/assignments — policy library (Req B) POST/PUT /api/v1/letter-templates (+ /{id}/publish) — template builder (Req D) PUT /api/v1/letterheads · PUT /api/v1/document-settings — config (Req D.3 / A)
+5. Validation
+Reference Foundation §2 catalogue ids; author only M11-unique rules.
+Referenced: VAL-FILE (uploads — type/size/scan), VAL-REQUIRED, VAL-LEN, VAL-ENUM (category/type), VAL-DATE (effective/retention), VAL-CONSENT (acknowledgement). M11-unique (authored here): VAL-M11-MERGE — every ${token} in a letter template must resolve against the merge-field catalogue (Req D.2); unknown/unbound token blocks publish. VAL-M11-RETENTION — a document’s retention class (Req H.2) governs disposal eligibility; disposal blocked before the window. VAL-M11-SIGNER — generate requires the template’s configured signer set (D.3) to be resolvable (active employees with signatures).
+6. Per-Screen RBAC Projection & Menu Entitlement
+References: BRD §3.7.2 (HR Documents matrix), §3.9 (field access / PII), RBAC v1.1 (Letter Admin flag §4.3, vault matrix), Foundation §6 (menu). Projects the vault access matrix (Req C.2) onto screens; never restates the matrix.
+Vault (employee-vault) per role (Req C.2): Employee view/upload own (sensitive via M01 gate), no delete; Manager (L1) no vault access; HRBP view/upload/replace for subordinates (sensitive via approval); HR Admin / Document Admin / Org Admin full incl. delete (mandatory reason, audit-logged P05); Auditor read-only terminal version. Template builder + letterheads gated by Letter Admin capability flag (RBAC §4.3) on Document Admin / HR Admin. Letter generation: HR Admin (offer LTR_OFFER requires CEO + HR Admin signers per joint authority). Menu slice (extends Foundation §6 “Documents”): Documents → My Documents (all), Document Admin → Templates/Letterheads/Policies/Sign-offs (Document Admin, HR Admin, Org Admin), gated per document.* permissions.
+7. Interaction with Workflow & Lifecycle (engine boundary)
+References: Platform P01 (engine), W.1 (flow definitions), Req Part G. Policy Sign-Off is a workflow stage action type (W.1; Workflow-Stages “Document Generation” = 23 configured stages). Lifecycle-driven generation is triggered by the owning module’s state transition (M01/M02/M03/M09) — this FS references which transition triggers which letter; the flow definitions live in W.1 and the engine in P01.
+8. Operational Layer (M11 slice — Foundation-bound)
+8.1 Scheduled jobs & background processing
+Index + shared standard in Foundation §4; logic authored here.
+Job id
+	Trigger
+	Purpose / logic
+	Idempotency / failure
+
+JOB-M11-BULKLTR
+	on bulk-generate request
+	Generate letters for the recipient set; write to vaults; notify issuer
+	Per-recipient idempotency key; partial-failure report; retry per Foundation §4
+
+JOB-M11-RETENTION
+	daily
+	Flag documents reaching retention window for disposal (Req H.2)
+	Idempotent; no auto-delete — queues disposal task
+
+JOB-M11-DISPOSAL
+	on approved disposal
+	Execute disposal/DPDPA erasure (Req H.3–H.4); writes redaction marker (P05)
+	One-way; audit-logged; irreversible — gated by approval
+
+JOB-M11-SIGNOFF-REMIND
+	daily
+	Remind pending sign-off tasks (Req E.4)
+	Idempotent; dedup per task/day
+
+8.2 Message catalogue (M11 slice)
+Events owned by BRD §9.6; templates referenced by id (copy in Foundation §5 / here). Notifications: MSG-M11-POLICY-PUBLISHED (POLICY_PUBLISHED → in-scope employees), MSG-M11-LETTER-ISSUED, MSG-M11-SIGNOFF-ASSIGNED, MSG-M11-SIGNOFF-REMIND, MSG-M11-SIGNOFF-DECLINED, MSG-M11-DISPOSAL-DUE. Errors: ERR-M11-MERGE (unknown merge token), ERR-M11-RETENTION (disposal before window), ERR-M11-SIGNER (signer unresolved); shared ERR-FORBIDDEN/LOADFAIL/REASON-REQ from Foundation §5.
+9. Reference Register
+FS screen
+	Prototype anchor
+	BRD/Req ref
+	Entities
+	Shared ids
+
+employee-vault
+	Personal documents (18 types)
+	Req C; §4.11
+	employee_documents
+	VAL-FILE, MSG-M11-*
+
+generate-letter
+	+ Generate letter
+	Req D.4
+	letter_templates, employee_documents
+	JOB-M11-BULKLTR, VAL-M11-MERGE/SIGNER
+
+doc-templates
+	Add/edit document templates
+	Req D.1–D.2; RBAC §4.3
+	letter_templates
+	Letter Admin flag
+
+policy-library/detail
+	New/Assign/Policy Details
+	Req B; §9.6
+	policy_documents
+	MSG-M11-POLICY-PUBLISHED
+
+signoff-tracker/report
+	Sign-offs · policy · letter
+	Req E
+	signoff_transactions
+	JOB-M11-SIGNOFF-REMIND
+
+letterheads / doc-settings
+	Add/edit letterheads
+	Req A, D.3
+	config
+	VAL-FILE
+
+10. Open Items — Resolution Register (v1.1)
+All v1.0 open items resolved against BRD v2 and Prototype v2.
+Id
+	Status
+	Resolution
+
+OPEN-FS-M11-01
+	RESOLVED
+	Prototype gap closed. All M11 screens exist in Prototype v2 (policies, policy-ack, da-templates, da-vault, da-doc-master, da-categories, da-bulk-letters, da-letter-queue, da-signoff-tracker, cfg-doc-templates, cfg-letterheads, cfg-signers); the one missing global-settings screen was added as cfg-document-settings. FS §1.2/§9 anchors updated to these ids.
+
+OPEN-FS-M11-02
+	RESOLVED (confirmed)
+	Phase-1 letter set locked: Offer, Appointment, NDA, Confidentiality, Probation Confirmation/Extension, Transfer, Separation/Experience. LTR_INC and LTR_PROMO depend on M10 Compensation and are generated in Phase 2.
+
+OPEN-FS-M11-03
+	RESOLVED (tracked)
+	M11 shared ids registered for the Step-6 Foundation reconciliation: VAL-M11-MERGE/RETENTION/SIGNER → Foundation §2; JOB-M11-BULKLTR/RETENTION/DISPOSAL/SIGNOFF-REMIND → §4; MSG-M11-* → §5.
+
+OPEN-FS-M11-04
+	RESOLVED (confirmed)
+	M11 owns the letter templates and the generation engine; M02 (onboarding cluster), M03 (separation letter) and M09 (promotion) trigger generation by reference, they do not own it.
+
+OPEN-FS-M11-05
+	RESOLVED
+	Screen sweep complete: §2 screens reference DM decisions by code; none contradicts the M11.FS1 locked-decision register (BRD v2).
+
+Prototype Sync Addendum — Batch 4: Employee-role Documents, letters & policies review (June 2026)
+Reflects the Batch-4 Employee-role review against the clickable prototype (v2). Complements — does not replace — the body of this FS.
+Letter acknowledgment
+HR letters that are flagged acknowledgment-required expose an Acknowledge action in the employee’s “HR letters issued to me” list. Acknowledgment opens a confirmation showing the configured HR Letter Acknowledgment Text (“I confirm that I have read and understood this document”) and records actor and timestamp against the letter. Download remains available on every letter regardless of acknowledgment state.
+Policy acknowledgment — confirm only, no decline
+The employee acknowledgment queue (policy-ack) acknowledges policies via a confirmation showing the configured HR Policy Sign-Off Text (“I confirm that I have read and understood this document”). The employee cannot decline a policy — acknowledgment is confirm-only; there is no employee decline path. Confirmation records actor and timestamp for HR and the HRBP. “Read” opens the document first.
+Document categories
+Employee document upload and the official-documents view are classified by the four Document Categories from the master: Personal Identification, Employment Documents, Education & Training Certificates, and Health, Safety & Compliance. The upload category list is bound to that master rather than an ad-hoc list, and official documents are presented under their category.
+Single acknowledgment surface
+policy-ack is the single action queue for pending acknowledgments. The policies library is read-only (view only); any item still pending acknowledgment links the employee to the queue rather than offering a second, parallel acknowledge action.
+Letter requests
+Employee letter requests (salary certificate, employment letter for visa/loan, experience letter, address-proof letter) are raised to HR and read as tracked requests with a stated turnaround and a notification on issue. Employees do not self-generate letters — self-generation remains restricted to the configured permission holders.
+Out of scope / deferred
+Payslips and payroll are out of scope (no payroll module). Visa / work-permit document capture is Phase 2.
+Appendix — Document types (provenance)
+Single source for the document types referenced by M01 (Statutory & Documents tabs) and the employee profile. Each type lists where it is entered, when, and by whom.
+Document type
+	Source / master
+	Entered by
+	When
+
+Document categories (4)
+	document_categories (Document_Category master)
+	Org Admin (defines categories)
+	Configuration
+
+Letter / template formats (6)
+	document_template_formats (Document Template Name Formats)
+	Document Admin / HR Admin
+	Configuration
+
+National-ID documents (8 types)
+	statutory_identities / National-ID config
+	Employee (onboarding) or HR Admin
+	Onboarding / profile update
+
+HR letters (offer, appraisal, transfer, ID card, …)
+	letter_templates → employee_documents
+	HR Admin (generated); employee views/downloads
+	On issue
+
+Onboarding & undertaking documents
+	employee_documents (M02)
+	Candidate/Employee upload; HR verifies
+	Onboarding
+
+Policy documents
+	policy_documents
+	Document Admin / HR Admin (publish); employee acknowledges (Task)
+	On publish / acknowledgement
+
+The employee-facing Statutory & benefits field provenance (PF/EPS/ESIC/Gratuity/LWF/PT) is in M01 §2.1 / §2.9 (entered & maintained by HR Admin; values bind to statutory masters).

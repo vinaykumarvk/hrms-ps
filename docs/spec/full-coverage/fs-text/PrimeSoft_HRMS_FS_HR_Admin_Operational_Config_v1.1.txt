@@ -1,0 +1,204 @@
+PrimeSoft HRMS - FS HR Admin Operational Configuration (v1.1)
+Table of Contents
+ TOC \z \o "1-2" \u \h
+PrimeSoft HRMS · Functional Specification — HR Admin: Operational Configuration · v1.0 · Confidential
+Functional Specification — HR Admin: Operational Configuration
+Version
+	v1.1
+
+Update
+	Adds Timesheet clearance stage + per-stage item checklists (incl. facilities items) and checklist/workflow stage edit screens (§5); onboarding-config admin screen (§6).
+
+Status
+	Draft for review
+
+Owner
+	HR Admin (entity superset, RBAC §2.2/§3.1.1) and the delegable module admins (Leave, Attendance, Onboarding, Offboarding, Recruitment). These roles bind pre-built flows/forms to operational policies; they do not build the flow/form definitions (RBAC §2.1.1).
+
+References
+	BRD §5.2–§5.12 (module FRs), §9 (notifications); RBAC v1.2 (§2.2, §3.1.1, §2.1.1, §3.5 UAGs); Foundation FS v1.1 (§2 VAL-*, §4 jobs, §5 messages, §6 menu); Platform Spec v1.1 (W.1 flows, W.2 forms, W.3 notif config — bound here); module FS M03/M04/M05/M02/M08/M11; configuration exports (Leave/Attendance/Overtime/Separation/Onboarding/Recruitment).
+
+Scope boundary
+	Includes: operational policy / reason / master configuration that HR Admin + module admins own and that binds W.1 flows + W.2 forms. References (does not re-author): tenant-wide settings toggles cfg-leave-platform / cfg-att-platform and the builders (cfg-workflows/cfg-skip/cfg-sla/cfg-notif/cfg-rbac) → Org Admin Configuration FS (Step 5) + Platform W.1–W.3; document templates/letterheads/categories → M11 FS; org masters → Org Admin Master Data FS; transaction screens → module FS.
+
+1. Scope & Reference Map
+Operational configuration grouped by domain, each binding the shared engines to a working policy:
+Domain
+	Owner
+	Prototype config pages
+	Binds
+	Evidence
+
+Leave (M04)
+	Leave Admin / HR Admin
+	leave-config, leave-policies, cfg-leave-policy, leave-reasons, cfg-compoff, cfg-blackout, cfg-decisionmatrix, leave-balance-adjust, leave-revocation, pl-encashment, holiday-calendar
+	approval flow (W.1), leave form (W.2), notif (W.3)
+	Leave Policy/Settings, Tenure/CustomQA/MultiAllot/BlockLeave/DateSpecific, Leave Reasons (8), Unpaid (3)
+
+Attendance (M05)
+	Attendance Admin / HR Admin
+	attendance-config, attendance-policies, attendance-shifts, cfg-shifts, attendance-reasons, geofencing, cfg-infraction, attendance-lock
+	approval flow, request form, geofence
+	Attendance Policy/Settings, Shift (21), Shift-Block, IP (12), Reasons (8), Tags (4), Geofencing (29), CheckIn
+
+Overtime & Comp-off
+	Attendance Admin / HR Admin
+	ot-approvals, cfg-ot-slabs, cfg-compoff
+	OT approval + exceptional flow
+	Overtime Settings/Slabs/Threshold/Indexing, Comp-off (Tenant_Leaves_Compoff 286-col)
+
+Separation / Notice / Probation (M03)
+	Offboarding Admin / HR Admin
+	cfg-separation-policy, cfg-separation-workflow, cfg-exit-interview-form, cfg-separation-checklist, exit-interview, force-separation, absconding
+	separation + clearance workflow, FnF
+	Deactivation Reasons (57), Notice (5), Probation (12), Reason List (8), Verification Status (7)
+
+Onboarding (M02)
+	Onboarding Admin / HR Admin
+	onboarding-form, document-clusters, onboarding-oversight, cfg-bgv-checklist
+	onboarding workflow, forms, BGV
+	Onboarding Process (2), Onboarding Settings
+
+Recruitment settings (M08)
+	Recruitment Admin / HR Admin
+	cfg-hiring-leads, cfg-external-rec, cfg-sources, cfg-duplicity, ra-portals, ra-recruiter-assignment
+	requisition/offer approval, candidate forms
+	Hiring Leads, External Recruiters (11)/Groups (6), Sources, Duplicity, Portals (3), Interview Types/Guides, Decision Reasons (24), Requisition/Candidate Auto-numbering, Raise Requisition Scope
+
+Documents (operational)
+	Document Admin / HR Admin
+	da-policies, da-letter-queue, da-vault, da-signoff-tracker
+	— (per M11 FS)
+	references M11 FS
+
+2. Leave Administration (M04)
+References: BRD §5.4 (FR-M04), M04 FS, §9.2 (leave notifications); binds W.1 approval flow + W.2 leave form + W.3 notif. Tenant-wide leave behaviour toggles (cfg-leave-platform, 131 settings) are Org Admin (Step 5) — referenced, not authored here.
+Leave Types (leave-policies) — define each leave type/policy. Per the Leave Policy export: type, code, paid/unpaid, accrual model, carry-forward, half-day/hourly, count-intervening-holidays, past-dated window, auto-approve/reject threshold, advance-notice, max-per-period, attachment-mandatory, Select Form (binds W.2), Approval Flow (binds W.1), clubbing, encashment, prefix/suffix to holidays. Sub-tables: Tenure brackets, Custom Q&A, Multiple Allotment, Block Leave, Date-Specific entitlement (189 rows).
+Leave Policy Assignment (cfg-leave-policy) — assign leave types to populations via UAG (RBAC §3.5).
+Leave Reasons (leave-reasons) — reason master (8) with assignment + group-company + type.
+Comp-off (cfg-compoff) — comp-off accrual/lapse/clubbing (from the 286-col comp-off export, shared with Overtime §4).
+Blackout windows (cfg-blackout) — periods where leave application is blocked (VAL-HOLD).
+Decision matrix (cfg-decisionmatrix) — decision-matrix config consumed by leave approval routing (W.1).
+Balance adjustments (leave-balance-adjust), PL encashment (pl-encashment), Leave revocation (leave-revocation) — authoritative HR/Leave-Admin actions (audited P05).
+Validation: VAL-LV/HOLD/DATE/COMMENT (Foundation §2). Behaviour (accrual, sandwich, LOP) is owned by M04 FS + jobs JOB-M04-* (Foundation §4) — referenced, not restated.
+3. Attendance Administration (M05)
+References: BRD §5.5 (FR-M05), M05 FS, §9.3; binds approval flows + request forms + geofence. Tenant-wide attendance toggles (cfg-att-platform, 147 settings) are Org Admin (Step 5).
+Attendance Policies (attendance-policies) — regularization rules, grace, late/early, present-day computation, work-transfer; binds approval flow.
+Shifts & Rosters (attendance-shifts / cfg-shifts) — shift master (21): start/end, overnight, WFH, standard-hours, null-shift, OT-policy linkage, leave-deduction factor; shift blocks; roster.
+Attendance Reasons (attendance-reasons) — reason master (8) with limit/frequency. Tags (4), IP networks (cfg-ip, 12).
+Geofencing (geofencing) — fence master (29): lat/long/distance, tags, autofence; check-in settings.
+Infraction policies (cfg-infraction) — infraction framework + points (per Attendance Settings).
+Attendance lock (attendance-lock) — period freeze (authoritative action; JOB-M05-LOCK).
+Validation: VAL-AT/DATE. Behaviour owned by M05 FS + JOB-M05-* (Foundation §4).
+4. Overtime & Comp-off
+References: BRD §5.5/§5.6 OT, M05 FS; binds OT approval + exceptional approval flow (by hours threshold).
+OT Slabs / Indexing (cfg-ot-slabs) — multiplication factors, indexing rules (weekday/off/rest/holiday), thresholds (weekly/monthly/quarterly/yearly).
+Comp-off policy (cfg-compoff) — the 286-col comp-off/OT policy: per weekday/weekly-off/holiday/weekly/bi-weekly/monthly/semi-monthly OT config, minimum durations, approval flow + exceptional flow, comp-off accrual/credit/lapse, clubbing, encashment.
+OT approvals (ot-approvals) — operational queue. Validation: VAL-NO/DATE. Behaviour + auto-approval owned by M05 FS.
+5. Separation, Notice & Probation (M03)
+References: BRD §5.3 / §5.12.x (FR-M03), M03 FS, §9.4; binds separation + clearance workflow, exit-interview form, FnF.
+Separation Policy (cfg-separation-policy) — separation types, reasons (Deactivation Reasons, 57), notice/LWD rules.
+Separation Workflow (cfg-separation-workflow) — binds the multi-stage clearance workflow (W.1; the E2–E8 clearance stages).
+Exit Interview Form (cfg-exit-interview-form) — binds a W.2 form.
+Separation Checklist & FnF (cfg-separation-checklist) — clearance checklist + FnF gates, including a Timesheet clearance stage. Each stage carries a configurable per-item checklist (e.g., Facilities/Office Admin: ID/access card, parking sticker, locker key, corporate card, library card), each item markable clear/pending; stages and items have an edit screen. Workflow stages (cfg-separation-workflow) likewise have a stage edit screen.
+Notice masters (5): notice period after confirmation/probation/contract, tenure-based, recovery-days. Probation masters (12): probation period, extension, auto-confirm. Reason List (8), Verification Status (7).
+Authoritative actions: force-separation, absconding. Validation: VAL-SEP/FNF/DATE. Behaviour + jobs JOB-M03-* owned by M03 FS.
+6. Onboarding Configuration (M02)
+References: BRD §5.2 (FR-M02), M02 FS, §9.5; binds onboarding workflow + forms + BGV.
+Onboarding Config (onboarding-config) — onboarding process (export: 2 processes, 46 settings): initiation clusters (onboarding form, sign-off / undertaking / reference document clusters, verification & ID-verification packages, buddy, e-verify), auto-initiation X days before DOJ, completion criteria, auto-completion, SPOC auto-assignment, candidate reminder cadence, sync-from-profile.
+Document Clusters (document-clusters) — cluster definitions (W.2 forms; Appendix J).
+BGV Checklist (cfg-bgv-checklist) — BGV document checklist; BGV review gated by the BGV review capability flag (RBAC §4.3).
+Onboarding Settings — BGV enable, OCR, group-company-as-company-name, auto-save. Validation: VAL-FILE/REQUIRED/CONSENT. Jobs JOB-M02-* + behaviour owned by M02 FS.
+7. Recruitment Settings (M08)
+References: BRD §5.8 (FR-M08), M08 FS; binds requisition/offer approval + candidate forms.
+Hiring Leads (cfg-hiring-leads) — hiring-lead/recruiter configuration by assignment.
+External Recruiters (cfg-external-rec) — vendor master (11) + groups (6) + contract validity.
+Custom Sources (cfg-sources) — candidate source + source-type masters.
+Duplicity Check (cfg-duplicity) — duplicate-candidate fields + reapplication windows + override scope.
+Job Portals (ra-portals, 3), Recruiter Assignment (ra-recruiter-assignment).
+Masters referenced: Interview Types/Guides, Candidate Decision & Archival Reasons (24), Requisition + Candidate auto-numbering, Raise-Requisition Scope (who may raise + scope). Validation: VAL-M08/EMAIL/FILE. Behaviour + jobs JOB-M08-* owned by M08 FS.
+8. Document Operational Surface (M11)
+HR Admin / Document Admin operate da-policies, da-letter-queue, da-vault, da-signoff-tracker — fully specified in the M11 FS. This section is a pointer only; template/letterhead/category definitions are Org Admin (cfg-document-settings / cfg-doc-templates), and the M11 FS owns the operational screens. No duplication here.
+9. Per-Domain RBAC Projection & Menu
+References: RBAC v1.2 §2.2 (module admins), §3.1.1 (HR Admin superset), §2.1.1 (bind not build), §3.5 (UAG assignment); Foundation §6. Each domain’s config pages are owned by the module admin (Leave/Attendance/Onboarding/Offboarding/Recruitment Admin) and the HR Admin superset. Module admins are entity-scoped; HR Admin spans all modules within the entity. Binding only: these roles select a pre-built approval flow (W.1) / form (W.2) / notification config (W.3) on a policy — they cannot author the flow/form/notification definitions (that is Org Admin, Step 5). Authoritative actions (force-separation, attendance-lock, leave-revocation, PL-encashment, balance-adjust) are restricted + audited (P05). Menu surfaces per the module-admin nav groups (Leave admin / Attendance admin / Onboarding & office admin / Recruitment admin / Separation) in Foundation §6.
+10. Operational Layer
+Jobs consumed by these domains are indexed in Foundation §4 (JOB-M02/M03/M04/M05/M08-*) with logic in the respective module FS. Notifications use the module families in Foundation §5 (referenced by id; copy in module FS slices). This FS adds no new jobs or message copy — it configures the policies those jobs and notifications operate on. All configuration changes are audited (P05).
+11. Reference Register
+Domain
+	Config pages
+	Module FS
+	Binds (Platform)
+	Key exports
+
+Leave
+	leave-policies/cfg-leave-policy/leave-reasons/cfg-compoff/cfg-blackout
+	M04
+	W.1/W.2/W.3
+	Leave Policy/Settings/Reasons
+
+Attendance
+	attendance-policies/attendance-shifts/geofencing/attendance-reasons/cfg-infraction
+	M05
+	W.1/W.2
+	Attendance Policy/Shift/Geofencing
+
+Overtime
+	cfg-ot-slabs/cfg-compoff/ot-approvals
+	M05
+	W.1
+	Overtime/Comp-off
+
+Separation
+	cfg-separation-policy/-workflow/-checklist/cfg-exit-interview-form
+	M03
+	W.1/W.2
+	Deactivation Reasons/Notice/Probation
+
+Onboarding
+	onboarding-form/document-clusters/cfg-bgv-checklist
+	M02
+	W.1/W.2
+	Onboarding Process/Settings
+
+Recruitment
+	cfg-hiring-leads/cfg-external-rec/cfg-sources/cfg-duplicity/ra-portals
+	M08
+	W.1/W.2
+	Hiring Leads/Recruiters/Sources/Duplicity
+
+12. Open Items, Conflicts & Recommendations
+Id
+	Type
+	Item
+	Owner
+	PROPOSED resolution (confirm before build)
+
+OPEN-FS-HRA-01
+	Boundary
+	Tenant-wide settings toggles (cfg-leave-platform 131-col, cfg-att-platform 147-col) are referenced here but authored in the Org Admin Configuration FS (Step 5).
+	Architecture
+	Confirm: platform/tenant settings = Org Admin (Step 5); operational policies = HR Admin (this FS). No toggle re-authored here.
+
+OPEN-FS-HRA-02
+	Overlap
+	Each module FS (M02/M03/M04/M05/M08) may already describe some of its settings screens.
+	Architecture
+	At Step-6 reconciliation, ensure the policy/settings screens live here (HR Admin) and module FS reference them; transaction screens stay in module FS.
+
+OPEN-FS-HRA-03
+	Bind dependency
+	Leave/attendance/separation policies bind W.1 flows + W.2 forms that must exist first (Org Admin Config FS / Platform W).
+	Product
+	Sequence: build flow/form definitions (Step 5 / W) before binding here; meanwhile bindings reference by id.
+
+OPEN-FS-HRA-04
+	Document overlap
+	cfg-document-settings / templates are Org Admin (done) + M11 FS; this FS only points to the operational da-* surface.
+	Architecture
+	Confirm no document config is authored here.
+
+OPEN-FS-HRA-05
+	Scope
+	The 286-col comp-off and 131/147-col settings exports are summarised by capability, not enumerated field-by-field.
+	Product
+	Full field enumeration lives in the data dictionary; this FS specifies the screens + the bound behaviour.

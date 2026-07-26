@@ -1,0 +1,1649 @@
+PrimeSoft HRMS ��� FS M01 Employee Master
+Table of Contents
+ TOC \z \o "1-2" \u \h
+How to read this specification
+References BRD v6.9 (authoritative for all requirements) · Prototype v20.7 (authoritative for the screen layer) · this FS (the build layer only)
+This Functional Specification adds the build layer for Module M01 — Employee Master: screen layouts, complete API contracts, field-level UI behaviour, validation formats, per-screen role projection, interaction states, and the operational layer (scheduled jobs, message catalogue, dashboard widgets). It is written against BRD v6.9 and Prototype v20.7.
+Single source of truth. Anything the BRD already fixes — a business rule, a data field, an NFR target, a permission-matrix cell, a state transition, a notification trigger, a glossary term — is referenced here by section number, never restated. If a fact appears to be missing, the BRD is authoritative; this FS points to it.
+Screen provenance. Every screen specified here traces to a prototype screen id (the prototype’s data-page attribute). No screen is invented. Where the prototype lacks a screen the BRD implies, or where prototype and BRD disagree, the mismatch is recorded in §7 with a proposed resolution marked PROPOSED — confirm before build — it is never silently decided in the body.
+Document architecture note. The author’s default is a shared Foundation FS (cross-cutting build content) plus one per-module FS. Because only the Employee module was requested, the cross-cutting items that M01 needs — the shared validation catalogue (§5), the M01 scheduled jobs and message catalogue (§8), and the menu-entitlement slice (§6.2) — are carried inline here and flagged for promotion to a Foundation FS when sibling module specs are authored, so they remain singular and do not drift.
+Legend. In field tables: control = the UI element; every other column is a reference to its single source. In RBAC tables: V = visible · M = masked · H = hidden · E = editable · AR = approval required (per BRD §3.9 legend).
+Decisions applied in this revision (FS v1.1)
+The §7 open items from FS v1.0 were resolved at review. The resolutions below are now reflected in the body, and the BRD (tracked changes) and prototype were updated in lockstep so all three stay consistent.
+Add Employee & M01 full tier → HR Admin only; Performance Admin removed from the M01 employee-master tier (keeps M09 access). (OPEN-FS-M01-08)
+Date of birth → governed by §3.10 FY26: visible to employee / HR Admin / Office Admin only, no peer/manager visibility, no year-masking; the date_of_birth_year_visibility enum no longer drives display. (OPEN-FS-M01-05)
+Birthday widget → employee opt-in (share_birthday_with_team, month + day only); Org Admin only enables/disables the widget org-wide. (OPEN-FS-M01-05)
+Project allocated / Work type / Performance appraisal period → read-only display fields sourced from Assignment-UAG / Org-Admin custom fields / M09 — not columns on employees. (OPEN-FS-M01-04)
+Grievance → prototype extended beyond POSH to the five FR-M01-009 categories with routing. (OPEN-FS-M01-01)
+Prototype FR labels corrected; absconding treated as cross-module (FR-M01-004 + M05 trigger + M03 conversion). (OPEN-FS-M01-02/03)
+Manager visibility → new My organisation roster (direct + indirect reportees) for L1–L5 + HOD (§2.18). DM-ENPS01–15 ratified as closed-by-configuration. (OPEN-FS-M01-06)
+1. Scope & Reference Map
+References BRD §5.2 (M01 FRs) · §4.4 (M01 entities) · §3.7 / §3.9 / §3.10 (RBAC) · §6.4.1 (API inventory) · §8.1 (lifecycle) · §9.6 (notifications) · Prototype M01 screens
+This table is the proof of non-repetition: it lists what M01 references from the BRD versus what this FS authors. The FS body builds only the right-hand column.
+1.1 Functional requirements in scope (referenced, not restated)
+BRD FR (ref)
+	What the BRD fixes (do not restate)
+	What this FS adds
+
+FR-M01-001
+	Single record per tenant; ID format & immutability; rehire/transfer rules
+	Add-Employee screen, create contract (§4), ID-collision error copy
+
+FR-M01-002
+	Effective-date versioning on employment fields; daily 00:00 IST apply job
+	employment-history insert contract (§4), past/future-dated UI, JOB-M01-EFFDATE (§8)
+
+FR-M01-003
+	PII tiering, AES-256-GCM, masking formats, view-logging, consent
+	Per-screen masking projection (§6), PII view-log trigger points
+
+FR-M01-004
+	Seven lifecycle states; trigger-module ownership; probation as flag
+	State badges on screens, transition surfaces (§3) mapped to §8.1
+
+FR-M01-005 / 014
+	Org chart parent-pointer tree; directory-tier node fields; group scope
+	Org-chart tab spec, reporting-chain contract (§4), cycle error copy
+
+FR-M01-006
+	Bulk-load contract, <0.5% threshold, idempotency on source id
+	Bulk-upload screen, JOB-less synchronous validate/commit UX, error report
+
+FR-M01-007
+	Profile completeness gating; emergency-contact minimum
+	Completeness gauge widget, banner behaviour, leave-block error copy
+
+FR-M01-008 / 017
+	Dependents & nominees; per-class 100% rule; statutory-change approval
+	Add-Dependent + Nominees screens, save validation (VAL-NOMINEE-SUM)
+
+FR-M01-009
+	Grievance categories, anonymity, POSH→ICC routing, SLAs
+	POSH/Grievance entry screen, anonymity UI, routing surface
+
+FR-M01-010
+	Resume upload/versioning; visibility scope; 25 MB cap
+	Skills·Resume tab control, upload validation (VAL-FILE-*)
+
+FR-M01-011
+	HRBP single point of contact; mapping precedence; fallbacks
+	HRBP card spec on Employment tab
+
+FR-M01-012
+	Voluntary disability declaration; HRBP/HR-Admin access; verification
+	Add-Disability screen, consent control, verify routing
+
+FR-M01-013 / 018
+	Visa & bond register; 90/60/30 renewal reminders
+	Add-Visa screen, JOB-M01-VISA-REMIND (§8)
+
+FR-M01-015
+	HR letters issued register; types; M11-rendered; signatures
+	HR-letters tab spec, request-letter action, queue handoff to M11
+
+FR-M01-016
+	Official documents register; clusters; watermarked viewer
+	Official-documents tab spec, viewer/download behaviour
+
+FR-M01-019
+	Statutory & billing field set (PF/EPS/ESIC/Gratuity/LWF/PT/TDS)
+	PF·EPS·ESIC and Gratuity·Insurance·LWF tab layouts, field grouping
+
+FR-M01-020
+	Employee detail view — three role-based access tiers
+	hr-employee-detail vs read-only vs self render rules (§2, §6)
+
+1.2 Data entities in scope (referenced — definitions live in BRD §4.4)
+Field types, constraints, defaults, and validation for every entity below are governed by BRD §4.4.x and the platform audit columns by BRD §4.1. This FS maps entities to screen controls only.
+BRD §4.4 entity
+	Primary screen surface(s)
+
+employees (§4.4.1)
+	my-profile (Personal/Employment), hr-employee-detail, hr-add-employee, directory
+
+employment_history (§4.4.13)
+	Employment tab history table, employment-history insert flow
+
+employee_contacts (§4.4.3)
+	Personal tab (contact & address), edit-profile
+
+emergency_contacts (§4.4.4)
+	Personal tab, hr-add-employee (mandatory minimum)
+
+statutory_identities (§4.4.5)
+	Statutory IDs tab, national-id, sensitive-changes
+
+statutory_pf/eps/esic/gratuity/lwf/pt/insurance (§4.4.6–4.4.12)
+	PF·EPS·ESIC tab, Gratuity·Insurance·LWF tab, pf-uan, tds-tax
+
+bank_details (§4.4.14)
+	Dependents·Bank tab, bank-entry (Office Admin)
+
+dependents (§4.4.15)
+	add-dependent, Dependents·Bank tab
+
+employee_documents (§4.4.16)
+	Official documents tab, document-upload
+
+grievances (§4.4.17)
+	report-posh / grievance entry, HR grievance queue
+
+employee_disabilities (§4.4.28)
+	add-disability, Disability tab
+
+employee_visa (§4.4.29) / _bond (§4.4.31)
+	add-visa, Visa·Bond tab
+
+employee_resume (§4.4.20)
+	Skills·Resume tab
+
+hrbp_mappings (§4.4.21)
+	HRBP card (Employment tab), HRBP resolution
+
+employee_education (§4.4.23) / _certifications (§4.4.25)
+	add-education, add-certification, Education/Certifications tabs
+
+employee_work_experience (§4.4.24) / _past_company_references (§4.4.32)
+	add-experience, Work history tab
+
+employee_skills (§4.4.26) / _languages (§4.4.27)
+	add-skill, Skills·Resume tab
+
+1.3 Prototype screens mapped to this FS
+Prototype data-page
+	FS §
+	Role / purpose
+
+my-profile
+	2.1
+	Employee self-service tabbed profile (the M01 hub)
+
+edit-profile
+	2.2
+	Employee — edit personal/contact details
+
+add-education / add-experience / add-certification / add-skill
+	2.3
+	Employee — profile data-entry sub-forms
+
+add-dependent
+	2.4
+	Employee — dependent record (expanded model)
+
+nominees
+	2.5
+	Employee — per-class nominee allocation
+
+add-visa
+	2.6
+	Employee — visa & bond entry
+
+add-disability
+	2.7
+	Employee — voluntary disability declaration
+
+org-chart
+	2.8
+	Employee — org-chart tab / standalone view
+
+national-id / pf-uan / tds-tax / bank-entry
+	2.9
+	Statutory & ID clusters; Office Admin bank entry
+
+letters
+	2.10
+	HR letters & official-documents registers
+
+report-posh
+	2.11
+	Grievance / POSH confidential channel
+
+hr-add-employee
+	2.12
+	HR/Performance Admin — create employee
+
+hr-employee-detail
+	2.13
+	HR Admin — full employee detail (full tier)
+
+my-org
+	2.18
+	Manager — organisation roster (direct + indirect reportees)
+
+employee-detail
+	2.13
+	Read-only scoped detail (HRBP/HOD/CEO) + public profile
+
+sensitive-changes
+	2.14
+	HR Admin — sensitive field change approval queue
+
+bulk-upload
+	2.15
+	HR/Platform — initial tenant bulk load
+
+absconding
+	2.16
+	HR Admin — absconding queue
+
+hrbp-my-employees / hod-employees / directory
+	2.17
+	Scoped employee lists
+
+2. Screen Specifications
+Each subsection opens with its references. Field tables give the control and on-screen behaviour only; data type, validation, and role access are references to their single source. States not present in the prototype (loading, no-permission) are authored here and marked as such.
+2.1 Employee Self-Service Profile — my-profile
+Employee-review notes (v1.2). (a) Promotion-readiness is not shown on the employee self-view — it is a calibration/manager output (M09) surfaced only to manager/HR/calibration roles. (b) The manager’s peer list is not shown on the employee profile. (c) The HRBP appears as a single card (de-duplicated). (d) Benefits provenance: PF / EPS / ESIC / Gratuity / LWF / PT records are entered and maintained by HR Admin; values bind to the statutory masters; billing rate is masked from Self. (e) Document types behind the Statutory & Documents tabs are listed in the Document-Types appendix (Document Categories + template formats + National-ID document set) — see M11 (single source) for the full register and per-type who/when/source.
+References Satisfies FR-M01-003/004/007/011/014/015/016/019 · Renders employees §4.4.1 + sub-entities · RBAC §3.9 (self column) · Prototype: my-profile
+Purpose. The employee’s single canonical record, presented as a tabbed hub. One shared detail definition renders here (self tier), in hr-employee-detail (full tier), and in employee-detail (read-only tier) per FR-M01-020 — the access tier is resolved at render time from the viewer’s role.
+Layout regions. (a) Identity header — photo/initials avatar, display name, lifecycle-state badge, designation·department·pod, employee ID, DOJ + tenure, reporting-to, location·work-type, plus Download PDF and Edit-personal-details actions; (b) KPI strip — leave balance, attendance (90d), last review, profile-complete %; (c) left tab rail; (d) tab content pane.
+Tab inventory. The hub exposes the following tabs. Each maps to BRD entities/FRs; sub-form data entry opens the screens in §2.3–2.7.
+Tab
+	Content (BRD ref)
+	Notes / linked screen
+
+Personal
+	employees §4.4.1 personal fields; employee_contacts §4.4.3; emergency_contacts §4.4.4
+	DOB year masked per visibility enum; Edit → §2.2
+
+Employment · HRBP
+	employment_history §4.4.13; hrbp_mappings §4.4.21 (FR-M01-011)
+	Current employment block + history table + single HRBP card (shown once — no duplication). Employment history reflects project / assignment changes (employment_history includes project_allocated / assignment transitions).
+
+Org chart
+	reporting tree (FR-M01-014)
+	→ §2.8
+
+Statutory IDs
+	statutory_identities §4.4.5 (FR-M01-003)
+	All Tier-1; masked except last 4; Edit routes to workflow. Provenance: statutory IDs are entered by the employee at onboarding or by HR Admin; the field set & validation are defined by Org Admin (National-ID config + custom fields).
+
+PF · EPS · ESIC
+	statutory_pf/eps/esic §4.4.6–4.4.8 (FR-M01-019)
+	→ §2.9. Visible to employee, HR Admin and Finance/Payroll only (BRD §3.10); not shown to HRBP/HOD/Manager.
+
+Gratuity · Insurance · LWF
+	statutory_gratuity/lwf/pt/insurance §4.4.9–4.4.12 (FR-M01-019)
+	→ §2.9; billing rate masked from Self
+
+Education
+	employee_education §4.4.23
+	Add → §2.3
+
+Work history
+	employee_work_experience §4.4.24; references §4.4.32
+	Add → §2.3
+
+Skills · Resume
+	employee_skills §4.4.26; employee_resume §4.4.20 (FR-M01-010)
+	Resume upload; Add skill → §2.3
+
+Certifications
+	employee_certifications §4.4.25
+	Add → §2.3
+
+Dependents · Bank
+	dependents §4.4.15/30; bank_details §4.4.14
+	Add dependent → §2.4; Nominees → §2.5
+
+Disability
+	employee_disabilities §4.4.28 (FR-M01-012)
+	Add → §2.7; voluntary
+
+Visa · Bond
+	employee_visa §4.4.29; bond §4.4.31 (FR-M01-013)
+	Add → §2.6
+
+HR letters
+	employee_documents (FR-M01-015)
+	→ §2.10; request-letter action. ID card · letter opens the employee’s own letters register (My letters, §2.10) — never an admin letters screen.
+
+Official documents
+	employee_documents §4.4.16 (FR-M01-016)
+	→ §2.10; watermarked viewer
+
+Key field behaviours (self tier).
+Field
+	Control
+	Data (BRD ref)
+	Validation
+	On-screen behaviour
+
+Official email
+	Read-only
+	§4.4.1
+	VAL-EMAIL
+	Immutable post-assignment; never editable by employee
+
+Personal mobile
+	Inline edit
+	§4.4.1
+	VAL-MOBILE
+	Edit raises SENSITIVE_FIELD_CHANGE (Tier-2) → HR queue
+
+DOB
+	Read-only
+	§4.4.1 / §3.10
+	VAL-DOB
+	Shown to self on own profile; not visible to peers/managers (§3.10); year never shown
+
+PAN / Aadhaar / Passport / DL
+	Masked, Edit→AR
+	§4.4.5
+	VAL-PAN / VAL-AADHAAR
+	Masked to last 4; Edit routes to L2 workflow (DM-ENPS06)
+
+Profile photo
+	Upload
+	§4.4.1
+	VAL-FILE-IMG
+	Initials avatar fallback when NULL
+
+Resume
+	Upload/replace
+	§4.4.20
+	VAL-FILE-DOC
+	New upload archives prior version; metadata shown
+
+Emergency contact
+	Inline add/edit
+	§4.4.4
+	VAL-MOBILE
+	Platform-locked minimum (FR-M01-007); blocks leave if missing
+
+States.
+Empty — new pre-joining record: clusters beyond core identity show “Not yet provided” with a quick-add link; completeness banner visible.
+Loading — skeleton header + tab rail; KPI tiles show shimmer (authored; absent in prototype).
+Error — tab data fetch fails: inline retry on the affected pane only; header stays rendered.
+No-permission — never applies to self; for non-self viewers the tier rules of §2.13 apply (authored).
+Partial-data — masked Tier-1 values render as the BRD mask string even for self on shared/social surfaces.
+Actions → triggers.
+Download PDF → GET profile PDF (pre-signed URL); logs PII_EXPORT to security_audit_log (BRD §10.5).
+Edit personal details → §2.2; Tier-1/2 edits emit MSG-M01-N01 (§8.2).
+Raise grievance (HRBP card) → §2.11.
+2.2 Edit Personal Details — edit-profile
+References Satisfies FR-M01-002 (non-versioned overwrite) / FR-M01-003 · employee_contacts §4.4.3 · PATCH /employees/{id} §4 · Prototype: edit-profile
+Purpose. Employee edits non-versioned personal/contact fields (these overwrite in place with an audit entry per FR-M01-002 business rule). Sensitive Tier-1/2 fields are not edited here — they route through the sensitive-change workflow.
+Field group
+	Control
+	Validation
+	On-screen behaviour
+
+Salutation / display name
+	Select / text
+	—
+	Display name auto-derived; override allowed
+
+Contact (personal email, mobiles)
+	Text
+	VAL-EMAIL / VAL-MOBILE
+	Mobile/email changes flagged Tier-2 → may route to HR queue
+
+Addresses (current / permanent)
+	Textarea
+	—
+	Overwrite in place; audit-logged (not versioned)
+
+Visibility enums (mobile, anniversary, DOB year)
+	Select
+	enum §4.4.1
+	Controls peer/manager visibility on shared surfaces
+
+Emergency contact
+	Repeatable row
+	VAL-MOBILE
+	At least one row required (FR-M01-007 minimum)
+
+States &** actions. **Save → PATCH /employees/{id} (non-versioned fields, 200); Cancel returns to my-profile. On a sensitive field, response is 202 + workflow id (§4) and the field shows a “pending HR approval” pill. Error: inline per-field VALIDATION_FAILED copy (MSG ids in §8.2).
+2.3 Profile Data-Entry Sub-Forms — add-education / add-experience / add-certification / add-skill
+References employee_education §4.4.23 · employee_work_experience §4.4.24 · employee_certifications §4.4.25 · employee_skills §4.4.26 · Prototype: add-education, add-experience, add-certification, add-skill
+Purpose. Lightweight self-service forms appended from the corresponding profile tab. Field definitions live in the BRD entities; this FS fixes the control set and the shared auto-save/save behaviour.
+Sub-form
+	Controls (data per BRD entity)
+	Visibility (RBAC ref)
+
+Add education
+	Qualification, institution, board/university, year, %/CGPA, document upload
+	Chain + HOD + HR/HRBP (§3.10 FY26 revision)
+
+Add experience
+	Employer, title, from/to, location, reference contact (→ §4.4.32)
+	Chain + HOD + HR/HRBP (§3.10)
+
+Add certification
+	Name, issuer, issue/expiry date, credential id, document upload
+	Chain + HOD + HR/HRBP (§3.10)
+
+Add skill
+	Skill, proficiency, years, endorsement flag
+	Employee + L1–L5/HOD chain only — NOT HR/HRBP/Finance (§3.10)
+
+Shared behaviour. All four auto-save as draft on field blur and finalise on Save (mirrors add-dependent/add-visa). Document uploads obey VAL-FILE-DOC/IMG and the 25 MB cap (FR-M01-010). Cancel returns to the originating tab. Loading/error states authored per the global standard (skeleton form; inline retry).
+2.4 Add Dependent — add-dependent
+References Satisfies FR-M01-017 (expanded model) / FR-M01-008 (nominee rule) · dependents §4.4.15 · Prototype: add-dependent (labelled FR-M01-016 in prototype — see OPEN-FS-M01-02)
+Purpose. Capture a complete dependent record once, feeding group medical insurance, statutory nominations, and joint tax filing from one source (FR-M01-017).
+Field
+	Control
+	Validation
+	On-screen behaviour
+
+First / Last name
+	Text
+	1–120 chars
+	Mandatory
+
+Middle name
+	Text
+	—
+	Optional
+
+Relation
+	Select (enum)
+	enum §4.4.15
+	Mandatory; drives joint-tax visibility
+
+Date of birth
+	Date
+	VAL-DOB
+	Mandatory; ≤ today
+
+Gender / Nationality
+	Select / datalist
+	—
+	Optional; country picker datalist
+
+Aadhaar (dependent)
+	Text (masked store)
+	VAL-AADHAAR
+	Optional; full value visible to HR Admin in audit only
+
+Phone / Address
+	Text / textarea
+	VAL-MOBILE
+	Optional
+
+Add to group medical insurance
+	Toggle
+	—
+	Benefits intent (M14 Phase 3)
+
+Add as nominee
+	Toggle
+	—
+	Reveals Share % + Nominee-for multi-select
+
+Share % + Nominee-for
+	Number + multi-select
+	VAL-NOMINEE-SUM
+	Per-class sum must equal 100% at finalisation
+
+Tax filing — joint
+	Toggle
+	—
+	Visible only when Relation=Spouse and marital=Married
+
+Rules &** states. **Statutory-class nominee changes (PF, Gratuity, ESI) after initial capture route to HR Admin approval (FR-M01-008); insurance classes save directly. Duplicate (name+relation+DOB) warns before save. Removing a dependent who is a nominee requires re-allocation first. Auto-saves as draft; Save finalises. Error copy: MSG-M01-E03 (nominee sum), MSG-M01-E04 (duplicate).
+2.5 Nominees — nominees
+References Satisfies FR-M01-008 (dedicated nominees screen) · dependents/nominee allocations · Prototype: nominees
+Purpose. A dedicated screen under Employee Profile that lists nominees with per-class allocations and enforces the per-class 100% rule on save, without re-opening the full dependent record.
+Region
+	Content
+	Behaviour
+
+Allocation by class table
+	Nominee · relation · class · share% · type (statutory/direct) · actions
+	View/Edit/Remove per row; statutory rows tagged “HR approval”
+
+Per-class totals
+	PF · Gratuity · ESIC · Insurance variants
+	Live total; red until each used class = 100%
+
+Add / edit allocation
+	Nominee picker (from dependents) · class select · share %
+	Save blocked unless class sum = 100% (VAL-NOMINEE-SUM)
+
+Rules &** states. **Nominees are drawn from existing dependents only (no inline create). Statutory classes route to HR approval; insurance classes save directly. Empty state: “No nominees yet — add from your dependents.” Save error → MSG-M01-E03.
+2.6 Add Visa — add-visa
+References Satisfies FR-M01-018 / FR-M01-013 · employee_visa §4.4.29 + bond §4.4.31 · JOB-M01-VISA-REMIND §8.1 · Prototype: add-visa
+Field
+	Control
+	Validation
+	On-screen behaviour
+
+Country
+	Text/select
+	—
+	Mandatory
+
+Visa type
+	Select (enum)
+	enum §4.4.29
+	Mandatory (B1/B2/H-1B/L-1/Tier2/Schengen/Employment Pass/Dependent/Other)
+
+Visa number
+	Text
+	—
+	Mandatory
+
+Issue date / Valid till
+	Date
+	valid_till > issue
+	Mandatory; drives renewal cron
+
+Issuing authority
+	Text
+	—
+	Optional
+
+Multiple entry / Max stay
+	Toggle / number
+	—
+	Optional
+
+Visa scan
+	Upload
+	VAL-FILE-DOC/IMG ≤ 25 MB
+	Tier-1; encrypted; access-logged
+
+Sponsor
+	Radio (PrimeSoft/Self/External)
+	—
+	PrimeSoft auto-links bond doc from M11
+
+Bond signed
+	Toggle
+	—
+	Surfaces bond clause linkage
+
+Rules &** states. **Multiple visas supported. On save, JOB-M01-VISA-REMIND schedules 90/60/30-day reminders (§8.1). valid_till < today → auto-flagged Expired; “Renewal pending” pauses reminders. Auto-saves as draft.
+2.7 Add Disability (voluntary) — add-disability
+References Satisfies FR-M01-012 · employee_disabilities §4.4.28 · access HRBP + HR Admin only (§3.10) · Prototype: add-disability
+Field
+	Control
+	Validation
+	On-screen behaviour
+
+Kind of disability
+	Select (enum)
+	enum
+	Mandatory; “Other” reveals specify field
+
+Percentage
+	Number
+	0–100
+	Mandatory; per UDID certificate
+
+UDID number
+	Text
+	—
+	Optional; absence → “Self-declared, unverified”
+
+Date of certification
+	Date
+	VAL-DOB-PAST
+	Optional
+
+Disability proof
+	Upload
+	VAL-FILE-DOC/IMG ≤ 25 MB
+	Mandatory; Tier-1; encrypted; access-logged
+
+Accommodations needed
+	Textarea
+	—
+	Optional free text
+
+Consent
+	Checkbox
+	must be true
+	Mandatory before submit
+
+Rules &** states. **Submission routes to HRBP for verification; HR Admin approves before Verified. Employee may withdraw any time (soft-delete, retained in audit per DPDPA). L1 Manager never sees the disability; HRBP communicates only the accommodation. Submit disabled until consent checked.
+2.8 Org Chart — org-chart
+References Satisfies FR-M01-005 / FR-M01-014 · reporting tree from employment_history.reporting_manager_id · GET /employees/{id}/reporting-chain §4 · JOB-M01-ORGVIEW §8.1 · Prototype: org-chart
+Purpose. Surfaced as a tab within Employee Profile (FR-M01-014): a vertical hierarchy HOD → Skip-level → L1 Manager → Self (highlighted) → Peers, plus the HRBP card. Group-wide visibility (FR-M01-005) with PII rules honoured.
+Node / region
+	Behaviour
+
+Hierarchy nodes
+	Directory-tier fields only (name, designation, dept, official email/mobile, location, photo); no PII/compensation (FR-M01-005)
+
+Self node
+	Visually highlighted; HODs+ render at top of their downward tree
+
+Peers row
+	Direct reports of same L1 Manager; max 50, “View all” beyond
+
+Node click
+	Opens that person’s public profile (Tier-1/2 masked per §3.9)
+
+HRBP card
+	Name, role, contact, availability, Raise-grievance action (FR-M01-011)
+
+Depth
+	≤4 levels eager (NFR p95 < 1500 ms, BRD §7.1/FR-M01-005); beyond → lazy on expand
+
+State badges
+	Notice/LWD badge visible to HR Admin + manager chain only
+
+States. Empty/orphaned (no manager_id) → “Manager assignment pending — contact HR.” Cycle detected (data drift) → broken path rendered with an exclamation badge; surfaces in Org Admin exception queue (FR-M01-005 edge case). Loading → progressive node hydration.
+2.9 Statutory & ID Clusters — national-id / pf-uan / tds-tax / bank-entry
+References Satisfies FR-M01-019 / FR-M01-003 · statutory_* §4.4.5–4.4.12 · bank_details §4.4.14 · field access §3.9 + §3.10 · Prototype: national-id, pf-uan, tds-tax, bank-entry
+Purpose. The two statutory tabs (PF·EPS·ESIC and Gratuity·Insurance·LWF) plus the national-ID and bank surfaces present the statutory and project-billing field set. This FS fixes grouping and access projection only; field definitions are governed by the BRD statutory entities.
+Cluster / screen
+	Field groups (BRD ref)
+	Access projection (ref §3.9 / §3.8)
+
+PF · EPS · ESIC tab (pf-uan)
+	PF §4.4.6, EPS §4.4.7, ESIC §4.4.8
+	Self + HR Admin + Finance full; L1 sees applicability flags only (not amounts)
+
+Gratuity · Insurance · LWF tab (tds-tax)
+	Gratuity §4.4.9, LWF §4.4.10, PT §4.4.11, Insurance §4.4.12, TDS, Billing
+	Self + HR Admin + Finance; Billing rate masked from Self & L1 (Finance only)
+
+Statutory IDs / national-id
+	statutory_identities §4.4.5
+	Masked (last 4) for Self; Office Admin V·E (platform grant); HR Admin E·AR
+
+bank-entry (Office Admin)
+	bank_details §4.4.14
+	Office Admin entry-only direct write (DM-PRO02); masked to last 4 elsewhere
+
+Rules &** states. **Edits to Tier-1 IDs route through the sensitive-change workflow (DM-ENPS06; §2.14). ESIC edge: gross > ₹21,000 reverts ESIC flag to Not applicable with audit note + HR alert (FR-M01-019 edge). PF cap ₹15,000 statutory (Org Admin config). bank-entry verifies via penny-drop before commit (per prototype).
+2.10 HR Letters & Official Documents — letters
+References Satisfies FR-M01-015 (letters) / FR-M01-016 (official docs) · employee_documents §4.4.16 · letters rendered by M11 (FR-M11-002, referenced) · Prototype: letters
+Region
+	Behaviour
+
+HR letters table
+	Chronological: type, issued by, issued on, reference no., Download; “Latest” pill per type
+
+Request a letter
+	Salary cert / Employment / Experience / Address-proof → routes to HR Admin queue (SLA per template 2–5 days)
+
+Official documents (clustered)
+	Sign-off (NDA family), Statutory (Gratuity, PF Form 11), Benefits (insurance noms), Compliance (Bond, LoA), Onboarding (Joining Report)
+
+Document row
+	Name, cluster, status (Signed/Filed/N/A), signed-on, reference, View
+
+View / Download
+	Watermarked viewer; download generates fresh watermarked copy (FR-M01-016)
+
+Rules &** states. **All letters/documents Tier-1 (encrypted, access-logged, 7-yr retention per FR-M11-003). Ineligible request (e.g. Experience letter while active) rejected with explanation. Missing required doc (e.g. PF Form 11) → “Action needed” pill + HR dashboard flag. M11 owns rendering/vault; M01 owns the register surface and request handoff.
+2.11 Grievance / POSH Channel — report-posh
+References Satisfies FR-M01-009 · grievances §4.4.17 · POST /grievances §4 · notifications GRIEVANCE_* / §9.6 · Prototype: report-posh (non-POSH grievance surface — see OPEN-FS-M01-01)
+Field
+	Control
+	On-screen behaviour
+
+Concern type / category
+	Select
+	POSH fixed in prototype; FR-M01-009 also needs Workplace/Manager/Compensation/Other (see §7)
+
+Severity
+	Radio
+	Low/Medium/High/Critical
+
+Anonymity
+	Toggle
+	Anonymous → HR sees category+count only; identity to POSH ICC only for POSH
+
+Incident date
+	Date
+	Optional
+
+Subject / Description
+	Text / textarea
+	Mandatory
+
+Attachments
+	Upload
+	VAL-FILE-DOC/IMG
+
+Rules &** states. **POSH bypasses manager → IC committee queue (not HR Admin). Non-POSH → HR Admin queue. Status: Open → Under Investigation → Resolved → Closed (audit-logged). Self-identifying content in an anonymous report warns before submit (FR-M01-009 edge). Notifications: GRIEVANCE_SUBMITTED / _POSH / _ACKNOWLEDGED / _RESOLVED (§9.6).
+2.12 Add Employee (HR / Performance Admin) — hr-add-employee
+References Satisfies FR-M01-001 / FR-M01-020 (Add restricted to HR Admin only) · POST /employees §4 · employees §4.4.1 · Prototype: hr-add-employee
+Purpose. Creates the core employees row. Employee ID auto-generated from entity short code + sequence and immutable. Tier-1 IDs entered here are write-only and route through sensitive-change audit. After save, the profile opens for remaining clusters.
+Field group
+	Control
+	Validation
+	On-screen behaviour
+
+Core identity
+	Salutation, first*, middle, last*, official email*, personal email*, personal mobile*, gender*, DOB*, nationality*
+	VAL-EMAIL/MOBILE/DOB
+	Mandatory* enforced before Create
+
+Employment
+	Entity*, DOJ*, department*, designation*, grade, reporting manager*, employment type, work location
+	VAL-NO-CYCLE (manager)
+	DOJ drives goal-plan cohort (15th cutoff)
+
+Statutory IDs
+	PAN, Aadhaar (write-only)
+	VAL-PAN / VAL-AADHAAR
+	Tier-1 write-only; audit-logged; not displayed back
+
+Emergency contact
+	name, relation, mobile
+	VAL-MOBILE
+	Platform-locked minimum (FR-M01-007)
+
+Actions &** states. **Create employee → POST /employees (201; ID assigned, lifecycle PRE_JOINING). Save draft persists incomplete record. No-permission: any role other than HR Admin gets no nav entry and a 403 on deep link (FR-M01-020). Performance Admin is not an exception — it has no M01 employee-master tier. ID-collision (PAN uniqueness) error → MSG-M01-E05. Save validation surfaces inline.
+2.13 Employee Detail — Shared Definition across Manager / HOD / HRBP / HR-Admin (employee-detail / hod-employee-detail / hrbp-employee-detail / hr-employee-detail)
+References Satisfies FR-M01-020 (access tiers from one shared definition) · RBAC §3.9 (all columns) / §6.1 field projection · §3.8 sensitive data · Prototype: employee-detail, hod-employee-detail, hrbp-employee-detail, hr-employee-detail
+Purpose. One shared detail definition; tier resolved at render time. No tier elevates the underlying entitlement — §3.9 ceilings always apply.
+Canonical structure (all four views). Every employee-detail view renders the same tab skeleton so the experience is consistent across roles: Personal · Employment · Statutory & benefits · Qualifications & experience · Documents · Attendance · Leave · Performance · Org chart · Feedback & notes. Two tabs are entitlement-driven additions: a Compensation tab (HR Admin full; HOD/HRBP permission-gated and hidden by default; not present for L1 Manager) and an Audit tab (HR Admin only). The role differences are therefore masking + actions + presence of the two role-only tabs — never a different structure. The Qualifications & experience tab shows education/certifications to all roles, but the competency/skills profile is rendered only for the management chain (Employee, L1, skip, HOD) and is suppressed for HRBP and HR Admin per §3.9. The Performance tab is likewise suppressed for HRBP — HRBP has no access to performance data.
+Tier
+	Roles
+	Render rule
+
+Full add/view/edit
+	HR Admin only
+	All fields unmasked (Tier-1 included); edit any field (Tier-1 → L2 workflow); Add Employee available. Performance Admin removed — uses M09 surfaces instead
+
+Read-only scoped
+	HRBP, HOD, CEO, L2–L5
+	No edit controls, no Add; Tier-1 masked (national IDs hidden for HOD/HRBP per §6.1); scope per entitlement; L2–L5 reach reportees via the My organisation roster (§2.18); every view audit-logged
+
+Self / manager
+	Employee (own), L1 Manager (reportee view)
+	Self per §2.1; L1 per FR-M01-005 manager-scoped view
+
+Per-view entitlement application (projects §6.1; the matrix governs, this is the screen-level read). "Masked" = BRD mask string; "Gated" = hidden unless the per-user compensation grant is held.
+Area / field
+	L1 Manager
+	HOD
+	HRBP
+	HR Admin
+
+National IDs (Aadhaar/PAN)
+	Masked
+	Hidden
+	Hidden
+	View + Edit (AR)
+
+Bank account
+	Masked (last-4)
+	Not shown (conservative)
+	Masked (last-4)
+	View (full)
+
+PF/ESIC/UAN (statutory)
+	Applicability flags
+	Not shown
+	Not shown (restricted to employee/HR/Finance, BRD §3.10)
+	View / manage
+
+Compensation (Salary/CTC)
+	Not present (no tab)
+	Permission-gated (off default)
+	Permission-gated (senior-HRBP grant)
+	View (full)
+
+Competency / skills profile
+	Visible
+	Visible (management chain)
+	Suppressed (§3.9)
+	Suppressed (§3.9)
+
+Documents / BGV
+	Sensitive masked; no BGV
+	BGV not shown
+	Incl. BGV status
+	Full
+
+Attendance / Leave
+	View + on-behalf actions
+	Read-only summary
+	View + on-behalf (assigned)
+	Manage / edit
+
+Performance
+	View + rate / add goal
+	Read-only
+	Read-only (not reviewer)
+	Manage
+
+Audit tab
+	—
+	—
+	—
+	View
+
+Scope / mode
+	Direct reports / on-behalf
+	Department / read-only
+	Assigned employees / on-behalf
+	Org-wide / edit
+
+RESOLVED — HRBP statutory visibility. Statutory IDs (PF/EPS/ESIC, UAN, PT, TDS) are restricted to the employee and authorised HR/Finance roles (BRD §3.10 · RBAC PII restriction); they are not shown to HRBP. The prototype and §6.1 are aligned to this — HRBP sees bank to last-4 (per FR-M01-020) but no statutory identifiers. This supersedes the earlier projection that surfaced PF/ESIC to HRBP.
+OPEN-FS-M01-09 (Consistency). §2.13's read-only-tier rule says "Tier-1 masked", while §6.1 projects HOD/HRBP national IDs as H (hidden). RESOLVED (Product/RBAC): HOD/HRBP national IDs render fully hidden — §2.13 per-view table aligned to §6.1 (both now project H). HOD additionally suppresses bank/statutory as a conservative product choice. (Prior question: render masked or fully hidden.)
+States. No-permission (out of scope row) → record not listed / 403 on deep link. Masked Tier-1 always renders the BRD mask string for read-only tier regardless of broader role. Loading → skeleton; Error → inline retry per pane.
+2.14 Sensitive Field Change Queue (HR Admin) — sensitive-changes
+References Satisfies FR-M01-003 + DM-ENPS06 · statutory_identities §4.4.5; bank_details §4.4.14 · PATCH /employees/{id} (202 workflow) §4 · notifications SENSITIVE_FIELD_CHANGE_* §9.6 · Prototype: sensitive-changes (labelled FR-M01-008 in prototype — see OPEN-FS-M01-02)
+Purpose. HR Admin queue for employee-initiated Tier-1/Tier-2 changes (PAN, Aadhaar, Passport, DL, bank, personal mobile). Each request card shows requester, field, tier, request date, reason, verification evidence, and Approve/Reject.
+Region
+	Behaviour
+
+Request card
+	Old→new value visible to HR Admin only; tier badge; verification note (OTP / document / penny-drop)
+
+Approve
+	Persists new value; emits SENSITIVE_FIELD_CHANGE_APPROVED to employee; audit-logged
+
+Reject
+	Reverts to prior value (no partial save); reason captured; employee notified
+
+States. Empty → “No pending sensitive changes.” Bank changes require penny-drop verified before Approve is enabled (per prototype). Office Admin bank entry is a direct write and does NOT enter this queue (DM-PRO02).
+2.15 Bulk Upload (HR / Platform) — bulk-upload
+References Satisfies FR-M01-006 · POST /employees/bulk-upload §4 · idempotent on darwinbox_source_id (§4.1) · Prototype: bulk-upload
+Region
+	Behaviour
+
+Entity selector
+	employees / personal details / statutory IDs / education / experience / certifications / dependents / bank accounts
+
+Mode
+	Validate only (dry run) · Validate & commit · Partial commit (skip errors)
+
+CSV file + template
+	Download template; upload CSV/JSON one row per employee
+
+Recent uploads
+	Date, entity, rows, errors, status (e.g. “Partial commit · 139 saved”)
+
+Rules &** states. **Dry run mandatory before live load; per-record validation report exportable. Idempotent on source id — reruns skip already-loaded rows. Wave-1 gate: < 0.5% failure (DM-ENPS09) aborts the load above threshold. Sensitive fields (PAN/Aadhaar/Bank) cannot be bulk-updated post-migration (FR-M01-006 rule). Throughput target 10,000 rec/hr (referenced, BRD).
+2.16 Absconding Queue (HR Admin) — absconding
+References Satisfies FR-M01-004 (Absconded state) + DM-ENPS13 · trigger M05 7-day rule (§8.1) · Prototype: absconding (labelled FR-M03-006 in prototype — cross-module surface)
+Purpose. Lists employees auto-absent for 7+ consecutive calendar days (M05 trigger). HR Admin can Send notice or Initiate absconding; flag persists until HR Admin clears it (reason, audit-logged) or converts to M03 separation (DM-ENPS13). Not a terminal state.
+States. Empty → “No absconding cases.” Each row shows days no-contact, last-present date, manager, and contact attempts. Restore-to-Active and convert-to-Separated transitions map to §8.1.
+2.17 Scoped Employee Lists — hrbp-my-employees / hod-employees / directory
+References Data scope per §3.6 · access per §3.7.1 (Team/assigned profile row) · Prototype: hrbp-my-employees, hod-employees, directory
+Screen
+	Scope (ref §3.6)
+	Behaviour
+
+directory (HR Admin)
+	Entity
+	Filterable: All/Active/Pre-joining/On leave/Notice; row → hr-employee-detail (full tier)
+
+hrbp-my-employees
+	Assigned employees
+	Read-only scoped; row → employee-detail (read-only tier)
+
+hod-employees
+	Department / UAG
+	Read-only scoped; row → employee-detail (read-only tier)
+
+States. Common: empty (“No employees in scope”), loading (table skeleton), error (retry banner). Status pills mirror lifecycle_state with Notice showing LWD date.
+2.18 My Organisation Roster (direct + indirect reportees) — my-org
+References Satisfies FR-M01-005 / FR-M01-014 (manager organisation roster) · GET /employees/{id}/reporting-chain?direction=down&depth=full §4.5 · scope §3.6 · detail tier §2.13 · Prototype: my-org (new)
+Purpose. Resolves the v1.0 gap (OPEN-FS-M01-06): L2–L5 managers had no flat view of their full downward subtree. This roster lists a manager’s reportees with a Direct-only / Direct + indirect (full subtree) toggle. Available to L1–L5 and HOD/UAG Head; the HOD department roster (§2.17) gains the same reporting-chain toggle.
+Region
+	Behaviour
+
+Scope toggle
+	Direct only / Direct + indirect (full subtree); backed by reporting-chain direction=down depth=full
+
+Roster columns
+	ID, name, designation, reporting level (Direct L1 / Indirect L2–Ln), reports-to, status
+
+Row drill-in
+	Opens the read-only scoped detail tier (§2.13); Tier-1 masked; every view audit-logged
+
+Exclusions
+	Separated / Pre-joining / Absconded excluded from the visible roster (FR-M01-005)
+
+Performance
+	≤4 levels eager (NFR §7.1); deeper levels lazy-load on expand
+
+States. Empty (“No reportees in your organisation”), loading (table skeleton), error (retry banner). Reporting-level badge distinguishes direct from indirect. Reached from the My team header and the manager nav (§6.2).
+Sourced display fields (resolves OPEN-FS-M01-04). On the Employment tab (§2.1) and detail views, Project allocated, Work type, and Performance appraisal period render read-only and are NOT columns on employees §4.4.1: Project allocated is sourced from the Project / UAG assignment (Org Admin → Assignment Framework, projects §4.2.21); Work type from an Org-Admin-configured employment custom field (custom_field_values §4.2.15); Performance appraisal period from M09 Performance.
+3. Interaction & Navigation Flows
+References Maps onto BRD §8.1 Employee Lifecycle State Machine (do not redraw) · screen ids from §2 · jobs from §8
+This section shows which screen or job drives each lifecycle transition. The state machine itself is governed by BRD §8.1 — the table below adds only the FS screen/job that triggers each move.
+From state (§8.1)
+	Trigger
+	Driven by (FS)
+	To state + screen effect
+
+Candidate (M08)
+	Offer countersigned
+	M08 event → POST /employees
+	Pre-joining; record created via §2.12 / contract §4.1
+
+Pre-joining
+	Onboarding completes (M02)
+	M02
+	Active (probation); profile (§2.1) unlocks full self-service
+
+Pre-joining
+	Cancelled (HR Admin)
+	directory action (§2.17)
+	Soft-deleted
+
+Active (probation)
+	Probation confirmed (M09)
+	M09
+	Active (confirmed); confirmation letter on HR-letters tab (§2.10)
+
+Active (any)
+	Resignation approved (M03)
+	initiate-separation (M03)
+	Notice; staged future-dated changes auto-cancel (§3.1)
+
+Active (any)
+	7-day absence (M05)
+	JOB (M05) → absconding queue §2.16
+	Absconded; access restricted; HR notified
+
+Notice
+	LWD reached
+	JOB-M01-LWD (§8.1)
+	Last Working Day; FnF section unlocks (M03)
+
+Last Working Day
+	FnF complete (M03)
+	M03
+	Separated; read_only_until = LWD+180; profile read-only
+
+Absconded
+	HR restores / converts
+	absconding queue §2.16
+	Active (cleared) or Separated (M03)
+
+Separated
+	Rehire (M08)
+	M08 new application
+	New employees row; previous_employee_id linked; group DOJ preserved
+
+3.1 Effective-dated change interplay
+Past- and future-dated employment-field edits (FR-M01-002) are made on the Employment tab / hr-employee-detail and persisted via POST /employees/{id}/employment-history (§4.4). Future-dated rows are staged and applied by JOB-M01-EFFDATE (§8.1, daily 00:00 IST). When an employee enters Notice, staged future-dated rows are auto-cancelled and HR Admin sees a cancelled-changes summary — this is a job-driven transition surface, not a user action.
+4. API Contracts (complete)
+References Endpoint inventory: BRD §6.4.1 (do not restate purpose/auth) · response/error model §6.2 · rate limits §6.3 · examples §6.5 · validation by VAL-id (§5)
+For each endpoint named in the BRD §6.4.1 inventory, the full contract is authored below. The standard error envelope (error.code/message/field/details), pagination, and rate limits are referenced from BRD §6.2–6.3 and not repeated per endpoint.
+4.1 POST /api/v1/employees — Create employee
+Inventory: BRD §6.4.1 · example: §6.5.1. Auth: HR Admin / Performance Admin / System (FR-M01-020).
+Request: { salutation?, first_name*, middle_name?, last_name*, official_email?, personal_email*, personal_mobile* (VAL-MOBILE), gender*, date_of_birth* (VAL-DOB), nationality*, entity_id*, department_id*, designation_id*, grade_id?, location_id*, employment_type, reporting_manager_employee_id (VAL-NO-CYCLE), pan? (VAL-PAN, write-only), aadhaar? (VAL-AADHAAR, write-only), emergency_contacts*: [{ contact_name, relation, mobile (VAL-MOBILE), sort_order }] }
+Response 201: { id, employee_id (generated, immutable), lifecycle_state:‘PRE_JOINING’, group_date_of_joining, profile_completeness_pct, created_at }
+Errors: 400 malformed body · 403 caller not HR/Performance Admin (ref §3.7/FR-M01-020) 409 PAN/email/employee_id uniqueness collision (MSG-M01-E05) 422 VALIDATION_FAILED + error.field (e.g. emergency_contacts missing → FR-M01-007)
+4.2 GET /api/v1/employees/{id} — Retrieve (RBAC-filtered)
+Auth: Authenticated, row-scoped (§3.6). Fields filtered by viewer tier (FR-M01-020, §3.9). Response 200: full employee composite; Tier-1 fields masked unless viewer = HR/Performance Admin or Office Admin (national-id grant). Every Tier-1 read logs to security_audit_log (FR-M01-003). Errors: 403 out of data scope · 404 RECORD_NOT_FOUND (or not in scope) · 429 rate-limited (§6.3)
+4.3 PATCH /api/v1/employees/{id} — Update (sensitive → workflow)
+Inventory: §6.4.1 · example §6.5.4. Non-versioned fields overwrite in place; sensitive Tier-1/2 fields route to the HR approval workflow (DM-ENPS06).
+Request (non-sensitive): { personal_email?, addresses?, visibility_enums? } → 200 (overwrite + audit) Request (sensitive): { pan? | aadhaar? | passport? | driving_licence? | bank_* | personal_mobile? } Response 202 (workflow): { workflow_instance_id, state:‘PENDING_HR_APPROVAL’, message } → emits SENSITIVE_FIELD_CHANGE_PENDING to HR queue (§9.6); decision via §2.14 Errors: 403 field not editable by role (FIELD_ACCESS_DENIED, ref §3.9) · 422 VALIDATION_FAILED
+4.4 POST /api/v1/employees/{id}/employment-history — Insert version
+Auth: HR Admin. Implements FR-M01-002 effective-date versioning. Request: { effective_from (default today), grade_id?, designation_id?, department_id?, reporting_manager_id? (VAL-NO-CYCLE), employment_type?, location_id?, entity_id?, change_reason (required if past-dated), correction_flag? } Response 201: { history_id, effective_from, effective_to_of_prev_row, staged: } Behaviour: closes prior open row at effective_from−1; future-dated rows applied by JOB-M01-EFFDATE. Errors: 409 reporting cycle (VAL-NO-CYCLE) · 422 invalid effective_from · 403 not HR Admin
+4.5 GET /api/v1/employees/{id}/reporting-chain — Org traversal
+Auth: Authenticated, scoped. Implements FR-M01-005. Powers org chart (§2.8) and the My organisation roster (§2.18, direction=down depth=full). Query: direction=up|down, depth=1..N|full, scope=group|entity Response 200: nodes[] each = directory-tier only { employee_id, display_name, designation, department, official_email, official_mobile, office_location, photo_url, state_badge? } Excludes Separated / Pre-joining / Absconded from visible tree. ≤4 levels eager (NFR §7.1). Errors: 422 cycle detected (data drift → Org Admin exception queue) · 403 out of scope
+4.6 GET /api/v1/employees — Search & filter
+Auth: Authenticated, scoped (§3.6). Powers directory / hrbp / hod lists (§2.17). Query: q?, status?, department_id?, entity_id?, location_id?, page, page_size (pagination per §6.2) Response 200: { items:[{ employee_id, display_name, designation, department, manager, doj, status }], page_meta } Errors: 403 scope violation · 429 rate-limited
+4.7 Documents — GET / POST /api/v1/employees/{id}/documents
+GET → list from M01 vault (Official documents tab, §2.10). Scoped; Tier-1 access-logged. POST → upload personal document. Auth: Employee(own) · HR Admin · Office Admin(scoped types). Request (multipart): { file (VAL-FILE-DOC/IMG ≤ 25 MB), category, … } Errors: 413 file too large (MSG-M01-E06) · 415 type not accepted · 422 virus-scan failed (quarantined)
+4.8 POST /api/v1/grievances — Submit (anonymous opt-in)
+Auth: Employee. Implements FR-M01-009. Powers §2.11. Request: { category (WORKPLACE|MANAGER|COMPENSATION|OTHER|POSH), subject, description, anonymity_flag, severity?, incident_date?, attachments?[] } Response 201: { grievance_id, status:‘OPEN’, routed_to: <HR_ADMIN|POSH_ICC> } Routing: POSH → ICC queue (NOT HR Admin); others → HR Admin queue. Anonymity rules per §9.6. Errors: 422 self-identifying content warning (anonymous) · 400 missing subject/description
+4.9 POST /api/v1/employees/bulk-upload — Migration load
+Auth: Platform Super Admin. Implements FR-M01-006. Powers §2.15. Request (multipart): { entity, mode (DRY_RUN|COMMIT|PARTIAL), file (CSV|JSON) } Idempotent on darwinbox_source_id / operation_request_id (§4.1) — reruns skip loaded rows. Response 200: { operation_id, total, succeeded, skipped, failed, per_record: [{ row, status, error_code? }], dry_run: bool } Gate: aborts if failure_rate ≥ 0.5% (DM-ENPS09). Sensitive fields blocked post-migration. Errors: 422 threshold breach (load aborted) · 409 per-row uniqueness (reported, load continues)
+5. Validation
+References Field types & rules governed by BRD §4.4 entities; this catalogue authors the format/regex layer. Shared entries (tagged [shared]) are defined in Foundation FS §2 and cited here by id; [M01]-scoped entries are authored here.
+Screens (§2) and contracts (§4) reference catalogue ids below. Entries marked [shared] are cross-module and should move to the Foundation FS verbatim; entries marked [M01] are specific to this module’s screens.
+VAL id
+	Scope
+	Rule / format
+	Used by
+
+VAL-EMAIL
+	[shared]
+	RFC-5322 lite; corporate domain check for official_email
+	§2.1, §2.2, §2.12, §4.1/4.3
+
+VAL-MOBILE
+	[shared]
+	10-digit national or +CC prefix (per §4.4.1)
+	Profile, dependents, emergency, §4
+
+VAL-DOB
+	[shared]
+	Valid date ≤ today
+	§2.1, §2.4, §2.12, §4.1
+
+VAL-DOB-PAST
+	[shared]
+	Valid date ≤ today (certification dates)
+	§2.7
+
+VAL-PAN
+	[M01]
+	{5}[0-9]{4}[A-Z]$ (display masked XXXXX1234X)
+	Statutory IDs, §2.12, §2.14, §4.1/4.3
+
+VAL-AADHAAR
+	[M01]
+	12-digit + Verhoeff checksum (display XXXX-XXXX-1234)
+	Statutory IDs, dependents, §2.14
+
+VAL-IFSC
+	[shared]
+	{4}0[A-Z0-9]{6}$ (bank entry; penny-drop before commit)
+	§2.9 bank-entry, §2.14
+
+VAL-NOMINEE-SUM
+	[M01]
+	Sum(nominee_percentage) = 100 per benefit class at finalisation
+	§2.4, §2.5
+
+VAL-NO-CYCLE
+	[M01]
+	Reject reporting_manager_id that creates a chain cycle (save-time)
+	§2.8, §2.12, §4.4
+
+VAL-FILE-DOC
+	[shared]
+	PDF/DOCX, ≤ 25 MB (M11 DM06 cap)
+	Resume, official docs, §4.7
+
+VAL-FILE-IMG
+	[shared]
+	PNG/JPG/WebP image, ≤ 25 MB
+	Profile photo, visa/disability scans
+
+VAL-DEPENDENT-MAX
+	[M01]
+	≤ 10 dependents per employee (tenant-configurable, DM-ENPS12)
+	§2.4
+
+VAL-EFFECTIVE-DATE
+	[M01]
+	Past-dated requires change_reason; weekend/holiday honoured
+	§3.1, §4.4
+
+VAL-CONSENT
+	[shared]
+	Mandatory consent checkbox = true before submit
+	§2.7 disability, DPDPA flows
+
+6. Per-Screen RBAC Projection
+References Projects BRD §3.7 (action matrix), §3.8 (sensitive data), §3.9 (field-level access), §3.10 (capability flags & FY26 revision) onto screens. The matrices themselves stay in the BRD — this is the screen-level projection only.
+6.1 Screen × role action projection
+Legend per §3.9: V visible · M masked · H hidden · E editable · — no access. Cells project the BRD matrix; they do not redefine it.
+Screen / action
+	Empl
+	L1
+	HOD
+	HRBP
+	HRAdm
+	PerfAdm
+	OffAdm
+	Fin
+
+my-profile (own)
+	E
+	—
+	—
+	—
+	Adm
+	—
+	—
+	—
+
+hr-employee-detail (full)
+	—
+	—
+	—
+	—
+	Adm
+	—
+	—
+	—
+
+employee-detail (read-only)
+	—
+	V
+	V
+	V
+	Adm
+	—
+	—
+	—
+
+hr-add-employee
+	—
+	—
+	—
+	—
+	E
+	—
+	—
+	—
+
+sensitive-changes (approve)
+	—
+	—
+	—
+	—
+	A
+	—
+	—
+	—
+
+bank-entry
+	—
+	—
+	—
+	—
+	E
+	—
+	E
+	—
+
+Statutory IDs (Tier-1)
+	M
+	H
+	H
+	H
+	E·AR
+	—
+	V·E
+	H
+
+PF/EPS/ESIC/Grat/LWF tabs
+	V
+	flags
+	V*
+	V
+	E
+	—
+	H
+	V
+
+CTC / billing rate
+	H
+	H
+	H*
+	H
+	E
+	—
+	H
+	V
+
+Skills profile
+	V
+	V
+	V
+	H
+	H
+	—
+	H
+	H
+
+bulk-upload
+	—
+	—
+	—
+	—
+	E
+	—
+	—
+	—
+
+absconding queue
+	—
+	—
+	—
+	—
+	Adm
+	—
+	—
+	—
+
+my-org roster
+	—
+	V
+	V
+	—
+	V
+	—
+	—
+	—
+
+grievance (POSH)
+	E
+	—
+	—
+	ICC
+	count*
+	—
+	—
+	—
+
+** configurable / conditional per BRD (HOD compensation off by default §3.8; HOD statutory visibility per §3.10; HR sees POSH aggregate count only §3.8). Platform Super Admin and Org Admin columns omitted for width — their grants follow §3.7.4.*
+6.2 Menu & Navigation Entitlement — M01 slice
+Sits above per-field permissions. The full role→menu map belongs in the Foundation FS; the M01 slice below is PROPOSED for promotion and references §3.7 for the gating permission.
+Menu item
+	Screen
+	Visible to roles
+	Gating (§3.7 ref)
+
+My profile
+	my-profile
+	All active employees
+	Own profile (M01) = E
+
+My team
+	my-team / employee-detail
+	L1–L5, HOD, Skip, Dotted
+	Team/assigned profile = V
+
+HR Ops › Directory
+	directory
+	HR Admin
+	Team/assigned profile = Adm
+
+HR Ops › Add employee
+	hr-add-employee
+	HR Admin
+	FR-M01-020 (HR Admin only)
+
+HR Ops › Sensitive changes
+	sensitive-changes
+	HR Admin
+	Sensitive field approval
+
+HR Ops › Bulk upload
+	bulk-upload
+	HR Admin, Platform Super Admin
+	FR-M01-006
+
+HR Ops › Absconding
+	absconding
+	HR Admin
+	DM-ENPS13
+
+My HR › Employees (HRBP/HOD)
+	hrbp-my-employees / hod-employees
+	HRBP, HOD/UAG Head
+	Team/assigned profile = V
+
+My team › My organisation
+	my-org
+	L1–L5, HOD/UAG Head
+	Team/assigned profile = V; reporting-chain down
+
+Screen-specific nav gating. Org chart and Grievance are NOT separate left-nav items — they are reached from within My profile (FR-M01-009 / FR-M01-014). The POSH channel is reachable from the HRBP card and a dashboard quick-action only.
+7. Open Items, Conflicts & Resolutions
+References All v1.0 items were resolved at review (3 June 2026). Resolutions are applied in this FS and mirrored into the BRD (tracked changes) and prototype. One forward action (Foundation FS promotion) remains.
+Id
+	Status
+	Item (v1.0)
+	Owner
+	Resolution
+
+OPEN-FS-M01-08
+	Resolved
+	Add Employee / M01 full tier granted to HR Admin + Performance Admin (FR-M01-020) vs §3.7.1 (HR Admin only).
+	Product / RBAC
+	RESOLVED — HR Admin only. Performance Admin removed from the M01 employee-master tier entirely (keeps M09 access via §3.7.5). Applied in §2.12/§2.13/§6; BRD FR-M01-020 amended (tracked).
+
+OPEN-FS-M01-05
+	Resolved
+	employees.date_of_birth_year_visibility default MONTH_DAY_ONLY (§4.4.1) vs §3.10 (DOB HR-only, no year-masking).
+	Org Admin / DPO
+	RESOLVED — §3.10 wins: DOB visible to employee/HR/Office Admin only; enum no longer drives display. Birthday widget re-based on employee opt-in share_birthday_with_team (month/day only). BRD §4.4.1/§10.2.4/§9.8 amended (tracked).
+
+OPEN-FS-M01-04
+	Resolved
+	Prototype shows Project allocated / Performance appraisal period / Work type with no core employees home.
+	BRD / DB owner
+	RESOLVED — read-only display fields, not employees columns: Project allocated from Project/UAG assignment; Work type from custom_field_values; Appraisal period from M09. Applied §2.18; BRD amendment block (tracked).
+
+OPEN-FS-M01-01
+	Resolved
+	Prototype surfaced only the POSH channel; FR-M01-009 needs five grievance categories.
+	Design / Product
+	RESOLVED — prototype report-posh extended to POSH + Workplace/Manager/Compensation/Other with routing note (POSH→IC; others→HR). Reuses POST /grievances (§4.8).
+
+OPEN-FS-M01-02
+	Resolved
+	Prototype FR labels disagreed with BRD (dependent/disability/sensitive).
+	Product / Eng
+	RESOLVED — prototype labels corrected: add-dependent→FR-M01-017, add-disability→FR-M01-012, sensitive-changes→FR-M01-003.
+
+OPEN-FS-M01-03
+	Resolved
+	Prototype absconding labelled FR-M03-006; modelled as M01 lifecycle state.
+	Product
+	RESOLVED — cross-module: M01 owns the state + flag-clear (FR-M01-004/DM-ENPS13), M05 detection trigger, M03 conversion. Prototype tagged FR-M01-004 · FR-M03-006.
+
+OPEN-FS-M01-06
+	Resolved
+	No flat direct+indirect reportee roster for L2–L5; DM-ENPS01–15 marked OPEN.
+	Head of HR / Architect
+	RESOLVED — new My organisation roster (§2.18) for L1–L5 + HOD with direct/indirect toggle; HOD roster gains reporting-chain toggle. DM-ENPS01–15 ratified as closed-by-configuration.
+
+OPEN-FS-M01-07
+	Open (forward)
+	M01 scheduled jobs, message catalogue, shared validation and menu map are authored inline (§5/§6.2/§8) but belong in a singular Foundation FS.
+	Product Architect
+	PROPOSED — promote §5 [shared], §6.2 menu map and §8 to a Foundation FS when sibling module specs are authored, to keep them singular. No build blocker.
+
+8. Operational Layer (M01)
+References Not screen-driven. Authored inline; PROPOSED for promotion to Foundation FS (OPEN-FS-M01-07). Business rules referenced from BRD FRs — cadence/idempotency/failure are the new content.
+8.1 Scheduled Jobs & Background Processing
+Job id
+	Trigger
+	Purpose (BRD ref)
+	Idempotency
+	Failure handling
+
+JOB-M01-EFFDATE
+	Daily 00:00 IST
+	Apply staged future-dated employment_history (FR-M01-002)
+	Replays staged rows with effective_date ≤ today; re-runnable (DM-ENPS05 catch-up)
+	Retry; per-row failure isolated; alert HR Admin (MSG-M01-N04)
+
+JOB-M01-VISA-REMIND
+	Daily
+	Visa renewal reminders 90/60/30 days pre-expiry (FR-M01-013/018)
+	One notice per (visa, milestone); paused when ‘Renewal pending’
+	Retry next run; missed days collapse to nearest milestone
+
+JOB-M01-LWD
+	Daily 00:00 IST
+	Move Notice → Last Working Day on LWD reached (§8.1)
+	Idempotent on (employee, LWD)
+	Retry; alert HR + M03
+
+JOB-M01-COMPLETE
+	Weekly
+	Profile-completeness recompute + low banner < 90% (FR-M01-007)
+	Recompute is naturally idempotent
+	Best-effort; non-blocking
+
+JOB-M01-CONTRACT
+	Daily
+	Contract-expiry notices 60/30 days (BRD §9.8)
+	One notice per (contract, milestone)
+	Retry next run
+
+JOB-M01-ORGVIEW
+	Org-restructure event + daily 03:00 IST safety
+	Refresh org-chart materialised view (BRD §10.4)
+	Full rebuild is idempotent
+	Retry; stale view served with timestamp until refresh
+
+Absconding detection (7 consecutive days) is owned by an M05 job that emits the event consumed by §2.16 — referenced here, not owned by M01.
+8.2 Message Catalogue (M01)
+Notifications (templates; events governed by BRD §9.6)
+Msg id
+	Event (§9.6 ref)
+	Channel
+	Recipients
+	Trigger source
+
+MSG-M01-N01
+	SENSITIVE_FIELD_CHANGE_PENDING
+	IN_APP+EMAIL
+	HR Admin queue
+	§2.2/§2.14, PATCH 202
+
+MSG-M01-N02
+	SENSITIVE_FIELD_CHANGE_APPROVED
+	EMAIL
+	Employee
+	§2.14 Approve
+
+MSG-M01-N03
+	GRIEVANCE_SUBMITTED / _POSH
+	IN_APP+EMAIL
+	HR queue / ICC
+	§2.11, POST /grievances
+
+MSG-M01-N04
+	Staged-change apply failure
+	IN_APP
+	HR Admin
+	JOB-M01-EFFDATE
+
+MSG-M01-N05
+	LETTER_GENERATED
+	EMAIL
+	Employee + HR Admin
+	§2.10 (M11 render)
+
+MSG-M01-N06
+	PROFILE_COMPLETENESS_LOW
+	IN_APP
+	Employee
+	JOB-M01-COMPLETE
+
+MSG-M01-N07
+	VISA renewal 90/60/30
+	EMAIL
+	Employee + L1 + HRBP
+	JOB-M01-VISA-REMIND
+
+Error & system messages (copy behind §2 states and §4 error codes)
+Msg id
+	Where shown
+	Severity
+	Message text / recovery
+
+MSG-M01-E03
+	§2.4/§2.5 save; 422
+	Error
+	“Nominee percentage must total 100% for each class.” — highlights offending class
+
+MSG-M01-E04
+	§2.4 save
+	Warn
+	“A dependent with this name, relation and date of birth already exists.” — confirm to proceed
+
+MSG-M01-E05
+	§2.12/§4.1; 409
+	Error
+	“This PAN/email is already linked to another employee.” — verify and re-enter
+
+MSG-M01-E06
+	§4.7; 413
+	Error
+	“File exceeds 25 MB.” — links to compression guide
+
+MSG-M01-E07
+	§4.3; 403
+	Error
+	“You don’t have permission to edit this field.” (FIELD_ACCESS_DENIED, ref §3.9)
+
+MSG-M01-E08
+	§2.8 org chart
+	Info
+	“Manager assignment pending — contact HR.” (orphaned node)
+
+8.3 Dashboard & Widget Specifications (ESS)
+References Reference BRD §10.2.1 (ESS widget inventory) + §10.4 (freshness/cache). FS adds data binding & drill-down only.
+Widget (§10.2.1)
+	Data source (entity / API §4)
+	Refresh (§10.4)
+	Drill-down
+	Empty state
+
+My Profile Completeness
+	employees.profile_completeness_pct / GET /employees/{id}
+	60s widget cache
+	my-profile (§2.1)
+	“100% — all set”
+
+My Documents
+	employee_documents / GET …/documents
+	60s
+	§2.10
+	“No letters yet”
+
+My Pending Tasks
+	signoff/onboarding/goal tasks (cross-module)
+	60s
+	respective module
+	“Nothing pending”
+
+Work Anniversary & Birthday
+	DOJ + share_birthday_with_team (employee opt-in; month/day only, year never shown)
+	Daily 02:00 IST
+	public profile
+	hidden unless employee opted in
+
+9. Reference Register
+References The audit index: every FS screen → the BRD FRs, entities, RBAC rows, and prototype ids it builds on. A screen row with content but no references would indicate duplication/invention — none here.
+FS screen (§2)
+	Prototype id
+	BRD FR ids
+	BRD entities (§4.4)
+	Open items
+
+2.1 my-profile
+	my-profile
+	M01-003/004/007/011/014/015/016/019
+	4.4.1,.3,.4,.13,.21
+	05
+
+2.2 edit-profile
+	edit-profile
+	M01-002/003
+	4.4.3
+	—
+
+2.3 sub-forms
+	add-education/exp/cert/skill
+	M01-010
+	4.4.20,.23,.24,.25,.26,.32
+	—
+
+2.4 add-dependent
+	add-dependent
+	M01-008/017
+	4.4.15,.30
+	02
+
+2.5 nominees
+	nominees
+	M01-008
+	4.4.15
+	—
+
+2.6 add-visa
+	add-visa
+	M01-013/018
+	4.4.29,.31
+	—
+
+2.7 add-disability
+	add-disability
+	M01-012
+	4.4.28
+	02
+
+2.8 org-chart
+	org-chart
+	M01-005/014
+	4.4.13
+	—
+
+2.9 statutory clusters
+	national-id/pf-uan/tds-tax/bank-entry
+	M01-003/019
+	4.4.5–4.4.12,.14
+	04
+
+2.10 letters & docs
+	letters
+	M01-015/016
+	4.4.16
+	—
+
+2.11 grievance/POSH
+	report-posh
+	M01-009
+	4.4.17
+	01
+
+2.12 hr-add-employee
+	hr-add-employee
+	M01-001/020
+	4.4.1,.4
+	08
+
+2.13 employee detail
+	hr-employee-detail/employee-detail
+	M01-020
+	4.4.1 (all)
+	—
+
+2.14 sensitive-changes
+	sensitive-changes
+	M01-003 (DM-ENPS06)
+	4.4.5,.14
+	02
+
+2.15 bulk-upload
+	bulk-upload
+	M01-006
+	4.4.1 (+children)
+	—
+
+2.16 absconding
+	absconding
+	M01-004 (DM-ENPS13)
+	4.4.1
+	03
+
+2.17 scoped lists
+	hrbp-my-employees/hod-employees/directory
+	M01-005/020
+	4.4.1
+	—
+
+2.18 my-org roster
+	my-org (new)
+	M01-005/014
+	4.4.13
+	06 (resolved)
+
+End of Functional Specification — M01 Employee Master (FS v1.1). §7 open items resolved; one forward action (Foundation FS promotion). BRD updated as tracked changes; prototype updated in lockstep.
+Complements BRD v6.9 — references, does not restate · Page of # Prototype Sync Addendum — Batch 1: Employee-role review (June 2026)
+Reflects the Batch-1 Employee-role review against the clickable prototype (v2, M11-synced). Complements — does not replace — the body of this FS.
+Employee Directory & mini-profile (distinct from the full master)
+The Employee Directory is a peer surface, separate from the full Employee Master roster. It shows the standard fields only (RBAC §11.2): name, photo/avatar, designation, department, official email, official phone, office location, reporting manager — Active employees only; separated/absconded/pre-joining are excluded. A directory row opens a read-only mini-profile (DM-PRO12) limited to those fields — not the full employee detail. Recruiters see the reduced four-field view (§8.1). The full master roster (all fields, edit, Add Employee) is the HR-Admin-tier employee-master screen.
+Org chart (all roles)
+The organisation chart is a standard menu item available to every role (RBAC §11.1); node fields are name, photo, designation, department, reporting manager; a node opens the same read-only mini-profile.
+Config-driven National-ID section
+The statutory-ID set on the profile is configured per geography via the tenant National-ID configuration (e.g., PAN/Aadhaar for India, Social Security for Thailand). The profile renders the configured ID types and aliases — it must not hardcode an India-only set. Values remain masked in the employee’s own view; changes route to HR approval (E·AR).
+Consent & privacy self-service
+The employee can view their consent history (records are immutable — superseded, never deleted) and withdraw optional consent, which triggers the data-erasure workflow for the related non-statutory data; statutory processing is unaffected (BRD FR-M01-003). The employee may export their full record with PII unmasked.
+Custom fields on the profile
+Organisation-configured custom fields appear in the relevant profile sections per the CustomFields configuration (Display-in / FOR / Is-Editable) — they are config-driven, not fixed.
+Employee-initiated sensitive changes (prototype now reflects FS §2.1/§2.2/§2.14)
+Tier-1 ID changes (PAN/Aadhaar/Passport/DL) and bank changes surface to the employee as “Request change → HR” (sensitive-changes queue; penny-drop for bank). Personal mobile/email edits are flagged as HR-verified (Tier-2). These behaviours were already specified; the prototype now exposes the employee-side entry points.
+Manager reportee detail — field visibility (L1)
+When an L1 manager opens a reportee’s detail, they see the reportee’s internal employment history (movement: designation, department, manager, event) and the prior-employment history declared at joining (employer, role, dates). They do not see the reportee’s prior Last CTC or BGV status — those two fields are restricted from the L1-manager view. The reportee detail otherwise inherits the same role-scoped field gating as the self-profile.
+HOD department-employee detail — read-only, scoped, salary permission-gated
+The HOD “Department employees” roster drills into a read-only, department-scoped employee detail — not the HR-Admin full profile. It exposes overview, internal employment history, performance (read-only), an attendance & leave summary, education and the competency profile, and carries no edit or transaction actions. It does not expose Tier-1 identifiers, statutory IDs, bank details, BGV or the audit log. Compensation (salary / CTC) is permission-gated: only HODs granted the Compensation View permission see the compensation card; HODs without it do not see it at all. This permission is configured per HOD (some HODs may view salary, others may not).
+HOD dashboard — department deep-links
+The HOD dashboard surfaces an Escalations & skip-level tasks widget and a Department-lens widget whose quick-links deep-link to the department oversight pages — Headcount plan to department headcount, Department org chart to the org chart, and Calibration session to department performance. These are navigation shortcuts to already-specified oversight screens; escalation task actions and backfill requests are out of scope for this screen.
+HRBP assigned-employee detail — scoped (no compensation, no audit)
+The HRBP “My assigned employees” roster drills into an HRBP-scoped employee detail, not the unrestricted HR-Admin profile. It exposes the employment summary, personal information (Tier-1 identifiers masked), statutory IDs (masked), the §3.9 sensitive categories the HRBP is granted (disability declaration, visa / work authorisation, dependents / nominees), BGV status, internal employment history, education, documents, and a leave & attendance summary. Compensation (CTC / salary / bank) and performance are hidden from HRBP and the audit log is admin-only — neither appears on the HRBP view.
+HRBP module views — read-only scope
+HRBP’s “Modules — view” and the probation / BGV task items are read-only oversight surfaces. Where the prototype reuses another role’s screen, HRBP must be RBAC-gated to view only:
+BGV status — HRBP views verification status; the Modify / Save / Sync actions on the BGV console are restricted to the BGV / Onboarding admin.
+Probation — HRBP views probation status; the Confirm / Extend / Separate decision actions belong to the Manager (confirm) and HR Admin (approve), not HRBP.
+Performance reviews — not accessible to HRBP. Performance is not an HRBP function; review / people drill-downs do not expose performance data and resolve to the HRBP-scoped employee detail.
+Recruitment — read + comment only (FR-M08 · A2); Documents — acknowledgement status, read-only.
+Manager-role review (Round 3)
+Reportee profile (manager scoped view): the Attendance, Leave and Performance tabs are relocated out of the reportee profile to the dedicated Team attendance, Team leave and Goals & reviews screens — the data remains available there, it is not removed. The scoped reportee view retains Overview, Employment history, Skills & education, Org chart and Feedback & notes.
+Probation decision (manager): the Extend action gains an explicit Extend by control (1/2/3 months) with a live recalculated probation-end-date preview; Extend is disabled until a period is chosen, and re-triggers the decision task 15 days before the new end date.
+Manager-role review (Round 3 follow-up)
+Reportee view = employee self structure. The manager's reportee record now mirrors the employee's own profile: Personal, Employment (incl. Project history), Statutory & benefits, Qualifications & experience, Documents, plus Attendance, Leave and Performance as tabs in the employee-context view. This supersedes the Round-3 item-6 tab relocation and the prior §3.9 "manager = HOD narrow scope" restriction on the reportee record.
+No dilution except intentional masks. Information matches the employee's own view; the only deliberate masks are full Aadhaar/PAN, bank account number and statutory IDs (restricted to the employee and authorised HR/Finance roles, audit-logged).
+Project history is added to the Employment tab in both the self profile and the reportee view.
+Manager-role review (Round 3 follow-up B)
+Education placement corrected. Education records belong under Qualifications & experience, not Employment. Education has been moved out of the Employment tab into Qualifications & experience in the manager reportee view and the HR-Admin employee record; the HOD view already grouped it with Skills. This keeps the self, manager, HOD and HR-Admin profile structures consistent.
