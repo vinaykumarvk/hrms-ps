@@ -66,3 +66,23 @@ docs/evidence/w1/0035-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0036_w2_leave_attendance_config.sql
 docs/evidence/w2/0036-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W3 Gap A (configuration only) · approved by: agent, standing autonomous instruction
+#
+# 0037_w3_recruitment_config.sql
+#   Creates the recruitment CONFIGURATION tables the DwnB/Recruitment field exports specify:
+#   external_recruiters, external_recruiter_groups, job_portals, interview_types,
+#   interview_guides, duplicity_check_settings, hiring_leads, recruitment_sources,
+#   candidate_decision_reasons.
+#
+#   Scope limit, deliberate: the TRANSACTIONAL ATS core (requisitions, candidates, applications,
+#   interviews, offers) is NOT included. The field exports do not specify it, and it needs the
+#   FS_M08_Recruitment body — a .docx this session cannot read. Authoring it from screen names
+#   would repeat W1's inferred-schema problem.
+#
+#   Additive and forward-only. None is in project.config.yaml sensitive_tables.
+#   Compensating statement: docs/evidence/w3/0037-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0037_w3_recruitment_config.sql
+docs/evidence/w3/0037-compensating.sql

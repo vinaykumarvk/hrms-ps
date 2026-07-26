@@ -341,6 +341,44 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
       { key: "approverRule", label: "Approver rule", type: "text", required: true },
     ],
   },
+  // W3 Gap A (configuration only) — unblocked by 0037. Columns trace to DwnB/Recruitment exports.
+  // The transactional ATS core is deliberately NOT modelled here; see the 0037 header.
+  {
+    key: "external-recruiters", label: "External recruiters", permissionPrefix: "cfg.recruiter",
+    screenId: "ra-external-recruiters", table: "external_recruiters",
+    attributes: [
+      { key: "email", label: "Email", type: "text", required: true },
+      { key: "recruiterStatus", label: "Status", type: "text", required: true },
+      { key: "contractFrom", label: "Contract from", type: "text" },
+      { key: "contractTo", label: "Contract to", type: "text" },
+    ],
+  },
+  {
+    key: "job-portals", label: "Job portals", permissionPrefix: "cfg.jobportal",
+    screenId: "ra-portals", table: "job_portals", attributes: [],
+  },
+  {
+    key: "interview-types", label: "Interview types", permissionPrefix: "cfg.interviewtype",
+    screenId: "ra-recruiters", table: "interview_types", attributes: [],
+  },
+  {
+    key: "interview-guides", label: "Interview guides", permissionPrefix: "cfg.interviewguide",
+    screenId: "ra-schedule-interview", table: "interview_guides",
+    attributes: [{ key: "guidelines", label: "Guidelines", type: "text" }],
+  },
+  {
+    key: "duplicity-settings", label: "Duplicity check settings", permissionPrefix: "cfg.duplicity",
+    screenId: "ra-duplicity", table: "duplicity_check_settings",
+    attributes: [{ key: "compareFields", label: "Compare fields", type: "text" }],
+  },
+  {
+    key: "hiring-leads", label: "Hiring lead assignment", permissionPrefix: "cfg.hiringlead",
+    screenId: "ra-recruiter-assignment", table: "hiring_leads",
+    attributes: [
+      { key: "assignmentType", label: "Assignment type", type: "text", required: true },
+      { key: "applicableTo", label: "Applicable to", type: "text" },
+    ],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

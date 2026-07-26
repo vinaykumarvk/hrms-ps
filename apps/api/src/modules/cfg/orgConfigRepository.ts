@@ -49,7 +49,13 @@ export type ConfigRegistryKey =
   | "attendance-policies"
   | "comp-off-rules"
   | "blackout-periods"
-  | "decision-matrix";
+  | "decision-matrix"
+  | "external-recruiters"
+  | "job-portals"
+  | "interview-types"
+  | "interview-guides"
+  | "duplicity-settings"
+  | "hiring-leads";
 
 export interface ConfigRecord {
   id: string;
