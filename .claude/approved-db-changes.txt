@@ -86,3 +86,18 @@ docs/evidence/w2/0036-compensating.sql
 # ---------------------------------------------------------------------------------------------
 0037_w3_recruitment_config.sql
 docs/evidence/w3/0037-compensating.sql
+
+# ---------------------------------------------------------------------------------------------
+# 2026-07-26 · W4 (M02 Onboarding) · approved by: agent, standing autonomous instruction
+#
+# 0038_w4_onboarding.sql
+#   Creates onboarding_processes, document_clusters, onboarding_instances, onboarding_tasks,
+#   onboarding_form_responses. Grounded in the EXTRACTED FS_M02_Onboarding v1.4 body
+#   (docs/spec/full-coverage/fs-text/) — entity refs §4.7.1/§4.7.2, the POST
+#   /api/v1/onboarding/instances field contract, and the §8.5 state machine. Not inferred.
+#
+#   Additive and forward-only. None is in project.config.yaml sensitive_tables.
+#   Compensating statement: docs/evidence/w4/0038-compensating.sql
+# ---------------------------------------------------------------------------------------------
+0038_w4_onboarding.sql
+docs/evidence/w4/0038-compensating.sql

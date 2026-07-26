@@ -379,6 +379,28 @@ export const CONFIG_REGISTRIES: readonly RegistryDescriptor[] = [
       { key: "applicableTo", label: "Applicable to", type: "text" },
     ],
   },
+  // W4 — M02 Onboarding configuration, grounded in the extracted FS body (0038).
+  {
+    key: "onboarding-processes", label: "Onboarding processes", permissionPrefix: "cfg.onboardingprocess",
+    screenId: "onboarding-config", table: "onboarding_processes",
+    attributes: [{ key: "autoInitiateBasis", label: "Auto-initiation basis", type: "text" }],
+  },
+  {
+    key: "document-clusters", label: "Document clusters", permissionPrefix: "cfg.documentcluster",
+    screenId: "document-clusters", table: "document_clusters",
+    attributes: [
+      { key: "isMandatory", label: "Mandatory", type: "boolean" },
+      { key: "appliesTo", label: "Applies to", type: "text" },
+    ],
+  },
+  {
+    key: "recruitment-sources", label: "Recruitment sources", permissionPrefix: "cfg.source",
+    screenId: "cfg-sources", table: "recruitment_sources",
+    attributes: [
+      { key: "sourceType", label: "Source type", type: "text", required: true },
+      { key: "description", label: "Description", type: "text" },
+    ],
+  },
 ];
 
 const REGISTRY_BY_KEY = new Map<ConfigRegistryKey, RegistryDescriptor>(CONFIG_REGISTRIES.map((r) => [r.key, r]));

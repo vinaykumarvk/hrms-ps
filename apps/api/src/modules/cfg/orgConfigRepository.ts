@@ -55,7 +55,10 @@ export type ConfigRegistryKey =
   | "interview-types"
   | "interview-guides"
   | "duplicity-settings"
-  | "hiring-leads";
+  | "hiring-leads"
+  | "onboarding-processes"
+  | "document-clusters"
+  | "recruitment-sources";
 
 export interface ConfigRecord {
   id: string;
